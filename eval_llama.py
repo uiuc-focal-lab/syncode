@@ -3,10 +3,12 @@ from transformers import (
     LlamaForCausalLM,
     PreTrainedModel,
     PreTrainedTokenizer,
+    LogitsProcessorList
 )
 from core import filter_code, run_eval, fix_indents
 import os
 import torch
+from python_decoder import PythonDecoder
 
 # TODO: move to python-dotenv
 # add hugging face access token here
@@ -21,6 +23,8 @@ def generate_batch_completion(
     inputs = tokenizer(input_batch, return_tensors="pt").to(model.device)
     input_ids_cutoff = inputs.input_ids.size(dim=1)
 
+    python_decoder = PythonDecoder()
+
     generated_ids = model.generate(
         **inputs,
         use_cache=True,
@@ -30,6 +34,7 @@ def generate_batch_completion(
         do_sample=True,
         eos_token_id=tokenizer.eos_token_id,
         pad_token_id=tokenizer.eos_token_id,  # model has no pad token
+        logits_processor=LogitsProcessorList([python_decoder])
     )
 
     batch_completions = tokenizer.batch_decode(
