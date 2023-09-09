@@ -11,12 +11,12 @@
 //       single_input is a single interactive statement;
 //       file_input is a module or sequence of commands read from an input file;
 //       eval_input is the input for the eval() functions.
-// NB: compound_stmt in single_input is followed by extra NEWLINE!
-single_input: NEWLINE | simple_stmt | compound_stmt NEWLINE
-file_input: (NEWLINE | stmt)*
-eval_input: testlist NEWLINE*
+// NB: compound_stmt in single_input is followed by extra _NL!
+single_input: _NL | simple_stmt | compound_stmt _NL
+file_input: (_NL | stmt)*
+eval_input: testlist _NL*
 
-!decorator: "@" dotted_name [ "(" [arguments] ")" ] NEWLINE
+!decorator: "@" dotted_name [ "(" [arguments] ")" ] _NL
 decorators: decorator+
 decorated: decorators (classdef | funcdef | async_funcdef)
 
@@ -39,7 +39,7 @@ kwparams: "**" typedparam
 vfpdef: NAME
 
 ?stmt: simple_stmt | compound_stmt
-!?simple_stmt: small_stmt (";" small_stmt)* [";"] NEWLINE
+!?simple_stmt: small_stmt (";" small_stmt)* [";"] _NL
 ?small_stmt: (expr_stmt | del_stmt | pass_stmt | flow_stmt | import_stmt | global_stmt | nonlocal_stmt | assert_stmt)
 ?expr_stmt: testlist_star_expr (annassign | augassign (yield_expr|testlist)
          | ("=" (yield_expr|testlist_star_expr))*)
@@ -79,7 +79,7 @@ with_stmt: "with" with_item ("," with_item)*  ":" suite
 with_item: test ["as" expr]
 // NB compile.c makes sure that the default except clause is last
 except_clause: "except" [test ["as" NAME]]
-suite: simple_stmt | NEWLINE INDENT stmt+ DEDENT
+suite: simple_stmt | _NL _INDENT stmt+ _DEDENT
 
 ?test: or_test ["if" or_test "else" test] | lambdef
 ?test_nocond: or_test | lambdef_nocond
@@ -163,9 +163,8 @@ string: STRING | LONG_STRING
 // Tokens
 
 NAME: /[a-zA-Z_]\w*/
-COMMENT: /#[^\n]*/
-NEWLINE: ( /\r?\n[\t ]*/ | COMMENT )+
-
+COMMENT: /#[^\n]*/ | LONG_STRING
+_NL: ( /(\r?\n[\t ]*)+/ | COMMENT )+
 
 STRING : /[ubf]?r?("(?!"").*?(?<!\\)(\\\\)*?"|'(?!'').*?(?<!\\)(\\\\)*?')/i
 LONG_STRING: /[ubf]?r?(""".*?(?<!\\)(\\\\)*?"""|'''.*?(?<!\\)(\\\\)*?''')/is
@@ -177,7 +176,9 @@ BIN_NUMBER.2 : /0b[0-1]*/i
 FLOAT_NUMBER.2: /((\d+\.\d*|\.\d+)(e[-+]?\d+)?|\d+(e[-+]?\d+))/i
 IMAG_NUMBER.2: /\d+j|${FLOAT_NUMBER}j/i
 
-%ignore /[\t \f]+/  // WS
+%import common.WS_INLINE
+
+%declare _INDENT _DEDENT
+%ignore WS_INLINE
 %ignore /\\[\t \f]*\r?\n/   // LINE_CONT
 %ignore COMMENT
-%declare INDENT DEDENT
