@@ -17,13 +17,13 @@ TOKEN = ""
 
 @torch.inference_mode()
 def generate_batch_completion(
-    model: PreTrainedModel, tokenizer: PreTrainedTokenizer, prompt, batch_size
-) -> list[str]:
+    model: PreTrainedModel, tokenizer: PreTrainedTokenizer, prompt, batch_size) -> list[str]:
     input_batch = [prompt for _ in range(batch_size)]
     inputs = tokenizer(input_batch, return_tensors="pt").to(model.device)
     input_ids_cutoff = inputs.input_ids.size(dim=1)
 
-    python_decoder = PythonDecoder()
+    python_decoder = PythonDecoder(
+        tokenizer=tokenizer,)
 
     generated_ids = model.generate(
         **inputs,
@@ -60,5 +60,4 @@ if __name__ == "__main__":
         num_samples_per_task,
         out_path,
         generate_batch_completion,
-        True,
-    )
+        True,)

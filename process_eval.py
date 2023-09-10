@@ -1,6 +1,7 @@
 from human_eval.data import read_problems, write_jsonl, stream_jsonl
 import glob
 from tqdm import tqdm
+from transformers import PreTrainedTokenizer
 import argparse
 
 parser = argparse.ArgumentParser()
@@ -11,7 +12,6 @@ parser.add_argument("--out_path", type=str, help="")
 parser.add_argument("--add_prompt", action="store_true", help="")
 
 args = parser.parse_args()
-
 
 files = sorted(glob.glob(args.path + "/*.jsonl"))
 print("{} files in {}".format(len(files), args.path))
