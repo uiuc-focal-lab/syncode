@@ -27,27 +27,27 @@ parser = Lark.open(
 
 def test_parser():
     code = f"""
-    a = 3
-    b = 4
-    c = 5
+a = 3
+b = 4
+c = 5
 
-    def f():
-        ""\"
-        funcdef!!!
-        ""\"
-        a = 4
-        c = 3
-        
-        # Random comment
-        if i == 2:
-            2 + 3
-            t + 1
-            pass
-        else:
-            return
-        
-        return sss
-    """
+def f():
+    ""\"
+    funcdef!!!
+    ""\"
+    a = 4
+    c = 3
+    
+    # Random comment
+    if i == 2:
+        2 + 3
+        t + 1
+        pass
+    else:
+        return
+    
+    return sss
+"""
 
     print(code)
     interactive = parser.parse_interactive(code)
@@ -74,3 +74,4 @@ def test_vocab_terminals():
     print(f"Found {len(token_to_terminal)}/{tokenizer.vocab_size} tokens that form a terminal.")
 
 test_vocab_terminals()
+test_parser()
