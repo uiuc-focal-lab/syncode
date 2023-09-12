@@ -16,7 +16,7 @@ class PythonIndenter(Indenter):
 def get_token_type(parser, s):
     try:
         if s == '\t':
-            return '_INDENT'
+            return '_TAB'
         
         # Non-regex direct matches
         for t in parser.terminals:
@@ -31,15 +31,64 @@ def get_token_type(parser, s):
 
 def get_acceptable_next_tokens(parser, code):
     interactive = parser.parse_interactive(code)
-    
+    token_seq = []
+    dedent_q = []
+    cur_indentation_level = 0
+
     for token in interactive.lexer_thread.lex(interactive.parser_state):
-            # print(repr(token))
+            # if token.type == '_INDENT' or token.type == '_DEDENT':
+            #     print(repr(token), cur_indentation_level, interactive.accepts())
+            # else:
+            #     print(repr(token))
+            
+            if token.type == '_INDENT':
+                cur_indentation_level += 1
+            
             if token.type == '_DEDENT':
+                # Do not shoot dedent tokens unless there is some code on the next line
+                dedent_q.append(token)
                 continue
-            _ = interactive.feed_token(token)
+            else:
+                while not len(dedent_q)==0:
+                    dedent_token = dedent_q.pop()
+                    cur_indentation_level -= 1
+                    interactive.feed_token(dedent_token)
+                    token_seq.append(dedent_token)
+
+            interactive.feed_token(token)
+            token_seq.append(token)
     
-    print('Acceptable Tokens:', interactive.accepts())
-    return interactive.accepts()
+    accept_tokens = interactive.accepts()
+
+    if token_seq[-1].type == '_NL':
+        # Compute next line accepted indentation levels
+        max_next_indentation_level = 0
+        if '_INDENT' in accept_tokens:
+            max_next_indentation_level = cur_indentation_level + 1
+        elif '_DEDENT' in accept_tokens and len(accept_tokens)==1:
+            max_next_indentation_level = cur_indentation_level - 1
+        elif '_DEDENT' in accept_tokens and len(accept_tokens)>1:
+            max_next_indentation_level = cur_indentation_level
+
+        cur_tabs = token_seq[-1].value.split('\n')[-1].count('\t')
+        # print('cur_tabs:', cur_tabs, 'max_next_indentation_level:', max_next_indentation_level)
+
+        # Remove the _INDENT and _DEDENT tokens from the acceptable tokens
+        # since we inform the indentation level through the _TAB token
+        if '_INDENT' in accept_tokens:
+            accept_tokens.remove('_INDENT')
+        if '_DEDENT' in accept_tokens:
+            accept_tokens.remove('_DEDENT')
+
+        if cur_tabs < max_next_indentation_level:
+            print('Expect a tab!')
+            accept_tokens.add('_TAB')
+        elif cur_tabs > max_next_indentation_level:
+            raise Exception('Invalid indentation level! max_next_indentation_level: {}, cur_tabs: {}'.format(max_next_indentation_level, cur_tabs))
+
+    # print('Token sequence:', token_seq)
+    print('Acceptable Tokens:', accept_tokens)
+    return accept_tokens
 
 
 class PythonDecoder(LogitsProcessor):
