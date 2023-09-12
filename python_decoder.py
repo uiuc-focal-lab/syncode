@@ -1,5 +1,6 @@
 import string
 import time
+import re
 import torch
 from transformers import LogitsProcessor, PreTrainedTokenizer
 from lark import Lark
@@ -13,34 +14,33 @@ class PythonIndenter(Indenter):
     DEDENT_type = "_DEDENT"
     tab_len = 4
 
-def get_token_type(parser, s):
-    try:
-        if s == '\t':
-            return '_TAB'
-        
-        # Non-regex direct matches
-        for t in parser.terminals:
-            if t.pattern.type == 'str' and t.pattern.value == s:
-                return t.name
-        
-        interactive = parser.parse_interactive(s)
-        token = next(interactive.iter_parse())
-        return token.type
-    except:
-        return None
+def get_matching_terminal(parser, s):
+    # Special cases
+    if s == '\t':
+        return '_TAB'
+    
+    # Non-regex direct matches
+    for t in parser.terminals:
+        if t.pattern.type == 'str' and t.pattern.value == s:
+            return t.name
+    
+    # Regex matches
+    for t in parser.terminals:
+        if t.pattern.type == 're' and re.match(t.pattern.value, s):
+            return t.name
 
-def get_acceptable_next_tokens(parser, code):
+    # TODO: Use priorities to resolve conflicts
+    return None
+
+def get_acceptable_next_terminals(parser, code):
     interactive = parser.parse_interactive(code)
     token_seq = []
     dedent_q = []
     cur_indentation_level = 0
+    cur_ac_terminals = None
+    next_ac_terminals = None
 
     for token in interactive.lexer_thread.lex(interactive.parser_state):
-            # if token.type == '_INDENT' or token.type == '_DEDENT':
-            #     print(repr(token), cur_indentation_level, interactive.accepts())
-            # else:
-            #     print(repr(token))
-            
             if token.type == '_INDENT':
                 cur_indentation_level += 1
             
@@ -49,25 +49,30 @@ def get_acceptable_next_tokens(parser, code):
                 dedent_q.append(token)
                 continue
             else:
+                # Shoot all the dedent tokens that are in the queue
                 while not len(dedent_q)==0:
                     dedent_token = dedent_q.pop()
                     cur_indentation_level -= 1
                     interactive.feed_token(dedent_token)
                     token_seq.append(dedent_token)
 
+            # TODO: Check if there is an overhead of computing accept tokens
+            cur_ac_terminals = next_ac_terminals
+            next_ac_terminals = interactive.accepts()
+
             interactive.feed_token(token)
             token_seq.append(token)
     
-    accept_tokens = interactive.accepts()
+    next_ac_terminals = interactive.accepts()
 
     if token_seq[-1].type == '_NL':
         # Compute next line accepted indentation levels
         max_next_indentation_level = 0
-        if '_INDENT' in accept_tokens:
+        if '_INDENT' in next_ac_terminals:
             max_next_indentation_level = cur_indentation_level + 1
-        elif '_DEDENT' in accept_tokens and len(accept_tokens)==1:
+        elif '_DEDENT' in next_ac_terminals and len(next_ac_terminals)==1:
             max_next_indentation_level = cur_indentation_level - 1
-        elif '_DEDENT' in accept_tokens and len(accept_tokens)>1:
+        elif '_DEDENT' in next_ac_terminals and len(next_ac_terminals)>1:
             max_next_indentation_level = cur_indentation_level
 
         cur_tabs = token_seq[-1].value.split('\n')[-1].count('\t')
@@ -75,20 +80,23 @@ def get_acceptable_next_tokens(parser, code):
 
         # Remove the _INDENT and _DEDENT tokens from the acceptable tokens
         # since we inform the indentation level through the _TAB token
-        if '_INDENT' in accept_tokens:
-            accept_tokens.remove('_INDENT')
-        if '_DEDENT' in accept_tokens:
-            accept_tokens.remove('_DEDENT')
+        if '_INDENT' in next_ac_terminals:
+            next_ac_terminals.remove('_INDENT')
+        if '_DEDENT' in next_ac_terminals:
+            next_ac_terminals.remove('_DEDENT')
+
+        # '_NL' is always accepted in this case
+        next_ac_terminals.add('_NL')
 
         if cur_tabs < max_next_indentation_level:
             print('Expect a tab!')
-            accept_tokens.add('_TAB')
+            next_ac_terminals.add('_TAB')
         elif cur_tabs > max_next_indentation_level:
             raise Exception('Invalid indentation level! max_next_indentation_level: {}, cur_tabs: {}'.format(max_next_indentation_level, cur_tabs))
 
     # print('Token sequence:', token_seq)
-    print('Acceptable Tokens:', accept_tokens)
-    return accept_tokens
+    print('Acceptable Tokens:', next_ac_terminals)
+    return cur_ac_terminals, next_ac_terminals
 
 
 class PythonDecoder(LogitsProcessor):
@@ -112,7 +120,7 @@ class PythonDecoder(LogitsProcessor):
 
         for i in range(tokenizer.vocab_size):
             token = tokenizer.decode(torch.tensor([i]), skip_special_tokens=True)
-            token_type = get_token_type(self.parser, token)
+            token_type = get_matching_terminal(self.parser, token)
             
             if token_type is not None:
                 self.token_to_terminal[token] = token_type
@@ -137,12 +145,12 @@ class PythonDecoder(LogitsProcessor):
         print(repr(partial_code))
 
         # returns the names of the Terminals that are currently accepted.
-        acceptable_token_types = get_acceptable_next_tokens(self.parser, partial_code)
+        cur_ac_terminals, next_ac_terminals = get_acceptable_next_terminals(self.parser, partial_code)
 
         accept_mask = self.uncategorezed_mask.clone()
         # print(accept_mask.sum())
 
-        for token_type in acceptable_token_types:
+        for token_type in next_ac_terminals:
             if token_type in self.terminal_to_mask:
                 accept_mask |= self.terminal_to_mask[token_type]
             # print(accept_mask.sum())
