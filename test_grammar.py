@@ -75,48 +75,53 @@ def f():
 
 def test_parser2():
     partial_code = 'from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n\t""" Check if in given list of numbers, are any two numbers closer to each other than\n\tgiven threshold.\n\t>>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n\tFalse\n\t>>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n\tTrue\n\t"""\n\ta=3+5\n\tb='
-    cur_ac_terminals, next_ac_terminals = get_acceptable_next_terminals(parser, partial_code)
+    _, next_ac_terminals, _ = get_acceptable_next_terminals(parser, partial_code)
     assert 'FLOAT_NUMBER' in next_ac_terminals
 
 def test_parser3():
     partial_code = 'from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n\t""" Check if in given list of numbers, are any two numbers closer to each other than\n\tgiven threshold.\n\t>>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n\tFalse\n\t>>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n\tTrue\n\t"""\n\tfor i in range(len(numbers) -1, -1, -1) :\n\t\tfor j in range(i+1, len(numbers) ,1) :\n\t\t\tif abs(numbers[i] - numbers[j] ) < threshold :\n\t\t\t\treturn True\n'
-    cur_ac_terminals, next_ac_terminals = get_acceptable_next_terminals(parser, partial_code)
+    _, next_ac_terminals, _ = get_acceptable_next_terminals(parser, partial_code)
     assert '_TAB' in next_ac_terminals
 
 def test_parser4():
     partial_code = 'from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n\t""" Check if in given list of numbers, are any two numbers closer to each other than\n\tgiven threshold.\n\t>>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n\tFalse\n\t>>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n\tTrue\n\t"""\n\tfor i in range(len(numbers) -1, -1, -1) :\n\t\tfor j in range(i+1, len(numbers) ,1) :\n\t\t\tif abs(numbers[i] - numbers[j] ) < threshold :\n'
-    cur_ac_terminals, next_ac_terminals = get_acceptable_next_terminals(parser, partial_code)
+    _, next_ac_terminals, _ = get_acceptable_next_terminals(parser, partial_code)
     assert '_TAB' in next_ac_terminals
 
 def test_parser5():
     partial_code = 'from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n\t\n\tfor i in range(len(numbers) -1, -1, -1) :\n\t\tfor j in range(i+1, len(numbers) ,1) :\n\t\t\tif abs(numbers[i] - numbers[j] ) < threshold :\n\t\t\t\treturn True\n\t\t\t\t'
     # There cannot be another tab after this
-    cur_ac_terminals, next_ac_terminals = get_acceptable_next_terminals(parser, partial_code)
+    _, next_ac_terminals, _ = get_acceptable_next_terminals(parser, partial_code)
     assert '_TAB' not in next_ac_terminals
 
 def test_parser6():
     partial_code = 'from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n\t\n\tfor i in range(len(numbers) -1, -1, -1) :\n\t\tfor j in range(i+1, len(numbers) ,1) :\n\t\t\tif abs(numbers[i] - numbers[j] ) < threshold :\n\t\t\t\treturn True\n\n\n\t\t\t\t'
     # There cannot be another tab after this
-    cur_ac_terminals, next_ac_terminals = get_acceptable_next_terminals(parser, partial_code)
+    _, next_ac_terminals, _ = get_acceptable_next_terminals(parser, partial_code)
     assert '_TAB' not in next_ac_terminals
 
 def test_parser6():
     partial_code = 'from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n\t\n\tfor i in range(len(numbers) -1, -1, -1) :\n\t\tfor j in range(i+1, len(numbers) ,1) :\n\t\t\tif abs(numbers[i] - numbers[j] ) < threshold :\n\t\t\t\treturn True\n\n\t\t\t\n\t\t'
     # There can be another tab after this
-    cur_ac_terminals, next_ac_terminals = get_acceptable_next_terminals(parser, partial_code)
+    _, next_ac_terminals, _ = get_acceptable_next_terminals(parser, partial_code)
     assert '_TAB' in next_ac_terminals
 
 def test_parser7():
     partial_code = 'from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n\t""" Check if in given list of numbers, are any two numbers closer to each other than\n\tgiven threshold.\n\t>>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n\tFalse\n\t>>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n\tTrue\n\t"""\n\tfor i in range(len(numbers) -1, -1, -1) :\n\t\tif numbers[i] - numbers[i+1] < threshold:\n\t\t\treturn True\n\treturn False\n'
-    cur_ac_terminals, next_ac_terminals = get_acceptable_next_terminals(parser, partial_code)
+    _, next_ac_terminals, _ = get_acceptable_next_terminals(parser, partial_code)
     assert '_TAB' in next_ac_terminals
     assert '_NL' in next_ac_terminals
 
 def test_parser8():
-    partial_code = 'from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n\t""" Check if in given list of numbers, are any two numbers closer to each other than\n\tgiven threshold.\n\t>>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n\tFalse\n\t>>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n\tTrue\n\t"""\n\tfor i in range(len(numbers) -1, -1, -1) :\n\t\tif numbers[i] - numbers[i+1] < threshold :\n\t\t\treturn True\n\treturn False\n\n\ndef has(numbers: List[float] , threshold: float) -> bool:\n\t""'
-    cur_ac_terminals, next_ac_terminals = get_acceptable_next_terminals(parser, partial_code)
-    print(get_matching_terminal(parser, '"'))
-    assert get_matching_terminal(parser, '"') in next_ac_terminals
+    partial_code = 'from typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n\tpar = []\n\tfor i in par:\n\t\tif i == \''
+    _, next_ac_terminals, cur_term_str = get_acceptable_next_terminals(parser, partial_code)
+    assert cur_term_str == "'"
+
+def test_parser9():
+    partial_code = 'from typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n\tpar = []\n\tfor i in par:\n\t\tif i == \'Hello'
+    _, next_ac_terminals, cur_term_str = get_acceptable_next_terminals(parser, partial_code)
+    print(cur_term_str)
+    assert cur_term_str == "'Hello"
 
 def test_get_matching_terminals():
     assert get_matching_terminal(parser, "\t") == "_TAB"
@@ -140,13 +145,17 @@ def test_get_matching_terminals():
     assert get_matching_terminal(parser, "class") == "CLASS"
 
     # Regex
+    assert get_matching_terminal(parser, "1234") == "DEC_NUMBER"
+    assert get_matching_terminal(parser, "12.34") == "FLOAT_NUMBER"
+    assert get_matching_terminal(parser, "pqr") == "NAME"
     assert get_matching_terminal(parser, "\'ssss\'") == "STRING"
     assert get_matching_terminal(parser, '\"ssss\"') == "STRING"
     assert get_matching_terminal(parser, '\"""ssss\"""') == "COMMENT"
     assert get_matching_terminal(parser, '\"""ssss') == None
 
 
-tests = [test_get_matching_terminals, test_vocab_terminals, test_parser1, test_parser2, test_parser3, test_parser4, test_parser5, test_parser6, test_parser7, test_parser8]
+tests = [test_get_matching_terminals, test_vocab_terminals, test_parser1, test_parser2, test_parser3, test_parser4, test_parser5, test_parser6, test_parser7, test_parser8, test_parser9]
+tests = [test_parser8]
 
 test_result = {}
 
