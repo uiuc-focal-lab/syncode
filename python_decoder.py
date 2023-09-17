@@ -1,147 +1,16 @@
-import string
 import time
-import re
 import torch
-import lark
 from transformers import LogitsProcessor, PreTrainedTokenizer
-from lark import Lark
-from lark.indenter import Indenter
-
-class PythonIndenter(Indenter):
-    NL_type = "_NL"
-    OPEN_PAREN_types = ["LPAR", "LSQB", "LBRACE"]
-    CLOSE_PAREN_types = ["RPAR", "RSQB", "RBRACE"]
-    INDENT_type = "_INDENT"
-    DEDENT_type = "_DEDENT"
-    tab_len = 4
-
-def get_matching_terminal(parser, s):
-    # Special cases
-    if s == '\t':
-        return '_TAB'
-    
-    # Non-regex direct matches
-    for t in parser.terminals:
-        if t.pattern.type == 'str' and t.pattern.value == s:
-            return t.name
-    
-    # Regex matches
-    for t in parser.terminals:
-        if t.pattern.type == 're' and re.fullmatch(t.pattern.value, s):
-            return t.name
-
-    # TODO: Use priorities to resolve conflicts
-    return None
-
-def prefix_terminal_match(parser, s, v):
-    # Returns all terminals such that s+v matches the prefix of the terminal
-    s = s+v
-    import regex
-    for t in parser.terminals:
-        not_supported = ['_NL', 'COMMENT', 'STRING', 'IMAG_NUMBER']
-        if t.pattern.type == 're' and t.name not in not_supported:
-            # print('Pattern:', t.pattern.value, s, t.name)
-            match = regex.Regex(t.pattern.value).d(s)
-            print(match)
-            if match != None:
-                return t.name
-    return None        
-
-
-def get_acceptable_next_terminals(parser, code):
-    interactive = parser.parse_interactive(code)
-    token_seq = []
-    dedent_q = []
-    cur_indentation_level = 0
-    cur_ac_terminals = None
-    next_ac_terminals = None    
-    curor_position = 0
-    last_terminal_complete = True
-
-    try:
-        for token in interactive.lexer_thread.lex(interactive.parser_state):
-                if token.type == '_INDENT':
-                    cur_indentation_level += 1
-                
-                if token.type == '_DEDENT':
-                    # Do not shoot dedent tokens unless there is some code on the next line
-                    dedent_q.append(token)
-                    continue
-                else:
-                    # Shoot all the dedent tokens that are in the queue
-                    while not len(dedent_q)==0:
-                        dedent_token = dedent_q.pop()
-                        cur_indentation_level -= 1
-                        interactive.feed_token(dedent_token)
-                        token_seq.append(dedent_token)
-
-                # TODO: Check if there is an overhead of computing accept tokens
-                cur_ac_terminals = next_ac_terminals
-                next_ac_terminals = interactive.accepts()
-
-                interactive.feed_token(token)
-                token_seq.append(token)
-                curor_position = interactive.lexer_state.state.line_ctr.char_pos
-
-        current_term_str = token_seq[-1].value
-
-    except lark.exceptions.UnexpectedCharacters as e:
-        last_terminal_complete = False
-        current_term_str = code[curor_position+1:]
-
-
-    if last_terminal_complete:
-        next_ac_terminals = interactive.accepts()
-        
-        if token_seq[-1].type == '_NL':
-            # Compute next line accepted indentation levels
-            max_next_indentation_level = 0
-            if '_INDENT' in next_ac_terminals:
-                max_next_indentation_level = cur_indentation_level + 1
-            elif '_DEDENT' in next_ac_terminals and len(next_ac_terminals)==1:
-                max_next_indentation_level = cur_indentation_level - 1
-            elif '_DEDENT' in next_ac_terminals and len(next_ac_terminals)>1:
-                max_next_indentation_level = cur_indentation_level
-
-            cur_tabs = token_seq[-1].value.split('\n')[-1].count('\t')
-            # print('cur_tabs:', cur_tabs, 'max_next_indentation_level:', max_next_indentation_level)
-
-            # Remove the _INDENT and _DEDENT tokens from the acceptable tokens
-            # since we inform the indentation level through the _TAB token
-            if '_INDENT' in next_ac_terminals:
-                next_ac_terminals.remove('_INDENT')
-            if '_DEDENT' in next_ac_terminals:
-                next_ac_terminals.remove('_DEDENT')
-
-            # '_NL' is always accepted in this case
-            next_ac_terminals.add('_NL')
-
-            if cur_tabs < max_next_indentation_level:
-                print('Expect a tab!')
-                next_ac_terminals.add('_TAB')
-            elif cur_tabs > max_next_indentation_level:
-                raise Exception('Invalid indentation level! max_next_indentation_level: {}, cur_tabs: {}'.format(max_next_indentation_level, cur_tabs))
-    else:
-        # Since current terminal is incomplete, next token should add to current terminal
-        next_ac_terminals = None
-
-    # print('Token sequence:', token_seq)
-    print('Acceptable Tokens:', next_ac_terminals)
-    return cur_ac_terminals, next_ac_terminals, current_term_str
+from incremental_parser import IncrementalParser
 
 
 class PythonDecoder(LogitsProcessor):
-    
     def __init__(self, tokenizer: PreTrainedTokenizer, **kwargs):
         time_start = time.time()
         self.tokenizer = tokenizer
-        self.parser = Lark.open(
-            "python_grammar.lark",
-            parser="lalr",
-            start="file_input",
-            postlex=PythonIndenter(),
-            propagate_positions=True,
-        )
+        self.inc_parser = IncrementalParser()
+        self.debug = True
+        self.token_cnt = 0
 
         # Iterate through the vocabulary and create a map of (tokenizer token -> grammar terminal)
         # Note: It may happen that many tokens do not fall in any category
@@ -149,9 +18,12 @@ class PythonDecoder(LogitsProcessor):
         self.terminal_to_mask = {}
         self.uncategorezed_mask = torch.zeros(tokenizer.vocab_size, dtype=torch.bool)
 
+        self.start_time = time.time()
+        self.prev_time = self.start_time
+
         for i in range(tokenizer.vocab_size):
             token = tokenizer.decode(torch.tensor([i]), skip_special_tokens=True)
-            token_type = get_matching_terminal(self.parser, token)
+            token_type = self.inc_parser.get_matching_terminal(token)
             
             if token_type is not None:
                 self.token_to_terminal[token] = token_type
@@ -184,19 +56,27 @@ class PythonDecoder(LogitsProcessor):
     def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor) -> torch.FloatTensor:
         partial_code = self.tokenizer.decode(input_ids[0], skip_special_tokens=True)
 
-        print("-"*80)
-        print('Code lenght:', len(partial_code))
-        print(partial_code)
-        print(repr(partial_code))
+        self.token_cnt += 1
+        if self.debug and self.token_cnt%10==0:
+            print("-"*80)
+            print('Code lenght:', len(partial_code))
+            print(partial_code)
+            print(repr(partial_code))
+
+            # Get the token per second
+            cur_time = time.time()
+            print('Current generation speed:', 10/(cur_time - self.prev_time))
+            print('Total generation speed:', self.token_cnt/(cur_time - self.start_time))
+            self.prev_time = cur_time
 
         # returns the names of the Terminals that are currently accepted.
-        cur_ac_terminals, next_ac_terminals, cur_term_str = get_acceptable_next_terminals(self.parser, partial_code)
-
+        compilation_start_time = time.time()
+        cur_ac_terminals, next_ac_terminals, cur_term_str = self.inc_parser.get_acceptable_next_terminals(partial_code)
+            
         greedy_token = self.tokenizer.decode(scores.argmax(dim=-1), skip_special_tokens=True)
-        print('Greedy token:', repr(greedy_token), scores.argmax(dim=-1))
 
         #### Masking the scores ####
-        if '_NL' in cur_ac_terminals or 'COMMENT' in cur_ac_terminals or 'STRING' in cur_ac_terminals:
+        if '_NL' in cur_ac_terminals or 'COMMENT' in cur_ac_terminals or 'STRING' in cur_ac_terminals or cur_term_str.startswith(' "') or cur_term_str.startswith('"') or cur_term_str.startswith(" '") or cur_term_str.startswith("'"):
             pass
         else:
             # Which vocab tokens can be appended to the cur_term_str and become prefix to one cur_ac_terminals
@@ -207,11 +87,19 @@ class PythonDecoder(LogitsProcessor):
 
             accept_mask = cur_accept_mask | next_accept_mask
             scores = scores.masked_fill(~accept_mask.to(scores.device), -float("inf"))
-            print("Number of acceptable tokens:", accept_mask.sum().item())
+            if self.debug and self.token_cnt%10==0:
+                print("Number of acceptable tokens:", accept_mask.sum().item())
         
         greedy_grammar_token = self.tokenizer.decode(scores.argmax(dim=-1), skip_special_tokens=True)
-        print('Greedy grammar-based token:', repr(greedy_grammar_token), scores.argmax(dim=-1))
-        print("-"*80)
+
+        if greedy_token != greedy_grammar_token:
+            print('Different greedy token:', repr(greedy_token), repr(greedy_grammar_token), scores.argmax(dim=-1))
+            print('Greedy token:', repr(greedy_token), scores.argmax(dim=-1))
+            print('Greedy grammar-based token:', repr(greedy_grammar_token), scores.argmax(dim=-1))
+
+        if self.debug and self.token_cnt%10==0:
+            print('Time taken for compilation:', time.time() - compilation_start_time)
+            print("-"*80)
 
         return scores
     
