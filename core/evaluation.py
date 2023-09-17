@@ -1,3 +1,4 @@
+import time
 from human_eval.data import write_jsonl, read_problems
 from transformers import (
     PreTrainedModel,
@@ -44,6 +45,7 @@ def run_eval(
     # problems = dict(itertools.islice(problems.items(), 20))
     samples = []
     pbar = tqdm(total=len(problems) * num_samples_per_task)
+    start_time = time.time()
 
     for task_id in problems:
         if format_tabs:

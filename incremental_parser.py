@@ -40,8 +40,10 @@ class IncrementalParser:
         # Restore the previous state of the parser
         if self.prev_lexer_tokens is not None:
             i = 0
-            while i < len(self.prev_lexer_tokens) and lexer_tokens[i] == self.prev_lexer_tokens[i]:
-                i += 1
+
+            while i < min(len(self.prev_lexer_tokens), len(lexer_tokens)) and lexer_tokens[i] == self.prev_lexer_tokens[i]:
+                    i += 1
+
             self.cur_pos = i
             # print('********Restoring parser state 1!', self.cur_pos-1)
             if (self.cur_pos-1) in self.cur_pos_to_interactive:

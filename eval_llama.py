@@ -1,3 +1,4 @@
+import time
 from transformers import (
     LlamaTokenizer,
     LlamaForCausalLM,
@@ -22,8 +23,8 @@ def generate_batch_completion(
     inputs = tokenizer(input_batch, return_tensors="pt").to(model.device)
     input_ids_cutoff = inputs.input_ids.size(dim=1)
 
-    python_decoder = PythonDecoder(
-        tokenizer=tokenizer,)
+    python_decoder = PythonDecoder(tokenizer=tokenizer,)
+    start_time = time.time()
 
     generated_ids = model.generate(
         **inputs,
@@ -41,6 +42,9 @@ def generate_batch_completion(
         [ids[input_ids_cutoff:] for ids in generated_ids],
         skip_special_tokens=True,
     )
+    
+    print(f"Time taken for generation: {time.time() - start_time:.2f}s")
+    print(f"Token generation speed: {python_decoder.token_cnt / (time.time() - start_time):.2f} tokens/s")
 
     return [filter_code(fix_indents(completion)) for completion in batch_completions]
 
