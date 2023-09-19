@@ -173,8 +173,28 @@ def test_get_matching_terminals():
     assert inc_parser.get_matching_terminal('\"""ssss\"""') == "COMMENT"
     assert inc_parser.get_matching_terminal('\"""ssss') == None
 
+def test_prefix_terminal_match():
+    inc_parser = IncrementalParser()
+    # Check if the string can be prefix to the Regex
+    assert "DEF" in inc_parser.get_prefix_terminals_match("de") 
+    assert "DEF" in inc_parser.get_prefix_terminals_match("d")
+    assert "DEF" in inc_parser.get_prefix_terminals_match("def")
+    assert "LPAR" in inc_parser.get_prefix_terminals_match("(")
+    assert "RPAR" in inc_parser.get_prefix_terminals_match(")")
+    assert "STRING" in inc_parser.get_prefix_terminals_match("'")
+    assert "STRING" in inc_parser.get_prefix_terminals_match("''")
+    assert "LONG_STRING" in inc_parser.get_prefix_terminals_match('"')
+    assert "LONG_STRING" in inc_parser.get_prefix_terminals_match('""')
+    assert "LONG_STRING" in inc_parser.get_prefix_terminals_match('"""')
+    assert "LONG_STRING" in inc_parser.get_prefix_terminals_match('"""" something')
+    assert "COMMENT" in inc_parser.get_prefix_terminals_match('"""')
+    assert "COMMENT" in inc_parser.get_prefix_terminals_match('""" something')
+    assert "COMMENT" in inc_parser.get_prefix_terminals_match('# something')
 
-tests = [test_get_matching_terminals, test_vocab_terminals, test_parser1, test_parser2, test_parser3, test_parser4, test_parser5, test_parser6, test_parser7, test_parser8, test_parser9, test_incremental_parser, test_incremental_parser2]
+    assert not "RPAR" in inc_parser.get_prefix_terminals_match("(")
+
+
+tests = [test_get_matching_terminals, test_vocab_terminals, test_parser1, test_parser2, test_parser3, test_parser4, test_parser5, test_parser6, test_parser7, test_parser8, test_parser9, test_incremental_parser, test_incremental_parser2, test_prefix_terminal_match]
 
 test_result = {}
 

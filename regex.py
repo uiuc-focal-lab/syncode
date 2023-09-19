@@ -16,7 +16,7 @@ CATEGORY_PATTERNS = {c.CATEGORY_DIGIT: re.compile(r'\d'),
 def _deparse(seq):
     if seq is None: return seq
     pattern = ""
-    print('Seq', seq)
+    # print('Seq', seq)
     for op, arg in seq:
         if op == c.ANY:
             pattern += '.'
@@ -140,7 +140,7 @@ def _consume_char(char, seq, verbose=False, indent=0):
         out.extend(seq[1:])
         return _ret(out)
     elif op == c.SUBPATTERN:
-        print(arg)
+        # print(arg)
         groupid, arg1, arg2, sseq = arg
         groupvalue = []
         assert arg1==0 and arg2==0
@@ -210,7 +210,7 @@ def _simplify(seq, remove_groups=False):
     seq_out = []
     for op, arg in seq:
         out = _simplify_op(op, arg)
-        print('Before:', (op, arg), 'After:', out)
+        # print('Before:', (op, arg), 'After:', out)
         if out is None: continue
         elif isinstance(out, list):
             for op, arg in out:
@@ -279,10 +279,10 @@ class Regex:
         return (seq is not None)
 
     def d(self, text, verbose=False):
-        print('Text:', text)
+        # print('Text:', text)
         seq = self._consume(text, verbose=verbose)
         if seq is None: return None
-        print('Initial seq:', seq)
+        # print('Initial seq:', seq)
         seq = _simplify(seq)
         return Regex(_deparse(seq))
     

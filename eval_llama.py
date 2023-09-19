@@ -29,7 +29,7 @@ def generate_batch_completion(
     generated_ids = model.generate(
         **inputs,
         use_cache=True,
-        max_new_tokens=200,
+        max_new_tokens=100,
         temperature=0.2,
         top_p=0.95,
         do_sample=True,
@@ -45,6 +45,8 @@ def generate_batch_completion(
     
     print(f"Time taken for generation: {time.time() - start_time:.2f}s")
     print(f"Token generation speed: {python_decoder.token_cnt / (time.time() - start_time):.2f} tokens/s")
+    print(f"Accept tokens sizes: {python_decoder.accept_tokens_sizes}")
+    print('Completion:', batch_completions)
 
     return [filter_code(fix_indents(completion)) for completion in batch_completions]
 

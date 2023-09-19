@@ -161,19 +161,33 @@ class IncrementalParser:
         # TODO: Use priorities to resolve conflicts
         return None
 
-    def prefix_terminal_match(self, s, v):
-        # Returns all terminals such that s+v matches the prefix of the terminal
-        s = s+v
+    def get_prefix_terminals_match(self, s):
+        # Returns all terminals such that s matches the prefix of the terminal
         import regex
-        for t in self.parser.terminals:
-            not_supported = ['_NL', 'COMMENT', 'STRING', 'IMAG_NUMBER']
+        terminals = []
+        not_supported = ['_NL', 'COMMENT', 'STRING', 'IMAG_NUMBER', 'LONG_STRING']
+
+        for t in self.parser.terminals: 
+            if t.pattern.type == 'str' and t.name not in not_supported:
+                if t.pattern.value.startswith(s):
+                    terminals.append(t.name)
+
             if t.pattern.type == 're' and t.name not in not_supported:
-                # print('Pattern:', t.pattern.value, s, t.name)
                 match = regex.Regex(t.pattern.value).d(s)
-                # print(match)
                 if match != None:
-                    return t.name
-        return None        
+                    terminals.append(t.name)
+        
+        # Easy hack for unsupported terminals
+        if s.startswith('#') or s.startswith('"""') or s.startswith("'''"):
+            terminals.append('COMMENT')
+        if s.startswith('"') or s.startswith("'") or s.startswith('""') or s.startswith("''"):
+            terminals.append('STRING')
+        if s.startswith('"""') or s.startswith('""') or s.startswith('"'):
+            terminals.append('LONG_STRING')
+        if s.startswith('\n'):
+            terminals.append('_NL')  
+
+        return terminals        
 
     def _lex_code(self, code):
         # Collect Lexer tokens

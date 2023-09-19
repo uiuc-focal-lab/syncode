@@ -12,10 +12,10 @@ class PythonDecoder(LogitsProcessor):
         self.inc_parser = IncrementalParser()
         self.debug = True
         self.token_cnt = 0
+        self.accept_tokens_sizes = []
 
         # Iterate through the vocabulary and create a map of (tokenizer token -> grammar terminal)
         # Note: It may happen that many tokens do not fall in any category
-        self.token_to_terminal = {}
         self.terminal_to_mask = {}
         self.uncategorezed_mask = torch.zeros(tokenizer.vocab_size, dtype=torch.bool)
 
@@ -24,18 +24,19 @@ class PythonDecoder(LogitsProcessor):
 
         for i in range(tokenizer.vocab_size):
             token = tokenizer.decode(torch.tensor([i]), skip_special_tokens=True)
+            token_types = []
+
             token_type = self.inc_parser.get_matching_terminal(token)
-            
-            if token_type is not None:
-                self.token_to_terminal[token] = token_type
-            
+            prefix_token_types = self.inc_parser.get_prefix_terminals_match(token)
+
+            token_types.append(token_type)
+            token_types += prefix_token_types
+
+            for token_type in token_types:
                 if not token_type in self.terminal_to_mask:
                     self.terminal_to_mask[token_type] = torch.zeros(tokenizer.vocab_size, dtype=torch.bool)
                 self.terminal_to_mask[token_type][i] = True
-            else:
-                self.uncategorezed_mask[i] = False
         
-        print(f"Found {len(self.token_to_terminal)}/{tokenizer.vocab_size} tokens that form a terminal.")
         print(f"Time taken for preprocessing: {time.time() - time_start:.2f}s")
 
     def _get_next_terminal_mask(self, next_ac_terminals):
@@ -63,7 +64,7 @@ class PythonDecoder(LogitsProcessor):
                 # returns the names of the Terminals that are currently accepted.
                 compilation_start_time = time.time()
                 cur_ac_terminals, next_ac_terminals, cur_term_str = self.inc_parser.get_acceptable_next_terminals(partial_code)
-                    
+                self.accept_tokens_sizes.append(len(cur_ac_terminals))
                 greedy_token = self.tokenizer.decode(scores.argmax(dim=-1), skip_special_tokens=True)
 
                 #### Masking the scores ####
@@ -75,11 +76,8 @@ class PythonDecoder(LogitsProcessor):
 
                     # Which vocab tokens can be next_ac_terminals
                     next_accept_mask = self._get_next_terminal_mask(next_ac_terminals)
-
                     accept_mask = cur_accept_mask | next_accept_mask
                     scores = scores.masked_fill(~accept_mask.to(scores.device), -float("inf"))
-                    if self.debug and self.token_cnt%10==0:
-                        print("Number of acceptable tokens:", accept_mask.sum().item())
 
                 if self.debug and self.token_cnt%50==0:
                     print('Time taken for compilation:', time.time() - compilation_start_time)
@@ -87,9 +85,11 @@ class PythonDecoder(LogitsProcessor):
                 greedy_grammar_token = self.tokenizer.decode(scores.argmax(dim=-1), skip_special_tokens=True)
 
                 if greedy_token != greedy_grammar_token:
-                    print('Different greedy token:', repr(greedy_token), repr(greedy_grammar_token), scores.argmax(dim=-1))
                     print('Greedy token:', repr(greedy_token), scores.argmax(dim=-1))
                     print('Greedy grammar-based token:', repr(greedy_grammar_token), scores.argmax(dim=-1))
+                    print('Current acceptable terminals:', cur_ac_terminals)
+                    print('Next acceptable terminals:', next_ac_terminals) 
+                    print('Partial code:', partial_code)
             except Exception as e:
                 print("-"*80)
                 print('Code lenght:', len(partial_code))
