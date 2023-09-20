@@ -1,6 +1,8 @@
 import argparse
 from collections import defaultdict, Counter
 from concurrent.futures import ThreadPoolExecutor, as_completed
+import sys
+import traceback
 from typing import List, Union, Iterable, Dict
 import itertools
 
@@ -52,6 +54,7 @@ def evaluate_functional_correctness(
     """
 
     problems = read_problems(problem_file)
+    error_types = {}
 
     # Check the generated samples against test suites.
     with ThreadPoolExecutor(max_workers=n_workers) as executor:
@@ -82,6 +85,12 @@ def evaluate_functional_correctness(
             result = future.result()
             results[result["task_id"]].append((result["completion_id"], result))
             i += 1
+
+            if result["error_type"] not in error_types:
+                error_types[result["error_type"]] = 0
+            error_types[result["error_type"]] += 1
+
+    print(error_types)
 
     # Calculate pass@k.
     total, correct = [], []
@@ -149,12 +158,26 @@ def check_correctness(problem: Dict, completion: str, timeout: float,
                     with time_limit(timeout):
                         exec(check_program, exec_globals)
                 print('Passed')
+                error_types.append('No Error')
                 result.append("passed")
+            except AssertionError as e:
+                _, _, tb = sys.exc_info()
+                traceback.print_tb(tb) # Fixed format
+                tb_info = traceback.extract_tb(tb)
+                filename, line, func, text = tb_info[-1]
+                error_types.append(type(e).__name__)
+                print('An assertion error occurred on line {} in statement {}.{}.{}'.format(line, text, func, filename))
+                print(e)
             except TimeoutException:
                 result.append("timed out")
+                error_types.append(type(e).__name__)
                 print('Timeout!')
-            except BaseException as e:
-                print(e)
+            except SyntaxError as e:
+                print('Syntax Error!')
+                error_types.append(type(e).__name__)
+            except Exception as e:
+                tb = traceback.format_exc()
+                error_types.append(type(e).__name__)
                 result.append(f"failed: {e}")
                 print('Failed!')
 
@@ -165,6 +188,7 @@ def check_correctness(problem: Dict, completion: str, timeout: float,
 
     manager = multiprocessing.Manager()
     result = manager.list()
+    error_types = manager.list()
 
     p = multiprocessing.Process(target=unsafe_execute)
     p.start()
@@ -180,6 +204,7 @@ def check_correctness(problem: Dict, completion: str, timeout: float,
         passed=result[0] == "passed",
         result=result[0],
         completion_id=completion_id,
+        error_type = error_types[0]
     )
 
 # Take the filename as input
