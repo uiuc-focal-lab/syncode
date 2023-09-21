@@ -113,6 +113,7 @@ def evaluate_functional_correctness(
             result = results[task_id].pop(0)
             sample["result"] = result[1]["result"]
             sample["passed"] = result[1]["passed"]
+            sample["error_type"] = result[1]["error_type"]
             yield sample
 
     out_file = sample_file + "_results.jsonl"
@@ -198,6 +199,9 @@ def check_correctness(problem: Dict, completion: str, timeout: float,
 
     if not result:
         result.append("timed out")
+    
+    if not error_types:
+        error_types.append('Timeout')
 
     return dict(
         task_id=problem["task_id"],

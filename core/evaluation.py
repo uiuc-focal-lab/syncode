@@ -40,6 +40,7 @@ def run_eval(
     out_path: str,
     generate_batch_completion: BatchGenerator,
     format_tabs: bool = False,
+    logit_processors = None,
 ):
     problems = read_problems()
     # problems = dict(itertools.islice(problems.items(), 20))
@@ -54,7 +55,7 @@ def run_eval(
             prompt = problems[task_id]["prompt"]
 
         batch_completions = generate_batch_completion(
-            model, tokenizer, prompt, num_samples_per_task
+            model, tokenizer, prompt, num_samples_per_task, logit_processors=logit_processors
         )
 
         for sample in batch_completions:
