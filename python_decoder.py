@@ -112,11 +112,13 @@ class PythonDecoder(LogitsProcessor):
                 print(repr(partial_code))
                 print('Error:', e)
 
-        assert not (greedy_grammar_token is not None and greedy_token is not None and '//' in greedy_grammar_token and '//' not in greedy_token)
-            # print('Partial codes before this:')
-            # print(self.partial_codes[-20:])
-            # print(next_ac_terminals)
-            # raise Exception('Greedy grammar token is //')
+        should_not_happen = greedy_grammar_token is not None and greedy_token is not None and '//' in greedy_grammar_token and '//' not in greedy_token
+
+        if should_not_happen:
+            print('Partial codes before this:')
+            print(self.partial_codes)
+            print(next_ac_terminals)
+            raise Exception('Greedy grammar token is //')
 
         return scores
     

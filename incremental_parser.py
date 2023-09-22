@@ -46,9 +46,15 @@ class IncrementalParser:
 
             self.cur_pos = i
             # print('********Restoring parser state 1!', self.cur_pos-1)
+            # print(self.prev_lexer_tokens[self.cur_pos-1], lexer_tokens[self.cur_pos-1])
+            # print(self.cur_pos_to_interactive.keys())
+            # print(len(self.prev_lexer_tokens), len(lexer_tokens))
+            # print(self.prev_lexer_tokens)
+            # print(lexer_tokens)
+
             if (self.cur_pos-1) in self.cur_pos_to_interactive:
                 # print('*******Restoring parser state 2!', self.cur_pos-1)
-                # print(self.cur_pos_to_interactive[self.cur_pos-1][0].state_stack)
+                # print(self.cur_pos_to_interactive[self.cur_pos-1][0].state_stack, len(self.cur_pos_to_interactive[self.cur_pos-1][0].state_stack), len(self.dedent_queue))
                 self._restore_parser_state(self.cur_pos-1)
 
         self.prev_lexer_tokens = lexer_tokens
@@ -59,8 +65,7 @@ class IncrementalParser:
             while self.cur_pos < len(lexer_tokens):
                 token = lexer_tokens[self.cur_pos]
                 self.cur_pos += 1
-                # print(self.cur_pos, repr(token), interactive.parser_state.state_stack, len(lexer_tokens))
-
+                # print(self.cur_pos, repr(token), interactive.parser_state.state_stack, len(interactive.parser_state.state_stack), len(self.dedent_queue))
                 if token.type == '_INDENT':
                     self.cur_indentation_level += 1
                 
@@ -85,6 +90,11 @@ class IncrementalParser:
                 self.parser_token_seq.append(token)
         except lark.exceptions.UnexpectedToken as e:
             pass
+        
+        # Print the store
+        # print('JUST PRINTING THE STORED STATES!')
+        # for pos in self.cur_pos_to_interactive.keys():
+        #     print(pos, len(self.cur_pos_to_interactive[pos][0].state_stack), len(self.cur_pos_to_interactive[pos][3]))
 
         if self.log_time:
             print('Time taken for parsing:', (time.time() - parsing_start_time))
@@ -139,12 +149,17 @@ class IncrementalParser:
         return self.cur_ac_terminals, self.next_ac_terminals, current_term_str
     
     def _store_parser_state(self, pos, parser_state, indentation_level, accepts):
-        self.cur_pos_to_interactive[pos] = (parser_state, indentation_level, accepts)
+        # print('storing state at position:', pos, len(self.interactive.parser_state.state_stack), len(self.dedent_queue))
+        dedent_queue = copy.deepcopy(self.dedent_queue)
+        self.cur_pos_to_interactive[pos] = (parser_state, indentation_level, accepts, dedent_queue)
         self.cur_ac_terminals = copy.deepcopy(self.next_ac_terminals)
         self.next_ac_terminals = copy.deepcopy(accepts)
 
     def _restore_parser_state(self, pos):
-        self.interactive.parser_state, self.cur_indentation_level, self.cur_ac_terminals = self.cur_pos_to_interactive[pos]
+        parser_state, self.cur_indentation_level, self.cur_ac_terminals, dedent_queue = self.cur_pos_to_interactive[pos]
+        self.interactive.parser_state = parser_state.copy()
+        self.dedent_queue = copy.deepcopy(dedent_queue)
+        # print('restoring state at position:', pos, len(self.interactive.parser_state.state_stack), len(self.dedent_queue))
 
     def get_matching_terminal(self, s):
         # Special cases
