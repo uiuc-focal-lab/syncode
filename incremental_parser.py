@@ -133,6 +133,9 @@ class IncrementalParser:
             # Since current terminal is incomplete, next token should add to current terminal
             next_ac_terminals = None
 
+        if self.next_ac_terminals is not None and '_NL' in self.next_ac_terminals:
+            self.next_ac_terminals.add('COMMENT')
+
         return self.cur_ac_terminals, self.next_ac_terminals, current_term_str
     
     def _store_parser_state(self, pos, parser_state, indentation_level, accepts):
@@ -162,14 +165,14 @@ class IncrementalParser:
         return None
 
     def get_prefix_terminals_match(self, s):
-        # Returns all terminals such that s matches the prefix of the terminal
+        # Returns all terminals such that s matches the prefix of the terminal or the terminal matches the prefix of s
         import regex
         terminals = []
         not_supported = ['_NL', 'COMMENT', 'STRING', 'IMAG_NUMBER', 'LONG_STRING']
 
         for t in self.parser.terminals: 
             if t.pattern.type == 'str' and t.name not in not_supported:
-                if t.pattern.value.startswith(s):
+                if t.pattern.value.startswith(s) or s.startswith(t.pattern.value):
                     terminals.append(t.name)
 
             if t.pattern.type == 're' and t.name not in not_supported:

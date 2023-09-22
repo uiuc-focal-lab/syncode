@@ -13,6 +13,8 @@ class PythonDecoder(LogitsProcessor):
         self.debug = True
         self.token_cnt = 0
         self.accept_tokens_sizes = []
+        self.non_matching_token_cnt = 0
+        self.partial_codes = []
 
         # Iterate through the vocabulary and create a map of (tokenizer token -> grammar terminal)
         # Note: It may happen that many tokens do not fall in any category
@@ -39,6 +41,12 @@ class PythonDecoder(LogitsProcessor):
         
         print(f"Time taken for preprocessing: {time.time() - time_start:.2f}s")
 
+    def _reset(self):
+        self.token_cnt = 0
+        self.accept_tokens_sizes = []
+        self.partial_codes = []
+        self.inc_parser = IncrementalParser()
+
     def _get_next_terminal_mask(self, next_ac_terminals):
         accept_mask = self.uncategorezed_mask.clone()
         # print(accept_mask.sum())
@@ -57,12 +65,17 @@ class PythonDecoder(LogitsProcessor):
 
     def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor) -> torch.FloatTensor:
         partial_code = self.tokenizer.decode(input_ids[0], skip_special_tokens=True)
-        self.token_cnt += 1
 
+        if len(self.partial_codes) > 0 and self.partial_codes[-1] not in partial_code:
+            self._reset()
+
+        self.token_cnt += 1
+        greedy_grammar_token = None
         if self.mask_invalid_tokens:
             try:
                 # returns the names of the Terminals that are currently accepted.
                 compilation_start_time = time.time()
+                self.partial_codes.append(partial_code)
                 cur_ac_terminals, next_ac_terminals, cur_term_str = self.inc_parser.get_acceptable_next_terminals(partial_code)
                 self.accept_tokens_sizes.append(len(cur_ac_terminals))
                 greedy_token = self.tokenizer.decode(scores.argmax(dim=-1), skip_special_tokens=True)
@@ -90,11 +103,20 @@ class PythonDecoder(LogitsProcessor):
                     print('Current acceptable terminals:', cur_ac_terminals)
                     print('Next acceptable terminals:', next_ac_terminals) 
                     print('Partial code:', partial_code)
+                    self.non_matching_token_cnt += 1
+                
             except Exception as e:
                 print("-"*80)
                 print('Code lenght:', len(partial_code))
                 print(partial_code)
                 print(repr(partial_code))
+                print('Error:', e)
+
+        assert not (greedy_grammar_token is not None and greedy_token is not None and '//' in greedy_grammar_token and '//' not in greedy_token)
+            # print('Partial codes before this:')
+            # print(self.partial_codes[-20:])
+            # print(next_ac_terminals)
+            # raise Exception('Greedy grammar token is //')
 
         return scores
     

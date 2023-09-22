@@ -47,7 +47,7 @@ def generate_batch_completion(
         python_decoder = logit_processors[0]
         print(f"Time taken for generation: {time.time() - start_time:.2f}s")
         print(f"Token generation speed: {python_decoder.token_cnt / (time.time() - start_time):.2f} tokens/s")
-        print(f"Accept tokens sizes: {python_decoder.accept_tokens_sizes}")
+        # print(f"Accept tokens sizes: {python_decoder.accept_tokens_sizes}")
     print('Completion:', batch_completions)
 
     return [filter_code(fix_indents(completion)) for completion in batch_completions]
@@ -82,3 +82,5 @@ if __name__ == "__main__":
         True,
         logit_processors = logit_processors,
         )
+
+    print('Non matching token count: ', python_decoder.non_matching_token_cnt)
