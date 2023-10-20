@@ -15,6 +15,7 @@ class PythonDecoder(LogitsProcessor):
         self.accept_tokens_sizes = []
         self.non_matching_token_cnt = 0
         self.partial_codes = []
+        self.last_valid_stage = 0
 
         # Iterate through the vocabulary and create a map of (tokenizer token -> grammar terminal)
         # Note: It may happen that many tokens do not fall in any category
@@ -45,6 +46,7 @@ class PythonDecoder(LogitsProcessor):
         self.token_cnt = 0
         self.accept_tokens_sizes = []
         self.partial_codes = []
+        self.last_valid_stage = 0
         self.inc_parser = IncrementalParser()
 
     def _get_next_terminal_mask(self, next_ac_terminals):
@@ -80,10 +82,16 @@ class PythonDecoder(LogitsProcessor):
                 self.accept_tokens_sizes.append(len(cur_ac_terminals))
                 greedy_token = self.tokenizer.decode(scores.argmax(dim=-1), skip_special_tokens=True)
 
+                if 'EOF' in next_ac_terminals:
+                    self.last_valid_stage = len(input_ids[0])
+
                 #### Masking the scores ####
                 if '_NL' in cur_ac_terminals or 'COMMENT' in cur_ac_terminals or 'STRING' in cur_ac_terminals or cur_term_str.startswith(' "') or cur_term_str.startswith('"') or cur_term_str.startswith(" '") or cur_term_str.startswith("'"):
                     pass
                 else:
+                    if 'NAME' in cur_ac_terminals:
+                        next_ac_terminals.add('NAME')
+
                     # Which vocab tokens can be appended to the cur_term_str and become prefix to one cur_ac_terminals
                     cur_accept_mask = self._get_cur_terminal_mask(cur_ac_terminals, cur_term_str)
 

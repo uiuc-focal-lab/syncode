@@ -5,13 +5,11 @@ from transformers import (
     PreTrainedTokenizer,
 )
 from tqdm import tqdm
-import itertools
 import typing
 
 BatchGenerator = typing.Callable[
     [PreTrainedModel, PreTrainedTokenizer, str, int], list[str]
 ]
-
 
 # reference: https://github.com/declare-lab/instruct-eval/blob/main/human_eval/main.py#L35
 def filter_code(completion: str) -> str:
@@ -34,13 +32,11 @@ def split_batch(samples: list[str], size=4):
 
 
 def run_eval(
-    model: PreTrainedModel,
-    tokenizer: PreTrainedTokenizer,
+    hf_model,
     num_samples_per_task: int,
     out_path: str,
     generate_batch_completion: BatchGenerator,
     format_tabs: bool = False,
-    logit_processors = None,
 ):
     problems = read_problems()
     # problems = dict(itertools.islice(problems.items(), 20))
@@ -54,9 +50,7 @@ def run_eval(
         else:
             prompt = problems[task_id]["prompt"]
 
-        batch_completions = generate_batch_completion(
-            model, tokenizer, prompt, num_samples_per_task, logit_processors=logit_processors
-        )
+        batch_completions = hf_model.generate_batch_completion(prompt, num_samples_per_task)
 
         for sample in batch_completions:
             result = dict(

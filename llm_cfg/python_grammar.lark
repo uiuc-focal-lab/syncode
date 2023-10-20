@@ -38,7 +38,7 @@ kwparams: "**" typedparam
 
 vfpdef: NAME
 
-?stmt: simple_stmt | compound_stmt
+?stmt: (simple_stmt | compound_stmt) ["eof"]
 !?simple_stmt: small_stmt (";" small_stmt)* [";"] _NL
 ?small_stmt: (expr_stmt | del_stmt | pass_stmt | flow_stmt | import_stmt | global_stmt | nonlocal_stmt | assert_stmt)
 ?expr_stmt: testlist_star_expr (annassign | augassign (yield_expr|testlist)

@@ -10,7 +10,7 @@ from lark import Lark
 class IncrementalParser:
     def __init__(self):
         self.parser = Lark.open( # This is the standard Lark parser
-            "python_grammar.lark",
+            "llm_cfg/python_grammar.lark",
             parser="lalr",
             lexer="basic",
             start="file_input",
@@ -204,6 +204,10 @@ class IncrementalParser:
             terminals.append('LONG_STRING')
         if s.startswith('\n'):
             terminals.append('_NL')  
+        if s.startswith('_'):
+            terminals.append('NAME')
+        if s.startswith('.'):
+            terminals.append('FLOAT_NUMBER')
 
         return terminals        
 

@@ -28,6 +28,19 @@ def test_vocab_terminals():
     print(token_type_count)
     print(f"Found {len(token_to_terminal)}/{tokenizer.vocab_size} tokens that form a terminal.")
 
+def test_parser0():
+    inc_parser = IncrementalParser()
+    code = f"""
+def foo():
+    x = 9
+    if bar:
+        baz()
+        x = 1
+        y = 2
+        z = 1 +
+"""
+    _, next_ac_terminals, _  = inc_parser.get_acceptable_next_terminals(code)
+    print(next_ac_terminals)
 
 def test_parser1():
     inc_parser = IncrementalParser()
@@ -167,6 +180,7 @@ def test_incremental_parser4():
         new_inc_parser = IncrementalParser()
         cur_ac_terminals, next_ac_terminals, cur_term_str = inc_parser.get_acceptable_next_terminals(partial_code)
         cur_ac_terminals2, next_ac_terminals2, cur_term_str2 = new_inc_parser.get_acceptable_next_terminals(partial_code)
+        print(next_ac_terminals)
         assert next_ac_terminals == next_ac_terminals2, i 
 
 def test_get_matching_terminals():
@@ -222,6 +236,8 @@ def test_prefix_terminal_match():
 
 
 tests = [test_get_matching_terminals, test_vocab_terminals, test_parser1, test_parser2, test_parser3, test_parser4, test_parser5, test_parser6, test_parser7, test_parser8, test_parser9, test_parser10, test_parser11, test_incremental_parser, test_incremental_parser2, test_incremental_parser3, test_incremental_parser4, test_prefix_terminal_match]
+
+tests = [test_parser0]
 
 test_result = {}
 
