@@ -20,13 +20,13 @@ TOKEN = ""
 if __name__ == "__main__":
     # Input grammar masking flag
     p = argparse.ArgumentParser()
-    p.add_argument("--grammar_mask", action="store_true", default=False)
+    p.add_argument("--mode", choices=["original", "grammar_mask", "synchromesh"], default="original")
     args = p.parse_args()
 
     # adjust for n = 10 etc
     num_samples_per_task = 1
     out_dir = "results/llama/"
-    out_path = out_dir + 'samples_' + str(num_samples_per_task) + '_grammar_' + str(args.grammar_mask) + "_eval.jsonl"
+    out_path = out_dir + 'samples_' + str(num_samples_per_task) + '_mode_' + str(args.mode) + "_eval.jsonl"
     os.makedirs(out_dir, exist_ok=True)
 
     device = "cuda:1"
@@ -34,7 +34,7 @@ if __name__ == "__main__":
     model = LlamaForCausalLM.from_pretrained("/share/models/llama_model/hf/7B", torch_dtype=torch.bfloat16).eval().to(device)
     
     logit_processors = None
-    if args.grammar_mask:
+    if args.mode == 'grammar_mask':
         python_decoder = PythonDecoder(tokenizer=tokenizer,)
         logit_processors = LogitsProcessorList([python_decoder])
 
@@ -44,8 +44,8 @@ if __name__ == "__main__":
         hf_model,
         num_samples_per_task,
         out_path,
-        True,
+        format_tabs=True,
         )
 
-    if args.grammar_mask:
+    if args.mode == 'grammar_mask':
         print('Non matching token count: ', python_decoder.non_matching_token_cnt)
