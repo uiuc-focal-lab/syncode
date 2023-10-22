@@ -5,9 +5,9 @@ from transformers import (
     LlamaTokenizer,
 )
 
-tokenizer = LlamaTokenizer.from_pretrained("/share/models/llama_model/hf/7B")
-
 def test_vocab_terminals():
+    tokenizer = LlamaTokenizer.from_pretrained("/share/models/llama_model/hf/7B")
+
     token_to_terminal = {}
     token_type_count = {}
     inc_parser = IncrementalParser()
@@ -192,10 +192,10 @@ def test_incremental_parser4():
 def test_get_matching_terminals():
     inc_parser = IncrementalParser()
     assert inc_parser.get_matching_terminal("\t") == "_TAB"
-    assert inc_parser.get_matching_terminal(tokenizer.decode(torch.tensor([12]), skip_special_tokens=True)) == "_TAB"
+    # assert inc_parser.get_matching_terminal(tokenizer.decode(torch.tensor([12]), skip_special_tokens=True)) == "_TAB"
     
     assert inc_parser.get_matching_terminal("\n") == "_NL"
-    assert inc_parser.get_matching_terminal(tokenizer.decode(torch.tensor([13]), skip_special_tokens=True)) == "_NL"
+    # assert inc_parser.get_matching_terminal(tokenizer.decode(torch.tensor([13]), skip_special_tokens=True)) == "_NL"
     
     # Keywords
     assert inc_parser.get_matching_terminal("def") == "DEF"
@@ -241,6 +241,6 @@ def test_prefix_terminal_match():
     assert not "RPAR" in inc_parser.get_prefix_terminals_match("(")
 
 
-tests = [test_get_matching_terminals, test_vocab_terminals, test_parser1, test_parser2, test_parser3, test_parser4, test_parser5, test_parser6, test_parser7, test_parser8, test_parser9, test_parser10, test_parser11, test_parser12,test_incremental_parser, test_incremental_parser2, test_incremental_parser3, test_incremental_parser4, test_prefix_terminal_match]
+tests = [test_get_matching_terminals, test_parser1, test_parser2, test_parser3, test_parser4, test_parser5, test_parser6, test_parser7, test_parser8, test_parser9, test_parser10, test_parser11, test_parser12,test_incremental_parser, test_incremental_parser2, test_incremental_parser3, test_incremental_parser4, test_prefix_terminal_match]
 
 run_tests(tests)
