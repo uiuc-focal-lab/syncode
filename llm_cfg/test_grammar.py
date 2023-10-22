@@ -1,7 +1,6 @@
-import sys
-import traceback
 import torch
 from incremental_parser import IncrementalParser
+from common import run_tests
 from transformers import (
     LlamaTokenizer,
 )
@@ -73,13 +72,13 @@ def test_parser2():
     inc_parser = IncrementalParser()
     partial_code = 'from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n\t\n\ta=3+5\n\tb='
     _, next_ac_terminals, _ = inc_parser.get_acceptable_next_terminals(partial_code)
+    print(next_ac_terminals)
     assert 'FLOAT_NUMBER' in next_ac_terminals
 
 def test_parser3():
     inc_parser = IncrementalParser()
     partial_code = 'from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n\t\n\tfor i in range(len(numbers) -1, -1, -1) :\n\t\tfor j in range(i+1, len(numbers) ,1) :\n\t\t\tif abs(numbers[i] - numbers[j] ) < threshold :\n\t\t\t\treturn True\n'
     _, next_ac_terminals, _ = inc_parser.get_acceptable_next_terminals(partial_code)
-    print(next_ac_terminals)
     assert '_TAB' in next_ac_terminals
 
 def test_parser4():
@@ -143,6 +142,13 @@ def test_parser11():
     print(next_ac_terminals)
     print(should_not_contain)
     assert 'COMMENT' in next_ac_terminals
+
+def test_parser12(): 
+    inc_parser = IncrementalParser()
+    partial_code = 'from typing import List\n\n\ndef rescale_to_unit(numbers: List[float]) -> List[float]:\n\t""" Given list of numbers (of at least two elements), apply a linear transform to that list,\n\tsuch that the smallest number will become 0 and the largest will become 1\n\t>>> rescale_to_unit([1.0, 2.0, 3.0, 4.0, 5.0])\n\t[0.0, 0.25, 0.5, 0.75, 1.0]\n\t"""\n\tfor i in x: # this is'
+    # This should not crash. Earlier version was crashing on this
+    _, next_ac_terminals, _ = inc_parser.get_acceptable_next_terminals(partial_code)
+    print(next_ac_terminals)
 
 def test_incremental_parser():
     inc_parser = IncrementalParser()
@@ -235,39 +241,6 @@ def test_prefix_terminal_match():
     assert not "RPAR" in inc_parser.get_prefix_terminals_match("(")
 
 
-tests = [test_get_matching_terminals, test_vocab_terminals, test_parser1, test_parser2, test_parser3, test_parser4, test_parser5, test_parser6, test_parser7, test_parser8, test_parser9, test_parser10, test_parser11, test_incremental_parser, test_incremental_parser2, test_incremental_parser3, test_incremental_parser4, test_prefix_terminal_match]
+tests = [test_get_matching_terminals, test_vocab_terminals, test_parser1, test_parser2, test_parser3, test_parser4, test_parser5, test_parser6, test_parser7, test_parser8, test_parser9, test_parser10, test_parser11, test_parser12,test_incremental_parser, test_incremental_parser2, test_incremental_parser3, test_incremental_parser4, test_prefix_terminal_match]
 
-tests = [test_parser0]
-
-test_result = {}
-
-for test in tests:
-    print(f"Running test {test.__name__}")
-    # try:
-    test()
-    print(f"Test {test.__name__} passed.")
-    test_result[test.__name__] = 'passed'
-    # except AssertionError:
-    #     _, _, tb = sys.exc_info()
-    #     traceback.print_tb(tb) # Fixed format
-    #     tb_info = traceback.extract_tb(tb)
-    #     filename, line, func, text = tb_info[-1]
-    #     print('An error occurred on line {} in statement {}'.format(line, text))
-    #     test_result[test.__name__] = 'failed'
-    # except Exception as e:
-    #     print(f"Test {test.__name__} failed.")
-    #     print(e)
-    #     test_result[test.__name__] = 'failed'
-    
-    print("-"*80)
-
-tests_passed = 0
-for test_name, result in test_result.items():
-    if result == 'passed':
-        tests_passed += 1
-        # Use green color for passed tests
-        print(f"\033[92m{test_name}: {result}\033[0m")
-    else:
-        # Use red color for failed tests
-        print(f"\033[91m{test_name}: {result}\033[0m")
-print(f"Passed {tests_passed}/{len(tests)} tests.")
+run_tests(tests)

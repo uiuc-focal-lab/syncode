@@ -77,7 +77,6 @@ def is_prefix_valid(completion_engine: CompletionEngine,
                     s: str) -> bool:
     # 1- Find longest completion point that is a prefix of s.
     longest_completion_point = 0
-    # print('Completion points:', completion_points)
 
     for i in range(len(s)+1):
         if s[:i] in completion_points:
@@ -89,9 +88,9 @@ def is_prefix_valid(completion_engine: CompletionEngine,
     if remainder == '':
         return True
 
-    print('Completion point:', s[:longest_completion_point])
-    print('Completion point regex:', completion_point_regex)
-    print('Remainder:', remainder)
+    # print('Completion point:', s[:longest_completion_point])
+    # print('Completion point regex:', completion_point_regex)
+    # print('Remainder:', remainder)
 
     max_match_index = None
 
@@ -108,16 +107,17 @@ def is_prefix_valid(completion_engine: CompletionEngine,
         # Check if we have a full match up to the previous character.
         if completion_point_regex.fullmatch(remainder[:i+1]):
             max_match_index = i+1
-    # print('Max match index:', max_match_index)
+            
     if max_match_index != None:
         # We found another completion point, reduce the problem and call recursively.
         new_completion_point = s[:longest_completion_point] + remainder[:max_match_index]
-        # print('New completion point:', new_completion_point)
         new_completion_point_regex = completion_engine.complete(new_completion_point)
         completion_points[new_completion_point] = new_completion_point_regex
         return is_prefix_valid(completion_engine, completion_points, s)
 
-    return False
+    # TODO fix: This is not correct, since the partial match will always return True in many cases (e.g., '""".*"""')
+    # We need a partial match implementation that checks if the prefix of the regex matches the remainder.
+    return completion_point_regex.fullmatch(remainder, partial=True) != None
 
 # def test_streaming_csd():
 #     json_grammar = r"""

@@ -30,8 +30,7 @@ class LarkCompletionEngine(CompletionEngine):
         interactive_parser = self.parser.parse_interactive(prefix)
         token = None
         try:
-            for token in interactive_parser.parser_state.lexer.lex(
-                    interactive_parser.parser_state):
+            for token in interactive_parser.parser_state.lexer.lex(interactive_parser.parser_state):
                 interactive_parser.parser_state.feed_token(token)
         except (UnexpectedCharacters, UnexpectedToken):
             pass

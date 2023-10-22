@@ -65,6 +65,7 @@ class IncrementalParser:
         try:
             while self.cur_pos < len(lexer_tokens):
                 token = lexer_tokens[self.cur_pos]
+                # print(self.cur_pos, repr(token), repr(lexer_tokens[self.cur_pos]))
                 self.cur_pos += 1
                 # print(self.cur_pos, repr(token), interactive.parser_state.state_stack, len(interactive.parser_state.state_stack), len(self.dedent_queue))
                 if token.type == '_INDENT':
