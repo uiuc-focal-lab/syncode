@@ -164,7 +164,7 @@ string: STRING | LONG_STRING
 
 NAME: /[a-zA-Z_]\w*/
 COMMENT: /#.*(\n[\t ]*)+/ | LONG_STRING
-_NL: ( /(\r?\n[\t ]*)+/ | COMMENT )+
+_NL: ( /(\r?\n[\t ]*)+/ | COMMENT)+
 // _NL: /(\r?\n[\t ]*)+/ 
 
 STRING : /[ubf]?r?("(?!"").*?(?<!\\)(\\\\)*?"|'(?!'').*?(?<!\\)(\\\\)*?')/i

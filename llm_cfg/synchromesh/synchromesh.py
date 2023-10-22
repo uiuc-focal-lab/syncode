@@ -107,7 +107,10 @@ def is_prefix_valid(completion_engine: CompletionEngine,
         # Check if we have a full match up to the previous character.
         if completion_point_regex.fullmatch(remainder[:i+1]):
             max_match_index = i+1
-            
+    
+    # print(completion_point_regex)
+    # print(repr(remainder))
+
     if max_match_index != None:
         # We found another completion point, reduce the problem and call recursively.
         new_completion_point = s[:longest_completion_point] + remainder[:max_match_index]

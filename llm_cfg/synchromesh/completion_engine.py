@@ -36,6 +36,7 @@ class LarkCompletionEngine(CompletionEngine):
             pass
         valid_tokens = interactive_parser.accepts()
         # get the regex for the valid tokens
+        # print('Valid tokens now:', valid_tokens)
         valid_regex = [f'{self.terminal_dict[t].pattern.to_regexp()}'
                        for t in valid_tokens
                        if t != '$END' and t != '_INDENT' and t != '_DEDENT']
@@ -44,7 +45,7 @@ class LarkCompletionEngine(CompletionEngine):
             valid_regex.append("\t")
 
         if valid_regex and self.allow_ws:
-            valid_regex.append("\\s+")
+            valid_regex.append(" +")
 
         return regex.compile('|'.join(valid_regex))
 
