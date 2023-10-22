@@ -1,5 +1,7 @@
 import time
 from core.evaluation import filter_code, fix_indents
+from synchromesh.completion_engine import LarkCompletionEngine
+from synchromesh.synchromesh import StreamingCSD
 import transformers
 import torch
 
@@ -27,7 +29,8 @@ class LanguageModel:
 class HuggingFaceModel(LanguageModel):
     def __init__(self, model, prompt_template: str = '', api_key: str = None,
                  temperature: float = 0.0, top_p: float = 1.0, best_of: int = 1,
-                 before_prediction_hook=lambda: None, tokenizer=None, device='cuda', logit_processors=None) -> None:
+                 before_prediction_hook=lambda: None, tokenizer=None, device='cuda', logit_processors=None, 
+                 mode: str ='original') -> None:
         super().__init__()
 
         self.prompt_template = prompt_template
@@ -39,6 +42,7 @@ class HuggingFaceModel(LanguageModel):
         self.best_of = best_of
         self._before_prediction_hook = before_prediction_hook
         self.logit_processors = logit_processors
+        self.mode = mode
 
         # self.vocab is a list of readable token strings (e.g., ' hello' and '\n')
         # sorted by their token IDs (so self.vocab[0] is the first token, etc).
@@ -56,9 +60,17 @@ class HuggingFaceModel(LanguageModel):
                 if t == '':
                     self.vocab[i] = ' '
 
+    def generate_batch_completion(self, prompt, batch_size, mode='original') -> list[str]:
+        if self.mode == 'synchromesh':
+            return self.generate_batch_completion_synchromesh(prompt, batch_size)
+        else:
+            return self.generate_batch_completion_grammar(prompt, batch_size)
+
     @torch.inference_mode()
-    def generate_batch_completion(
-        self, prompt, batch_size) -> list[str]:
+    def generate_batch_completion_grammar(self, prompt, batch_size) -> list[str]:
+        '''
+        Generates batch_size completions for the given prompt of human-eval. 
+        '''
         input_batch = [prompt for _ in range(batch_size)]
         inputs = self.tokenizer(input_batch, return_tensors="pt").to(self.model.device)
         input_ids_cutoff = inputs.input_ids.size(dim=1)
@@ -96,6 +108,40 @@ class HuggingFaceModel(LanguageModel):
 
         return [filter_code(fix_indents(completion)) for completion in batch_completions]
 
+    def generate_batch_completion_synchromesh(self, prompt, batch_size) -> list[str]:
+        '''
+        Generates batch_size completions for the given prompt of human-eval using Synchromesh. 
+        '''
+        comp_engine = LarkCompletionEngine('dict', True)
+        csd = StreamingCSD(comp_engine, self.vocabulary(), prefix=prompt)
+        start_time = time.time()
+
+        while not comp_engine.is_complete(csd.get_current_prediction()):
+            next_token = self.predict_unconstrained(csd.get_current_prediction(), max_tokens=1)
+            # print(type(continuation), repr(continuation))
+            # tokens = self.tokenize(continuation)
+            # print(type(tokens) ,tokens, [csd._vocab[t] for t in tokens])
+            
+
+            # print(tokens[0], csd.can_token_follow(tokens[0]))
+            if csd.can_token_follow(next_token):
+                csd.feed_prediction(next_token)
+            else:
+                valid_tokens = csd.get_valid_tokens()
+                print('valid tokens:', valid_tokens)
+                tokens, _ = self.predict_token(csd.get_current_prediction(), valid_tokens)
+
+                print(tokens)
+                csd.feed_prediction(tokens[0])
+            s = csd.get_current_prediction()
+            if len(s) > 500:
+                break
+            csd.fast_forward()
+
+        delta = time.time() - start_time
+        print('Predicted:', repr(csd.get_current_prediction()))
+        print('Throughput:', len(csd.get_current_prediction_tokens()) / delta, 'tokens/s')
+
     def tokenize(self, s: str) -> list[int]:
         return self.tokenizer.encode(s, add_special_tokens=False)
 
@@ -127,14 +173,15 @@ class HuggingFaceModel(LanguageModel):
 
     def predict_unconstrained(self, prefix: str, max_tokens: int, stop=None):
         prompt = f"{self.prompt_template}{prefix}"
+        print(prompt)
         self._before_prediction_hook()
-        input_ids = self.tokenizer.encode(
-            prompt, return_tensors="pt", add_special_tokens=False)
+        input_ids = self.tokenizer.encode(prompt, return_tensors="pt", add_special_tokens=False)
+
         # Cut off inputs which are too long
         input_length = self.model.config.max_position_embeddings - max_tokens - 1
         if len(input_ids[0]) > input_length:
             input_ids = input_ids[:, -input_length:]
-        input_ids = input_ids.to('cuda')
+        input_ids = input_ids.to(self.device)
         with torch.cuda.amp.autocast():
             if self.temperature == 0.0:
                 output = self.model.generate(
@@ -152,10 +199,12 @@ class HuggingFaceModel(LanguageModel):
                 )
             # remove the prompt
             output = output[:, len(input_ids[0]):]
-        detokenized = self.tokenizer.decode(output[0])
-        for stop_token in stop:
-            if stop_token in detokenized:
-                # split on the first stop token
-                detokenized = detokenized.split(stop_token)[0]
-        return detokenized
+        # print('Here is the output:', output[0])
+        # detokenized = self.tokenizer.decode(output[0])
+        # if stop is not None:
+        #     for stop_token in stop:
+        #         if stop_token in detokenized:
+        #             # split on the first stop token
+        #             detokenized = detokenized.split(stop_token)[0]
+        return output[0]
     

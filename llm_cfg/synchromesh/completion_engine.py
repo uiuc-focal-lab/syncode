@@ -1,11 +1,10 @@
+from incremental_parser import PythonIndenter
 from lark import Lark
 from lark.exceptions import UnexpectedCharacters, UnexpectedToken
-
 import regex
-import list, tuple, dict
 
 class CompletionEngine:
-    def complete(self, prefix: str) -> regex.Pattern:
+    def complete(self, prefix: str):
         raise NotImplementedError()
 
     def is_complete(self, prefix: str) -> bool:
@@ -13,13 +12,21 @@ class CompletionEngine:
 
 
 class LarkCompletionEngine(CompletionEngine):
-    def __init__(self, grammar, start_token, allow_ws: bool = True):
-        self.parser = Lark(grammar, start=start_token, parser='lalr',
-                           regex=True)
+    def __init__(self, start_token, allow_ws: bool = True):
+        # self.parser = Lark(grammar, start=start_token, parser='lalr',
+        #                    regex=True)
+        self.parser = Lark.open( # This is the standard Lark parser
+            "llm_cfg/python_grammar.lark",
+            parser="lalr",
+            lexer="basic",
+            start="file_input",
+            postlex=PythonIndenter(),
+            propagate_positions=True,
+        )
         self.terminal_dict = self.parser._terminals_dict
         self.allow_ws = allow_ws
 
-    def complete(self, prefix: str) -> regex.Pattern:
+    def complete(self, prefix: str):
         interactive_parser = self.parser.parse_interactive(prefix)
         token = None
         try:
@@ -32,7 +39,10 @@ class LarkCompletionEngine(CompletionEngine):
         # get the regex for the valid tokens
         valid_regex = [f'{self.terminal_dict[t].pattern.to_regexp()}'
                        for t in valid_tokens
-                       if t != '$END']
+                       if t != '$END' and t != '_INDENT' and t != '_DEDENT']
+
+        if '_INDENT' in valid_tokens:
+            valid_regex.append("\t")
 
         if valid_regex and self.allow_ws:
             valid_regex.append("\\s+")

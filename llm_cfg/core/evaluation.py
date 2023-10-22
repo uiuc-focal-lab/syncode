@@ -35,7 +35,6 @@ def run_eval(
     hf_model,
     num_samples_per_task: int,
     out_path: str,
-    generate_batch_completion: BatchGenerator,
     format_tabs: bool = False,
 ):
     problems = read_problems()

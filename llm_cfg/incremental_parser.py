@@ -2,6 +2,7 @@ import copy
 import time
 import re
 import lark
+import lmql_regex
 from lark.indenter import Indenter
 from lark.lexer import Token
 from lark import Lark
@@ -181,7 +182,6 @@ class IncrementalParser:
 
     def get_prefix_terminals_match(self, s):
         # Returns all terminals such that s matches the prefix of the terminal or the terminal matches the prefix of s
-        import regex
         terminals = []
         not_supported = ['_NL', 'COMMENT', 'STRING', 'IMAG_NUMBER', 'LONG_STRING']
 
@@ -191,7 +191,7 @@ class IncrementalParser:
                     terminals.append(t.name)
 
             if t.pattern.type == 're' and t.name not in not_supported:
-                match = regex.Regex(t.pattern.value).d(s)
+                match = lmql_regex.Regex(t.pattern.value).d(s)
                 if match != None:
                     terminals.append(t.name)
         

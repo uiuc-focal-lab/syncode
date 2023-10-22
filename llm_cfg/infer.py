@@ -38,7 +38,7 @@ if __name__ == "__main__":
         python_decoder = PythonDecoder(tokenizer=tokenizer,)
         logit_processors = LogitsProcessorList([python_decoder])
 
-    hf_model = HuggingFaceModel(model, tokenizer=tokenizer, device=device, logit_processors=logit_processors,)
+    hf_model = HuggingFaceModel(model, tokenizer=tokenizer, device=device, logit_processors=logit_processors, mode=args.mode)
 
     run_eval(
         hf_model,

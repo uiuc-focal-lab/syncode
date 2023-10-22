@@ -1,11 +1,6 @@
-#!/usr/bin/env python3
-import os
 import regex
-import time
-from completion_engine import CompletionEngine, LarkCompletionEngine
-from llm_cfg.language_model import LanguageModel, RandomLanguageModel, OpenAIModel
-import list, dict
-
+import synchromesh.trie as trie
+from synchromesh.completion_engine import CompletionEngine, LarkCompletionEngine
 
 class StreamingCSD:
     '''Streaming implementation of Constrained Semantic Decoding
@@ -31,18 +26,19 @@ class StreamingCSD:
 
     def __init__(self,
                  completion_engine: CompletionEngine,
-                 lm_vocabulary: list[str]):
+                 lm_vocabulary: list[str],
+                 prefix: str = ''):
         self._trie = trie.Trie.from_vocabulary(lm_vocabulary)
         self._vocab = lm_vocabulary
         self._completion_engine = completion_engine
         self._completion_points: dict[str, regex.Pattern] = {}
         self._completion_points[''] = completion_engine.complete('')
 
-        self.init_stream()
+        self.init_stream(prefix=prefix)
 
-    def init_stream(self):
+    def init_stream(self, prefix: str = ''):
         self._prefix_tokens = []
-        self._prefix_str = ''
+        self._prefix_str = prefix
 
     def can_token_follow(self, t: int):
         return is_prefix_valid(self._completion_engine,
@@ -77,10 +73,11 @@ class StreamingCSD:
                 break
 
 def is_prefix_valid(completion_engine: CompletionEngine,
-                    completion_points: dict[str, regex.Pattern],
+                    completion_points,
                     s: str) -> bool:
     # 1- Find longest completion point that is a prefix of s.
     longest_completion_point = 0
+    # print('Completion points:', completion_points)
 
     for i in range(len(s)+1):
         if s[:i] in completion_points:
@@ -89,75 +86,88 @@ def is_prefix_valid(completion_engine: CompletionEngine,
     completion_point_regex = completion_points[s[:longest_completion_point]]
     remainder = s[longest_completion_point:]
 
+    if remainder == '':
+        return True
+
+    print('Completion point:', s[:longest_completion_point])
+    print('Completion point regex:', completion_point_regex)
+    print('Remainder:', remainder)
+
+    max_match_index = None
+
     # 3- Feed it character by character to the regex given by the completion point, and handle 3 cases:
     for i in range(len(remainder)):
+        # print('i:', i, completion_point_regex.fullmatch(remainder[:i]))
+        # print('Cur regex', completion_point_regex)
+        # print('Current remainder:', remainder[:i])
+        
         # If we have a violation of the regex.
-        if not completion_point_regex.fullmatch(remainder[:i+1], partial=True):
-            # Check if we have a full match up to the previous character.
-            if completion_point_regex.fullmatch(remainder[:i]):
-                # We found another completion point, reduce the problem and call recursively.
-                new_completion_point = s[:longest_completion_point] + remainder[:i]
-                new_completion_point_regex = completion_engine.complete(new_completion_point)
-                completion_points[new_completion_point] = new_completion_point_regex
-                return is_prefix_valid(completion_engine, completion_points, s)
-            else:
-                return False
+        # BUG Removed: This will not work since partial match will always return True in many cases (e.g., '""".*"""').
+        # if not completion_point_regex.fullmatch(remainder[:i+1], partial=True):
+        
+        # Check if we have a full match up to the previous character.
+        if completion_point_regex.fullmatch(remainder[:i+1]):
+            max_match_index = i+1
+    # print('Max match index:', max_match_index)
+    if max_match_index != None:
+        # We found another completion point, reduce the problem and call recursively.
+        new_completion_point = s[:longest_completion_point] + remainder[:max_match_index]
+        # print('New completion point:', new_completion_point)
+        new_completion_point_regex = completion_engine.complete(new_completion_point)
+        completion_points[new_completion_point] = new_completion_point_regex
+        return is_prefix_valid(completion_engine, completion_points, s)
 
-    #    Case c- Got to the end with no violations, return True
-    return True
+    return False
 
+# def test_streaming_csd():
+#     json_grammar = r"""
+#         ?value: dict
+#             | list
+#             | string
+#             | SIGNED_NUMBER      -> number
+#             | "true"             -> true
+#             | "false"            -> false
+#             | "null"             -> null
 
-def test_streaming_csd():
-    json_grammar = r"""
-        ?value: dict
-            | list
-            | string
-            | SIGNED_NUMBER      -> number
-            | "true"             -> true
-            | "false"            -> false
-            | "null"             -> null
+#         list : "[" [value ("," value)*] "]"
 
-        list : "[" [value ("," value)*] "]"
+#         dict : "{" [pair ("," pair)*] "}"
+#         pair : string ":" value
 
-        dict : "{" [pair ("," pair)*] "}"
-        pair : string ":" value
+#         string : "\"" /Some long string here that is fixed/ "\""
 
-        string : "\"" /Some long string here that is fixed/ "\""
+#         %import common.SIGNED_NUMBER
+#         """
 
-        %import common.SIGNED_NUMBER
-        """
+#     comp_engine = LarkCompletionEngine(json_grammar, 'dict', False)
+#     lm = RandomLanguageModel()
 
-    comp_engine = LarkCompletionEngine(json_grammar, 'dict', False)
-    lm = RandomLanguageModel()
+#     csd = StreamingCSD(comp_engine, lm.vocabulary())
 
-    csd = StreamingCSD(comp_engine, lm.vocabulary())
+#     import time
+#     start_time = time.time()
 
-    import time
-    start_time = time.time()
+#     while not comp_engine.is_complete(csd.get_current_prediction()):
+#         continuation, _ = lm.predict_unconstrained(csd.get_current_prediction(),
+#                                                    max_tokens=1)
+#         tokens = lm.tokenize(continuation)
 
-    while not comp_engine.is_complete(csd.get_current_prediction()):
-        continuation, _ = lm.predict_unconstrained(csd.get_current_prediction(),
-                                                   max_tokens=1)
-        tokens = lm.tokenize(continuation)
+#         if csd.can_token_follow(tokens[0]):
+#             csd.feed_prediction(tokens[0])
+#         else:
+#             valid_tokens = csd.get_valid_tokens()
+#             tokens, _ = lm.predict_token(csd.get_current_prediction(),
+#                                          valid_tokens)
+#             csd.feed_prediction(tokens[0])
 
-        if csd.can_token_follow(tokens[0]):
-            csd.feed_prediction(tokens[0])
-        else:
-            valid_tokens = csd.get_valid_tokens()
-            tokens, _ = lm.predict_token(csd.get_current_prediction(),
-                                         valid_tokens)
-            csd.feed_prediction(tokens[0])
+#         s = csd.get_current_prediction()
 
-        s = csd.get_current_prediction()
+#         if len(s) > 500:
+#             break
 
-        if len(s) > 500:
-            break
+#         csd.fast_forward()
 
-        csd.fast_forward()
+#     delta = time.time() - start_time
 
-    delta = time.time() - start_time
-
-    print('Predicted:', repr(csd.get_current_prediction()))
-    print('Throughput:', len(csd.get_current_prediction_tokens()) / delta, 'tokens/s')
-
-test_streaming_csd()
+#     print('Predicted:', repr(csd.get_current_prediction()))
+#     print('Throughput:', len(csd.get_current_prediction_tokens()) / delta, 'tokens/s')
