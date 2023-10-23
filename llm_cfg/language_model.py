@@ -121,17 +121,15 @@ class HuggingFaceModel(LanguageModel):
             # print(type(continuation), repr(continuation))
             # tokens = self.tokenize(continuation)
             # print(type(tokens) ,tokens, [csd._vocab[t] for t in tokens])
-            
-
             # print(tokens[0], csd.can_token_follow(tokens[0]))
             if csd.can_token_follow(next_token):
                 csd.feed_prediction(next_token)
             else:
+                print('Cannot follow token:', csd._vocab[next_token])
                 valid_tokens = csd.get_valid_tokens()
-                print('valid tokens:', valid_tokens)
                 tokens, _ = self.predict_token(csd.get_current_prediction(), valid_tokens)
-
-                print(tokens)
+                print('valid tokens:', [csd._vocab[t] for t in tokens])
+                print('Predicted token:', csd._vocab[tokens[0]])
                 csd.feed_prediction(tokens[0])
             s = csd.get_current_prediction()
             if len(s) > 500:
@@ -173,7 +171,9 @@ class HuggingFaceModel(LanguageModel):
 
     def predict_unconstrained(self, prefix: str, max_tokens: int, stop=None):
         prompt = f"{self.prompt_template}{prefix}"
-        print(prompt)
+        print('Prompt:', prompt)
+        print(repr(prompt))
+        
         self._before_prediction_hook()
         input_ids = self.tokenizer.encode(prompt, return_tensors="pt", add_special_tokens=False)
 

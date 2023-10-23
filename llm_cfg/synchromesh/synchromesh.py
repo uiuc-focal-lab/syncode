@@ -1,3 +1,4 @@
+import copy
 import regex
 import synchromesh.trie as trie
 from synchromesh.completion_engine import CompletionEngine, LarkCompletionEngine
@@ -42,7 +43,7 @@ class StreamingCSD:
 
     def can_token_follow(self, t: int):
         return is_prefix_valid(self._completion_engine,
-                               self._completion_points,
+                               copy.copy(self._completion_points),
                                self._prefix_str + self._vocab[t])
 
     def feed_prediction(self, t: int):
@@ -52,7 +53,7 @@ class StreamingCSD:
     def get_valid_tokens(self) -> list[int]:
         return self._trie.antimonotonic_filter(
                 lambda t: is_prefix_valid(self._completion_engine,
-                                          self._completion_points,
+                                          copy.copy(self._completion_points),
                                           self._prefix_str + t)
             )
 
@@ -76,11 +77,15 @@ def is_prefix_valid(completion_engine: CompletionEngine,
                     completion_points,
                     s: str) -> bool:
     # 1- Find longest completion point that is a prefix of s.
-    longest_completion_point = 0
-
+    completion_point_indices = []
     for i in range(len(s)+1):
         if s[:i] in completion_points:
-            longest_completion_point = i
+            completion_point_indices.append(i)
+    
+    longest_completion_point = 0
+    if len(completion_point_indices) > 0:
+        longest_completion_point = completion_point_indices[-1]
+
     # 2- Take the 'remainder'.
     completion_point_regex = completion_points[s[:longest_completion_point]]
     remainder = s[longest_completion_point:]
@@ -120,7 +125,12 @@ def is_prefix_valid(completion_engine: CompletionEngine,
 
     # TODO fix: This is not correct, since the partial match will always return True in many cases (e.g., '""".*"""')
     # We need a partial match implementation that checks if the prefix of the regex matches the remainder.
-    return completion_point_regex.fullmatch(remainder, partial=True) != None
+    is_partial_match = completion_point_regex.fullmatch(remainder, partial=True) != None
+
+    if not is_partial_match:
+        print('Not partial match:', repr(s))
+        print(completion_point_regex, remainder)
+    return is_partial_match
 
 # def test_streaming_csd():
 #     json_grammar = r"""
