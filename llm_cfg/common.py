@@ -1,3 +1,23 @@
+import transformers
+
+def get_vocab_from_tokenizer(tokenizer):
+    # self.vocab is a list of readable token strings (e.g., ' hello' and '\n')
+    # sorted by their token IDs (so self.vocab[0] is the first token, etc).
+    vocab = [v for k, v in
+                    sorted([(t_id, tokenizer.decode([t_id]))
+                            for _, t_id in tokenizer.get_vocab().items()])]
+
+    # HACK: Is there a better way to know if a token has a prefix space?
+    # We should only need this for LlamaTokenizer.
+    if isinstance(tokenizer, transformers.LlamaTokenizer):
+        for i in range(len(vocab)):
+            t = vocab[i]
+            if 2*len(t) != len(tokenizer.decode([i, i], add_special_tokens=False)):
+                vocab[i] = ' ' + t
+            if t == '':
+                vocab[i] = ' '
+    
+    return vocab
 
 def run_tests(tests):
     test_result = {}

@@ -1,8 +1,8 @@
 import time
 from core.evaluation import filter_code, fix_indents
+from llm_cfg import common
 from synchromesh.completion_engine import LarkCompletionEngine
 from synchromesh.synchromesh import StreamingCSD
-import transformers
 import torch
 
 class LanguageModel:
@@ -43,22 +43,7 @@ class HuggingFaceModel(LanguageModel):
         self._before_prediction_hook = before_prediction_hook
         self.logit_processors = logit_processors
         self.mode = mode
-
-        # self.vocab is a list of readable token strings (e.g., ' hello' and '\n')
-        # sorted by their token IDs (so self.vocab[0] is the first token, etc).
-        self.vocab = [v for k, v in
-                      sorted([(t_id, self.tokenizer.decode([t_id]))
-                              for _, t_id in self.tokenizer.get_vocab().items()])]
-
-        # HACK: Is there a better way to know if a token has a prefix space?
-        # We should only need this for LlamaTokenizer.
-        if isinstance(self.tokenizer, transformers.LlamaTokenizer):
-            for i in range(len(self.vocab)):
-                t = self.vocab[i]
-                if 2*len(t) != len(self.tokenizer.decode([i, i], add_special_tokens=False)):
-                    self.vocab[i] = ' ' + t
-                if t == '':
-                    self.vocab[i] = ' '
+        self.vocab = common.get_vocab_from_tokenizer(self.tokenizer)
 
     def generate_batch_completion(self, prompt, batch_size, mode='original') -> list[str]:
         if self.mode == 'synchromesh':

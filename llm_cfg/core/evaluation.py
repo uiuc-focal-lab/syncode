@@ -13,7 +13,7 @@ BatchGenerator = typing.Callable[
 
 # reference: https://github.com/declare-lab/instruct-eval/blob/main/human_eval/main.py#L35
 def filter_code(completion: str) -> str:
-    # The program tends to overwrite, we only take the first function
+    # The program tends to overwrite, we only take the first function 
     completion = completion.lstrip("\n")
     return completion.split("\n\n")[0]
 

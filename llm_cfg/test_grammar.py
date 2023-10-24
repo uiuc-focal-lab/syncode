@@ -1,4 +1,3 @@
-import torch
 from incremental_parser import IncrementalParser
 from common import run_tests
 from transformers import (
