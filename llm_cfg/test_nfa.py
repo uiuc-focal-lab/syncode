@@ -24,9 +24,11 @@ def test_nfa(load=False):
         nfa = TerminalsNFA(inc_parser.parser.terminals, vocab)
         pickle.dump(nfa, open(NFA_LOC, 'wb'))
         print(f'Time taken for creating NFA:', time.time() - start_time, flush=True)
-        
-    print(nfa.get_overapprox_tokens('1', ['PLUS']))
-    # print(nfa.get_overapprox_tokens('1.2', ['PLUS']))
+    
+    query_start_time = time.time()
+    print(nfa.get_overapprox_tokens('1', ['PLUS'])) # 10^-4 seconds
+    print(f'Time taken for query:', time.time() - query_start_time, flush=True)
+    print(nfa.get_overapprox_tokens('1.2', ['PLUS']))
     # print(nfa.get_overapprox_tokens(' ', ['PLUS']))
 
     assert all(t in nfa.get_overapprox_tokens('1', ['PLUS']) for t in [' +', ' +=', ' ++'])

@@ -23,8 +23,8 @@ class TerminalsNFA:
                 for token in vocab:
                     is_valid, remainder = self._consume_prefix(self._terminals_to_dfa[cur_terminal], dfa_state, token)
 
-                    if cur_terminal == 'FLOAT_NUMBER' and token == ' +':
-                        print(is_valid, remainder, dfa_state, self._terminals_to_dfa[cur_terminal].finals)
+                    # if cur_terminal == 'FLOAT_NUMBER' and token == ' +': for debugging
+                    #     print(is_valid, remainder, dfa_state, self._terminals_to_dfa[cur_terminal].finals)
                     if not is_valid:
                         continue
                         
@@ -57,6 +57,9 @@ class TerminalsNFA:
             longest_accept_index = 0
 
         for i, symbol in enumerate(input_str):
+            if symbol == ' ': # ignore spaces
+                continue
+
             if not symbol in dfa.alphabet:
                 if not anything_else in dfa.alphabet:
                     state = None
