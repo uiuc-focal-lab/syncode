@@ -1,6 +1,6 @@
 import time
 from core.evaluation import filter_code, fix_indents
-from llm_cfg import common
+import common
 from synchromesh.completion_engine import LarkCompletionEngine
 from synchromesh.synchromesh import StreamingCSD
 import torch
