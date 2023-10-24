@@ -22,6 +22,9 @@ class TerminalsNFA:
                 # self._dfa_state_and_next_terminal_to_tokens[(dfa_state, next_terminal)] = []
                 for token in vocab:
                     is_valid, remainder = self._consume_prefix(self._terminals_to_dfa[cur_terminal], dfa_state, token)
+
+                    if cur_terminal == 'FLOAT_NUMBER' and token == ' +':
+                        print(is_valid, remainder, dfa_state, self._terminals_to_dfa[cur_terminal].finals)
                     if not is_valid:
                         continue
                         
@@ -48,27 +51,35 @@ class TerminalsNFA:
         If we reach a final state, return (True, remainder).
         """
         state = dfa_state
-        longest_accept_index = 0
+        longest_accept_index = -1
+
+        if state in dfa.finals:
+            longest_accept_index = 0
 
         for i, symbol in enumerate(input_str):
             if not symbol in dfa.alphabet:
                 if not anything_else in dfa.alphabet:
-                    return (False, None)
+                    state = None
+                    break
                 symbol = anything_else
 
             # Missing transition = transition to dead state
             if not (state in dfa.map and dfa.alphabet[symbol] in dfa.map[state]):
-                return (False, None)
+                state = None
+                break
 
             state = dfa.map[state][dfa.alphabet[symbol]]
 
             if state in dfa.finals:
                 longest_accept_index = i+1
         
-        if longest_accept_index != 0:
+        if longest_accept_index != -1: # reached accept state at some point
             return (True, input_str[longest_accept_index:])
+        elif state != None and dfa.islive(state): # if state is a live state
+            return (True, None)
         
-        return (True, None)
+        # if we never reach a final state and reach a dead state at some point
+        return (False, None)
 
     def _consume_input(self, dfa, input_str):
         """
