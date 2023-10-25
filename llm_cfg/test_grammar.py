@@ -147,7 +147,6 @@ def test_parser12():
     partial_code = 'from typing import List\n\n\ndef rescale_to_unit(numbers: List[float]) -> List[float]:\n\t""" Given list of numbers (of at least two elements), apply a linear transform to that list,\n\tsuch that the smallest number will become 0 and the largest will become 1\n\t>>> rescale_to_unit([1.0, 2.0, 3.0, 4.0, 5.0])\n\t[0.0, 0.25, 0.5, 0.75, 1.0]\n\t"""\n\tfor i in x: # this is'
     # This should not crash. Earlier version was crashing on this
     _, next_ac_terminals, _ = inc_parser.get_acceptable_next_terminals(partial_code)
-    print(next_ac_terminals)
 
 def test_incremental_parser():
     inc_parser = IncrementalParser()

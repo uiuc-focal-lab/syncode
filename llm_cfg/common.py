@@ -1,4 +1,10 @@
+import os
+import pickle
 import transformers
+from incremental_parser import IncrementalParser
+from terminals_nfa import TerminalsNFA
+from transformers import LlamaTokenizer
+import time
 
 def get_vocab_from_tokenizer(tokenizer):
     # self.vocab is a list of readable token strings (e.g., ' hello' and '\n')
@@ -18,6 +24,31 @@ def get_vocab_from_tokenizer(tokenizer):
                 vocab[i] = ' '
     
     return vocab
+
+def load_nfa(tokenizer=None, inc_parser=None, use_cache=True):
+    NFA_LOC = 'results/nfa.pkl'
+    start_time = time.time()
+    if use_cache and os.path.exists(NFA_LOC):
+        nfa = pickle.load(open(NFA_LOC, 'rb'))
+    else:
+        if tokenizer is None:
+            tokenizer = LlamaTokenizer.from_pretrained("/share/models/llama_model/hf/7B")
+        vocab = get_vocab_from_tokenizer(tokenizer)
+        print('Time taken for loading vocab:', time.time() - start_time, flush=True)
+
+        if inc_parser is None:
+            inc_parser = IncrementalParser()
+            print('Time taken for loading parser:', time.time() - start_time, flush=True)
+
+        nfa = TerminalsNFA(inc_parser.parser.terminals, vocab)
+        print(f'Time taken for creating NFA:', time.time() - start_time, flush=True)
+
+        nfa._convert_lookup_from_list_to_mask()
+        print(f'Time taken for converting to mask:', time.time() - start_time, flush=True)
+
+        pickle.dump(nfa, open(NFA_LOC, 'wb'))
+        print(f'Time taken for storing the NFA', time.time() - start_time, flush=True)
+    return nfa
 
 def run_tests(tests):
     test_result = {}
@@ -52,3 +83,4 @@ def run_tests(tests):
             # Use red color for failed tests
             print(f"\033[91m{test_name}: {result}\033[0m")
     print(f"Passed {tests_passed}/{len(tests)} tests.")
+    
