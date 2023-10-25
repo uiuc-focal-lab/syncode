@@ -171,8 +171,8 @@ _NL: ( /(\r?\n[\t ]*)+/ | COMMENT)+
 
 // STRING : /[ubf]?r?("(?!"").*?(?<!\\)(\\\\)*?"|'(?!'').*?(?<!\\)(\\\\)*?')/i
 // LONG_STRING: /[ubf]?r?(""".*?(?<!\\)(\\\\)*?"""|'''.*?(?<!\\)(\\\\)*?''')/is
-STRING : /[ubf]?r?(".*"|'.*')/i
-LONG_STRING: /[ubf]?r?(""".*""")/is
+STRING : /[ubf]?r?(".*?"|'.*?')/i
+LONG_STRING: /[ubf]?r?(""".*?""")/is
 
 DEC_NUMBER: /0|[1-9]\d*/i
 HEX_NUMBER.2: /0x[\da-f]*/i
