@@ -70,14 +70,14 @@ class IncrementalParser:
                 # print(self.cur_pos, repr(token), interactive.parser_state.state_stack, len(interactive.parser_state.state_stack), len(self.dedent_queue))
                 if token.type == '_INDENT':
                     self.cur_indentation_level += 1
-                
-                if token.type == '_DEDENT':
+                elif token.type == '_DEDENT':
                     # Do not shoot dedent tokens unless there is some code on the next line
                     self.dedent_queue.append(token)
                     continue
                 else:
-                    # Shoot all the dedent tokens that are in the queue
-                    while not len(self.dedent_queue)==0:
+                    self.parser_token_seq.append(token) # parser_token_seq holds all tokens except _INDENT and _DEDENT
+                    
+                    while not len(self.dedent_queue)==0: # Shoot all the dedent tokens that are in the queue
                         dedent_token = self.dedent_queue.pop()
                         self.cur_indentation_level -= 1
                         interactive.feed_token(dedent_token)
@@ -89,7 +89,6 @@ class IncrementalParser:
                 # Store the current state of the parser
                 self._store_parser_state(self.cur_pos-1, interactive.parser_state.copy(), self.cur_indentation_level, interactive.accepts())
                 
-                self.parser_token_seq.append(token)
         except lark.exceptions.UnexpectedToken as e:
             pass
         
@@ -105,8 +104,11 @@ class IncrementalParser:
         if self.lexer_pos < len(code):
             last_terminal_complete = False
             current_term_str = code[self.lexer_pos:]
+            current_term_str = current_term_str.lstrip(' ') # Remove space from the beginning
             # print('current_term_str 1:', current_term_str)
         else:
+            # Although this is a complete terminal, it may happen that this may be just prefix of some other terminal
+            # e.g., 'de' may seem like a variable name that is complete, but it may be just a prefix of 'def'
             current_term_str = self.parser_token_seq[-1].value
             # print('current_term_str 2:', current_term_str, self.parser_token_seq)
 
