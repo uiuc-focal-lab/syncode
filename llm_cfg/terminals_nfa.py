@@ -2,18 +2,37 @@ from collections import defaultdict
 import time
 import interegular
 import torch
+import regex
 
+class Exception:
+    """
+    The exception class presents a mapping from the original regex to the simplified regex for certain terminals. 
+    There are two reasons for doing this. In some cases, the original regex is complex and requires large DFAs. Computing the overapproximate tokens for such DFAs is expensive. The other reason is that the interegular library does not support some regex features such as lookaheads. Thus, we use the simplified regex to compute the overapproximate tokens.
+    """
+    def __init__(self, original_regex, simplified_regex):
+        self.original_regex = original_regex
+        self.simplified_regex = simplified_regex
+
+    def match_original(self, s):
+        return regex.match(self.original_regex, s) is not None
+    
 class TerminalsNFA:
     """
     We build an NFA that consists of DFAs for each terminal. We simulate the NFA by consuming the input string for each terminal DFA.
     """
-    def __init__(self, terminals: list, vocab):
+    def __init__(self, terminals: list, vocab, exceptions={}):
         self._terminals_to_dfa = {}
         self._vocab = vocab
         self.anything_else = interegular.fsm.anything_else # This is special character used for the DFAs
+        self.exceptions = []        
 
         for terminal in terminals:
-            self._terminals_to_dfa[terminal.name] = interegular.parse_pattern(terminal.pattern.to_regexp()).to_fsm()
+            if terminal.name in exceptions:
+                terminal_regex = exceptions[terminal.name]
+                self.exceptions.append(Exception(terminal.pattern.to_regexp(), terminal_regex))
+            else:
+                terminal_regex = terminal.pattern.to_regexp()
+            self._terminals_to_dfa[terminal.name] = interegular.parse_pattern(terminal_regex).to_fsm()
         
         # Iterate through each pair of DFA state and next terminals and store the overapproximate tokens
         self._dfa_state_and_next_terminal_to_tokens = defaultdict(list)
@@ -27,8 +46,6 @@ class TerminalsNFA:
                 for token_idx, token in enumerate(vocab):
                     is_valid, remainder = self._consume_prefix(self._terminals_to_dfa[cur_terminal], dfa_state, token)
 
-                    # if cur_terminal == 'FLOAT_NUMBER' and token == ' +': for debugging
-                    #     print(is_valid, remainder, dfa_state, self._terminals_to_dfa[cur_terminal].finals)
                     if not is_valid:
                         continue
                         
@@ -93,8 +110,9 @@ class TerminalsNFA:
         Conumses the input string and returns the final state if it is live, otherwise returns None
         """
         dfa_state = dfa.initial
-
+        # print(repr(input_str))
         for i, symbol in enumerate(input_str):
+            # print(i, repr(symbol))
             if not symbol in dfa.alphabet:
                 if not self.anything_else in dfa.alphabet:
                     return None
@@ -114,6 +132,7 @@ class TerminalsNFA:
         nfa_state = []
         for (termianl, dfa) in self._terminals_to_dfa.items():
             # print(termianl)
+            # print(termianl, input_str)
             dfa_state = self._consume_input(dfa, input_str)
             if dfa_state is not None:
                 nfa_state.append((termianl, dfa_state)) 
@@ -123,15 +142,37 @@ class TerminalsNFA:
         for key, val in self._dfa_state_and_next_terminal_to_tokens.items():
             self._dfa_state_and_next_terminal_to_tokens[key] = self._get_tokens_mask(val)
 
-    def get_overapprox_tokens_mask(self, cur_incomplete_string, next_terminals: list, get_list=False):
-        start_time = time.time()
-        cur_nfa_state = self._nfa_state(cur_incomplete_string)
-        # print(cur_nfa_state)
+    def _lookup_next_tokens_for_dfa_state(self, cur_terminal, dfa_state, next_terminal) -> torch.Tensor:
+        tokens = self._dfa_state_and_next_terminal_to_tokens[(cur_terminal, dfa_state, next_terminal)]
+        if tokens == []:
+            return torch.zeros(len(self._vocab), dtype=torch.bool)
+        return tokens
+
+    def _lookup_next_tokens(self, nfa_state, next_terminals: list) -> torch.Tensor:
         overapprox_token_ids = torch.zeros(len(self._vocab), dtype=torch.bool)
         # print('Time taken for NFA state:', time.time() - start_time, flush=True)
-        for (cur_terminal, dfa_state) in cur_nfa_state:
+        for (cur_terminal, dfa_state) in nfa_state:
             for next_terminal in next_terminals:
-                overapprox_token_ids |= self._dfa_state_and_next_terminal_to_tokens[(cur_terminal, dfa_state, next_terminal)]
+                overapprox_token_ids |= self._lookup_next_tokens_for_dfa_state(cur_terminal, dfa_state, next_terminal)
+        return overapprox_token_ids
+
+    def _exception_rule(self, s, exceptions: list[Exception]) -> str:
+        for e in exceptions:
+            if e.match_original(s):
+                return ""
+        return s
+
+    def get_overapprox_tokens_mask(self, cur_incomplete_string, next_terminals: list, get_list=False):
+        start_time = time.time()
+        cur_incomplete_string = self._exception_rule(cur_incomplete_string, self.exceptions)
+        # print(cur_incomplete_string)
+        if cur_incomplete_string is None:
+            return torch.ones(len(self._vocab), dtype=torch.bool)
+
+        cur_nfa_state = self._nfa_state(cur_incomplete_string)
+        print(cur_nfa_state)
+        
+        overapprox_token_ids = self._lookup_next_tokens(cur_nfa_state, next_terminals)
 
         # print('Time taken for union:', time.time() - start_time, flush=True)
         if get_list: # This is useful for testing

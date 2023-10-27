@@ -1,5 +1,6 @@
 import os
 import pickle
+import re
 import transformers
 from incremental_parser import IncrementalParser
 from terminals_nfa import TerminalsNFA
@@ -40,7 +41,8 @@ def load_nfa(tokenizer=None, inc_parser=None, use_cache=True):
             inc_parser = IncrementalParser()
             print('Time taken for loading parser:', time.time() - start_time, flush=True)
 
-        nfa = TerminalsNFA(inc_parser.parser.terminals, vocab)
+        exceptions = {'COMMENT': '#.*|\'\'\'.*?\'\'\'|""".*?"""/is', '_NL': '(\r?\n[\t ]*)+', 'LONG_STRING': '\'\'\'.*?\'\'\'|""".*?"""/is'}
+        nfa = TerminalsNFA(inc_parser.parser.terminals, vocab, exceptions=exceptions)
         print(f'Time taken for creating NFA:', time.time() - start_time, flush=True)
 
         nfa._convert_lookup_from_list_to_mask()
