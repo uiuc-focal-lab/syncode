@@ -24,10 +24,10 @@ if __name__ == "__main__":
     p.add_argument("--model_size", choices=["7B", "13B"], default="7B")
     p.add_argument("--quantize", type=bool, default=True)
     p.add_argument("--gpu", type=int, default=1)
+    p.add_argument("--num_samples", type=int, default=1)
     args = p.parse_args()
 
-    # adjust for n = 10 etc
-    num_samples_per_task = 1
+    num_samples_per_task = args.num_samples
     out_dir = "results/llama/"
     out_path = out_dir + 'model_size' + str(args.model_size) +  '_samples_' + str(num_samples_per_task) + '_mode_' + str(args.mode) + "_eval.jsonl"
     os.makedirs(out_dir, exist_ok=True)
