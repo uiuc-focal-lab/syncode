@@ -26,7 +26,7 @@ if __name__ == "__main__":
     p.add_argument("--gpu", type=int, default=1)
     p.add_argument("--num_samples", type=int, default=1)
     p.add_argument("--language", choices = ["python", "go"], default = "python", help = "language")
-    p.add_argument("--dataset", choices = ["mbxp", "multi-humaneval", "mathqa-x"], default = "mbxp", help = "dataset")
+    p.add_argument("--dataset", choices = ["mbxp", "humaneval", "mathqa"], default = "humaneval", help = "dataset")
     args = p.parse_args()
 
     num_samples_per_task = args.num_samples
