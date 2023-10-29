@@ -24,11 +24,13 @@ if __name__ == "__main__":
     p.add_argument("--model_size", choices=["7B", "13B"], default="7B")
     p.add_argument("--quantize", type=bool, default=True)
     p.add_argument("--gpu", type=int, default=1)
+    p.add_argument("--language", choices = ["python", "go"], default = "python", help = "language")
+    p.add_argument("--dataset", choices = ["mbxp", "multi-humaneval", "mathqa-x"], default = "mbxp", help = "dataset")
     args = p.parse_args()
 
     # adjust for n = 10 etc
     num_samples_per_task = 1
-    out_dir = "results/llama/"
+    out_dir = f"results/llama/{args.language}/{args.dataset}/"
     out_path = out_dir + 'model_size' + str(args.model_size) +  '_samples_' + str(num_samples_per_task) + '_mode_' + str(args.mode) + "_eval.jsonl"
     os.makedirs(out_dir, exist_ok=True)
 
@@ -45,7 +47,7 @@ if __name__ == "__main__":
 
     hf_model = HuggingFaceModel(model, tokenizer=tokenizer, device=device, logit_processors=logit_processors, mode=args.mode)
 
-    run_eval(
+    run_eval(args, 
         hf_model,
         num_samples_per_task,
         out_path,

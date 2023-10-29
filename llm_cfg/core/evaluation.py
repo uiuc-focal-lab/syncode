@@ -1,5 +1,5 @@
 import time
-from human_eval.data import write_jsonl, read_problems
+from mxeval.data import write_jsonl, read_problems, get_data
 from transformers import (
     PreTrainedModel,
     PreTrainedTokenizer,
@@ -31,13 +31,13 @@ def split_batch(samples: list[str], size=4):
     return mini_batches
 
 
-def run_eval(
+def run_eval(args, 
     hf_model,
     num_samples_per_task: int,
     out_path: str,
     format_tabs: bool = False,
 ):
-    problems = read_problems()
+    problems = get_data(args.dataset, args.language)
     # problems = dict(itertools.islice(problems.items(), 20))
     samples = []
     pbar = tqdm(total=len(problems) * num_samples_per_task)
@@ -54,7 +54,8 @@ def run_eval(
         for sample in batch_completions:
             result = dict(
                 task_id=task_id,
-                completion=sample,
+                language=problems[task_id]["language"],
+                completion=sample
             )
 
             samples += [result]
