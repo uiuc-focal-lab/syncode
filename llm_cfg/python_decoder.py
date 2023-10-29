@@ -7,11 +7,10 @@ from incremental_parser import IncrementalParser
 
 class PythonDecoder(LogitsProcessor):
     def __init__(self, tokenizer: PreTrainedTokenizer, **kwargs):
-        self.mask_invalid_tokens = True
         time_start = time.time()
         self.tokenizer = tokenizer
         self.inc_parser = IncrementalParser()
-        self.debug = True
+        
         self.token_cnt = 0
         self.accept_tokens_sizes = []
         self.non_matching_token_cnt = 0
@@ -26,6 +25,7 @@ class PythonDecoder(LogitsProcessor):
 
         self.start_time = time.time()
         self.prev_time = self.start_time
+        self.debug = True
 
         for i in range(tokenizer.vocab_size):
             token = tokenizer.decode(torch.tensor([i]), skip_special_tokens=True)
@@ -50,10 +50,7 @@ class PythonDecoder(LogitsProcessor):
         self.partial_codes = []
         self.last_valid_stage = 0
         self.inc_parser = IncrementalParser()
-
-
-    def _get_next_terminal_mask(self, incomplete_terminal: str, next_ac_terminals: list) -> torch.Tensor:
-        return self.terminals_nfa.get_overapprox_tokens_mask(incomplete_terminal, next_ac_terminals)
+        
 
     def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor) -> torch.FloatTensor:
         partial_code = self.tokenizer.decode(input_ids[0], skip_special_tokens=True)
@@ -63,55 +60,43 @@ class PythonDecoder(LogitsProcessor):
 
         self.token_cnt += 1
         greedy_grammar_token = None
-        if self.mask_invalid_tokens:
-            try:
-                # returns the names of the Terminals that are currently accepted.
-                compilation_start_time = time.time()
-                self.partial_codes.append(partial_code)
-                cur_ac_terminals, next_ac_terminals, incomplete_terminal = self.inc_parser.get_acceptable_next_terminals(partial_code)
+        try:
+            compilation_start_time = time.time()
+            self.partial_codes.append(partial_code)
 
-                greedy_token = self.tokenizer.decode(scores.argmax(dim=-1), skip_special_tokens=True) # For debugging - remove later
+            # returns the names of the Terminals that are currently accepted.
+            cur_ac_terminals, next_ac_terminals, incomplete_terminal = self.inc_parser.get_acceptable_next_terminals(partial_code)
 
-                if 'EOF' in next_ac_terminals:
-                    self.last_valid_stage = len(input_ids[0])
+            greedy_token = self.tokenizer.decode(scores.argmax(dim=-1), skip_special_tokens=True) # For debugging - remove later
 
-                self.accept_tokens_sizes.append(len(cur_ac_terminals))  # For profiling
+            if 'EOF' in next_ac_terminals:
+                self.last_valid_stage = len(input_ids[0])
 
-                accept_mask = self._get_next_terminal_mask(incomplete_terminal, next_ac_terminals)
-                print('partial code:')
-                print(repr(partial_code))
-                print('inc:', repr(incomplete_terminal))
-                print(next_ac_terminals)
-                # print('Sum:', torch.sum(accept_mask))
-                scores = scores.masked_fill(~accept_mask.to(scores.device), -float("inf"))
+            self.accept_tokens_sizes.append(len(cur_ac_terminals))  # For profiling
 
-                if self.debug and self.token_cnt%50==0:
-                    print('Time taken for compilation:', time.time() - compilation_start_time)
+            accept_mask = self.terminals_nfa.get_overapprox_tokens_mask(incomplete_terminal, next_ac_terminals)
 
-                greedy_grammar_token = self.tokenizer.decode(scores.argmax(dim=-1), skip_special_tokens=True)
-
-                if greedy_token != greedy_grammar_token:
-                    print('Greedy token:', repr(greedy_token), scores.argmax(dim=-1))
-                    print('Greedy grammar-based token:', repr(greedy_grammar_token), scores.argmax(dim=-1))
-                    print('Current acceptable terminals:', cur_ac_terminals)
-                    print('Next acceptable terminals:', next_ac_terminals) 
-                    print('Partial code:', partial_code)
-                    self.non_matching_token_cnt += 1
-                
-            except Exception as e:
-                print("-"*80)
-                print('Code lenght:', len(partial_code))
-                print(partial_code)
-                print(repr(partial_code))
-                print('Error:', e)
-
-        should_not_happen = greedy_grammar_token is not None and greedy_token is not None and '//' in greedy_grammar_token and '//' not in greedy_token
-
-        if should_not_happen:
-            print('Partial codes before this:')
-            print(self.partial_codes)
+            print('partial code:')
+            print(repr(partial_code))
+            print('inc:', repr(incomplete_terminal))
             print(next_ac_terminals)
-            raise Exception('Greedy grammar token is //')
+            scores = scores.masked_fill(~accept_mask.to(scores.device), -float("inf"))
+
+            if self.debug and self.token_cnt%50==0:
+                print('Time taken for compilation:', time.time() - compilation_start_time)
+
+            greedy_grammar_token = self.tokenizer.decode(scores.argmax(dim=-1), skip_special_tokens=True)
+
+            if greedy_token != greedy_grammar_token:
+                print('Greedy token:', repr(greedy_token), scores.argmax(dim=-1))
+                print('Greedy grammar-based token:', repr(greedy_grammar_token), scores.argmax(dim=-1))
+                print('Current acceptable terminals:', cur_ac_terminals)
+                print('Next acceptable terminals:', next_ac_terminals) 
+                print('Partial code:', partial_code)
+                self.non_matching_token_cnt += 1
+            
+        except Exception as e:
+            print("-"*80, '\n', 'Code lenght:', len(partial_code), '\n', partial_code, '\n', repr(partial_code), '\n', 'Error:', e)
 
         return scores
     
