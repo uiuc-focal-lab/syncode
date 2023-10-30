@@ -137,7 +137,6 @@ def test_parser11():
     inc_parser = IncrementalParser()
     partial_codes = ['from typing import List, Tuple\n\n\ndef rolling_max(numbers: List[int]) -> List[int]:\n\t""" From a given list of integers, generate a list of rolling maximum element found until given moment\n\tin the sequence.\n\t>>> rolling_max([1, 2, 3, 2, 3, 4, 2])\n\t[1, 2, 3, 3, 3, 4, 4]\n\t"""\n\tresult = []\n\tfor i in range(len(numbers)):\n\t\tif i == len(numbers) - 1:  # if we are at the end of the sequence\n\t\t\tresult.append(numbers[i]) ']
     r = inc_parser.get_acceptable_next_terminals(partial_codes[-1])
-    _ = inc_parser.get_prefix_terminals_match('//')
     print(r.next_accept_terminals, repr(r.final_incomplete_str))
     assert 'COMMENT' in r.next_accept_terminals
 
@@ -229,26 +228,6 @@ def test_get_matching_terminals():
     assert inc_parser.get_matching_terminal('\"""ssss\"""') == "COMMENT"
     assert inc_parser.get_matching_terminal('\"""ssss') == None
 
-def test_prefix_terminal_match():
-    inc_parser = IncrementalParser()
-    # Check if the string can be prefix to the Regex
-    assert "DEF" in inc_parser.get_prefix_terminals_match("de") 
-    assert "DEF" in inc_parser.get_prefix_terminals_match("d")
-    assert "DEF" in inc_parser.get_prefix_terminals_match("def")
-    assert "LPAR" in inc_parser.get_prefix_terminals_match("(")
-    assert "RPAR" in inc_parser.get_prefix_terminals_match(")")
-    assert "STRING" in inc_parser.get_prefix_terminals_match("'")
-    assert "STRING" in inc_parser.get_prefix_terminals_match("''")
-    assert "LONG_STRING" in inc_parser.get_prefix_terminals_match('"')
-    assert "LONG_STRING" in inc_parser.get_prefix_terminals_match('""')
-    assert "LONG_STRING" in inc_parser.get_prefix_terminals_match('"""')
-    assert "LONG_STRING" in inc_parser.get_prefix_terminals_match('"""" something')
-    assert "COMMENT" in inc_parser.get_prefix_terminals_match('"""')
-    assert "COMMENT" in inc_parser.get_prefix_terminals_match('""" something')
-    assert "COMMENT" in inc_parser.get_prefix_terminals_match('# something')
 
-    assert not "RPAR" in inc_parser.get_prefix_terminals_match("(")
-
-
-tests = [test_get_matching_terminals, test_parser1, test_parser2, test_parser3, test_parser4, test_parser5, test_parser6, test_parser7, test_parser8, test_parser9, test_parser10, test_parser11, test_parser12, test_parser13, test_parser14, test_incremental_parser, test_incremental_parser2, test_incremental_parser3, test_incremental_parser4, test_prefix_terminal_match]
+tests = [test_get_matching_terminals, test_parser1, test_parser2, test_parser3, test_parser4, test_parser5, test_parser6, test_parser7, test_parser8, test_parser9, test_parser10, test_parser11, test_parser12, test_parser13, test_parser14, test_incremental_parser, test_incremental_parser2, test_incremental_parser3, test_incremental_parser4]
 run_tests(tests)

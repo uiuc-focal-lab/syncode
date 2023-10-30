@@ -202,37 +202,6 @@ class IncrementalParser:
         # TODO: Use priorities to resolve conflicts
         return None
 
-    def get_prefix_terminals_match(self, s):
-        # Returns all terminals such that s matches the prefix of the terminal or the terminal matches the prefix of s
-        terminals = []
-        not_supported = ['_NL', 'COMMENT', 'STRING', 'IMAG_NUMBER', 'LONG_STRING']
-
-        for t in self.parser.terminals: 
-            if t.pattern.type == 'str' and t.name not in not_supported:
-                if t.pattern.value.startswith(s) or s.startswith(t.pattern.value):
-                    terminals.append(t.name)
-
-            if t.pattern.type == 're' and t.name not in not_supported:
-                match = lmql_regex.Regex(t.pattern.value).d(s)
-                if match != None:
-                    terminals.append(t.name)
-        
-        # Easy hack for unsupported terminals
-        if s.startswith('#') or s.startswith('"""') or s.startswith("'''"):
-            terminals.append('COMMENT')
-        if s.startswith('"') or s.startswith("'") or s.startswith('""') or s.startswith("''"):
-            terminals.append('STRING')
-        if s.startswith('"""') or s.startswith('""') or s.startswith('"'):
-            terminals.append('LONG_STRING')
-        if s.startswith('\n'):
-            terminals.append('_NL')  
-        if s.startswith('_'):
-            terminals.append('NAME')
-        if s.startswith('.'):
-            terminals.append('FLOAT_NUMBER')
-
-        return terminals        
-
     def _lex_code(self, code):
         # Collect Lexer tokens
         lexer_tokens = []
