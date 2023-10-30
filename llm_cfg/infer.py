@@ -26,7 +26,7 @@ if __name__ == "__main__":
     p.add_argument("--gpu", type=int, default=1)
     p.add_argument("--num_samples", type=int, default=1)
     p.add_argument("--language", choices = ["python", "go"], default = "python", help = "language")
-    p.add_argument("--dataset", choices = ["mbxp", "humaneval", "mathqa"], default = "humaneval", help = "dataset")
+    p.add_argument("--dataset", choices = ["mbxp", "multi-humaneval", "mathqa-x"], default = "multi-humaneval", help = "dataset")
     args = p.parse_args()
 
     num_samples_per_task = args.num_samples
@@ -35,7 +35,7 @@ if __name__ == "__main__":
     os.makedirs(out_dir, exist_ok=True)
 
     # Load model
-    device = "cuda:1"
+    device = f"cuda:{args.gpu}"
     model_location = "/share/models/llama_model/hf/" + args.model_size
     tokenizer = LlamaTokenizer.from_pretrained(model_location)
     model = LlamaForCausalLM.from_pretrained(model_location, torch_dtype=torch.bfloat16).eval().to(device)
