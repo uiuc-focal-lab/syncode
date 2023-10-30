@@ -74,16 +74,16 @@ class HuggingFaceModel(LanguageModel):
             logits_processor=self.logit_processors
         )
 
-        last_token_id = len(generated_ids[0])
+
+        last_token_id = [len(generated_ids[i]) for i in range(batch_size)]
         if self.logit_processors is not None:
             python_decoder = self.logit_processors[0]
-            last_token_id = python_decoder.last_valid_stage
-
-        batch_completions = self.tokenizer.batch_decode(
-            [ids[input_ids_cutoff:last_token_id] for ids in generated_ids],
-            skip_special_tokens=True,
-        )
+            last_token_id = [python_decoder.last_valid_state[i] for i in range(batch_size)]
         
+        batch_completions = [
+            self.tokenizer.decode(ids[input_ids_cutoff:last_token_id[i]], skip_special_tokens=True) for i, ids in enumerate(generated_ids)
+        ]
+
         if self.logit_processors is not None:
             python_decoder = self.logit_processors[0]
             print(f"Time taken for generation: {time.time() - start_time:.2f}s")
