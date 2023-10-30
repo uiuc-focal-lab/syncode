@@ -8,7 +8,23 @@ from lark.lexer import Token
 from lark import Lark
 
 
+class ParseResult:
+    """ 
+    Stores the result of parsing. 
+    """
+    def __init__(self, cur_accept_terminals, next_accept_terminals, final_incomplete_str, is_terminal_complete):
+        self.final_incomplete_str = final_incomplete_str
+        self.is_terminal_complete = is_terminal_complete # Whether the final_string is a complete terminal
+        self.cur_accept_terminals = cur_accept_terminals
+        self.next_accept_terminals = next_accept_terminals 
+
+        if not is_terminal_complete: # If the terminal is not complete, then next_accept_terminals should be None
+            assert next_accept_terminals is None 
+
 class IncrementalParser:
+    """
+    This class implements an incremental parser for Python code.
+    """
     def __init__(self):
         self.parser = Lark.open( # This is the standard Lark parser
             "llm_cfg/python_grammar.lark",
@@ -32,7 +48,7 @@ class IncrementalParser:
         self.prev_lexer_tokens = None
         self.cur_pos_to_interactive = {}
 
-    def get_acceptable_next_terminals(self, code):
+    def get_acceptable_next_terminals(self, code) -> ParseResult:
         # Stores the sequence of tokens that the parser has seen in the order  
         last_terminal_complete = True
         interactive = self.interactive
@@ -105,6 +121,9 @@ class IncrementalParser:
             last_terminal_complete = False
             current_term_str = code[self.lexer_pos:]
             current_term_str = current_term_str.lstrip(' ') # Remove space from the beginning
+
+            if current_term_str == '':
+                last_terminal_complete = True
             # print('current_term_str 1:', current_term_str)
         else:
             # Although this is a complete terminal, it may happen that this may be just prefix of some other terminal
@@ -114,44 +133,44 @@ class IncrementalParser:
 
         if last_terminal_complete:            
             if self.parser_token_seq[-1].type == '_NL':
-                next_ac_terminals = self.next_ac_terminals
                 # Compute next line accepted indentation levels
                 max_next_indentation_level = 0
                 # print('next_ac_terminals:', next_ac_terminals)
 
-                if '_INDENT' in next_ac_terminals:
+                if '_INDENT' in self.next_ac_terminals:
                     max_next_indentation_level = self.cur_indentation_level + 1
-                elif '_DEDENT' in next_ac_terminals and len(next_ac_terminals)==1:
+                elif '_DEDENT' in self.next_ac_terminals and len(self.next_ac_terminals)==1:
                     max_next_indentation_level = self.cur_indentation_level - 1
-                elif '_DEDENT' in next_ac_terminals and len(next_ac_terminals)>1:
+                elif '_DEDENT' in self.next_ac_terminals and len(self.next_ac_terminals)>1:
                     max_next_indentation_level = self.cur_indentation_level
 
                 cur_tabs = self.parser_token_seq[-1].value.split('\n')[-1].count('\t')
 
                 # Remove the _INDENT and _DEDENT tokens from the acceptable tokens
                 # since we inform the indentation level through the _TAB token
-                if '_INDENT' in next_ac_terminals:
-                    next_ac_terminals.remove('_INDENT')
-                if '_DEDENT' in next_ac_terminals:
-                    next_ac_terminals.remove('_DEDENT')
+                if '_INDENT' in self.next_ac_terminals:
+                    self.next_ac_terminals.remove('_INDENT')
+                if '_DEDENT' in self.next_ac_terminals:
+                    self.next_ac_terminals.remove('_DEDENT')
 
                 # '_NL' is always accepted in this case
-                next_ac_terminals.add('_NL')
+                self.next_ac_terminals.add('_NL')
 
                 if cur_tabs < max_next_indentation_level:
                     # print('Expect a tab!')
-                    next_ac_terminals.add('_TAB')
+                    self.next_ac_terminals.add('_TAB')
                 # elif cur_tabs > max_next_indentation_level:
                 #     raise Exception('Invalid indentation level! max_next_indentation_level: {}, cur_tabs: {}'.format(max_next_indentation_level, cur_tabs))
-        else:
-            # Since current terminal is incomplete, next token should add to current terminal
-            next_ac_terminals = None
+
+        else: # Since current terminal is incomplete, next token should add to current terminal
+            self.next_ac_terminals = None 
 
         if self.next_ac_terminals is not None and '_NL' in self.next_ac_terminals:
             self.next_ac_terminals.add('COMMENT')
 
-        return self.cur_ac_terminals, self.next_ac_terminals, current_term_str
-    
+        return ParseResult(self.cur_ac_terminals, self.next_ac_terminals, current_term_str, last_terminal_complete)
+
+
     def _store_parser_state(self, pos, parser_state, indentation_level, accepts):
         # print('storing state at position:', pos, len(self.interactive.parser_state.state_stack), len(self.dedent_queue))
         dedent_queue = copy.deepcopy(self.dedent_queue)

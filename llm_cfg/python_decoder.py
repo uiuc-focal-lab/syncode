@@ -2,7 +2,7 @@ import time
 import torch
 import common
 from transformers import LogitsProcessor, PreTrainedTokenizer
-from incremental_parser import IncrementalParser
+from incremental_parser import IncrementalParser, ParseResult
 
 
 class PythonDecoder(LogitsProcessor):
@@ -34,9 +34,9 @@ class PythonDecoder(LogitsProcessor):
             
         print(f"Time taken for preprocessing: {time.time() - time_start:.2f}s")
 
-    def _print_current_status(self, partial_code, cur_ac_terminals, next_ac_terminals, incomplete_terminal):
+    def _print_current_status(self, partial_code, r: ParseResult):
         print('partial code:\n', repr(partial_code))
-        print('inc:', repr(incomplete_terminal), '\n', 'cur:', cur_ac_terminals, '\n', 'next:', next_ac_terminals)
+        print('inc:', repr(r.final_incomplete_str), '\n', 'cur:', r.cur_accept_terminals, '\n', 'next:', r.next_accept_terminals)
 
 
     def _reset(self):
@@ -63,27 +63,27 @@ class PythonDecoder(LogitsProcessor):
                 self.partial_codes_trace.append(partial_code)
 
                 # returns the names of the Terminals that are currently accepted.
-                cur_ac_terminals, next_ac_terminals, incomplete_terminal = self.inc_parsers[i].get_acceptable_next_terminals(partial_code)
+                r = self.inc_parsers[i].get_acceptable_next_terminals(partial_code)
 
                 greedy_token = self.tokenizer.decode(scores.argmax(dim=-1), skip_special_tokens=True) # For debugging - remove later
 
-                if 'EOF' in next_ac_terminals:
+                if 'EOF' in r.next_accept_terminals:
                     self.last_valid_state[i] = len(input_ids[i])
 
-                self.accept_tokens_sizes.append(len(cur_ac_terminals))  # For profiling
+                self.accept_tokens_sizes.append(len(r.cur_accept_terminals))  # For profiling
 
                 print(i, 'Time taken for compilation:', time.time() - compilation_start_time)
-                accept_mask = self.terminals_nfa.get_overapprox_tokens_mask(incomplete_terminal, next_ac_terminals)
+                accept_mask = self.terminals_nfa.get_overapprox_tokens_mask(r.final_incomplete_str, r.next_accept_terminals)
 
                 print(i, 'Time taken for overapproximation:', time.time() - compilation_start_time)
                 if self.debug and self.token_cnt%50==0:
-                    self._print_current_status(partial_code, cur_ac_terminals, next_ac_terminals, incomplete_terminal)
+                    self._print_current_status(partial_code, r)
                 
                 if torch.sum(accept_mask) != 0: # If there are acceptable tokens for the current partial code 
                     scores[i] = scores[i].masked_fill(~accept_mask.to(scores.device), -float("inf"))
                 else: # Otherwise, report the error and mask no tokens
                     print('No acceptable tokens for the current partial code!')
-                    self._print_current_status(partial_code, cur_ac_terminals, next_ac_terminals, incomplete_terminal)
+                    self._print_current_status(partial_code, r)
 
                 print(i, 'Time taken for masking:', time.time() - compilation_start_time)  
 
@@ -92,7 +92,7 @@ class PythonDecoder(LogitsProcessor):
                 if greedy_token != greedy_grammar_token:
                     print('Greedy token:', repr(greedy_token), scores.argmax(dim=-1))
                     print('Greedy grammar-based token:', repr(greedy_grammar_token), scores.argmax(dim=-1))
-                    self._print_current_status(partial_code, cur_ac_terminals, next_ac_terminals, incomplete_terminal)
+                    self._print_current_status(partial_code, r)
                     self.non_matching_token_cnt += 1
             except Exception as e:
                 print("-"*80, '\n', 'Code lenght:', len(partial_code), '\n', partial_code, '\n', repr(partial_code), '\n', 'Error:', e)

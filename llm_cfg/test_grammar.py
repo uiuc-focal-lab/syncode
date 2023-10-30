@@ -37,8 +37,8 @@ def foo():
         y = 2
         z = 1 +
 """
-    _, next_ac_terminals, _  = inc_parser.get_acceptable_next_terminals(code)
-    print(next_ac_terminals)
+    r  = inc_parser.get_acceptable_next_terminals(code)
+    print(r.next_accept_terminals)
 
 def test_parser1():
     inc_parser = IncrementalParser()
@@ -69,102 +69,103 @@ def f():
 def test_parser2():
     inc_parser = IncrementalParser()
     partial_code = 'from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n\t\n\ta=3+5\n\tb='
-    _, next_ac_terminals, _ = inc_parser.get_acceptable_next_terminals(partial_code)
-    assert 'FLOAT_NUMBER' in next_ac_terminals
+    r = inc_parser.get_acceptable_next_terminals(partial_code)
+    assert 'FLOAT_NUMBER' in r.next_accept_terminals
 
 def test_parser3():
     inc_parser = IncrementalParser()
     partial_code = 'from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n\t\n\tfor i in range(len(numbers) -1, -1, -1) :\n\t\tfor j in range(i+1, len(numbers) ,1) :\n\t\t\tif abs(numbers[i] - numbers[j] ) < threshold :\n\t\t\t\treturn True\n'
-    _, next_ac_terminals, _ = inc_parser.get_acceptable_next_terminals(partial_code)
-    assert '_TAB' in next_ac_terminals
+    r = inc_parser.get_acceptable_next_terminals(partial_code)
+    assert '_TAB' in r.next_accept_terminals
 
 def test_parser4():
     inc_parser = IncrementalParser()
     partial_code = 'from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n\t\n\tfor i in range(len(numbers) -1, -1, -1) :\n\t\tfor j in range(i+1, len(numbers) ,1) :\n\t\t\tif abs(numbers[i] - numbers[j] ) < threshold :\n'
-    _, next_ac_terminals, _ = inc_parser.get_acceptable_next_terminals(partial_code)
-    assert '_TAB' in next_ac_terminals
+    r = inc_parser.get_acceptable_next_terminals(partial_code)
+    assert '_TAB' in r.next_accept_terminals
 
 def test_parser5():
     inc_parser = IncrementalParser()
     partial_code = 'from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n\t\n\tfor i in range(len(numbers) -1, -1, -1) :\n\t\tfor j in range(i+1, len(numbers) ,1) :\n\t\t\tif abs(numbers[i] - numbers[j] ) < threshold :\n\t\t\t\treturn True\n\t\t\t\t'
     # There cannot be another tab after this
-    _, next_ac_terminals, _ = inc_parser.get_acceptable_next_terminals(partial_code)
-    assert '_TAB' not in next_ac_terminals
+    r = inc_parser.get_acceptable_next_terminals(partial_code)
+    assert '_TAB' not in r.next_accept_terminals
 
 def test_parser6():
     inc_parser = IncrementalParser()
     partial_code = 'from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n\t\n\tfor i in range(len(numbers) -1, -1, -1) :\n\t\tfor j in range(i+1, len(numbers) ,1) :\n\t\t\tif abs(numbers[i] - numbers[j] ) < threshold :\n\t\t\t\treturn True\n\n\n\t\t\t\t'
     # There cannot be another tab after this
-    _, next_ac_terminals, _ = inc_parser.get_acceptable_next_terminals(partial_code)
-    assert '_TAB' not in next_ac_terminals
+    r = inc_parser.get_acceptable_next_terminals(partial_code)
+    assert '_TAB' not in r.next_accept_terminals
 
 def test_parser6():
     inc_parser = IncrementalParser()
     partial_code = 'from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n\t\n\tfor i in range(len(numbers) -1, -1, -1) :\n\t\tfor j in range(i+1, len(numbers) ,1) :\n\t\t\tif abs(numbers[i] - numbers[j] ) < threshold :\n\t\t\t\treturn True\n\n\t\t\t\n\t\t'
     # There can be another tab after this
-    _, next_ac_terminals, _ = inc_parser.get_acceptable_next_terminals(partial_code)
-    assert '_TAB' in next_ac_terminals
+    r = inc_parser.get_acceptable_next_terminals(partial_code)
+    assert '_TAB' in r.next_accept_terminals
 
 def test_parser7():
     inc_parser = IncrementalParser()
     partial_code = 'from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n\tfor i in range(len(numbers) -1, -1, -1) :\n\t\tif numbers[i] - numbers[i+1] < threshold:\n\t\t\treturn True\n\treturn False\n'
-    _, next_ac_terminals, _ = inc_parser.get_acceptable_next_terminals(partial_code)
-    assert '_TAB' in next_ac_terminals
-    assert '_NL' in next_ac_terminals
+    r = inc_parser.get_acceptable_next_terminals(partial_code)
+    assert '_TAB' in r.next_accept_terminals
+    assert '_NL' in r.next_accept_terminals
 
 def test_parser8():
     inc_parser = IncrementalParser()
     partial_code = 'def separate_paren_groups(paren_string: str) -> List[str]:\n\tfor i in paren_string:\n\t\tif i == \''
     # Check if the whitespaces are being ignored
-    _, _, cur_term_str = inc_parser.get_acceptable_next_terminals(partial_code)
-    assert cur_term_str == "'" # This should not be " '"
+    r = inc_parser.get_acceptable_next_terminals(partial_code)
+    assert r.final_incomplete_str == "'" # This should not be " '"
 
 def test_parser9():
     inc_parser = IncrementalParser()
     partial_code = 'from typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n\tpar = []\n\tfor i in par:\n\t\tif i == \'Hello'
-    _, next_ac_terminals, cur_term_str = inc_parser.get_acceptable_next_terminals(partial_code)
-    print(cur_term_str)
-    assert cur_term_str == "'Hello"
+    r = inc_parser.get_acceptable_next_terminals(partial_code)
+    print(r.final_incomplete_str)
+    assert r.final_incomplete_str == "'Hello"
 
 def test_parser10():
     inc_parser = IncrementalParser()
     partial_code = 'from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n\t""" Check if in given list of numbers, are any two numbers closer to each other than\n\tgiven threshold.\n\t>>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n\tFalse\n\t>>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n\tTrue\n\t"""\n\tfor i in range(len(numbers) -1, -1, -1):\n\t\tfor j in range(i+1, len(numbers) -1, -1):\n\t\t\tif abs(numbers[i] - numbers[j] ) < threshold:\n\t\t\t\treturn True\n\treturn False\n\n\ndef has_close_elements_with_threshold(numbers: List[float] , threshold: float) -> bool:\n\t""'
-    _, _, cur_term_str = inc_parser.get_acceptable_next_terminals(partial_code)
-    print(repr(cur_term_str))
-    assert cur_term_str == '""'
+    r = inc_parser.get_acceptable_next_terminals(partial_code)
+    print(repr(r.final_incomplete_str))
+    assert r.final_incomplete_str == '""'
 
 def test_parser11():
     inc_parser = IncrementalParser()
     partial_codes = ['from typing import List, Tuple\n\n\ndef rolling_max(numbers: List[int]) -> List[int]:\n\t""" From a given list of integers, generate a list of rolling maximum element found until given moment\n\tin the sequence.\n\t>>> rolling_max([1, 2, 3, 2, 3, 4, 2])\n\t[1, 2, 3, 3, 3, 4, 4]\n\t"""\n\tresult = []\n\tfor i in range(len(numbers)):\n\t\tif i == len(numbers) - 1:  # if we are at the end of the sequence\n\t\t\tresult.append(numbers[i]) ']
-    _, next_ac_terminals, _ = inc_parser.get_acceptable_next_terminals(partial_codes[-1])
+    r = inc_parser.get_acceptable_next_terminals(partial_codes[-1])
     _ = inc_parser.get_prefix_terminals_match('//')
-    assert 'COMMENT' in next_ac_terminals
+    print(r.next_accept_terminals, repr(r.final_incomplete_str))
+    assert 'COMMENT' in r.next_accept_terminals
 
 def test_parser12(): 
     inc_parser = IncrementalParser()
     partial_code = 'from typing import List\n\n\ndef rescale_to_unit(numbers: List[float]) -> List[float]:\n\t""" Given list of numbers (of at least two elements), apply a linear transform to that list,\n\tsuch that the smallest number will become 0 and the largest will become 1\n\t>>> rescale_to_unit([1.0, 2.0, 3.0, 4.0, 5.0])\n\t[0.0, 0.25, 0.5, 0.75, 1.0]\n\t"""\n\tfor i in x: # this is'
     # This should not crash. Earlier version was crashing on this
-    _, _, _ = inc_parser.get_acceptable_next_terminals(partial_code)
+    r = inc_parser.get_acceptable_next_terminals(partial_code)
 
 def test_parser13():
     inc_parser = IncrementalParser()
     partial_code =  'from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n\t""" Check if in given list of numbers, are any two numbers closer to each other than\n\tgiven threshold.\n\t>>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n\tFalse\n\t>>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n\tTrue\n\t"""\n\tfor i in range(len(numbers)):\n\t\tfor j in range(i + 1, len(numbers)):\n\t\t\tif abs(numbers[i] - numbers[j]) < threshold:\n\t\t\t\treturn True\n\treturn False\n\n\ndef has_close_elements_in_range(numbers: List[float], lower_bound: float, upper_bound: float) -> bool:\n\t"""'
     # This was not working correctly when the regex for comments was greedy (i.e., .* instead of .*?)
-    _, _, cur_term_str = inc_parser.get_acceptable_next_terminals(partial_code)
-    assert cur_term_str == '"'
+    r = inc_parser.get_acceptable_next_terminals(partial_code)
+    assert r.final_incomplete_str == '"'
 
 def test_parser14():
     inc_parser = IncrementalParser()
     partial_code = 'def has_close_elements_in_range(numbers: List[float], range_start: float, range_end: float) -> bool:\n\t""" Check if in given list of numbers, are any two numbers closer to each other than given range. """'
-    _, _, cur_term_str = inc_parser.get_acceptable_next_terminals(partial_code)
-    assert cur_term_str.startswith('\n\t"""') # _NL consumes \n, \t and comments
+    r = inc_parser.get_acceptable_next_terminals(partial_code)
+    assert r.final_incomplete_str.startswith('\n\t"""') # _NL consumes \n, \t and comments
 
 def test_incremental_parser():
     inc_parser = IncrementalParser()
     partial_code = 'from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n\t""" Check if in given list of numbers, are any two numbers closer to each other than\n\tgiven threshold.\n\t>>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n\tFalse\n\t>>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n\tTrue\n\t"""\n\tfor i in range(len(numbers) -1, -1, -1):\n\t\tfor j in range(i+1, len(numbers) -1, -1):\n\t\t\tif abs(numbers[i] - numbers[j] ) < threshold:\n\t\t\t\treturn True\n\treturn False\n\n\ndef has_close_elements_with_threshold(numbers: List[float] , threshold: float) -> bool:\n\t""'
-    _, _, cur_term_str = inc_parser.get_acceptable_next_terminals(partial_code[:len(partial_code)-10])
-    _, _, cur_term_str = inc_parser.get_acceptable_next_terminals(partial_code)
-    assert cur_term_str == '""'
+    r = inc_parser.get_acceptable_next_terminals(partial_code[:len(partial_code)-10])
+    r = inc_parser.get_acceptable_next_terminals(partial_code)
+    assert r.final_incomplete_str == '""'
 
 def test_incremental_parser2():
     inc_parser = IncrementalParser()
@@ -175,27 +176,27 @@ def test_incremental_parser2():
     i = 0
     while i<len(generated_code):
         i += 2
-        _, _, cur_term_str = inc_parser.get_acceptable_next_terminals(prompt + generated_code[:i])
-    assert cur_term_str == '"shu'
+        r = inc_parser.get_acceptable_next_terminals(prompt + generated_code[:i])
+    assert r.final_incomplete_str == '"shu'
 
 def test_incremental_parser3():
     inc_parser = IncrementalParser()
     partial_codes = ['from typing import List\n\n\ndef rescale_to_unit(numbers: List[float]) -> List[float]:\n\t""" Given list of numbers (of at least two elements), apply a linear transform to that list,\n\tsuch that the smallest number will become 0 and the largest will become 1\n\t>>> rescale_to_unit([1.0, 2.0, 3.0, 4.0, 5.0])\n\t[0.0, 0.25, 0.5, 0.75, 1.0]\n\t"""\n\tmin_num = min(numbers)\n\tmax_num = max(numbers)\n\treturn [min_num * (x - min_num) / (max_num - min_num) + min_num for x in numbers]\n\n', 'from typing import List\n\n\ndef rescale_to_unit(numbers: List[float]) -> List[float]:\n\t""" Given list of numbers (of at least two elements), apply a linear transform to that list,\n\tsuch that the smallest number will become 0 and the largest will become 1\n\t>>> rescale_to_unit([1.0, 2.0, 3.0, 4.0, 5.0])\n\t[0.0, 0.25, 0.5, 0.75, 1.0]\n\t"""\n\tmin_num = min(numbers)\n\tmax_num = max(numbers)\n\treturn [min_num * (x - min_num) / (max_num - min_num) + min_num for x in numbers]\n\n\n', 'from typing import List\n\n\ndef rescale_to_unit(numbers: List[float]) -> List[float]:\n\t""" Given list of numbers (of at least two elements), apply a linear transform to that list,\n\tsuch that the smallest number will become 0 and the largest will become 1\n\t>>> rescale_to_unit([1.0, 2.0, 3.0, 4.0, 5.0])\n\t[0.0, 0.25, 0.5, 0.75, 1.0]\n\t"""\n\tmin_num = min(numbers)\n\tmax_num = max(numbers)\n\treturn [min_num * (x - min_num) / (max_num - min_num) + min_num for x in numbers]\n\n\ndef']
     for i, partial_code in enumerate(partial_codes):
         new_inc_parser = IncrementalParser()
-        _, next_ac_terminals, _ = inc_parser.get_acceptable_next_terminals(partial_code)
-        _, next_ac_terminals2, _ = new_inc_parser.get_acceptable_next_terminals(partial_code)
+        r1 = inc_parser.get_acceptable_next_terminals(partial_code)
+        r2 = new_inc_parser.get_acceptable_next_terminals(partial_code)
         
-        assert next_ac_terminals == next_ac_terminals2
+        assert r1.next_accept_terminals == r2.next_accept_terminals
 
 def test_incremental_parser4():
     inc_parser = IncrementalParser()
     partial_codes = ['\n\ndef derivative(xs: list):\n\t""" xs represent coefficients of a polynomial.\n\txs[0] + xs[1] * x + xs[2] * x^2 + ....\n\t Return derivative of this polynomial in the same form.\n\t>>> derivative([3, 1, 2, 4, 5])\n\t[1, 4, 12, 20]\n\t>>> derivative([1, 2, 3])\n\t[2, 6]\n\t"""\n\txs = list(xs)', '\n\ndef derivative(xs: list):\n\t""" xs represent coefficients of a polynomial.\n\txs[0] + xs[1] * x + xs[2] * x^2 + ....\n\t Return derivative of this polynomial in the same form.\n\t>>> derivative([3, 1, 2, 4, 5])\n\t[1, 4, 12, 20]\n\t>>> derivative([1, 2, 3])\n\t[2, 6]\n\t"""\n\txs = list(xs)\n', '\n\ndef derivative(xs: list):\n\t""" xs represent coefficients of a polynomial.\n\txs[0] + xs[1] * x + xs[2] * x^2 + ....\n\t Return derivative of this polynomial in the same form.\n\t>>> derivative([3, 1, 2, 4, 5])\n\t[1, 4, 12, 20]\n\t>>> derivative([1, 2, 3])\n\t[2, 6]\n\t"""\n\txs = list(xs)\n\t']
     for i, partial_code in enumerate(partial_codes):
         new_inc_parser = IncrementalParser()
-        _, next_ac_terminals, _ = inc_parser.get_acceptable_next_terminals(partial_code)
-        _, next_ac_terminals2, _ = new_inc_parser.get_acceptable_next_terminals(partial_code)
-        assert next_ac_terminals == next_ac_terminals2, i 
+        r1 = inc_parser.get_acceptable_next_terminals(partial_code)
+        r2 = new_inc_parser.get_acceptable_next_terminals(partial_code)
+        assert r1.next_accept_terminals == r2.next_accept_terminals, i 
 
 def test_get_matching_terminals():
     inc_parser = IncrementalParser()
