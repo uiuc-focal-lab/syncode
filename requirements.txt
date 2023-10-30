@@ -41,3 +41,4 @@ transformers==4.28.1
 triton==2.0.0
 typing_extensions==4.7.1
 urllib3==2.0.4
+mxeval
