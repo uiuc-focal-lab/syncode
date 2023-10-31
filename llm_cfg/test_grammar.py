@@ -159,6 +159,14 @@ def test_parser14():
     r = inc_parser.get_acceptable_next_terminals(partial_code)
     assert r.final_incomplete_str.startswith('\n\t"""') # _NL consumes \n, \t and comments
 
+def test_parser15():
+    inc_parser = IncrementalParser()
+    partial_code = 'from typing import List, Tuple\n\n\ndef find_closest_elements(numbers: List[float]) -> Tuple[float, float]:\n\t""" From a supplied list of numbers (of length at least two) select and return two that are the closest to each\n\tother and return them in order (smaller number, larger number).\n\t>>> find_closest_elements([1.0, 2.0, 3.0, 4.0, 5.0, 2.2])\n\t(2.0, 2.2)\n\t>>> find_closest_elements([1.0, 2.0, 3.0, 4.0, 5.0, 2.0])\n\t(2.0, 2.0)\n\t"""\n\tif len(numbers) < 2:\n\t\treturn None\n\tclos'
+    r = inc_parser.get_acceptable_next_terminals(partial_code)
+    # Should not consider _DEDENT as final terminal
+    assert r.final_incomplete_str == 'clos'
+
+
 def test_incremental_parser():
     inc_parser = IncrementalParser()
     partial_code = 'from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n\t""" Check if in given list of numbers, are any two numbers closer to each other than\n\tgiven threshold.\n\t>>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n\tFalse\n\t>>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n\tTrue\n\t"""\n\tfor i in range(len(numbers) -1, -1, -1):\n\t\tfor j in range(i+1, len(numbers) -1, -1):\n\t\t\tif abs(numbers[i] - numbers[j] ) < threshold:\n\t\t\t\treturn True\n\treturn False\n\n\ndef has_close_elements_with_threshold(numbers: List[float] , threshold: float) -> bool:\n\t""'
@@ -229,5 +237,5 @@ def test_get_matching_terminals():
     assert inc_parser.get_matching_terminal('\"""ssss') == None
 
 
-tests = [test_get_matching_terminals, test_parser1, test_parser2, test_parser3, test_parser4, test_parser5, test_parser6, test_parser7, test_parser8, test_parser9, test_parser10, test_parser11, test_parser12, test_parser13, test_parser14, test_incremental_parser, test_incremental_parser2, test_incremental_parser3, test_incremental_parser4]
+tests = [test_get_matching_terminals, test_parser1, test_parser2, test_parser3, test_parser4, test_parser5, test_parser6, test_parser7, test_parser8, test_parser9, test_parser10, test_parser11, test_parser12, test_parser13, test_parser14, test_parser15, test_incremental_parser, test_incremental_parser2, test_incremental_parser3, test_incremental_parser4]
 run_tests(tests)

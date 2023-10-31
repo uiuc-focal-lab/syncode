@@ -97,8 +97,6 @@ class IncrementalParser:
                         dedent_token = self.dedent_queue.pop()
                         self.cur_indentation_level -= 1
                         interactive.feed_token(dedent_token)
-                        self.parser_token_seq.append(dedent_token)
-
                 # TODO: Check if there is an overhead of computing accept tokens
                 interactive.feed_token(token)
 
@@ -120,11 +118,11 @@ class IncrementalParser:
         if self.lexer_pos < len(code):
             last_terminal_complete = False
             current_term_str = code[self.lexer_pos:]
-            current_term_str = current_term_str.lstrip(' ') # Remove space from the beginning
+            # print('current_term_str 1:', current_term_str)
 
+            current_term_str = current_term_str.lstrip(' ') # Remove space from the beginning
             if current_term_str == '':
                 last_terminal_complete = True
-            # print('current_term_str 1:', current_term_str)
         else:
             # Although this is a complete terminal, it may happen that this may be just prefix of some other terminal
             # e.g., 'de' may seem like a variable name that is complete, but it may be just a prefix of 'def'
