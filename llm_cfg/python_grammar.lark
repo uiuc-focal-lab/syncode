@@ -172,8 +172,8 @@ _NL: ( /(\r?\n[\t ]*)+/ | COMMENT)+
 // STRING : /[ubf]?r?("(?!"").*?(?<!\\)(\\\\)*?"|'(?!'').*?(?<!\\)(\\\\)*?')/i
 // LONG_STRING: /[ubf]?r?(""".*?(?<!\\)(\\\\)*?"""|'''.*?(?<!\\)(\\\\)*?''')/is
 
-// Not using (?!'') and (?!"") since lookaheads are not supported in interegular
-STRING : /[ubf]?r?(".*?"|'.*?')/is 
+// Using (?!'') and (?!"") to avoid ambuigity with empty LONG_STRING
+STRING : /[ubf]?r?("(?!"").*?"|'(?!'').*?')/is 
 
 // Had to seperate these since regex disjoint check in Lark lexer validation was too slow
 LONG_STRING: /[ubf]?r?("""(?<!\\).*?"""|'''(?<!\\).*?''')/is

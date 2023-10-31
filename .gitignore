@@ -4,4 +4,4 @@ __pycache__
 llm_cfg/__pycache__
 llm_cfg/core/__pycache__
 .vscode/
-tmp.txt
+tmp*

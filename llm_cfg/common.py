@@ -41,7 +41,7 @@ def load_nfa(tokenizer=None, inc_parser=None, use_cache=True):
             inc_parser = IncrementalParser()
             print('Time taken for loading parser:', time.time() - start_time, flush=True)
 
-        exceptions = {'COMMENT': '#.*|\'\'\'.*?\'\'\'|""".*?"""/is', '_NL': '(\r?\n[\t ]*)+', 'LONG_STRING': '\'\'\'.*?\'\'\'|""".*?"""/is'}
+        exceptions = {'COMMENT': '#.*|\'\'\'.*?\'\'\'|""".*?"""/is', '_NL': '(\r?\n[\t ]*)+', 'LONG_STRING': '\'\'\'.*?\'\'\'|""".*?"""/is', 'STRING': '[ubf]?r?(".*?"|\'.*?\')'}
         nfa = TerminalsNFA(inc_parser.parser.terminals, vocab, exceptions=exceptions)
         print(f'Time taken for creating NFA:', time.time() - start_time, flush=True)
 
