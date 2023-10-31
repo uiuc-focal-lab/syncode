@@ -65,7 +65,7 @@ class PythonDecoder(LogitsProcessor):
                 # returns the names of the Terminals that are currently accepted.
                 r = self.inc_parsers[i].get_acceptable_next_terminals(partial_code)
 
-                greedy_token = self.tokenizer.decode(scores.argmax(dim=-1), skip_special_tokens=True) # For debugging - remove later
+                greedy_token = self.tokenizer.decode(scores[i].argmax(dim=-1), skip_special_tokens=True) # For debugging - remove later
 
                 if 'EOF' in r.next_accept_terminals:
                     self.last_valid_state[i] = len(input_ids[i])
@@ -73,7 +73,7 @@ class PythonDecoder(LogitsProcessor):
                 self.accept_tokens_sizes.append(len(r.cur_accept_terminals))  # For profiling
 
                 print(i, 'Time taken for compilation:', time.time() - compilation_start_time)
-                accept_mask = self.terminals_nfa.get_overapprox_tokens_mask(r.final_incomplete_str, r.next_accept_terminals)
+                accept_mask = self.terminals_nfa.get_overapprox_tokens_mask(r)
 
                 print(i, 'Time taken for overapproximation:', time.time() - compilation_start_time)
                 if self.debug and self.token_cnt%50==0:
@@ -87,11 +87,11 @@ class PythonDecoder(LogitsProcessor):
 
                 print(i, 'Time taken for masking:', time.time() - compilation_start_time)  
 
-                greedy_grammar_token = self.tokenizer.decode(scores.argmax(dim=-1), skip_special_tokens=True)
+                greedy_grammar_token = self.tokenizer.decode(scores[i].argmax(dim=-1), skip_special_tokens=True)
 
                 if greedy_token != greedy_grammar_token:
-                    print('Greedy token:', repr(greedy_token), scores.argmax(dim=-1))
-                    print('Greedy grammar-based token:', repr(greedy_grammar_token), scores.argmax(dim=-1))
+                    print('Greedy token:', repr(greedy_token))
+                    print('Greedy grammar-based token:', repr(greedy_grammar_token))
                     self._print_current_status(partial_code, r)
                     self.non_matching_token_cnt += 1
             except Exception as e:

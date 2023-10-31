@@ -3,6 +3,7 @@ import time
 import interegular
 import torch
 import regex
+from incremental_parser import ParseResult
 
 class Exception:
     """
@@ -36,12 +37,19 @@ class TerminalsNFA:
         
         # Iterate through each pair of DFA state and next terminals and store the overapproximate tokens
         self._dfa_state_and_next_terminal_to_tokens = defaultdict(list)
+        self._dfa_state_to_tokens = {}
         self._store_overapproximate_tokens(self._terminals_to_dfa.keys(), vocab)
+
+        self._convert_lookup_from_list_to_mask()  # convert to boolean tensor mask. This is useful for fast union operations
 
 
     def _store_overapproximate_tokens(self, terminals: list[str], vocab):
         for cur_terminal in terminals:
             for dfa_state in self._terminals_to_dfa[cur_terminal].states:
+                
+                # Initialize the overapproximate tokens for each dfa state
+                self._dfa_state_to_tokens[(cur_terminal, dfa_state)] = torch.zeros(len(self._vocab), dtype=torch.bool)
+
                 # self._dfa_state_and_next_terminal_to_tokens[(dfa_state, next_terminal)] = []
                 for token_idx, token in enumerate(vocab):
                     is_valid, remainder = self._consume_prefix(self._terminals_to_dfa[cur_terminal], dfa_state, token)
@@ -141,6 +149,9 @@ class TerminalsNFA:
     def _convert_lookup_from_list_to_mask(self):
         for key, val in self._dfa_state_and_next_terminal_to_tokens.items():
             self._dfa_state_and_next_terminal_to_tokens[key] = self._get_tokens_mask(val)
+            (cur_terminal, dfa_state, _) = key
+            self._dfa_state_to_tokens[(cur_terminal, dfa_state)] |= self._dfa_state_and_next_terminal_to_tokens[key]
+
 
     def _lookup_next_tokens_for_dfa_state(self, cur_terminal, dfa_state, next_terminal) -> torch.Tensor:
         tokens = self._dfa_state_and_next_terminal_to_tokens[(cur_terminal, dfa_state, next_terminal)]
@@ -151,9 +162,13 @@ class TerminalsNFA:
     def _lookup_next_tokens(self, nfa_state, next_terminals: list) -> torch.Tensor:
         overapprox_token_ids = torch.zeros(len(self._vocab), dtype=torch.bool)
         # print('Time taken for NFA state:', time.time() - start_time, flush=True)
+        
         for (cur_terminal, dfa_state) in nfa_state:
-            for next_terminal in next_terminals:
-                overapprox_token_ids |= self._lookup_next_tokens_for_dfa_state(cur_terminal, dfa_state, next_terminal)
+            if next_terminals == None: # This is the case when we have incomplete final string
+                overapprox_token_ids |= self._dfa_state_to_tokens[(cur_terminal, dfa_state)]
+            else:
+                for next_terminal in next_terminals:
+                    overapprox_token_ids |= self._lookup_next_tokens_for_dfa_state(cur_terminal, dfa_state, next_terminal)
         return overapprox_token_ids
 
     def _exception_rule(self, s, exceptions: list[Exception]) -> str:
@@ -162,9 +177,9 @@ class TerminalsNFA:
                 return ""
         return s
 
-    def get_overapprox_tokens_mask(self, cur_incomplete_string, next_terminals: list, get_list=False):
-        start_time = time.time()
-        cur_incomplete_string = self._exception_rule(cur_incomplete_string, self.exceptions)
+    def get_overapprox_tokens_mask(self, r: ParseResult, get_list=False):
+        # start_time = time.time()
+        cur_incomplete_string = self._exception_rule(r.final_incomplete_str, self.exceptions)
         # print(cur_incomplete_string)
         if cur_incomplete_string is None:
             return torch.ones(len(self._vocab), dtype=torch.bool)
@@ -172,7 +187,7 @@ class TerminalsNFA:
         cur_nfa_state = self._nfa_state(cur_incomplete_string)
         print(cur_nfa_state)
         
-        overapprox_token_ids = self._lookup_next_tokens(cur_nfa_state, next_terminals)
+        overapprox_token_ids = self._lookup_next_tokens(cur_nfa_state, r.next_accept_terminals)
 
         # print('Time taken for union:', time.time() - start_time, flush=True)
         if get_list: # This is useful for testing

@@ -45,9 +45,6 @@ def load_nfa(tokenizer=None, inc_parser=None, use_cache=True):
         nfa = TerminalsNFA(inc_parser.parser.terminals, vocab, exceptions=exceptions)
         print(f'Time taken for creating NFA:', time.time() - start_time, flush=True)
 
-        nfa._convert_lookup_from_list_to_mask()
-        print(f'Time taken for converting to mask:', time.time() - start_time, flush=True)
-
         pickle.dump(nfa, open(NFA_LOC, 'wb'))
         print(f'Time taken for storing the NFA', time.time() - start_time, flush=True)
     return nfa
