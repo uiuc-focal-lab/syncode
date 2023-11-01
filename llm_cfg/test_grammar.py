@@ -3,6 +3,7 @@ from common import run_tests
 from transformers import (
     LlamaTokenizer,
 )
+from parse_result import RemainderState
 
 def test_vocab_terminals():
     tokenizer = LlamaTokenizer.from_pretrained("/share/models/llama_model/hf/7B")
@@ -117,27 +118,27 @@ def test_parser8():
     partial_code = 'def separate_paren_groups(paren_string: str) -> List[str]:\n\tfor i in paren_string:\n\t\tif i == \''
     # Check if the whitespaces are being ignored
     r = inc_parser.get_acceptable_next_terminals(partial_code)
-    assert r.final_incomplete_str == "'" # This should not be " '"
+    assert r.remainder == "'" # This should not be " '"
 
 def test_parser9():
     inc_parser = IncrementalParser()
     partial_code = 'from typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n\tpar = []\n\tfor i in par:\n\t\tif i == \'Hello'
     r = inc_parser.get_acceptable_next_terminals(partial_code)
-    print(r.final_incomplete_str)
-    assert r.final_incomplete_str == "'Hello"
+    print(r.remainder)
+    assert r.remainder == "'Hello"
 
 def test_parser10():
     inc_parser = IncrementalParser()
     partial_code = 'from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n\t""" Check if in given list of numbers, are any two numbers closer to each other than\n\tgiven threshold.\n\t>>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n\tFalse\n\t>>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n\tTrue\n\t"""\n\tfor i in range(len(numbers) -1, -1, -1):\n\t\tfor j in range(i+1, len(numbers) -1, -1):\n\t\t\tif abs(numbers[i] - numbers[j] ) < threshold:\n\t\t\t\treturn True\n\treturn False\n\n\ndef has_close_elements_with_threshold(numbers: List[float] , threshold: float) -> bool:\n\t""'
     r = inc_parser.get_acceptable_next_terminals(partial_code)
-    print(repr(r.final_incomplete_str))
-    assert r.final_incomplete_str == '""'
+    print(repr(r.remainder))
+    assert r.remainder == '""'
 
 def test_parser11():
     inc_parser = IncrementalParser()
     partial_codes = ['from typing import List, Tuple\n\n\ndef rolling_max(numbers: List[int]) -> List[int]:\n\t""" From a given list of integers, generate a list of rolling maximum element found until given moment\n\tin the sequence.\n\t>>> rolling_max([1, 2, 3, 2, 3, 4, 2])\n\t[1, 2, 3, 3, 3, 4, 4]\n\t"""\n\tresult = []\n\tfor i in range(len(numbers)):\n\t\tif i == len(numbers) - 1:  # if we are at the end of the sequence\n\t\t\tresult.append(numbers[i]) ']
     r = inc_parser.get_acceptable_next_terminals(partial_codes[-1])
-    print(r.next_accept_terminals, repr(r.final_incomplete_str))
+    print(r.next_accept_terminals, repr(r.remainder))
     assert 'COMMENT' in r.next_accept_terminals
 
 def test_parser12(): 
@@ -151,28 +152,39 @@ def test_parser13():
     partial_code =  'from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n\t""" Check if in given list of numbers, are any two numbers closer to each other than\n\tgiven threshold.\n\t>>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n\tFalse\n\t>>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n\tTrue\n\t"""\n\tfor i in range(len(numbers)):\n\t\tfor j in range(i + 1, len(numbers)):\n\t\t\tif abs(numbers[i] - numbers[j]) < threshold:\n\t\t\t\treturn True\n\treturn False\n\n\ndef has_close_elements_in_range(numbers: List[float], lower_bound: float, upper_bound: float) -> bool:\n\t"""'
     # First two " from """ should not match with the STRING
     r = inc_parser.get_acceptable_next_terminals(partial_code)
-    assert r.final_incomplete_str == '"""'
+    assert r.remainder == '"""'
 
 def test_parser14():
     inc_parser = IncrementalParser()
     partial_code = 'def has_close_elements_in_range(numbers: List[float], range_start: float, range_end: float) -> bool:\n\t""" Check if in given list of numbers, are any two numbers closer to each other than given range. """'
     r = inc_parser.get_acceptable_next_terminals(partial_code)
-    assert r.final_incomplete_str.startswith('\n\t"""') # _NL consumes \n, \t and comments
+    assert r.remainder.startswith('\n\t"""') # _NL consumes \n, \t and comments
 
 def test_parser15():
     inc_parser = IncrementalParser()
     partial_code = 'from typing import List, Tuple\n\n\ndef find_closest_elements(numbers: List[float]) -> Tuple[float, float]:\n\t""" From a supplied list of numbers (of length at least two) select and return two that are the closest to each\n\tother and return them in order (smaller number, larger number).\n\t>>> find_closest_elements([1.0, 2.0, 3.0, 4.0, 5.0, 2.2])\n\t(2.0, 2.2)\n\t>>> find_closest_elements([1.0, 2.0, 3.0, 4.0, 5.0, 2.0])\n\t(2.0, 2.0)\n\t"""\n\tif len(numbers) < 2:\n\t\treturn None\n\tclos'
     r = inc_parser.get_acceptable_next_terminals(partial_code)
-    # Should not consider _DEDENT as final terminal
-    assert r.final_incomplete_str == 'clos'
+    assert r.remainder == 'clos' # Should not consider _DEDENT as final terminal
 
+def test_parser16():
+    # Case 1:
+    partial_code = '\n\ndef neg_nos(list1):\n  for num in list1:\n    if num < 0:\n      print '
+    inc_parser = IncrementalParser(partial_code=partial_code)
+    r = inc_parser.get_acceptable_next_terminals(partial_code)
+    assert r.remainder_state == RemainderState.COMPLETE
 
+    # Case 2:
+    partial_code = '\n\ndef neg_nos(list1):\n  for num in list1:\n    if num < 0:\n      print'
+    r = inc_parser.get_acceptable_next_terminals(partial_code)
+    assert r.remainder_state == RemainderState.MAYBE_COMPLETE
+
+    
 def test_incremental_parser():
     inc_parser = IncrementalParser()
     partial_code = 'from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n\t""" Check if in given list of numbers, are any two numbers closer to each other than\n\tgiven threshold.\n\t>>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n\tFalse\n\t>>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n\tTrue\n\t"""\n\tfor i in range(len(numbers) -1, -1, -1):\n\t\tfor j in range(i+1, len(numbers) -1, -1):\n\t\t\tif abs(numbers[i] - numbers[j] ) < threshold:\n\t\t\t\treturn True\n\treturn False\n\n\ndef has_close_elements_with_threshold(numbers: List[float] , threshold: float) -> bool:\n\t""'
     r = inc_parser.get_acceptable_next_terminals(partial_code[:len(partial_code)-10])
     r = inc_parser.get_acceptable_next_terminals(partial_code)
-    assert r.final_incomplete_str == '""'
+    assert r.remainder == '""'
 
 def test_incremental_parser2():
     inc_parser = IncrementalParser()
@@ -184,7 +196,7 @@ def test_incremental_parser2():
     while i<len(generated_code):
         i += 2
         r = inc_parser.get_acceptable_next_terminals(prompt + generated_code[:i])
-    assert r.final_incomplete_str == '"shu'
+    assert r.remainder == '"shu'
 
 def test_incremental_parser3():
     inc_parser = IncrementalParser()
@@ -237,5 +249,5 @@ def test_get_matching_terminals():
     assert inc_parser.get_matching_terminal('\"""ssss') == None
 
 
-tests = [test_get_matching_terminals, test_parser1, test_parser2, test_parser3, test_parser4, test_parser5, test_parser6, test_parser7, test_parser8, test_parser9, test_parser10, test_parser11, test_parser12, test_parser13, test_parser14, test_parser15, test_incremental_parser, test_incremental_parser2, test_incremental_parser3, test_incremental_parser4]
+tests = [test_get_matching_terminals, test_parser1, test_parser2, test_parser3, test_parser4, test_parser5, test_parser6, test_parser7, test_parser8, test_parser9, test_parser10, test_parser11, test_parser12, test_parser13, test_parser14, test_parser15, test_parser16, test_incremental_parser, test_incremental_parser2, test_incremental_parser3, test_incremental_parser4]
 run_tests(tests)

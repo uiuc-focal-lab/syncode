@@ -36,7 +36,7 @@ class PythonDecoder(LogitsProcessor):
 
     def _print_current_status(self, partial_code, r: ParseResult):
         print('partial code:\n', repr(partial_code))
-        print('inc:', repr(r.final_incomplete_str), '\n', 'cur:', r.cur_accept_terminals, '\n', 'next:', r.next_accept_terminals)
+        print('inc:', repr(r.remainder), '\n', 'cur:', r.cur_accept_terminals, '\n', 'next:', r.next_accept_terminals)
 
 
     def _reset(self):
@@ -76,7 +76,8 @@ class PythonDecoder(LogitsProcessor):
                 accept_mask = self.terminals_nfa.get_overapprox_tokens_mask(r)
 
                 print(i, 'Time taken for overapproximation:', time.time() - compilation_start_time)
-                if self.debug and self.token_cnt%50==0:
+                if self.debug:
+                    # print(scores[i][:20])
                     self._print_current_status(partial_code, r)
                 
                 if torch.sum(accept_mask) != 0: # If there are acceptable tokens for the current partial code 

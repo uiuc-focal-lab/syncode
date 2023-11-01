@@ -3,7 +3,7 @@ import time
 import interegular
 import torch
 import regex
-from incremental_parser import ParseResult
+from parse_result import RemainderState, ParseResult
 
 class Exception:
     """
@@ -159,15 +159,22 @@ class TerminalsNFA:
             return torch.zeros(len(self._vocab), dtype=torch.bool)
         return tokens
 
-    def _lookup_next_tokens(self, nfa_state, next_terminals: list) -> torch.Tensor:
+    def _lookup_next_tokens(self, nfa_state, r: ParseResult) -> torch.Tensor:
         overapprox_token_ids = torch.zeros(len(self._vocab), dtype=torch.bool)
         # print('Time taken for NFA state:', time.time() - start_time, flush=True)
-        
+
+        if r.remainder_state == RemainderState.COMPLETE:
+            for (terminal, dfa_state) in nfa_state:
+                if terminal in r.next_accept_terminals:
+                    overapprox_token_ids |= self._dfa_state_to_tokens[(terminal, dfa_state)]
+            return overapprox_token_ids
+
+        # Case when the final string may be incomplete
         for (cur_terminal, dfa_state) in nfa_state:
-            if next_terminals == None: # This is the case when we have incomplete final string
+            if r.next_accept_terminals == None: # This is the case when we have incomplete final string
                 overapprox_token_ids |= self._dfa_state_to_tokens[(cur_terminal, dfa_state)]
             else:
-                for next_terminal in next_terminals:
+                for next_terminal in r.next_accept_terminals:
                     overapprox_token_ids |= self._lookup_next_tokens_for_dfa_state(cur_terminal, dfa_state, next_terminal)
         return overapprox_token_ids
 
@@ -179,7 +186,7 @@ class TerminalsNFA:
 
     def get_overapprox_tokens_mask(self, r: ParseResult, get_list=False):
         # start_time = time.time()
-        cur_incomplete_string = self._exception_rule(r.final_incomplete_str, self.exceptions)
+        cur_incomplete_string = self._exception_rule(r.remainder, self.exceptions)
         # print(cur_incomplete_string)
         if cur_incomplete_string is None:
             return torch.ones(len(self._vocab), dtype=torch.bool)
@@ -187,7 +194,7 @@ class TerminalsNFA:
         cur_nfa_state = self._nfa_state(cur_incomplete_string)
         print(cur_nfa_state)
         
-        overapprox_token_ids = self._lookup_next_tokens(cur_nfa_state, r.next_accept_terminals)
+        overapprox_token_ids = self._lookup_next_tokens(cur_nfa_state, r)
 
         # print('Time taken for union:', time.time() - start_time, flush=True)
         if get_list: # This is useful for testing

@@ -1,5 +1,9 @@
+"""
+This file contains miscellaneous tests for the LLM CFG project
+"""
 import copy
 from common import run_tests
+from incremental_parser import IncrementalParser
 from synchromesh.synchromesh import is_prefix_valid
 from synchromesh.completion_engine import LarkCompletionEngine
 
@@ -33,6 +37,5 @@ def test_is_prefix_valid4():
     s2 = 'from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n\tfor i in range'
     assert is_prefix_valid(comp_engine, completion_points, s2) == True
 
-tests = [test_is_prefix_valid, test_is_prefix_valid2, test_is_prefix_valid3]
-tests = [test_is_prefix_valid4]
+tests = [test_is_prefix_valid, test_is_prefix_valid2, test_is_prefix_valid3, test_is_prefix_valid4]
 run_tests(tests)

@@ -1,37 +1,30 @@
 import copy
 import time
 import re
+import regex
 import lark
-import lmql_regex
+from parse_result import RemainderState, ParseResult
 from lark.indenter import Indenter
 from lark.lexer import Token
 from lark import Lark
 
 
-class ParseResult:
-    """ 
-    Stores the result of parsing. 
-    """
-    def __init__(self, cur_accept_terminals, next_accept_terminals, final_incomplete_str, is_terminal_complete):
-        self.final_incomplete_str = final_incomplete_str
-        self.is_terminal_complete = is_terminal_complete # Whether the final_string is a complete terminal
-        self.cur_accept_terminals = cur_accept_terminals
-        self.next_accept_terminals = next_accept_terminals 
-
-        if not is_terminal_complete: # If the terminal is not complete, then next_accept_terminals should be None
-            assert next_accept_terminals is None 
-
 class IncrementalParser:
     """
     This class implements an incremental parser for Python code.
     """
-    def __init__(self):
+    def __init__(self, partial_code=None):
+        indenter = PythonIndenter()
+
+        if partial_code is not None: # extract indentation type from partial code
+            indenter.tab_len = self._get_indentation(partial_code)  # NOTE: tab_len is useful when \t and spaces are used for indentation in same code 
+        
         self.parser = Lark.open( # This is the standard Lark parser
             "llm_cfg/python_grammar.lark",
             parser="lalr",
             lexer="basic",
             start="file_input",
-            postlex=PythonIndenter(),
+            postlex=indenter,
             propagate_positions=True,
         )
         self.cur_ac_terminals = None
@@ -48,32 +41,37 @@ class IncrementalParser:
         self.prev_lexer_tokens = None
         self.cur_pos_to_interactive = {}
 
+    def _get_indentation(self, partial_code) -> int:
+        m = regex.match(r"(.*?):(.*?)\n(.*?)(?![ \t])", partial_code, flags=regex.DOTALL)
+        indent_type = m.group(3)
+        tab_len = 4 # Default tab length
+        if '\t' not in indent_type: # that means we are using spaces for indentation
+            tab_len = indent_type.count(' ')
+        return tab_len 
+
     def get_acceptable_next_terminals(self, code) -> ParseResult:
         # Stores the sequence of tokens that the parser has seen in the order  
-        last_terminal_complete = True
         interactive = self.interactive
         lexer_tokens = self._lex_code(code)
 
         # Restore the previous state of the parser
         if self.prev_lexer_tokens is not None:
-            i = 0
+            # Find the maximum index such that the tokens are same and the parser state is stored
+            max_matching_index = -1
+            for i in range(min(len(self.prev_lexer_tokens), len(lexer_tokens))):
+                if self.prev_lexer_tokens[i] != lexer_tokens[i]:
+                    break
+                if i in self.cur_pos_to_interactive:
+                    max_matching_index = i
 
-            while i < min(len(self.prev_lexer_tokens), len(lexer_tokens)) and lexer_tokens[i] == self.prev_lexer_tokens[i]:
-                    i += 1
+            if max_matching_index != -1:
+                self.cur_pos = max_matching_index + 1
+                # print('********Restoring parser state 1!', max_matching_index )
+                # print(self.prev_lexer_tokens[self.cur_pos-1], lexer_tokens[self.cur_pos-1])
+                assert (max_matching_index) in self.cur_pos_to_interactive
+                self._restore_parser_state(max_matching_index)
 
-            self.cur_pos = i
-            # print('********Restoring parser state 1!', self.cur_pos-1)
-            # print(self.prev_lexer_tokens[self.cur_pos-1], lexer_tokens[self.cur_pos-1])
-            # print(self.cur_pos_to_interactive.keys())
-            # print(len(self.prev_lexer_tokens), len(lexer_tokens))
-            # print(self.prev_lexer_tokens)
-            # print(lexer_tokens)
-
-            if (self.cur_pos-1) in self.cur_pos_to_interactive:
-                # print('*******Restoring parser state 2!', self.cur_pos-1)
-                # print(self.cur_pos_to_interactive[self.cur_pos-1][0].state_stack, len(self.cur_pos_to_interactive[self.cur_pos-1][0].state_stack), len(self.dedent_queue))
-                self._restore_parser_state(self.cur_pos-1)
-
+        # Set the previous lexer tokens
         self.prev_lexer_tokens = lexer_tokens
 
         # Parse the tokens
@@ -104,32 +102,30 @@ class IncrementalParser:
                 self._store_parser_state(self.cur_pos-1, interactive.parser_state.copy(), self.cur_indentation_level, interactive.accepts())
                 
         except lark.exceptions.UnexpectedToken as e:
+            # print(e)
             pass
         
-        # Print the store
-        # print('JUST PRINTING THE STORED STATES!')
-        # for pos in self.cur_pos_to_interactive.keys():
-        #     print(pos, len(self.cur_pos_to_interactive[pos][0].state_stack), len(self.cur_pos_to_interactive[pos][3]))
-
         if self.log_time:
             print('Time taken for parsing:', (time.time() - parsing_start_time))
 
+        reminder_state = None
         # Compute current terminal string
         if self.lexer_pos < len(code):
-            last_terminal_complete = False
+            reminder_state = RemainderState.INCOMPLETE
             current_term_str = code[self.lexer_pos:]
-            # print('current_term_str 1:', current_term_str)
+            # print('current_term_str 1:', repr(current_term_str))
 
             current_term_str = current_term_str.lstrip(' ') # Remove space from the beginning
             if current_term_str == '':
-                last_terminal_complete = True
+                reminder_state = RemainderState.COMPLETE
         else:
             # Although this is a complete terminal, it may happen that this may be just prefix of some other terminal
             # e.g., 'de' may seem like a variable name that is complete, but it may be just a prefix of 'def'
             current_term_str = self.parser_token_seq[-1].value
+            reminder_state = RemainderState.MAYBE_COMPLETE
             # print('current_term_str 2:', current_term_str, self.parser_token_seq)
 
-        if last_terminal_complete:            
+        if reminder_state == RemainderState.MAYBE_COMPLETE or reminder_state == RemainderState.COMPLETE:          
             if self.parser_token_seq[-1].type == '_NL':
                 # Compute next line accepted indentation levels
                 max_next_indentation_level = 0
@@ -166,7 +162,7 @@ class IncrementalParser:
         if self.next_ac_terminals is not None and '_NL' in self.next_ac_terminals:
             self.next_ac_terminals.add('COMMENT')
 
-        return ParseResult(self.cur_ac_terminals, self.next_ac_terminals, current_term_str, last_terminal_complete)
+        return ParseResult(self.cur_ac_terminals, self.next_ac_terminals, current_term_str, reminder_state)
 
 
     def _store_parser_state(self, pos, parser_state, indentation_level, accepts):
@@ -200,18 +196,16 @@ class IncrementalParser:
         # TODO: Use priorities to resolve conflicts
         return None
 
-    def _lex_code(self, code):
+    def _lex_code(self, code: str) -> list:
         # Collect Lexer tokens
         lexer_tokens = []
         interactive = self.parser.parse_interactive(code)
-        # interactive = self.interactive
         lexing_start_time = time.time()
         lexer_state = interactive.lexer_thread.state
-        indenter = self.parser.lexer_conf.postlex
+        indenter: Indenter = self.parser.lexer_conf.postlex
 
         # Reset the indentation level
-        indenter.indent_level = [0]
-        indenter.paren_level = 0
+        indenter.indent_level, indenter.paren_level = [0], 0
         # print('Starting indent level:', indenter.indent_level)
 
         try:
@@ -219,7 +213,6 @@ class IncrementalParser:
                 blexer = interactive.lexer_thread.lexer.lexer
                 token = blexer.next_token(lexer_state)
                 self.lexer_pos = lexer_state.line_ctr.char_pos
-               
                 # Perform postlexing indentation
                 if token.type == indenter.NL_type:
                     # print('NL token:', indenter.indent_level)
@@ -240,10 +233,7 @@ class IncrementalParser:
             # print(lexer_state.line_ctr.char_pos, len(lexer_state.text))
             pass
             # raise e
-        # Add the remaining dedent tokens at the end
-        # while len(indenter.indent_level) > 1:
-        #     indenter.indent_level.pop()
-        #     lexer_tokens.append(Token(indenter.DEDENT_type, ''))
+
         if self.log_time:
             print('Time taken for lexing:', time.time() - lexing_start_time)
         # print(lexer_tokens)
