@@ -1,9 +1,10 @@
 """
 This file contains miscellaneous tests for the LLM CFG project
 """
+import sys, os
+sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../')
 import copy
 from common import run_tests
-from incremental_parser import IncrementalParser
 from synchromesh.synchromesh import is_prefix_valid
 from synchromesh.completion_engine import LarkCompletionEngine
 

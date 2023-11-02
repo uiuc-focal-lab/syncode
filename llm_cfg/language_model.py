@@ -1,5 +1,5 @@
 import time
-from core.evaluation import filter_code, fix_indents
+from utils.evaluation import filter_code, fix_indents
 import common
 from synchromesh.completion_engine import LarkCompletionEngine
 from synchromesh.synchromesh import StreamingCSD

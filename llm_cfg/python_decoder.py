@@ -2,7 +2,8 @@ import time
 import torch
 import common
 from transformers import LogitsProcessor, PreTrainedTokenizer
-from incremental_parser import IncrementalParser, ParseResult
+from incremental_parser import ParseResult
+from llm_cfg.python_parser import PythonIncrementalParser
 
 
 class PythonDecoder(LogitsProcessor):
@@ -40,7 +41,7 @@ class PythonDecoder(LogitsProcessor):
 
 
     def _reset(self):
-        self.inc_parsers = [IncrementalParser() for _ in range(self.batch_size)]
+        self.inc_parsers = [PythonIncrementalParser() for _ in range(self.batch_size)]
         self.last_valid_state = [0 for _ in range(self.batch_size)]
         self.accept_tokens_sizes = []
         self.partial_codes_trace = []

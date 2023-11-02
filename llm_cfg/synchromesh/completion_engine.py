@@ -1,4 +1,4 @@
-from incremental_parser import PythonIndenter
+from python_parser import PythonIndenter
 from lark import Lark
 from lark.exceptions import UnexpectedCharacters, UnexpectedToken
 import regex
@@ -16,7 +16,7 @@ class LarkCompletionEngine(CompletionEngine):
         # self.parser = Lark(grammar, start=start_token, parser='lalr',
         #                    regex=True)
         self.parser = Lark.open( # This is the standard Lark parser
-            "llm_cfg/python_grammar.lark",
+            "llm_cfg/grammars/python_grammar.lark",
             parser="lalr",
             lexer="basic",
             start="file_input",

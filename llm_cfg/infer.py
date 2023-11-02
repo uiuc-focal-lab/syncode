@@ -7,7 +7,7 @@ from transformers import (
     PreTrainedTokenizer,
     LogitsProcessorList
 )
-from core import run_eval
+from utils import run_eval
 import os
 import torch
 import argparse
