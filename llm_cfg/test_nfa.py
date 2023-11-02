@@ -52,6 +52,14 @@ def test_nfa7():
     assert len([ac for ac in ac_list if 'num' in ac]) == 0
     assert len([ac for ac in ac_list if '(' in ac]) > 0
 
+def test_nfa8():
+    # negative test
+    r = ParseResult({'NAME'}, {'LPAR'}, 'print', RemainderState.MAYBE_COMPLETE)
+    ac_list = nfa.get_overapprox_tokens_mask(r, get_list=True)
+    assert ' num' not in ac_list
+    assert 'num' in ac_list
+    assert '()' in ac_list
+
 def test_indetantaion():
     from mxeval.data import get_data
     mbpp = get_data("mbxp", "python")
@@ -60,5 +68,5 @@ def test_indetantaion():
     assert p._get_indentation(mbpp['MBPP/2']["prompt"]) == 2
     assert p._get_indentation(mbpp['MBPP/8']["prompt"]) == 1
 
-tests = [test_nfa, test_nfa2, test_nfa3, test_nfa4, test_nfa5, test_nfa6, test_nfa7, test_indetantaion]
+tests = [test_nfa, test_nfa2, test_nfa3, test_nfa4, test_nfa5, test_nfa6, test_nfa7, test_nfa8, test_indetantaion]
 common.run_tests(tests)

@@ -62,6 +62,9 @@ class TerminalsNFA:
                         for next_terminal in terminals:
                             self._dfa_state_and_next_terminal_to_tokens[(cur_terminal, dfa_state, next_terminal)].append(token_idx)
                     else:
+                        if remainder.startswith(' '): # ignore left space
+                            remainder = remainder[1:]
+
                         # We reached the final state while consuming the token, thus we conusme the remainder with all next terminals
                         for next_terminal in terminals:
                             next_terminal_dfa = self._terminals_to_dfa[next_terminal]
@@ -86,9 +89,6 @@ class TerminalsNFA:
             longest_accept_index = 0
 
         for i, symbol in enumerate(input_str):
-            if symbol == ' ': # ignore spaces
-                continue
-
             if not symbol in dfa.alphabet:
                 if not self.anything_else in dfa.alphabet:
                     state = None
