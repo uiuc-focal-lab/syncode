@@ -21,11 +21,12 @@ class TerminalsNFA:
     """
     We build an NFA that consists of DFAs for each terminal. We simulate the NFA by consuming the input string for each terminal DFA.
     """
-    def __init__(self, terminals: list, vocab, exceptions={}):
+    def __init__(self, terminals: list, vocab, exceptions={}, special_token_ids=[]):
         self._terminals_to_dfa = {}
         self._vocab = vocab
         self.anything_else = interegular.fsm.anything_else # This is special character used for the DFAs
-        self.exceptions = []        
+        self.exceptions = []      
+        self.special_token_ids = special_token_ids  
 
         for terminal in terminals:
             if terminal.name in exceptions:
@@ -42,13 +43,18 @@ class TerminalsNFA:
 
         self._convert_lookup_from_list_to_mask()  # convert to boolean tensor mask. This is useful for fast union operations
 
+    def _get_default_mask(self):
+        mask = torch.zeros(len(self._vocab), dtype=torch.bool)
+        for token_id in self.special_token_ids:
+            mask[token_id] = True
+        return mask
 
     def _store_overapproximate_tokens(self, terminals: list[str], vocab):
         for cur_terminal in terminals:
             for dfa_state in self._terminals_to_dfa[cur_terminal].states:
                 
                 # Initialize the overapproximate tokens for each dfa state
-                self._dfa_state_to_tokens[(cur_terminal, dfa_state)] = torch.zeros(len(self._vocab), dtype=torch.bool)
+                self._dfa_state_to_tokens[(cur_terminal, dfa_state)] = self._get_default_mask()
 
                 # self._dfa_state_and_next_terminal_to_tokens[(dfa_state, next_terminal)] = []
                 for token_idx, token in enumerate(vocab):
@@ -139,8 +145,6 @@ class TerminalsNFA:
         """
         nfa_state = []
         for (termianl, dfa) in self._terminals_to_dfa.items():
-            # print(termianl)
-            # print(termianl, input_str)
             dfa_state = self._consume_input(dfa, input_str)
             if dfa_state is not None:
                 nfa_state.append((termianl, dfa_state)) 
@@ -156,11 +160,11 @@ class TerminalsNFA:
     def _lookup_next_tokens_for_dfa_state(self, cur_terminal, dfa_state, next_terminal) -> torch.Tensor:
         tokens = self._dfa_state_and_next_terminal_to_tokens[(cur_terminal, dfa_state, next_terminal)]
         if tokens == []:
-            return torch.zeros(len(self._vocab), dtype=torch.bool)
+            return self._get_default_mask()
         return tokens
 
     def _lookup_next_tokens(self, nfa_state, r: ParseResult) -> torch.Tensor:
-        overapprox_token_ids = torch.zeros(len(self._vocab), dtype=torch.bool)
+        overapprox_token_ids = self._get_default_mask()
         # print('Time taken for NFA state:', time.time() - start_time, flush=True)
 
         if r.remainder_state == RemainderState.COMPLETE:
@@ -204,7 +208,7 @@ class TerminalsNFA:
     
     def _get_tokens_mask(self, tokens_idx_list) -> torch.Tensor:
         indices = torch.tensor(tokens_idx_list)
-        tokens_mask = torch.zeros(len(self._vocab), dtype=torch.bool)
+        tokens_mask = self._get_default_mask()
         tokens_mask[indices] = 1
         return tokens_mask
 

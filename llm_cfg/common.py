@@ -43,7 +43,7 @@ def load_nfa(tokenizer=None, inc_parser=None, use_cache=True):
 
         exceptions = {'COMMENT': '#.*|\'\'\'.*?\'\'\'|""".*?"""/is', '_NL': '(\r?\n[\t ]*)+', 'LONG_STRING': '\'\'\'.*?\'\'\'|""".*?"""/is', 'STRING': '[ubf]?r?(".*?"|\'.*?\')'}
         # , '_TAB': '\t+'
-        nfa = TerminalsNFA(inc_parser.parser.terminals, vocab, exceptions=exceptions)
+        nfa = TerminalsNFA(inc_parser.parser.terminals, vocab, exceptions=exceptions, special_token_ids=[tokenizer.eos_token_id])
         print(f'Time taken for creating NFA:', time.time() - start_time, flush=True)
 
         pickle.dump(nfa, open(NFA_LOC, 'wb'))
