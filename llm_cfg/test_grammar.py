@@ -178,7 +178,16 @@ def test_parser16():
     r = inc_parser.get_acceptable_next_terminals(partial_code)
     assert r.remainder_state == RemainderState.MAYBE_COMPLETE
 
-    
+def test_parser17():
+    # Checking if the parser is able to handle the case where one of the function only has a docstring
+    inc_parser = IncrementalParser()
+    code = f"""
+def cat():
+    ''' something '''
+def"""
+    r  = inc_parser.get_acceptable_next_terminals(code)
+    assert 'NAME' in r.next_accept_terminals
+
 def test_incremental_parser():
     inc_parser = IncrementalParser()
     partial_code = 'from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n\t""" Check if in given list of numbers, are any two numbers closer to each other than\n\tgiven threshold.\n\t>>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n\tFalse\n\t>>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n\tTrue\n\t"""\n\tfor i in range(len(numbers) -1, -1, -1):\n\t\tfor j in range(i+1, len(numbers) -1, -1):\n\t\t\tif abs(numbers[i] - numbers[j] ) < threshold:\n\t\t\t\treturn True\n\treturn False\n\n\ndef has_close_elements_with_threshold(numbers: List[float] , threshold: float) -> bool:\n\t""'
@@ -248,6 +257,5 @@ def test_get_matching_terminals():
     assert inc_parser.get_matching_terminal('\"""ssss\"""') == "COMMENT"
     assert inc_parser.get_matching_terminal('\"""ssss') == None
 
-
-tests = [test_get_matching_terminals, test_parser1, test_parser2, test_parser3, test_parser4, test_parser5, test_parser6, test_parser7, test_parser8, test_parser9, test_parser10, test_parser11, test_parser12, test_parser13, test_parser14, test_parser15, test_parser16, test_incremental_parser, test_incremental_parser2, test_incremental_parser3, test_incremental_parser4]
+tests = [test_get_matching_terminals, test_parser1, test_parser2, test_parser3, test_parser4, test_parser5, test_parser6, test_parser7, test_parser8, test_parser9, test_parser10, test_parser11, test_parser12, test_parser13, test_parser14, test_parser15, test_parser16, test_parser17, test_incremental_parser, test_incremental_parser2, test_incremental_parser3, test_incremental_parser4]
 run_tests(tests)
