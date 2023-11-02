@@ -1,6 +1,7 @@
 import argparse
 from collections import defaultdict, Counter
 from concurrent.futures import ThreadPoolExecutor, as_completed
+import json
 import sys
 import traceback
 from typing import List, Union, Iterable, Dict
@@ -152,7 +153,6 @@ def check_correctness(
                 + "\n"
                 + f"check({problem['entry_point']})"
             )
-
             try:
                 exec_globals = {}
                 with swallow_io():
@@ -332,10 +332,56 @@ def get_datafile(dataset="mbxp", language="python"):
   datafile = metadata[language.lower()]
   return os.path.join(datadir, datafile)
 
+
 # Take the filename as input
-def main():
+def compare(get_datafile, filename, language, dataset):
+    problem_file=get_datafile(dataset, language)
+    filename_original = filename.replace("grammar_mask", "original")
+
+    count_original = 0
+    count_grammar_mask = 0
+    count_original_unique = 0
+    count_grammar_mask_unique = 0
+
+    def print_comparison(p, c1, c2, task_id):
+        print('-'*80)
+        print(f"Task ID: {task_id}")
+        print('Prompt:')
+        print(p["prompt"])
+        print('Original Completion:')
+        print(c1["completion"])
+        print('Result:', c1["result"])
+        print('Grammar Mask Completion:')
+        print(c2["completion"])
+        print('Result:', c2["result"])
+        print('-'*80)
+
+    for p, c1, c2 in zip(tqdm.tqdm(stream_jsonl(problem_file)), tqdm.tqdm(stream_jsonl(filename_original)), tqdm.tqdm(stream_jsonl(filename))):
+        task_id = c1["task_id"]
+        if c1['passed'] != c2['passed']:
+            # print_comparison(p, c1, c2, task_id)
+            pass
+        
+        if c1['passed'] and not c2['passed']:
+            print_comparison(p, c1, c2, task_id)
+            count_original_unique += 1
+        if c2['passed'] and not c1['passed']:
+            count_grammar_mask_unique += 1
+        if c1['passed']:
+            count_original += 1
+        if c2['passed']:
+            count_grammar_mask += 1
+
+    print(f"Original: {count_original}")
+    print(f"Grammar Mask: {count_grammar_mask}")
+    print(f"Original unique: {count_original_unique}")
+    print(f"Grammar Mask unique: {count_grammar_mask_unique}")
+
+
+if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--filename", help="Enter the filename")
+    parser.add_argument("--compare", help="comparison mode compares results of original and grammar_mask modes", action="store_true")
     args = parser.parse_args()
     filename = args.filename
     language = "go"
@@ -346,9 +392,9 @@ def main():
         dataset = "multi-humaneval"
     elif re.search(r"mathqa", filename):
         dataset = "mathqa-x"
-  
-    results = evaluate_functional_correctness(filename, problem_file= get_datafile(dataset, language))
-    print(results)
-
-if __name__ == "__main__":
-    main()
+    
+    if args.compare:
+        compare(get_datafile, filename, language, dataset)
+    else:
+        results = evaluate_functional_correctness(filename, problem_file=get_datafile(dataset, language))
+        print(results)
