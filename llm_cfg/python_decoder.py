@@ -3,7 +3,7 @@ import torch
 import common
 from transformers import LogitsProcessor, PreTrainedTokenizer
 from incremental_parser import ParseResult
-from llm_cfg.python_parser import PythonIncrementalParser
+from llm_cfg.grammars.python_parser import PythonIncrementalParser
 
 
 class PythonDecoder(LogitsProcessor):

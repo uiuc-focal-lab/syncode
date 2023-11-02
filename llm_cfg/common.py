@@ -2,7 +2,7 @@ import os
 import pickle
 import re
 import transformers
-from python_parser import PythonIncrementalParser
+from grammars.python_parser import PythonIncrementalParser
 from terminals_nfa import TerminalsNFA
 from transformers import LlamaTokenizer
 import time

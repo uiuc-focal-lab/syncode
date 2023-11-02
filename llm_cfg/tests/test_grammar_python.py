@@ -1,6 +1,6 @@
 import sys, os
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../')
-from python_parser import PythonIncrementalParser
+from grammars.python_parser import PythonIncrementalParser
 from common import run_tests
 from transformers import (
     LlamaTokenizer,

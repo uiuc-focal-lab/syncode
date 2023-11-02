@@ -21,4 +21,4 @@ jobs:
     - name: Run Tests
       run: |
         python llm_cfg/tests/test_synchromesh.py
-        python llm_cfg/tests/test_grammar.py
+        python llm_cfg/tests/test_grammar_python.py

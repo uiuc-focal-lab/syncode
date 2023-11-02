@@ -3,7 +3,7 @@ sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../')
 import time
 import common
 from incremental_parser import ParseResult
-from python_parser import PythonIncrementalParser
+from llm_cfg.grammars.python_parser import PythonIncrementalParser
 from parse_result import RemainderState
 
 nfa = common.load_nfa(use_cache=True)

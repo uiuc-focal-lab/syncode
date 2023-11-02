@@ -1,4 +1,4 @@
-from python_parser import PythonIndenter
+from grammars.python_parser import PythonIndenter
 from lark import Lark
 from lark.exceptions import UnexpectedCharacters, UnexpectedToken
 import regex
