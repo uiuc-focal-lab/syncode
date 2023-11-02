@@ -1,7 +1,9 @@
-import re
+import sys, os
+sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../')
 import time
 import common
-from incremental_parser import IncrementalParser, ParseResult
+from incremental_parser import ParseResult
+from python_parser import PythonIncrementalParser
 from parse_result import RemainderState
 
 nfa = common.load_nfa(use_cache=True)
@@ -68,7 +70,7 @@ def test_nfa9():
 def test_indetantaion():
     from mxeval.data import get_data
     mbpp = get_data("mbxp", "python")
-    p = IncrementalParser()
+    p = PythonIncrementalParser()
     assert p._get_indentation(mbpp['MBPP/1']["prompt"]) == 4
     assert p._get_indentation(mbpp['MBPP/2']["prompt"]) == 2
     assert p._get_indentation(mbpp['MBPP/8']["prompt"]) == 1

@@ -2,7 +2,7 @@ import os
 import pickle
 import re
 import transformers
-from incremental_parser import IncrementalParser
+from python_parser import PythonIncrementalParser
 from terminals_nfa import TerminalsNFA
 from transformers import LlamaTokenizer
 import time
@@ -38,7 +38,7 @@ def load_nfa(tokenizer=None, inc_parser=None, use_cache=True):
         print('Time taken for loading vocab:', time.time() - start_time, flush=True)
 
         if inc_parser is None:
-            inc_parser = IncrementalParser()
+            inc_parser = PythonIncrementalParser()
             print('Time taken for loading parser:', time.time() - start_time, flush=True)
 
         exceptions = {'COMMENT': '#.*|\'\'\'.*?\'\'\'|""".*?"""/is', '_NL': '(\r?\n[\t ]*)+', 'LONG_STRING': '\'\'\'.*?\'\'\'|""".*?"""/is', 'STRING': '[ubf]?r?(".*?"|\'.*?\')'}
