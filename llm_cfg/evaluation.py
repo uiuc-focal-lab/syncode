@@ -267,10 +267,14 @@ def check_correctness_helper(
             elapsed = 1000.0 * (time.time() - start)
             if verbose:
                 print("exec result run", exec_result_run)
-
+            if 'syntax error' in exec_result_run.stderr: # Works for go
+                error_type = 'SyntaxError'
+            elif exec_result_run.returncode != 0:
+                error_type = 'OtherError'
+            else:
+                error_type = 'NoError'
             passed = exec_result_run.returncode == 0
             message = exec_result_run.stderr
-            error_type = 'No Error'
         else:
             passed, message, error_type, elapsed = False, compile_result.stderr, compile_result.stderr, None
 
