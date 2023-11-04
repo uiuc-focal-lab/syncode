@@ -3,7 +3,7 @@ import lark
 import regex
 from lark.indenter import Indenter
 from incremental_parser import IncrementalParser
-from parse_result import ParseResult, RemainderState
+from parse_result import IndentationConstraint, ParseResult, RemainderState
 
 
 class PythonIndenter(Indenter):
@@ -24,7 +24,9 @@ class PythonIncrementalParser(IncrementalParser):
         super().__init__("llm_cfg/grammars/python_grammar.lark", indenter=indenter)
 
         if partial_code is not None: # extract indentation type from partial code
-            indenter.tab_len = self._get_indentation(partial_code)  # NOTE: tab_len is useful when \t and spaces are used for indentation in same code 
+            indenter.tab_len = self._get_indentation(partial_code)  # NOTE: tab_len is useful when \t and spaces are used for indentation in same code
+        self.tab_len = indenter.tab_len
+        self.indent_level = [0] # Current indentation level
 
     def _get_indentation(self, partial_code) -> int:
         m = regex.match(r"(.*?):(.*?)\n(.*?)(?![ \t])", partial_code, flags=regex.DOTALL)
@@ -56,35 +58,36 @@ class PythonIncrementalParser(IncrementalParser):
                 assert (max_matching_index) in self.cur_pos_to_interactive
                 self._restore_parser_state(max_matching_index)
 
-        # Set the previous lexer tokens
-        self.prev_lexer_tokens = lexer_tokens
+        
+        self.prev_lexer_tokens = lexer_tokens  # Set the previous lexer tokens
+        next_ac_indents = None
 
         # Parse the tokens
         parsing_start_time = time.time()
         try:
             while self.cur_pos < len(lexer_tokens):
                 token = lexer_tokens[self.cur_pos]
-                # print(self.cur_pos, repr(token), repr(lexer_tokens[self.cur_pos]))
+                # print(self.cur_pos, repr(token), self.indent_level)
                 self.cur_pos += 1
-                # print(self.cur_pos, repr(token), interactive.parser_state.state_stack, len(interactive.parser_state.state_stack), len(self.dedent_queue))
+
                 if token.type == '_INDENT':
-                    self.cur_indentation_level += 1
-                elif token.type == '_DEDENT':
-                    # Do not shoot dedent tokens unless there is some code on the next line
+                    indent = token.count(' ') + token.count('\t') * self.tab_len
+                    self._update_indent_levels(lexer_tokens, self.indent_level, indent)            
+                elif token.type == '_DEDENT': # Do not shoot dedent tokens unless there is some code on the next line
                     self.dedent_queue.append(token)
                     continue
                 else:
                     self.parser_token_seq.append(token) # parser_token_seq holds all tokens except _INDENT and _DEDENT
 
                     while not len(self.dedent_queue)==0: # Shoot all the dedent tokens that are in the queue
+                        self.indent_level.pop()
                         dedent_token = self.dedent_queue.pop()
-                        self.cur_indentation_level -= 1
                         interactive.feed_token(dedent_token)
-                # TODO: Check if there is an overhead of computing accept tokens
+                
                 interactive.feed_token(token)
 
                 # Store the current state of the parser
-                self._store_parser_state(self.cur_pos-1, interactive.parser_state.copy(), self.cur_indentation_level, interactive.accepts())
+                self._store_parser_state(self.cur_pos-1, interactive.parser_state.copy(), interactive.accepts())
 
         except lark.exceptions.UnexpectedToken as e:
             # print(e)
@@ -110,36 +113,20 @@ class PythonIncrementalParser(IncrementalParser):
             reminder_state = RemainderState.MAYBE_COMPLETE
             # print('current_term_str 2:', current_term_str, self.parser_token_seq)
 
+        next_ac_indents = None
         if reminder_state == RemainderState.MAYBE_COMPLETE or reminder_state == RemainderState.COMPLETE:
             if self.parser_token_seq[-1].type == '_NL':
-                # Compute next line accepted indentation levels
-                max_next_indentation_level = 0
-                # print('next_ac_terminals:', next_ac_terminals)
+                last_indent_str = self.parser_token_seq[-1].value.split('\n')[-1]
+                last_indent = last_indent_str.count(' ') + last_indent_str.count('\t') * self.tab_len
+                next_ac_indents = [indent-last_indent for indent in self.indent_level if indent >= last_indent]
 
                 if '_INDENT' in self.next_ac_terminals:
-                    max_next_indentation_level = self.cur_indentation_level + 1
-                elif '_DEDENT' in self.next_ac_terminals and len(self.next_ac_terminals)==1:
-                    max_next_indentation_level = self.cur_indentation_level - 1
-                elif '_DEDENT' in self.next_ac_terminals and len(self.next_ac_terminals)>1:
-                    max_next_indentation_level = self.cur_indentation_level
+                    next_ac_indents = IndentationConstraint(greater_than_indent_val=next_ac_indents[-1]) # next indentation level in this case
+                else:
+                    
+                    next_ac_indents = IndentationConstraint(accept_indents=next_ac_indents)  
 
-                cur_tabs = self.parser_token_seq[-1].value.split('\n')[-1].count('\t')
-
-                # Remove the _INDENT and _DEDENT tokens from the acceptable tokens
-                # since we inform the indentation level through the _TAB token
-                if '_INDENT' in self.next_ac_terminals:
-                    self.next_ac_terminals.remove('_INDENT')
-                if '_DEDENT' in self.next_ac_terminals:
-                    self.next_ac_terminals.remove('_DEDENT')
-
-                # '_NL' is always accepted in this case
-                self.next_ac_terminals.add('_NL')
-
-                if cur_tabs < max_next_indentation_level:
-                    # print('Expect a tab!')
-                    self.next_ac_terminals.add('_TAB')
-                # elif cur_tabs > max_next_indentation_level:
-                #     raise Exception('Invalid indentation level! max_next_indentation_level: {}, cur_tabs: {}'.format(max_next_indentation_level, cur_tabs))
+                self.next_ac_terminals.add('_NL') # '_NL' is always accepted in this case
 
         else: # Since current terminal is incomplete, next token should add to current terminal
             self.next_ac_terminals = None
@@ -147,7 +134,15 @@ class PythonIncrementalParser(IncrementalParser):
         if self.next_ac_terminals is not None and '_NL' in self.next_ac_terminals:
             self.next_ac_terminals.add('COMMENT')
 
-        return ParseResult(self.cur_ac_terminals, self.next_ac_terminals, current_term_str, reminder_state)
+        return ParseResult(self.cur_ac_terminals, self.next_ac_terminals, current_term_str, reminder_state, next_ac_indents=next_ac_indents)
+
+    def _update_indent_levels(self, lexer_tokens, indent_level, indent):
+        # if self.cur_pos != len(lexer_tokens): # Store previous indentation levels except the last one
+        if indent > indent_level[-1]:
+            indent_level.append(indent)
+        else:
+            while indent < indent_level[-1]:
+                indent_level.pop()
 
     def _lex_code(self, code: str) -> list:
         # Collect Lexer tokens
@@ -172,7 +167,6 @@ class PythonIncrementalParser(IncrementalParser):
                     lexer_tokens += indenter.handle_NL(token)
                 else:
                     lexer_tokens.append(token)
-
                 if token.type in indenter.OPEN_PAREN_types:
                         indenter.paren_level += 1
                 elif token.type in indenter.CLOSE_PAREN_types:
@@ -181,11 +175,9 @@ class PythonIncrementalParser(IncrementalParser):
         except lark.exceptions.UnexpectedCharacters as e:
             pass
         except EOFError as e:
-            # print('EOF Error!')
-            # print(code)
-            # print(lexer_state.line_ctr.char_pos, len(lexer_state.text))
-            pass
+            # print('EOF Error!\n', code, lexer_state.line_ctr.char_pos, len(lexer_state.text))
             # raise e
+            pass
 
         if self.log_time:
             print('Time taken for lexing:', time.time() - lexing_start_time)

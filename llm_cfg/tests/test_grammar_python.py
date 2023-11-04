@@ -80,41 +80,40 @@ def test_parser3():
     inc_parser = PythonIncrementalParser()
     partial_code = 'from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n\t\n\tfor i in range(len(numbers) -1, -1, -1) :\n\t\tfor j in range(i+1, len(numbers) ,1) :\n\t\t\tif abs(numbers[i] - numbers[j] ) < threshold :\n\t\t\t\treturn True\n'
     r = inc_parser.get_acceptable_next_terminals(partial_code)
-    assert '_TAB' in r.next_accept_terminals
+    assert r.next_ac_indents.accept_indents == [0, 4, 8, 12, 16]
 
 def test_parser4():
     inc_parser = PythonIncrementalParser()
     partial_code = 'from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n\t\n\tfor i in range(len(numbers) -1, -1, -1) :\n\t\tfor j in range(i+1, len(numbers) ,1) :\n\t\t\tif abs(numbers[i] - numbers[j] ) < threshold :\n'
     r = inc_parser.get_acceptable_next_terminals(partial_code)
-    assert '_TAB' in r.next_accept_terminals
+    assert r.next_ac_indents.greater_than_indent_val == 12
 
 def test_parser5():
     inc_parser = PythonIncrementalParser()
     partial_code = 'from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n\t\n\tfor i in range(len(numbers) -1, -1, -1) :\n\t\tfor j in range(i+1, len(numbers) ,1) :\n\t\t\tif abs(numbers[i] - numbers[j] ) < threshold :\n\t\t\t\treturn True\n\t\t\t\t'
     # There cannot be another tab after this
     r = inc_parser.get_acceptable_next_terminals(partial_code)
-    assert '_TAB' not in r.next_accept_terminals
+    r.next_ac_indents.accept_indents == [0]
 
 def test_parser6():
     inc_parser = PythonIncrementalParser()
     partial_code = 'from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n\t\n\tfor i in range(len(numbers) -1, -1, -1) :\n\t\tfor j in range(i+1, len(numbers) ,1) :\n\t\t\tif abs(numbers[i] - numbers[j] ) < threshold :\n\t\t\t\treturn True\n\n\n\t\t\t\t'
     # There cannot be another tab after this
     r = inc_parser.get_acceptable_next_terminals(partial_code)
-    assert '_TAB' not in r.next_accept_terminals
+    assert r.next_ac_indents.accept_indents == [0]
 
-def test_parser6():
-    inc_parser = PythonIncrementalParser()
     partial_code = 'from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n\t\n\tfor i in range(len(numbers) -1, -1, -1) :\n\t\tfor j in range(i+1, len(numbers) ,1) :\n\t\t\tif abs(numbers[i] - numbers[j] ) < threshold :\n\t\t\t\treturn True\n\n\t\t\t\n\t\t'
     # There can be another tab after this
     r = inc_parser.get_acceptable_next_terminals(partial_code)
-    assert '_TAB' in r.next_accept_terminals
+    assert r.next_ac_indents.accept_indents == [0, 4, 8]
 
 def test_parser7():
     inc_parser = PythonIncrementalParser()
     partial_code = 'from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n\tfor i in range(len(numbers) -1, -1, -1) :\n\t\tif numbers[i] - numbers[i+1] < threshold:\n\t\t\treturn True\n\treturn False\n'
     r = inc_parser.get_acceptable_next_terminals(partial_code)
-    assert '_TAB' in r.next_accept_terminals
+    # assert '_TAB' in r.next_accept_terminals
     assert '_NL' in r.next_accept_terminals
+    assert r.next_ac_indents.accept_indents == [0, 4]
 
 def test_parser8():
     inc_parser = PythonIncrementalParser()
@@ -192,16 +191,44 @@ def"""
     assert 'NAME' in r.next_accept_terminals
 
 def test_parser18():
-    inc_parser = PythonIncrementalParser()
+    # Tests if indentation check works non-incrementally
     code = f"""
 def cat():
     ''' something '''
     x = 3
-        y = 4
+
 """
+    inc_parser = PythonIncrementalParser()
     r  = inc_parser.get_acceptable_next_terminals(code)
-    # inc_parser.parser.parse(code)
-    print(r)
+    print(r.next_ac_indents)
+    assert r.next_ac_indents.accept_indents == [0, 4]
+
+    code = f"""
+def cat():
+    ''' something '''
+    if True:
+      x = 3
+    else:
+    
+""" 
+    inc_parser = PythonIncrementalParser()
+    r  = inc_parser.get_acceptable_next_terminals(code)
+    print(r.next_ac_indents)
+    assert r.next_ac_indents.greater_than_indent_val == 4 
+    
+    code = f"""
+def cat():
+    ''' something '''
+    if True:
+      if True:
+        x = 3
+
+"""
+    inc_parser = PythonIncrementalParser()
+    r  = inc_parser.get_acceptable_next_terminals(code)
+    print(r.next_ac_indents)
+    assert r.next_ac_indents.accept_indents == [0, 4, 6, 8]
+
 
 def test_incremental_parser():
     inc_parser = PythonIncrementalParser()
@@ -241,5 +268,5 @@ def test_incremental_parser4():
         r2 = new_inc_parser.get_acceptable_next_terminals(partial_code)
         assert r1.next_accept_terminals == r2.next_accept_terminals, i 
 
-tests = [test_parser1, test_parser2, test_parser3, test_parser4, test_parser5, test_parser6, test_parser7, test_parser8, test_parser9, test_parser10, test_parser11, test_parser12, test_parser13, test_parser14, test_parser15, test_parser16, test_parser17, test_incremental_parser, test_incremental_parser2, test_incremental_parser3, test_incremental_parser4]
+tests = [test_parser1, test_parser2, test_parser3, test_parser4, test_parser5, test_parser6, test_parser7, test_parser8, test_parser9, test_parser10, test_parser11, test_parser12, test_parser13, test_parser14, test_parser15, test_parser16, test_parser17, test_parser18, test_incremental_parser, test_incremental_parser2, test_incremental_parser3, test_incremental_parser4]
 run_tests(tests)
