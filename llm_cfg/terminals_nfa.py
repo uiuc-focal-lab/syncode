@@ -1,9 +1,10 @@
 from collections import defaultdict
 import time
+from typing import Tuple
 import interegular
 import torch
 import regex
-from parse_result import RemainderState, ParseResult
+from parse_result import IndentationConstraint, RemainderState, ParseResult
 
 class Exception:
     """
@@ -21,7 +22,7 @@ class TerminalsNFA:
     """
     We build an NFA that consists of DFAs for each terminal. We simulate the NFA by consuming the input string for each terminal DFA.
     """
-    def __init__(self, terminals: list, vocab, exceptions={}, special_token_ids=[]):
+    def __init__(self, terminals: list, vocab, exceptions={}, special_token_ids=[], indentation=True):
         self._terminals_to_dfa = {}
         self._vocab = vocab
         self.anything_else = interegular.fsm.anything_else # This is special character used for the DFAs
@@ -37,19 +38,75 @@ class TerminalsNFA:
             self._terminals_to_dfa[terminal.name] = interegular.parse_pattern(terminal_regex).to_fsm()
         
         # Iterate through each pair of DFA state and next terminals and store the overapproximate tokens
-        self._dfa_state_and_next_terminal_to_tokens = defaultdict(list)
-        self._dfa_state_to_tokens = {}
+        self._dfa_state_and_next_terminal_to_tokens: defaultdict = defaultdict(list)
+        self._dfa_state_to_tokens: dict = {}
         self._store_overapproximate_tokens(self._terminals_to_dfa.keys(), vocab)
 
+        self.indentation = indentation
+        if indentation:
+            self._whitespace_tokens_map: defaultdict = defaultdict(list)
+            self._indentation_to_tokens_map: defaultdict = defaultdict(list)
+            self._create_indentation_to_tokens_map()
+        
+        # NOTE: This should be called at the end of the constructor
         self._convert_lookup_from_list_to_mask()  # convert to boolean tensor mask. This is useful for fast union operations
 
-    def _get_default_mask(self):
+    def _get_default_mask(self) -> torch.Tensor:
         mask = torch.zeros(len(self._vocab), dtype=torch.bool)
         for token_id in self.special_token_ids:
             mask[token_id] = True
         return mask
 
-    def _store_overapproximate_tokens(self, terminals: list[str], vocab):
+    def _create_indentation_to_tokens_map(self):
+        """
+        We create a mapping from indentation to overapproximate tokens. This is useful for the indentation rule.
+        """
+        for token_idx, token in enumerate(self._vocab):
+            full_match, indent = self._get_indent_type(token)
+            if full_match:
+                self._whitespace_tokens_map[indent].append(token_idx)
+            else:
+                self._indentation_to_tokens_map[indent].append(token_idx)
+
+    def _get_indent_type(self, s: str) -> Tuple[bool, int]:
+        m = regex.match(r'[\t ]+', s, partial=True)
+        full_match = False
+        if m != None:
+            start, end = m.start(), m.end()
+            if end == len(s):
+                full_match = True
+            return full_match, s[start: end].count(' ') + 4*s[start: end].count('\t')
+        return False, 0   
+
+    def _get_indentation_tokens(self, indent_constraint: IndentationConstraint, get_list=False):
+        '''
+        Returns the tokens mask for the indentation constraint
+        '''
+        out_mask = self._get_default_mask()
+        if indent_constraint.greater_than_indent_val is not None:
+            for indent in self._indentation_to_tokens_map.keys():
+                if indent > indent_constraint.greater_than_indent_val:
+                    out_mask |= self._indentation_to_tokens_map[indent]
+            
+            for indent in self._whitespace_tokens_map.keys():  # We are ok with any num of whitespace
+                out_mask |= self._whitespace_tokens_map[indent]
+
+        elif indent_constraint.accept_indents is not None:
+            for indent in indent_constraint.accept_indents:
+                if indent in self._indentation_to_tokens_map:
+                    out_mask |= self._indentation_to_tokens_map[indent]
+            
+            max_acceptable_indent = max(indent_constraint.accept_indents)
+            for indent in self._whitespace_tokens_map.keys():  # We are ok with num whitespace <= largest accepted indent
+                if indent <= max_acceptable_indent:
+                    out_mask |= self._whitespace_tokens_map[indent]
+        
+        if get_list: # This is useful for testing
+            return self._get_tokens_list(out_mask) 
+        return out_mask
+
+
+    def _store_overapproximate_tokens(self, terminals, vocab):
         for cur_terminal in terminals:
             for dfa_state in self._terminals_to_dfa[cur_terminal].states:
                 
@@ -58,7 +115,11 @@ class TerminalsNFA:
 
                 # self._dfa_state_and_next_terminal_to_tokens[(dfa_state, next_terminal)] = []
                 for token_idx, token in enumerate(vocab):
-                    is_valid, remainder = self._consume_prefix(self._terminals_to_dfa[cur_terminal], dfa_state, token)
+                    remainder = token
+                    if remainder.startswith(' '): # ignore left space
+                            remainder = remainder[1:]
+
+                    is_valid, remainder = self._consume_prefix(self._terminals_to_dfa[cur_terminal], dfa_state, remainder)
 
                     if not is_valid:
                         continue
@@ -155,6 +216,12 @@ class TerminalsNFA:
             self._dfa_state_and_next_terminal_to_tokens[key] = self._get_tokens_mask(val)
             (cur_terminal, dfa_state, _) = key
             self._dfa_state_to_tokens[(cur_terminal, dfa_state)] |= self._dfa_state_and_next_terminal_to_tokens[key]
+        
+        if self.indentation:
+            for key, val in self._whitespace_tokens_map.items():
+                self._whitespace_tokens_map[key] = self._get_tokens_mask(val)
+            for key, val in self._indentation_to_tokens_map.items():
+                self._indentation_to_tokens_map[key] = self._get_tokens_mask(val)
 
 
     def _lookup_next_tokens_for_dfa_state(self, cur_terminal, dfa_state, next_terminal) -> torch.Tensor:
@@ -200,7 +267,10 @@ class TerminalsNFA:
         
         overapprox_token_ids = self._lookup_next_tokens(cur_nfa_state, r)
 
-        # print('Time taken for union:', time.time() - start_time, flush=True)
+        if self.indentation and r.next_ac_indents is not None:
+            indent_ac_token = self._get_indentation_tokens(r.next_ac_indents)
+            overapprox_token_ids &= indent_ac_token
+
         if get_list: # This is useful for testing
             return self._get_tokens_list(overapprox_token_ids)
         # print('Time taken for mask to list:', time.time() - start_time, flush=True)

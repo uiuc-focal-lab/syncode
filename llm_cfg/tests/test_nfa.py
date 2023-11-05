@@ -3,8 +3,8 @@ sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../')
 import time
 import common
 from incremental_parser import ParseResult
-from llm_cfg.grammars.python_parser import PythonIncrementalParser
-from parse_result import RemainderState
+from grammars.python_parser import PythonIncrementalParser
+from parse_result import IndentationConstraint, RemainderState
 
 nfa = common.load_nfa(use_cache=True)
 
@@ -67,6 +67,41 @@ def test_nfa9():
     ac_list = nfa.get_overapprox_tokens_mask(r, get_list=True)
     assert '</s>' in ac_list # special token should always be in the list
 
+def test_indent():
+    ac_list = nfa._get_indentation_tokens(IndentationConstraint(accept_indents=[1]), get_list=True)
+    assert all(t in ac_list for t in [' int', ' '])
+    assert not '  ' in ac_list
+    ac_list = nfa._get_indentation_tokens(IndentationConstraint(accept_indents=[2]), get_list=True)
+    assert all(t in ac_list for t in [' ', '  '])
+    ac_list = nfa._get_indentation_tokens(IndentationConstraint(accept_indents=[4]), get_list=True)
+    assert all(t in ac_list for t in ['\t', ' ', '  ', '    ', '   ', ' '])
+    ac_list = nfa._get_indentation_tokens(IndentationConstraint(greater_than_indent_val=0), get_list=True)
+    assert ' int' in ac_list
+    ac_list = nfa._get_indentation_tokens(IndentationConstraint(greater_than_indent_val=1), get_list=True)
+    assert not ' int' in ac_list
+    assert '  ' in ac_list
+    ac_list = nfa._get_indentation_tokens(IndentationConstraint(greater_than_indent_val=3), get_list=True)
+    assert '              ' in ac_list
+
+def test_nfa_with_indent():
+    r = ParseResult({'NAME'}, {'NAME'}, '', RemainderState.COMPLETE, IndentationConstraint(accept_indents=[0]))
+    ac_list = nfa.get_overapprox_tokens_mask(r, get_list=True)
+    assert 'int' in ac_list
+
+    r = ParseResult({'NAME'}, {'NAME'}, '', RemainderState.COMPLETE, IndentationConstraint(accept_indents=[1]))
+    ac_list = nfa.get_overapprox_tokens_mask(r, get_list=True)
+    assert ' int' in ac_list
+
+    r = ParseResult({'NAME'}, {'NAME'}, '', RemainderState.COMPLETE, IndentationConstraint(greater_than_indent_val=0))
+    ac_list = nfa.get_overapprox_tokens_mask(r, get_list=True)
+    assert ' int' in ac_list
+
+    r = ParseResult({'NAME'}, 
+    {'NAME'}, '', RemainderState.COMPLETE, IndentationConstraint(greater_than_indent_val=1))
+    ac_list = nfa.get_overapprox_tokens_mask(r, get_list=True)
+    assert not ' int' in ac_list
+
+
 def test_indetantaion():
     from mxeval.data import get_data
     mbpp = get_data("mbxp", "python")
@@ -75,5 +110,5 @@ def test_indetantaion():
     assert p._get_indentation(mbpp['MBPP/2']["prompt"]) == 2
     assert p._get_indentation(mbpp['MBPP/8']["prompt"]) == 1
 
-tests = [test_nfa, test_nfa2, test_nfa3, test_nfa4, test_nfa5, test_nfa6, test_nfa7, test_nfa8, test_nfa9, test_indetantaion]
+tests = [test_nfa, test_nfa2, test_nfa3, test_nfa4, test_nfa5, test_nfa6, test_nfa7, test_nfa8, test_nfa9, test_indent, test_nfa_with_indent]
 common.run_tests(tests)
