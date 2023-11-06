@@ -229,6 +229,12 @@ def cat():
     print(r.next_ac_indents)
     assert r.next_ac_indents.accept_indents == [0, 4, 6, 8]
 
+def test_parser19():
+    # LONG_STRING indentation is checked
+    partial_code =  '\n\ndef smallest_num(xs):\n  """\n  Write a python function to find smallest number in a list.\n  >>> smallest_num([10, 20, 1, 45, 99])\n  1\n  >>> smallest_num([1, 2, 3])\n  1\n  >>> smallest_num([45, 46, 50, 60])\n  45\n  """\n '
+    inc_parser = PythonIncrementalParser()
+    r = inc_parser.get_acceptable_next_terminals(partial_code)
+    assert r.next_ac_indents.accept_indents == [1]
 
 def test_incremental_parser():
     inc_parser = PythonIncrementalParser()
@@ -248,6 +254,7 @@ def test_incremental_parser2():
         i += 2
         r = inc_parser.get_acceptable_next_terminals(prompt + generated_code[:i])
     assert r.remainder == '"shu'
+    assert r.next_ac_indents == None
 
 def test_incremental_parser3():
     inc_parser = PythonIncrementalParser()
@@ -268,5 +275,5 @@ def test_incremental_parser4():
         r2 = new_inc_parser.get_acceptable_next_terminals(partial_code)
         assert r1.next_accept_terminals == r2.next_accept_terminals, i 
 
-tests = [test_parser1, test_parser2, test_parser3, test_parser4, test_parser5, test_parser6, test_parser7, test_parser8, test_parser9, test_parser10, test_parser11, test_parser12, test_parser13, test_parser14, test_parser15, test_parser16, test_parser17, test_parser18, test_incremental_parser, test_incremental_parser2, test_incremental_parser3, test_incremental_parser4]
+tests = [test_parser1, test_parser2, test_parser3, test_parser4, test_parser5, test_parser6, test_parser7, test_parser8, test_parser9, test_parser10, test_parser11, test_parser12, test_parser13, test_parser14, test_parser15, test_parser16, test_parser17, test_parser18, test_parser19, test_incremental_parser, test_incremental_parser2, test_incremental_parser3, test_incremental_parser4]
 run_tests(tests)
