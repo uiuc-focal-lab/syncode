@@ -21,6 +21,14 @@ class Exception:
 class TerminalsNFA:
     """
     We build an NFA that consists of DFAs for each terminal. We simulate the NFA by consuming the input string for each terminal DFA.
+
+    There are 3 possible cases for the remainder string:
+
+    1. COMPLETE: In this case, the last token is complete (and cannot be further extended) and we know the type of next terminal. Thus, we need to compute all tokens such that consuming the token leads to a live state for the terminal DFA or it reaches a final state for the terminal DFA.
+
+    2. INCOMPLETE: In this case, the remainder is incomplete and does not match any terminal regex. Thus, we need to compute all tokens such that consuming the token leads to a live state for the current terminal DFA or again it reaches a final state for the current terminal DFA at some point.
+
+    3. MAYBE_COMPLETE: In this case the remainder matches a type of terminal. It may happen that we add to the same matched part of the remainder. In that case, there are two possibilities. i) the matched terminal type does not change and thus we can use the next terminal set computed by assuming that. ii) the matched terminal type changes and then we do not know the next terminal set. Thus, we need to compute all tokens such that consuming the token leads to a live state for the current terminal DFA or again it reaches a final state for the current terminal DFA at some point.
     """
     def __init__(self, terminals: list, vocab, exceptions={}, special_token_ids=[], indentation=True):
         self._terminals_to_dfa = {}
@@ -39,7 +47,8 @@ class TerminalsNFA:
         
         # Iterate through each pair of DFA state and next terminals and store the overapproximate tokens
         self._dfa_state_and_next_terminal_to_tokens: defaultdict = defaultdict(list)
-        self._dfa_state_to_tokens: dict = {}
+        self._incomplete_case_lookup: dict = {}
+        self._complete_case_lookup: dict = {}
         self._store_overapproximate_tokens(self._terminals_to_dfa.keys(), vocab)
 
         self.indentation = indentation
@@ -111,35 +120,42 @@ class TerminalsNFA:
             for dfa_state in self._terminals_to_dfa[cur_terminal].states:
                 
                 # Initialize the overapproximate tokens for each dfa state
-                self._dfa_state_to_tokens[(cur_terminal, dfa_state)] = self._get_default_mask()
+                self._incomplete_case_lookup[(cur_terminal, dfa_state)] = self._get_default_mask()
+                self._complete_case_lookup[(cur_terminal, dfa_state)] = []
 
-                # self._dfa_state_and_next_terminal_to_tokens[(dfa_state, next_terminal)] = []
                 for token_idx, token in enumerate(vocab):
+
+                    # For INCOMPLETE case:
+                    remainder = token
+                    is_valid, remainder = self._consume_prefix(self._terminals_to_dfa[cur_terminal], dfa_state, remainder)
+                    if is_valid:
+                        if remainder is None:
+                            # We reached a live state for the current terminal, thus we add the token in all overapproximate sets of next terminals
+                            for next_terminal in terminals:
+                                self._dfa_state_and_next_terminal_to_tokens[(cur_terminal, dfa_state, next_terminal)].append(token_idx)
+                        else:
+                            if remainder.startswith(' '): # ignore left space
+                                remainder = remainder[1:]
+
+                            # We reached the final state while consuming the token, thus we conusme the remainder with all next terminals
+                            for next_terminal in terminals:
+                                next_terminal_dfa = self._terminals_to_dfa[next_terminal]
+                                is_valid, _ = self._consume_prefix(next_terminal_dfa, next_terminal_dfa.initial, remainder)
+                                if is_valid: 
+                                    # We reached a live state for the next terminal, thus we add the 
+                                    # token in the  overapproximate sets of next terminal
+                                    self._dfa_state_and_next_terminal_to_tokens[(cur_terminal, dfa_state, next_terminal)].append(token_idx)
+
+                    # For COMPLETE case:
                     remainder = token
                     if remainder.startswith(' '): # ignore left space
-                            remainder = remainder[1:]
-
+                        remainder = remainder[1:]
                     is_valid, remainder = self._consume_prefix(self._terminals_to_dfa[cur_terminal], dfa_state, remainder)
-
-                    if not is_valid:
-                        continue
-                        
-                    if remainder is None:
-                        # We reached a live state for the current terminal, thus we add the token in all overapproximate sets of next terminals
-                        for next_terminal in terminals:
-                            self._dfa_state_and_next_terminal_to_tokens[(cur_terminal, dfa_state, next_terminal)].append(token_idx)
-                    else:
-                        if remainder.startswith(' '): # ignore left space
-                            remainder = remainder[1:]
-
-                        # We reached the final state while consuming the token, thus we conusme the remainder with all next terminals
-                        for next_terminal in terminals:
-                            next_terminal_dfa = self._terminals_to_dfa[next_terminal]
-                            is_valid, _ = self._consume_prefix(next_terminal_dfa, next_terminal_dfa.initial, remainder)
-                            if is_valid: 
-                                # We reached a live state for the next terminal, thus we add the 
-                                # token in the  overapproximate sets of next terminal
-                                self._dfa_state_and_next_terminal_to_tokens[(cur_terminal, dfa_state, next_terminal)].append(token_idx)
+                    if is_valid:
+                        self._complete_case_lookup[(cur_terminal, dfa_state)].append(token_idx)
+                
+                # Convert the list to boolean tensor mask. This is useful for fast union operations
+                self._complete_case_lookup[(cur_terminal, dfa_state)] = self._get_tokens_mask(self._complete_case_lookup[(cur_terminal, dfa_state)])
         
 
     def _consume_prefix(self, dfa: interegular.FSM, dfa_state, input_str):
@@ -215,7 +231,7 @@ class TerminalsNFA:
         for key, val in self._dfa_state_and_next_terminal_to_tokens.items():
             self._dfa_state_and_next_terminal_to_tokens[key] = self._get_tokens_mask(val)
             (cur_terminal, dfa_state, _) = key
-            self._dfa_state_to_tokens[(cur_terminal, dfa_state)] |= self._dfa_state_and_next_terminal_to_tokens[key]
+            self._incomplete_case_lookup[(cur_terminal, dfa_state)] |= self._dfa_state_and_next_terminal_to_tokens[key]
         
         if self.indentation:
             for key, val in self._whitespace_tokens_map.items():
@@ -237,13 +253,13 @@ class TerminalsNFA:
         if r.remainder_state == RemainderState.COMPLETE:
             for (terminal, dfa_state) in nfa_state:
                 if terminal in r.next_accept_terminals:
-                    overapprox_token_ids |= self._dfa_state_to_tokens[(terminal, dfa_state)]
+                    overapprox_token_ids |= self._complete_case_lookup[(terminal, dfa_state)]
             return overapprox_token_ids
-
+        
         # Case when the final string may be incomplete
         for (cur_terminal, dfa_state) in nfa_state:
             if r.next_accept_terminals == None: # This is the case when we have incomplete final string
-                overapprox_token_ids |= self._dfa_state_to_tokens[(cur_terminal, dfa_state)]
+                overapprox_token_ids |= self._incomplete_case_lookup[(cur_terminal, dfa_state)]
             else:
                 for next_terminal in r.next_accept_terminals:
                     overapprox_token_ids |= self._lookup_next_tokens_for_dfa_state(cur_terminal, dfa_state, next_terminal)
@@ -270,7 +286,8 @@ class TerminalsNFA:
         if self.indentation and r.next_ac_indents is not None:
             indent_ac_token = self._get_indentation_tokens(r.next_ac_indents)
             overapprox_token_ids &= indent_ac_token
-
+            # print('Indentation tokens:\n', self._get_tokens_list(indent_ac_token)[:100])
+            # print('Overapprox tokens:\n', self._get_tokens_list(overapprox_token_ids)[:100])
         if get_list: # This is useful for testing
             return self._get_tokens_list(overapprox_token_ids)
         # print('Time taken for mask to list:', time.time() - start_time, flush=True)

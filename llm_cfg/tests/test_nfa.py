@@ -88,18 +88,23 @@ def test_nfa_with_indent():
     ac_list = nfa.get_overapprox_tokens_mask(r, get_list=True)
     assert 'int' in ac_list
 
-    r = ParseResult({'NAME'}, {'NAME'}, '', RemainderState.COMPLETE, IndentationConstraint(accept_indents=[1]))
+    r = ParseResult({}, {'IF'}, '', RemainderState.COMPLETE, IndentationConstraint(accept_indents=[1]))
     ac_list = nfa.get_overapprox_tokens_mask(r, get_list=True)
-    assert ' int' in ac_list
+    assert ' if' in ac_list
 
     r = ParseResult({'NAME'}, {'NAME'}, '', RemainderState.COMPLETE, IndentationConstraint(greater_than_indent_val=0))
     ac_list = nfa.get_overapprox_tokens_mask(r, get_list=True)
     assert ' int' in ac_list
 
-    r = ParseResult({'NAME'}, 
-    {'NAME'}, '', RemainderState.COMPLETE, IndentationConstraint(greater_than_indent_val=1))
+    r = ParseResult({'NAME'}, {'NAME'}, '', RemainderState.COMPLETE, IndentationConstraint(greater_than_indent_val=1))
     ac_list = nfa.get_overapprox_tokens_mask(r, get_list=True)
     assert not ' int' in ac_list
+
+    r = ParseResult({}, {'IF'}, '', RemainderState.MAYBE_COMPLETE, IndentationConstraint(accept_indents=[0]))
+    ac_list = nfa.get_overapprox_tokens_mask(r, get_list=True)
+    assert 'if' in ac_list
+    print(nfa._vocab[565])
+    # print(ac_list)
 
 
 def test_indetantaion():
