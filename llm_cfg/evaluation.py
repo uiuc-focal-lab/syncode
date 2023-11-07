@@ -144,9 +144,11 @@ def check_correctness(
             # Disable functionalities that can make destructive changes to the test.
             reliability_guard()
 
+            prompt = problem["prompt"].replace("\t", "    ")
+
             # Construct the check program and run it.
             check_program = (
-                problem["prompt"]
+                prompt
                 + completion
                 + "\n"
                 + problem["test"]
@@ -355,9 +357,13 @@ def compare(get_datafile, filename, language, dataset):
         print('Original Completion:')
         print(c1["completion"])
         print('Result:', c1["result"])
+        print('Error Type:', c1["error_type"])
         print('Grammar Mask Completion:')
         print(c2["completion"])
         print('Result:', c2["result"])
+        print('Error Type:', c2["error_type"])
+        print(repr(p['prompt']))
+        print(repr(c2['completion']))
         print('-'*80)
 
     for p, c1, c2 in zip(tqdm.tqdm(stream_jsonl(problem_file)), tqdm.tqdm(stream_jsonl(filename_original)), tqdm.tqdm(stream_jsonl(filename))):
@@ -366,8 +372,11 @@ def compare(get_datafile, filename, language, dataset):
             # print_comparison(p, c1, c2, task_id)
             pass
         
-        if c1['passed'] and not c2['passed']:
+        if c2['error_type'] == 'IndentationError':
             print_comparison(p, c1, c2, task_id)
+
+        if c1['passed'] and not c2['passed']:
+            # print_comparison(p, c1, c2, task_id)
             count_original_unique += 1
         if c2['passed'] and not c1['passed']:
             count_grammar_mask_unique += 1

@@ -1,5 +1,6 @@
 import time
 from utils.evaluation import filter_code, fix_indents
+from transformers import LlamaTokenizer
 import common
 from synchromesh.completion_engine import LarkCompletionEngine
 from synchromesh.synchromesh import StreamingCSD
@@ -29,7 +30,7 @@ class LanguageModel:
 class HuggingFaceModel(LanguageModel):
     def __init__(self, model, prompt_template: str = '', api_key: str = None,
                  temperature: float = 0.0, top_p: float = 1.0, best_of: int = 1,
-                 before_prediction_hook=lambda: None, tokenizer=None, device='cuda', logit_processors=None, 
+                 before_prediction_hook=lambda: None, tokenizer:LlamaTokenizer=None, device='cuda', logit_processors=None, 
                  mode: str ='original') -> None:
         super().__init__()
 
@@ -81,7 +82,7 @@ class HuggingFaceModel(LanguageModel):
             last_token_id = [python_decoder.last_valid_state[i] for i in range(batch_size)]
         
         batch_completions = [
-            self.tokenizer.decode(ids[input_ids_cutoff:last_token_id[i]], skip_special_tokens=True) for i, ids in enumerate(generated_ids)
+            self.tokenizer.decode(ids[input_ids_cutoff-1:last_token_id[i]], skip_special_tokens=True)[1:] for i, ids in enumerate(generated_ids)
         ]
 
         if self.logit_processors is not None:

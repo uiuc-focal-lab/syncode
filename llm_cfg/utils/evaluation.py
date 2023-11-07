@@ -41,7 +41,6 @@ def run_eval(args,
     # problems = dict(itertools.islice(problems.items(), 20))
     samples = []
     pbar = tqdm(total=len(problems) * num_samples_per_task)
-    start_time = time.time()
 
     for task_id in problems:
         if format_tabs:

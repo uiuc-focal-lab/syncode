@@ -14,7 +14,7 @@ class PythonDecoder(LogitsProcessor):
         time_start = time.time()
         self.tokenizer = tokenizer
 
-        self.batch_size = None # We update this in the first call to __call__
+        self.batch_size = -1 # We update this in the first call to __call__
         self.inc_parsers = None
         
         # For backtracking to syntactically valid completions
@@ -37,7 +37,7 @@ class PythonDecoder(LogitsProcessor):
 
     def _print_current_status(self, partial_code, r: ParseResult):
         print('partial code:\n', repr(partial_code))
-        print('inc:', repr(r.remainder), '\n', 'cur:', r.cur_accept_terminals, '\n', 'next:', r.next_accept_terminals)
+        print(r)
 
 
     def _reset(self):
@@ -51,7 +51,7 @@ class PythonDecoder(LogitsProcessor):
     def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor) -> torch.FloatTensor:
         partial_codes = self.tokenizer.batch_decode(input_ids, skip_special_tokens=True)
 
-        if self.batch_size == None or (len(self.partial_codes_trace) > 0 and self.partial_codes_trace[0] not in partial_codes[0]):
+        if self.batch_size == -1 or (len(self.partial_codes_trace) > 0 and self.partial_codes_trace[0] not in partial_codes[0]):
             self.batch_size = len(partial_codes)
             self._reset()
 
@@ -66,7 +66,7 @@ class PythonDecoder(LogitsProcessor):
                 # returns the names of the Terminals that are currently accepted.
                 r = self.inc_parsers[i].get_acceptable_next_terminals(partial_code)
 
-                greedy_token = self.tokenizer.decode(scores[i].argmax(dim=-1), skip_special_tokens=True) # For debugging - remove later
+                greedy_token = self.tokenizer.decode(scores[i].argmax(dim=-1)) # For debugging - remove later
 
                 if 'EOF' in r.next_accept_terminals:
                     self.last_valid_state[i] = len(input_ids[i])
@@ -88,8 +88,8 @@ class PythonDecoder(LogitsProcessor):
                     self._print_current_status(partial_code, r)
 
                 print(i, 'Time taken for masking:', time.time() - compilation_start_time)  
-
-                greedy_grammar_token = self.tokenizer.decode(scores[i].argmax(dim=-1), skip_special_tokens=True)
+                
+                greedy_grammar_token = self.tokenizer.decode(scores[i].argmax(dim=-1))
 
                 if greedy_token != greedy_grammar_token:
                     print('Greedy token:', repr(greedy_token))

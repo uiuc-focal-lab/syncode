@@ -23,7 +23,7 @@ class ParseResult:
             assert next_accept_terminals is None 
 
     def __repr__(self):
-        return 'final_incomplete_str: {}\nis_terminal_complete: {}\ncur_accept_terminals: {}\nnext_accept_terminals: {}'.format(repr(self.remainder), self.remainder_state, self.cur_accept_terminals, self.next_accept_terminals)
+        return 'final_incomplete_str: {}\nis_terminal_complete: {}\ncur_accept_terminals: {}\nnext_accept_terminals: {}\nNext indent:{}'.format(repr(self.remainder), self.remainder_state, self.cur_accept_terminals, self.next_accept_terminals, self.next_ac_indents)
 
 class IndentationConstraint:
     """
