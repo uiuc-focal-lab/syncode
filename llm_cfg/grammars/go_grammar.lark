@@ -1,0 +1,250 @@
+// Modified from following grammar originally written for antlr:
+//
+//  [The "BSD licence"] Copyright (c) 2017 Sasa Coh, Michał Błotniak
+//  Copyright (c) 2019 Ivan Kochurkin, kvanttt@gmail.com, Positive Technologies 
+//  Copyright (c) 2019 Dmitry Rassadin, flipparassa@gmail.com,Positive Technologies All rights reserved. 
+//  Copyright (c) 2021 Martin Mirchev, mirchevmartin2203@gmail.com
+//  Copyright (c) 2023 Dmitry _litovchenko, i@dlitovchenko.ru
+
+//  Redistribution and use in source and binary forms, with or without modification, are permitted
+//  provided that the following conditions are met: 1. Redistributions of source code must retain the
+//  above copyright notice, this list of conditions and the following disclaimer. 2. Redistributions in
+//  binary form must reproduce the above copyright notice, this list of conditions and the following
+//  disclaimer in the documentation and/or other materials provided with the distribution. 3. The name
+//  of the author may not be used to endorse or promote products derived from this software without
+//  specific prior written permission.
+
+//  THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING,
+//  BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MER"'chan" TABILITY AND FITNESS "for"  A PARTICULAR PURPOSE
+//  ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE "for"  ANY DIRECT, INDIRECT, INCIDENTAL,
+//  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+//  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+//  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+//  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN "if"  ADVISED OF THE
+//  POSSIBILITY OF SUCH DAMAGE.
+
+file_input: package_clause eos (import_decl eos)* ((function_decl | method_decl | declaration) eos)* EOF
+
+package_clause: "package" NAME
+
+import_decl: "import"  (import_spec | "(" (import_spec eos)* ")")
+
+import_spec: ("." | NAME)? import_path
+
+import_path: string_
+
+declaration: const_decl | type_decl | var_decl
+
+const_decl: "const"  (const_spec | "(" (const_spec eos)* ")")
+
+const_spec: identifier_list (type_? "=" expression_list)?
+
+identifier_list: NAME ("," NAME)*
+
+expression_list: expression ("," expression)*
+
+type_decl: "type" (type_spec | "(" (type_spec eos)* ")")
+
+type_spec: alias_decl | type_def
+
+alias_decl : NAME "=" type_
+
+type_def : NAME type_parameters? type_
+
+type_parameters : "[" type_parameter_decl ("," type_parameter_decl)* "]"
+
+type_parameter_decl : identifier_list type_element
+
+type_element : type_term ("|" type_term)*
+
+type_term : "~"? type_
+
+// Function declarations
+
+function_decl: "func" NAME type_parameters? signature block?
+
+method_decl: "func" receiver NAME signature block?
+
+receiver: parameters
+
+var_decl: "var" (var_spec | "(" (var_spec eos)* ")")
+
+var_spec: identifier_list (type_ ("=" expression_list)? | "=" expression_list)
+
+block: "{" statement_list? "}"
+
+statement_list: ((";"? | EOS?) statement eos)+
+
+statement: declaration | labeled_stmt | simple_stmt | go_stmt | return_stmt | break_stmt | continue_stmt | goto_stmt | fallthrough_stmt | block | if_stmt | switch_stmt | select_stmt | for_stmt | defer_stmt
+
+simple_stmt: send_stmt | inc_dec_stmt | assignment | expression_stmt | short_var_decl
+
+expression_stmt: expression
+
+send_stmt: expression  "<-" expression
+
+inc_dec_stmt: expression ("++" | "--")
+
+assignment: expression_list assign_op expression_list
+
+assign_op: ( "+" | "-" | "|" | "^" | "*" | "/" | "%" | "<<" | ">>" | "&" | "&^")? "="
+
+short_var_decl: identifier_list ":=" expression_list
+
+labeled_stmt: NAME ":" statement?
+
+return_stmt: "return" expression_list?
+
+break_stmt: "break" NAME?
+
+continue_stmt: "continue" NAME?
+
+goto_stmt: "goto"  NAME
+
+fallthrough_stmt: "fallthrough" 
+
+defer_stmt: "defer" expression
+
+if_stmt: "if"  ( expression | eos expression | simple_stmt eos expression) block ("else" (if_stmt | block))?
+
+switch_stmt: expr_switch_stmt | type_switch_stmt
+
+expr_switch_stmt: "switch"  (expression? | simple_stmt? eos expression?) "{" expr_case_clause* "}"
+
+expr_case_clause: expr_switch_case ":" statement_list?
+
+expr_switch_case: "case" expression_list | "default"
+
+type_switch_stmt: "switch"  ( type_switch_guard | eos type_switch_guard | simple_stmt eos type_switch_guard) "{" type_case_clause* "}"
+
+type_switch_guard: (NAME ":=")? primary_expr "." "(" "type"  ")"
+
+type_case_clause: type_switch_case ":" statement_list?
+
+type_switch_case: "case" type_list | "default"
+
+type_list: (type_ | "nil" ) ("," (type_ | "nil"  ))*
+
+select_stmt: "select" "{" comm_clause* "}"
+
+comm_clause: comm_case ":" statement_list?
+
+comm_case: "case" (send_stmt | recv_stmt) | "default"
+
+recv_stmt: (expression_list "=" | identifier_list ":=")? expression
+
+for_stmt: "for" (expression? | for_clause | range_clause?) block
+
+for_clause: simple_stmt? eos expression? eos simple_stmt?
+
+range_clause: (expression_list "=" | identifier_list ":=")? "range"  expression
+
+go_stmt: "go"expression
+
+type_: type_name type_args? | type_lit | "(" type_ ")"
+
+type_args: "[" type_list ","? "]"
+
+type_name: qualified_ident | NAME
+
+type_lit: array_type | struct_type | pointer_type | function_type | interface_type | slice_type | map_type | channel_type
+
+array_type: "[" array_length "]" element_type
+
+array_length: expression
+
+element_type: type_
+
+pointer_type: "*" type_
+
+interface_type: "interface" "{" ((method_spec | type_element ) eos)* "}"
+
+slice_type: "[" "]" element_type
+
+// It's possible to replace `type` with more restricted type_lit list and also pay attention to nil maps
+map_type: "map" "[" type_ "]" element_type
+
+channel_type: ("'chan"  | "chan"   "<-" |  "<-" "chan" ) element_type
+
+method_spec: NAME parameters result | NAME parameters
+
+function_type: "func" signature
+
+signature: parameters result?
+
+result: parameters | type_
+
+parameters: "(" (parameter_decl ("," parameter_decl)* ","?)? ")"
+
+parameter_decl: identifier_list? "..."? type_
+
+expression: primary_expr | ("+" | "-" | "!" | "^" | "*" | "&" | "<-") expression | ("*" | "/" | "%" | "<<" | ">>" | "&" | "&^") expression | expression ("+" | "-" | "|" | "^") expression | expression ("==" | "!=" | "<" | "<=" | ">" | ">=") expression | expression "&&" expression | expression "||" expression
+
+primary_expr: operand | conversion | method_expr | primary_expr ("." NAME | index | slice_ | type_assertion | arguments)
+
+conversion: type_ "(" expression ","? ")"
+
+operand: literal | operand_name type_args? | "(" expression ")"
+
+literal: basic_lit | composite_lit | function_lit
+
+basic_lit: "nil" | integer | string_ | FLOAT_LIT
+
+integer: DECIMAL_LIT | BINARY_LIT | OCTAL_LIT | HEX_LIT
+// integer: DECIMAL_LIT | BINARY_LIT | OCTAL_LIT | HEX_LIT | IMAGINARY_LIT | RUNE_LIT
+
+DECIMAL_LIT: /0|[1-9]\d*/i
+HEX_LIT.2: /0x[\da-f]*/i
+OCTAL_LIT.2: /0o[0-7]*/i
+BINARY_LIT.2 : /0b[0-1]*/i
+FLOAT_LIT.2: /((\d+\.\d*|\.\d+)(e[-+]?\d+)?|\d+(e[-+]?\d+))/i
+
+operand_name: NAME
+
+qualified_ident: NAME "." NAME
+
+composite_lit: literal_type literal_value
+
+literal_type: struct_type | array_type | "[" "..." "]" element_type | slice_type | map_type | type_name type_args?
+
+literal_value: "{" (element_list ","?)? "}"
+
+element_list: keyed_element ("," keyed_element)*
+
+keyed_element: (key ":")? element
+
+key: expression | literal_value
+
+element: expression | literal_value
+
+struct_type: "'struct" "{" (field_decl eos)* "}"
+
+field_decl: (identifier_list type_ | embedded_field) string_?
+
+string_: RAW_STRING_LIT | INTERPRETED_STRING_LIT
+
+// RAW_STRING_LIT         : '`' ~'`'*                      '`' -> mode(NLSEMI);
+// INTERPRETED_STRING_LIT : '"' (~["\\] | ESCAPED_VALUE)*  '"' -> mode(NLSEMI);
+
+RAW_STRING_LIT: /`.*?`/
+INTERPRETED_STRING_LIT: /".*?"/i
+
+embedded_field: "*"? type_name type_args?
+
+function_lit: "func" signature block // function
+
+index: "[" expression "]"
+
+slice_: "[" ( expression? ":" expression? | expression? ":" expression ":" expression) "]"
+
+type_assertion: "." "(" type_ ")"
+
+arguments: "(" ( (expression_list | type_ ("," expression_list)?) "..."? ","?)? ")"
+
+method_expr: type_ "." NAME
+
+eos: ";" | EOF | EOS // | {this.closingBracket()}?
+	
+NAME : /[a-zA-Z_]\w*/
+EOF: "eof" // fix this!
+EOS: ";" // fix this!
