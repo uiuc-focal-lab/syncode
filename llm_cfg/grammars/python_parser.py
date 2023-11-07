@@ -150,8 +150,10 @@ class PythonIncrementalParser(IncrementalParser):
                 last_indent = last_indent_str.count(' ') + last_indent_str.count('\t') * self.tab_len
                 next_ac_indents = [indent-last_indent for indent in self.indent_level if indent >= last_indent]
 
-                if '_INDENT' in self.next_ac_terminals or '_INDENT' in self.cur_ac_terminals:
-                    next_ac_indents = IndentationConstraint(greater_than_indent_val=next_ac_indents[-1]-1) # next indentation level in this case
+                if '_INDENT' in self.next_ac_terminals:
+                    next_ac_indents = IndentationConstraint(greater_than_indent_val=next_ac_indents[-1]) # next indentation level in this case
+                elif '_INDENT' in self.cur_ac_terminals:
+                    next_ac_indents = IndentationConstraint(greater_than_indent_val=next_ac_indents[-1]-1)
                 else:  
                     next_ac_indents = IndentationConstraint(accept_indents=next_ac_indents)  
 

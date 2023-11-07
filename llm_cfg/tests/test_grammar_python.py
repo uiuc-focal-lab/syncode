@@ -86,7 +86,7 @@ def test_parser4():
     inc_parser = PythonIncrementalParser()
     partial_code = 'from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n\t\n\tfor i in range(len(numbers) -1, -1, -1) :\n\t\tfor j in range(i+1, len(numbers) ,1) :\n\t\t\tif abs(numbers[i] - numbers[j] ) < threshold :\n'
     r = inc_parser.get_acceptable_next_terminals(partial_code)
-    assert r.next_ac_indents.greater_than_indent_val == 11
+    assert r.next_ac_indents.greater_than_indent_val == 12
 
 def test_parser5():
     inc_parser = PythonIncrementalParser()
@@ -214,7 +214,7 @@ def cat():
     inc_parser = PythonIncrementalParser()
     r  = inc_parser.get_acceptable_next_terminals(code)
     print(r.next_ac_indents)
-    assert r.next_ac_indents.greater_than_indent_val == 3 
+    assert r.next_ac_indents.greater_than_indent_val == 4 
     
     code = f"""
 def cat():
