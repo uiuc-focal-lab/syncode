@@ -103,8 +103,10 @@ def test_nfa_with_indent():
     r = ParseResult({}, {'IF'}, '', RemainderState.MAYBE_COMPLETE, IndentationConstraint(accept_indents=[0]))
     ac_list = nfa.get_overapprox_tokens_mask(r, get_list=True)
     assert 'if' in ac_list
-    print(nfa._vocab[565])
-    # print(ac_list)
+    
+    r = ParseResult({}, {'RETURN'}, '\n\t\t', RemainderState.MAYBE_COMPLETE, IndentationConstraint(greater_than_indent_val=-1))
+    ac_list = nfa.get_overapprox_tokens_mask(r, get_list=True)
+    assert 'return' in ac_list
 
 
 def test_indetantaion():
