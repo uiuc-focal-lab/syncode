@@ -23,7 +23,7 @@
 //  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN "if"  ADVISED OF THE
 //  POSSIBILITY OF SUCH DAMAGE.
 
-file_input: package_clause eos (import_decl eos)* ((function_decl | method_decl | declaration) eos)* EOF
+file_input: package_clause eos (import_decl eos)* ((function_decl | method_decl | declaration) eos)*
 
 package_clause: "package" NAME
 
@@ -141,11 +141,11 @@ range_clause: (expression_list "=" | identifier_list ":=")? "range"  expression
 
 go_stmt: "go"expression
 
-type_: type_name type_args? | type_lit | "(" type_ ")"
+type_: (NAME "." NAME | NAME ) type_args? | type_lit | "(" type_ ")"
 
 type_args: "[" type_list ","? "]"
 
-type_name: qualified_ident | NAME
+type_name: NAME "." NAME | NAME 
 
 type_lit: array_type | struct_type | pointer_type | function_type | interface_type | slice_type | map_type | channel_type
 
@@ -180,11 +180,11 @@ parameter_decl: identifier_list? "..."? type_
 
 expression: primary_expr | ("+" | "-" | "!" | "^" | "*" | "&" | "<-") expression | ("*" | "/" | "%" | "<<" | ">>" | "&" | "&^") expression | expression ("+" | "-" | "|" | "^") expression | expression ("==" | "!=" | "<" | "<=" | ">" | ">=") expression | expression "&&" expression | expression "||" expression
 
-primary_expr: operand | conversion | method_expr | primary_expr ("." NAME | index | slice_ | type_assertion | arguments)
+primary_expr.4: (literal | NAME type_args? | "(" expression ")") | conversion | method_expr | primary_expr ("." NAME | index | slice_ | type_assertion | arguments)
 
 conversion: type_ "(" expression ","? ")"
 
-operand: literal | operand_name type_args? | "(" expression ")"
+// operand: literal | NAME type_args? | "(" expression ")"
 
 literal: basic_lit | composite_lit | function_lit
 
@@ -199,13 +199,9 @@ OCTAL_LIT.2: /0o[0-7]*/i
 BINARY_LIT.2 : /0b[0-1]*/i
 FLOAT_LIT.2: /((\d+\.\d*|\.\d+)(e[-+]?\d+)?|\d+(e[-+]?\d+))/i
 
-operand_name: NAME
-
-qualified_ident: NAME "." NAME
-
 composite_lit: literal_type literal_value
 
-literal_type: struct_type | array_type | "[" "..." "]" element_type | slice_type | map_type | type_name type_args?
+literal_type: struct_type | array_type | "[" "..." "]" element_type | slice_type | map_type | (NAME "." NAME | NAME) type_args?
 
 literal_value: "{" (element_list ","?)? "}"
 
@@ -229,7 +225,7 @@ string_: RAW_STRING_LIT | INTERPRETED_STRING_LIT
 RAW_STRING_LIT: /`.*?`/
 INTERPRETED_STRING_LIT: /".*?"/i
 
-embedded_field: "*"? type_name type_args?
+embedded_field: "*"? (NAME "." NAME | NAME)  type_args?
 
 function_lit: "func" signature block // function
 
@@ -243,8 +239,12 @@ arguments: "(" ( (expression_list | type_ ("," expression_list)?) "..."? ","?)? 
 
 method_expr: type_ "." NAME
 
-eos: ";" | EOF | EOS // | {this.closingBracket()}?
+eos: ";" | EOS // | {this.closingBracket()}?
 	
 NAME : /[a-zA-Z_]\w*/
-EOF: "eof" // fix this!
-EOS: ";" // fix this!
+EOS: /[\r\n]+/ | ";" | "/*' .*? '*/"       
+
+%import common.WS_INLINE
+%ignore WS_INLINE
+%ignore /\n/
+%ignore /\\[\t \f]*\r?\n/   // LINE_CONT

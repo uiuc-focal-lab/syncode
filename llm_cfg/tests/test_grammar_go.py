@@ -9,8 +9,7 @@ from parse_result import RemainderState
 
 def test_go_parser():
     inc_parser = GoIncrementalParser()
-    code = f'''
-package main
+    code = f'''package main
 import "fmt"
 func main() {{
     fmt.Println("hello world")
