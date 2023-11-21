@@ -1,5 +1,6 @@
 import copy
 import re
+import time
 from parse_result import ParseResult
 from lark.lexer import Token
 from lark import Lark
@@ -11,7 +12,7 @@ class IncrementalParser:
         self.next_ac_terminals = None
         self.cur_pos = 0 # Current cursor position in the lexer tokens list
         self.lexer_pos = 0 # Current lexer position in the code
-        self.dedent_queue = []
+        self.dedent_queue: list = []
 
         self.parser = Lark.open( # This is the standard Lark parser
             grammar_file,
@@ -22,7 +23,7 @@ class IncrementalParser:
             propagate_positions=True,
         )
         self.interactive = self.parser.parse_interactive('')
-        self.parser_token_seq = []
+        self.parser_token_seq: list = []
         self.log_time = False
 
         # To enable going back to old state of the parser
@@ -45,3 +46,16 @@ class IncrementalParser:
         self.dedent_queue = copy.deepcopy(dedent_queue)
         self.indent_level = copy.deepcopy(indent_levels)
         # print('restoring state at position:', pos, len(self.interactive.parser_state.state_stack), len(self.dedent_queue), len(self.indent_level))
+
+    def _lex_code(self, code) -> list[Token]:
+        """
+        Lexes the given code and returns the list of tokens.
+        """
+        if self.log_time:
+            start = time.time()
+        tokens = list(self.parser.lex(code))
+        if self.log_time:
+            end = time.time()
+            print("Time taken to lex:", end - start)
+        return tokens
+    
