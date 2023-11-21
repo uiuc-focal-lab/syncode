@@ -1,3 +1,4 @@
+import copy
 import time
 from typing import Iterator
 import lark
@@ -188,7 +189,9 @@ class PythonIncrementalParser(IncrementalParser):
 
         try:
             while lexer_state.line_ctr.char_pos < len(lexer_state.text):
+                # PostLexConnector -> BasicLexer
                 blexer = interactive.lexer_thread.lexer.lexer
+                
                 token = blexer.next_token(lexer_state)
                 self.lexer_pos = lexer_state.line_ctr.char_pos
                 
@@ -211,3 +214,14 @@ class PythonIncrementalParser(IncrementalParser):
             print('Time taken for lexing:', time.time() - lexing_start_time)
         return lexer_tokens
     
+    def _store_parser_state(self, pos, parser_state, accepts):      
+        indent_levels = copy.deepcopy(self.indent_level)  
+        self.cur_pos_to_interactive[pos] = (parser_state, indent_levels, accepts, copy.deepcopy(self.dedent_queue))
+        self.cur_ac_terminals = copy.deepcopy(self.next_ac_terminals)
+        self.next_ac_terminals = copy.deepcopy(accepts)
+
+    def _restore_parser_state(self, pos):
+        parser_state, indent_levels, self.cur_ac_terminals, dedent_queue = self.cur_pos_to_interactive[pos]
+        self.interactive.parser_state = parser_state.copy()
+        self.dedent_queue = copy.deepcopy(dedent_queue)
+        self.indent_level = copy.deepcopy(indent_levels)

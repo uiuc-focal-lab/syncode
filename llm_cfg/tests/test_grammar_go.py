@@ -51,7 +51,7 @@ func main() {{
         failed = True
     assert failed
 
-def test_incremental_go_parser():
+def test_lexer():
     inc_parser = GoIncrementalParser()
     partial_code = f'''package main
 import "fmt"
@@ -61,5 +61,15 @@ func main() {{
     out = inc_parser._lex_code(partial_code)
     assert out[-1].type == 'EQUAL'
 
-tests = [test_go_parser, test_go_parser2, test_go_parser3, test_incremental_go_parser]
+def test_interactive_parser():
+    inc_parser = GoIncrementalParser()
+    partial_code = f'''package main
+import "fmt"
+func main() {{
+  var x int = 10
+  var y int ='''
+    res = inc_parser.get_acceptable_next_terminals(partial_code)
+    assert 'DECIMAL_LIT' in res.next_accept_terminals
+
+tests = [test_go_parser, test_go_parser2, test_go_parser3, test_lexer, test_interactive_parser]
 run_tests(tests)

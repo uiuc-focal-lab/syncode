@@ -1,7 +1,9 @@
 import copy
 import re
 import time
-from parse_result import ParseResult
+
+import lark
+from parse_result import ParseResult, RemainderState
 from lark.lexer import Token
 from lark import Lark
 
@@ -27,35 +29,102 @@ class IncrementalParser:
         self.log_time = False
 
         # To enable going back to old state of the parser
-        self.prev_lexer_tokens = None
-        self.cur_pos_to_interactive = {}
-    
-    def get_acceptable_next_terminals(self, code) -> ParseResult:
-        pass
+        self.prev_lexer_tokens: list[Token] = []
+        self.cur_pos_to_interactive: dict = {}
     
     def _store_parser_state(self, pos, parser_state, accepts):      
-        indent_levels = copy.deepcopy(self.indent_level)  
-        self.cur_pos_to_interactive[pos] = (parser_state, indent_levels, accepts, copy.deepcopy(self.dedent_queue))
+        self.cur_pos_to_interactive[pos] = (parser_state, accepts, copy.deepcopy(self.dedent_queue))
         self.cur_ac_terminals = copy.deepcopy(self.next_ac_terminals)
         self.next_ac_terminals = copy.deepcopy(accepts)
-        # print('Storing state at position:', pos, len(self.interactive.parser_state.state_stack), len(self.dedent_queue), len(self.indent_level))
 
     def _restore_parser_state(self, pos):
-        parser_state, indent_levels, self.cur_ac_terminals, dedent_queue = self.cur_pos_to_interactive[pos]
+        parser_state, self.cur_ac_terminals, dedent_queue = self.cur_pos_to_interactive[pos]
         self.interactive.parser_state = parser_state.copy()
         self.dedent_queue = copy.deepcopy(dedent_queue)
-        self.indent_level = copy.deepcopy(indent_levels)
-        # print('restoring state at position:', pos, len(self.interactive.parser_state.state_stack), len(self.dedent_queue), len(self.indent_level))
 
     def _lex_code(self, code) -> list[Token]:
         """
         Lexes the given code and returns the list of tokens.
         """
+        # Collect Lexer tokens
+        lexer_tokens: list[Token] = []
+        interactive = self.parser.parse_interactive(code)
+        lexing_start_time = time.time()
+        lexer_state = interactive.lexer_thread.state
+
+        try:
+            while lexer_state.line_ctr.char_pos < len(lexer_state.text):
+                blexer = interactive.lexer_thread.lexer
+                token = blexer.next_token(lexer_state)
+                self.lexer_pos = lexer_state.line_ctr.char_pos
+                lexer_tokens.append(token)
+        except lark.exceptions.UnexpectedCharacters as e:
+            pass
+        except EOFError as e:
+            pass
+
         if self.log_time:
-            start = time.time()
-        tokens = list(self.parser.lex(code))
+            print('Time taken for lexing:', time.time() - lexing_start_time)
+        return lexer_tokens
+    
+    def get_acceptable_next_terminals(self, code) -> ParseResult:
+        """
+        Returns the set of acceptable terminals at the current cursor position.
+        """
+        # Stores the sequence of tokens that the parser has seen in the order  
+        interactive = self.interactive
+        lexer_tokens: list[Token] = self._lex_code(code)
+
+        # Restore the previous state of the parser
+        if self.prev_lexer_tokens is not None:
+            # Find the maximum index such that the tokens are same and the parser state is stored
+            max_matching_index = -1
+            for i in range(min(len(self.prev_lexer_tokens), len(lexer_tokens))):
+                if self.prev_lexer_tokens[i] != lexer_tokens[i]:
+                    break
+                if i in self.cur_pos_to_interactive:
+                    max_matching_index = i
+
+            if max_matching_index != -1:
+                self.cur_pos = max_matching_index + 1
+                assert (max_matching_index) in self.cur_pos_to_interactive
+                self._restore_parser_state(max_matching_index)
+        
+        self.prev_lexer_tokens = lexer_tokens  # Set the previous lexer tokens
+        next_ac_indents = None
+
+        # Parse the tokens
+        parsing_start_time = time.time()
+        try:
+            while self.cur_pos < len(lexer_tokens):
+                token = lexer_tokens[self.cur_pos]
+                # print(self.cur_pos, repr(token))
+                self.cur_pos += 1
+                self.parser_token_seq.append(token) # parser_token_seq holds all tokens
+                interactive.feed_token(token)
+
+                # Store the current state of the parser
+                self._store_parser_state(self.cur_pos-1, interactive.parser_state.copy(), interactive.accepts())
+
+        except lark.exceptions.UnexpectedToken as e:
+            pass
+
         if self.log_time:
-            end = time.time()
-            print("Time taken to lex:", end - start)
-        return tokens
+            print('Time taken for parsing:', (time.time() - parsing_start_time))
+
+        remainder_state = None
+        # Compute current terminal string
+        if self.lexer_pos < len(code):
+            remainder_state = RemainderState.INCOMPLETE
+            current_term_str = code[self.lexer_pos:]
+            current_term_str = current_term_str.lstrip(' ') # Remove space from the beginning
+            if current_term_str == '':
+                remainder_state = RemainderState.COMPLETE
+        else:
+            # Although this is a complete terminal, it may happen that this may be just prefix of some other terminal
+            # e.g., 'de' may seem like a variable name that is complete, but it may be just a prefix of 'def'
+            current_term_str = self.parser_token_seq[-1].value
+            remainder_state = RemainderState.MAYBE_COMPLETE
+
+        return ParseResult(self.cur_ac_terminals, self.next_ac_terminals, current_term_str, remainder_state, next_ac_indents=next_ac_indents)
     
