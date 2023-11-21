@@ -6,7 +6,7 @@ from incremental_parser import ParseResult
 from grammars.python_parser import PythonIncrementalParser
 from parse_result import IndentationConstraint, RemainderState
 
-nfa = common.load_nfa(use_cache=True)
+nfa = common.load_nfa(language='python', use_cache=True)
 
 def test_nfa():        
     query_start_time = time.time()

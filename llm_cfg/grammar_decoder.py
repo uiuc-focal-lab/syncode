@@ -6,28 +6,29 @@ from incremental_parser import ParseResult
 from grammars.python_parser import PythonIncrementalParser
 
 
-class PythonDecoder(LogitsProcessor):
+class GrammarDecoder(LogitsProcessor):
     """
     This class is used to filter the logits of the model to only allow syntactically valid tokens for Python. 
     """
-    def __init__(self, tokenizer: PreTrainedTokenizer, **kwargs):
+    def __init__(self, language: str, tokenizer: PreTrainedTokenizer, **kwargs):
         time_start = time.time()
         self.tokenizer = tokenizer
+        self.language = language
 
         self.batch_size = -1 # We update this in the first call to __call__
         self.inc_parsers = None
         
         # For backtracking to syntactically valid completions
-        self.partial_codes_trace = []
+        self.partial_codes_trace: list = []
         self.last_valid_stage = 0
 
         # For profiling
         self.token_cnt = 0
-        self.accept_tokens_sizes = []
+        self.accept_tokens_sizes: list = []
         self.non_matching_token_cnt = 0
 
         # Load NFA
-        self.terminals_nfa = common.load_nfa(tokenizer=self.tokenizer, use_cache=True)
+        self.terminals_nfa = common.load_nfa(language=self.language, tokenizer=self.tokenizer, use_cache=True)
 
         self.start_time = time.time()
         self.prev_time = self.start_time
@@ -41,7 +42,7 @@ class PythonDecoder(LogitsProcessor):
 
 
     def _reset(self):
-        self.inc_parsers = [PythonIncrementalParser() for _ in range(self.batch_size)]
+        self.inc_parsers = [common.create_parser(self.language) for _ in range(self.batch_size)]
         self.last_valid_state = [0 for _ in range(self.batch_size)]
         self.accept_tokens_sizes = []
         self.partial_codes_trace = []

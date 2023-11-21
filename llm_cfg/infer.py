@@ -11,7 +11,7 @@ from utils import run_eval
 import os
 import torch
 import argparse
-from python_decoder import PythonDecoder
+from grammar_decoder import GrammarDecoder
 
 # TODO: move to python-dotenv
 # add hugging face access token here
@@ -42,8 +42,8 @@ if __name__ == "__main__":
     
     logit_processors = None
     if args.mode == 'grammar_mask':
-        python_decoder = PythonDecoder(tokenizer=tokenizer,)
-        logit_processors = LogitsProcessorList([python_decoder])
+        grammar_decoder = GrammarDecoder(args.language, tokenizer=tokenizer,)
+        logit_processors = LogitsProcessorList([grammar_decoder])
 
     hf_model = HuggingFaceModel(model, tokenizer=tokenizer, device=device, logit_processors=logit_processors, mode=args.mode)
 
@@ -55,4 +55,4 @@ if __name__ == "__main__":
         )
 
     if args.mode == 'grammar_mask':
-        print('Non matching token count: ', python_decoder.non_matching_token_cnt)
+        print('Non matching token count: ', grammar_decoder.non_matching_token_cnt)

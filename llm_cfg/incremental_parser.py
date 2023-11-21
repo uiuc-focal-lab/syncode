@@ -1,14 +1,15 @@
 import copy
 import re
 import time
-
 import lark
 from parse_result import ParseResult, RemainderState
 from lark.lexer import Token
 from lark import Lark
 
-
-class IncrementalParser:
+class IncrementalParser:    
+    """
+    This is the base class for all incremental parsers.
+    """
     def __init__(self, grammar_file, indenter=None) -> None:
         self.cur_ac_terminals = None
         self.next_ac_terminals = None

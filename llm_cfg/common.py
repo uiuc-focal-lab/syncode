@@ -3,6 +3,7 @@ import pickle
 import re
 import transformers
 from grammars.python_parser import PythonIncrementalParser
+from grammars.go_parser import GoIncrementalParser
 from terminals_nfa import TerminalsNFA
 from transformers import LlamaTokenizer
 import time
@@ -26,8 +27,8 @@ def get_vocab_from_tokenizer(tokenizer):
     
     return vocab
 
-def load_nfa(tokenizer=None, inc_parser=None, use_cache=True):
-    NFA_LOC = 'results/nfa.pkl'
+def load_nfa(language: str, tokenizer=None, inc_parser=None, use_cache=True):
+    NFA_LOC = 'results/' + language + '_nfa.pkl'
     start_time = time.time()
     if use_cache and os.path.exists(NFA_LOC):
         nfa = pickle.load(open(NFA_LOC, 'rb'))
@@ -38,10 +39,13 @@ def load_nfa(tokenizer=None, inc_parser=None, use_cache=True):
         print('Time taken for loading vocab:', time.time() - start_time, flush=True)
 
         if inc_parser is None:
-            inc_parser = PythonIncrementalParser()
+            inc_parser = create_parser(language)
             print('Time taken for loading parser:', time.time() - start_time, flush=True)
 
-        exceptions = {'COMMENT': '#.*|\'\'\'.*?\'\'\'|""".*?"""/is', '_NL': '(\r?\n[\t ]*)+', 'LONG_STRING': '\'\'\'.*?\'\'\'|""".*?"""/is', 'STRING': '[ubf]?r?(".*?"|\'.*?\')'}
+        exceptions = {}
+        if language == 'python':
+            exceptions = {'COMMENT': '#.*|\'\'\'.*?\'\'\'|""".*?"""/is', '_NL': '(\r?\n[\t ]*)+', 'LONG_STRING': '\'\'\'.*?\'\'\'|""".*?"""/is', 'STRING': '[ubf]?r?(".*?"|\'.*?\')'}
+        
         nfa = TerminalsNFA(inc_parser.parser.terminals, vocab, exceptions=exceptions, special_token_ids=[tokenizer.eos_token_id])
         print(f'Time taken for creating NFA:', time.time() - start_time, flush=True)
 
@@ -49,6 +53,14 @@ def load_nfa(tokenizer=None, inc_parser=None, use_cache=True):
         print(f'Time taken for storing the NFA', time.time() - start_time, flush=True)
     return nfa
 
+def create_parser(language):
+        if language == 'python':
+            return PythonIncrementalParser()
+        elif language == 'go':
+            return GoIncrementalParser()
+        else:
+            raise ValueError(f'Unknown language: {language}')
+        
 def run_tests(tests):
     test_result = {}
 

@@ -372,7 +372,7 @@ def compare(get_datafile, filename, language, dataset):
             # print_comparison(p, c1, c2, task_id)
             pass
         
-        if c2['error_type'] == 'IndentationError':
+        if c2['error_type'] == 'TypeError':
             print_comparison(p, c1, c2, task_id)
 
         if c1['passed'] and not c2['passed']:
