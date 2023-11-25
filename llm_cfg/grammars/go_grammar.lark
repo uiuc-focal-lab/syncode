@@ -244,7 +244,12 @@ eos: ";" | EOS // | {this.closingBracket()}?
 NAME : /[a-zA-Z_]\w*/
 EOS: /[\r\n]+/ | ";" | "/*' .*? '*/"       
 
+COMMENT_NLSEMI : /\/*~[\r\n]*?'*\//      
+LINE_COMMENT_NLSEMI : /\/\/.*\n/ 
+
 %import common.WS_INLINE
 %ignore WS_INLINE
+%ignore COMMENT_NLSEMI
+%ignore LINE_COMMENT_NLSEMI
 %ignore /\n/
 %ignore /\\[\t \f]*\r?\n/   // LINE_CONT

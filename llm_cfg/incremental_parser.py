@@ -68,38 +68,43 @@ class IncrementalParser:
             print('Time taken for lexing:', time.time() - lexing_start_time)
         return lexer_tokens
     
-    def get_acceptable_next_terminals(self, code) -> ParseResult:
+    def _restore_recent_parser_state(self, lexer_tokens):
         """
-        Returns the set of acceptable terminals at the current cursor position.
+        Restores the parser state to the most recent prefix matching state that was stored. 
+        """
+        # Find the maximum index such that the tokens are same and the parser state is stored
+        max_matching_index = -1
+        for i in range(min(len(self.prev_lexer_tokens), len(lexer_tokens))):
+            if self.prev_lexer_tokens[i] != lexer_tokens[i]:
+                break
+            if i in self.cur_pos_to_interactive:
+                max_matching_index = i
+
+        if max_matching_index != -1:
+            self.cur_pos = max_matching_index + 1
+            assert (max_matching_index) in self.cur_pos_to_interactive
+            self._restore_parser_state(max_matching_index)
+
+
+    def get_acceptable_next_terminals(self, partial_code) -> ParseResult:
+        """
+        Returns the set of acceptable terminals at the current partial code position.
         """
         # Stores the sequence of tokens that the parser has seen in the order  
         interactive = self.interactive
-        lexer_tokens: list[Token] = self._lex_code(code)
+        lexer_tokens: list[Token] = self._lex_code(partial_code)
 
         # Restore the previous state of the parser
         if self.prev_lexer_tokens is not None:
-            # Find the maximum index such that the tokens are same and the parser state is stored
-            max_matching_index = -1
-            for i in range(min(len(self.prev_lexer_tokens), len(lexer_tokens))):
-                if self.prev_lexer_tokens[i] != lexer_tokens[i]:
-                    break
-                if i in self.cur_pos_to_interactive:
-                    max_matching_index = i
-
-            if max_matching_index != -1:
-                self.cur_pos = max_matching_index + 1
-                assert (max_matching_index) in self.cur_pos_to_interactive
-                self._restore_parser_state(max_matching_index)
+            self._restore_recent_parser_state(lexer_tokens)
         
-        self.prev_lexer_tokens = lexer_tokens  # Set the previous lexer tokens
-        next_ac_indents = None
+        self.prev_lexer_tokens, next_ac_indents = lexer_tokens, None  # Set the previous lexer tokens
 
         # Parse the tokens
         parsing_start_time = time.time()
         try:
             while self.cur_pos < len(lexer_tokens):
                 token = lexer_tokens[self.cur_pos]
-                # print(self.cur_pos, repr(token))
                 self.cur_pos += 1
                 self.parser_token_seq.append(token) # parser_token_seq holds all tokens
                 interactive.feed_token(token)
@@ -113,8 +118,12 @@ class IncrementalParser:
         if self.log_time:
             print('Time taken for parsing:', (time.time() - parsing_start_time))
 
-        remainder_state = None
         # Compute current terminal string
+        remainder_state, current_term_str = self._get_remainder(partial_code)
+        
+        return ParseResult(self.cur_ac_terminals, self.next_ac_terminals, current_term_str, remainder_state, next_ac_indents=next_ac_indents)
+
+    def _get_remainder(self, code):
         if self.lexer_pos < len(code):
             remainder_state = RemainderState.INCOMPLETE
             current_term_str = code[self.lexer_pos:]
@@ -126,6 +135,5 @@ class IncrementalParser:
             # e.g., 'de' may seem like a variable name that is complete, but it may be just a prefix of 'def'
             current_term_str = self.parser_token_seq[-1].value
             remainder_state = RemainderState.MAYBE_COMPLETE
-
-        return ParseResult(self.cur_ac_terminals, self.next_ac_terminals, current_term_str, remainder_state, next_ac_indents=next_ac_indents)
+        return remainder_state,current_term_str
     
