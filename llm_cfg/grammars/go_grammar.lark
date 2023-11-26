@@ -141,13 +141,14 @@ range_clause: (expression_list "=" | identifier_list ":=")? "range"  expression
 
 go_stmt: "go"expression
 
-type_: (NAME "." NAME | NAME ) type_args? | type_lit | "(" type_ ")"
-
-type_args: "[" type_list ","? "]"
-
-type_name: NAME "." NAME | NAME 
+type_: type_lit | (NAME "." NAME | NAME ) type_args? | "(" type_ ")"
 
 type_lit: array_type | struct_type | pointer_type | function_type | interface_type | slice_type | map_type | channel_type
+
+type_args : "ZZZ"
+// type_args: "[" type_list ","? "]"   // This is useful for Golng gen
+
+type_name: NAME "." NAME | NAME 
 
 array_type: "[" array_length "]" element_type
 
@@ -242,14 +243,12 @@ method_expr: type_ "." NAME
 eos: ";" | EOS // | {this.closingBracket()}?
 	
 NAME : /[a-zA-Z_]\w*/
-EOS: /[\r\n]+/ | ";" | "/*' .*? '*/"       
+EOS: _NL | ";" | "/*' .*? '*/"       
 
-COMMENT_NLSEMI : /\/*~[\r\n]*?'*\//      
-LINE_COMMENT_NLSEMI : /\/\/.*\n/ 
+COMMENT : /\/\/[^\n]*/ 
+_NL: ( /(\r?\n[\t ]*)+/ | COMMENT)+
 
 %import common.WS_INLINE
 %ignore WS_INLINE
-%ignore COMMENT_NLSEMI
-%ignore LINE_COMMENT_NLSEMI
-%ignore /\n/
+// %ignore COMMENT
 %ignore /\\[\t \f]*\r?\n/   // LINE_CONT

@@ -63,7 +63,7 @@ class IncrementalParser:
             pass
         except EOFError as e:
             pass
-
+        self.lexer_pos = lexer_state.line_ctr.char_pos
         if self.log_time:
             print('Time taken for lexing:', time.time() - lexing_start_time)
         return lexer_tokens

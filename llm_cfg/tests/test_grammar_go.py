@@ -51,6 +51,12 @@ func main() {{
         failed = True
     assert failed
 
+def test_go_parser4():
+    inc_parser = GoIncrementalParser()
+    partial_code =  'package main\n\nimport (\n\t"encoding/json"\n\t"reflect"\n)\n// You\'re an expert Golang programmer\n// Check if in given list of numbers, are any two numbers closer to each other than\n// given threshold.\n// >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n// False\n// >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n// True\n// \nfunc has_close_elements (numbers []float64, threshold float64) bool {\n\n  // 1. ' 
+    res = inc_parser.get_acceptable_next_terminals(partial_code)
+    assert '\n\n  // 1. ' == res.remainder
+
 def test_lexer():
     inc_parser = GoIncrementalParser()
     partial_code = f'''package main
@@ -71,12 +77,11 @@ func main() {{
     res = inc_parser.get_acceptable_next_terminals(partial_code)
     assert 'DECIMAL_LIT' in res.next_accept_terminals
 
-def test_interactive_parser2():
+def test_parser2():
     inc_parser = GoIncrementalParser()
     partial_code = 'package main\n\nimport (\n\t"encoding/json"\n\t"reflect"\n)\n// You\'re an expert Golang programmer\n// Check if in given list of numbers, are any two numbers closer to each other than\n// given threshold.\n// >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n// False\n// >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n// True\n// \nfunc has_close_elements (numbers []float64, threshold float64) bool {\n' 
     res = inc_parser.get_acceptable_next_terminals(partial_code)
     print(res)
 
-
-tests = [test_go_parser, test_go_parser2, test_go_parser3, test_lexer, test_interactive_parser, test_interactive_parser2]
+tests = [test_go_parser, test_go_parser2, test_go_parser3, test_go_parser4, test_lexer, test_interactive_parser]
 run_tests(tests)

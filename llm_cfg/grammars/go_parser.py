@@ -46,12 +46,12 @@ class GoIncrementalParser(IncrementalParser):
                 self._store_parser_state(self.cur_pos-1, interactive.parser_state.copy(), next_ac_tokens)
 
         except lark.exceptions.UnexpectedToken as e:
+            print(e)
             pass
-
+        
         if self.log_time:
             print('Time taken for parsing:', (time.time() - parsing_start_time))
 
         # Compute current terminal string
         remainder_state, current_term_str = self._get_remainder(partial_code)
-        
         return ParseResult(self.cur_ac_terminals, self.next_ac_terminals, current_term_str, remainder_state)

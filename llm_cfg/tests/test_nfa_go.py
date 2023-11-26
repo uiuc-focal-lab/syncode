@@ -20,5 +20,9 @@ def test_nfa():
     print(f'Time taken for list query:', time.time() - query_start_time, flush=True)
     assert all(t in nfa.get_overapprox_tokens_mask(r, get_list=True) for t in [' +', ' +=', ' ++'])
 
-tests = [test_nfa]
+def test_nfa2():
+    r = ParseResult({}, {'EOS'}, '\n // 1.', RemainderState.MAYBE_COMPLETE)
+    assert len(nfa.get_overapprox_tokens_mask(r, get_list=True)) == 32000
+
+tests = [test_nfa, test_nfa2]
 common.run_tests(tests)
