@@ -77,19 +77,17 @@ statement_list: ((";"? | EOS?) statement eos)+
 
 statement: declaration | labeled_stmt | simple_stmt | go_stmt | return_stmt | break_stmt | continue_stmt | goto_stmt | fallthrough_stmt | block | if_stmt | switch_stmt | select_stmt | for_stmt | defer_stmt
 
-simple_stmt: send_stmt | inc_dec_stmt | assignment | expression_stmt | short_var_decl
-
-expression_stmt: expression
+simple_stmt: send_stmt | inc_dec_stmt | assignment | expression | short_var_decl
 
 send_stmt: expression  "<-" expression
 
 inc_dec_stmt: expression ("++" | "--")
 
-assignment: expression_list assign_op expression_list
+assignment: expression assign_op expression | expression_list "=" expression_list
 
-assign_op: ( "+" | "-" | "|" | "^" | "*" | "/" | "%" | "<<" | ">>" | "&" | "&^")? "="
+assign_op: "+=" | "-=" | "|=" | "^=" | "*=" | "/=" | "%=" | "<<=" | ">>=" | "&=" | "&^="
 
-short_var_decl: identifier_list ":=" expression_list
+short_var_decl: expression_list ":=" expression_list
 
 labeled_stmt: NAME ":" statement?
 
@@ -133,11 +131,11 @@ comm_case: "case" (send_stmt | recv_stmt) | "default"
 
 recv_stmt: (expression_list "=" | identifier_list ":=")? expression
 
-for_stmt: "for" (expression? | for_clause | range_clause?) block
+for_stmt: "for" (for_clause | range_clause?) block
 
-for_clause: simple_stmt? eos expression? eos simple_stmt?
+for_clause: simple_stmt (eos expression eos simple_stmt)?
 
-range_clause: (expression_list "=" | identifier_list ":=")? "range"  expression
+range_clause: "DDD" (expression_list "=" | identifier_list ":=")? "range"  expression
 
 go_stmt: "go"expression
 

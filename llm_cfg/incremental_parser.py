@@ -33,13 +33,17 @@ class IncrementalParser:
         self.prev_lexer_tokens: list[Token] = []
         self.cur_pos_to_interactive: dict = {}
     
-    def _store_parser_state(self, pos, parser_state, accepts):      
-        self.cur_pos_to_interactive[pos] = (parser_state, accepts, copy.deepcopy(self.dedent_queue))
-        self.cur_ac_terminals = copy.deepcopy(self.next_ac_terminals)
-        self.next_ac_terminals = copy.deepcopy(accepts)
+    def _store_parser_state(self, pos, parser_state, accepts):   
+        cur_ac_terminals = self.next_ac_terminals  
+        next_ac_terminals = accepts 
+        
+        self.cur_pos_to_interactive[pos] = (parser_state, cur_ac_terminals, next_ac_terminals, copy.deepcopy(self.dedent_queue))
+        
+        self.cur_ac_terminals = copy.deepcopy(cur_ac_terminals)
+        self.next_ac_terminals = copy.deepcopy(next_ac_terminals)
 
     def _restore_parser_state(self, pos):
-        parser_state, self.cur_ac_terminals, dedent_queue = self.cur_pos_to_interactive[pos]
+        parser_state, self.cur_ac_terminals, self.next_ac_terminals, dedent_queue = self.cur_pos_to_interactive[pos]
         self.interactive.parser_state = parser_state.copy()
         self.dedent_queue = copy.deepcopy(dedent_queue)
 

@@ -24,5 +24,10 @@ def test_nfa2():
     r = ParseResult({}, {'EOS'}, '\n // 1.', RemainderState.MAYBE_COMPLETE)
     assert len(nfa.get_overapprox_tokens_mask(r, get_list=True)) == 32000
 
-tests = [test_nfa, test_nfa2]
+def test_nfa3():
+    r = ParseResult({}, {'__ANON_14', 'EQUAL'}, '', RemainderState.COMPLETE)
+    print(nfa.get_overapprox_tokens_mask(r, get_list=True))
+    assert ":=" in nfa.get_overapprox_tokens_mask(r, get_list=True)
+
+tests = [test_nfa, test_nfa2, test_nfa3]
 common.run_tests(tests)

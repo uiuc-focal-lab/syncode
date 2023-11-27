@@ -34,16 +34,15 @@ class GoIncrementalParser(IncrementalParser):
                 # print(self.cur_pos, repr(token))
                 self.cur_pos += 1
 
-                if token.type == 'EOS' and next_ac_tokens is not None:
-                    if 'EOS' not in next_ac_tokens:
+                if token.type == 'EOS' and self.next_ac_terminals is not None:
+                    if 'EOS' not in self.next_ac_terminals:
                         continue
 
                 self.parser_token_seq.append(token) # parser_token_seq holds all tokens
                 interactive.feed_token(token)
 
                 # Store the current state of the parser
-                next_ac_tokens = interactive.accepts()
-                self._store_parser_state(self.cur_pos-1, interactive.parser_state.copy(), next_ac_tokens)
+                self._store_parser_state(self.cur_pos-1, interactive.parser_state.copy(), interactive.accepts())
 
         except lark.exceptions.UnexpectedToken as e:
             print(e)
@@ -51,6 +50,8 @@ class GoIncrementalParser(IncrementalParser):
         
         if self.log_time:
             print('Time taken for parsing:', (time.time() - parsing_start_time))
+
+        self.next_ac_terminals.add('EOS')
 
         # Compute current terminal string
         remainder_state, current_term_str = self._get_remainder(partial_code)
