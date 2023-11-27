@@ -43,9 +43,11 @@ class IncrementalParser:
         self.next_ac_terminals = copy.deepcopy(next_ac_terminals)
 
     def _restore_parser_state(self, pos):
-        parser_state, self.cur_ac_terminals, self.next_ac_terminals, dedent_queue = self.cur_pos_to_interactive[pos]
+        parser_state, cur_ac_terminals, next_ac_terminals, dedent_queue = self.cur_pos_to_interactive[pos]
         self.interactive.parser_state = parser_state.copy()
         self.dedent_queue = copy.deepcopy(dedent_queue)
+        self.cur_ac_terminals = copy.deepcopy(cur_ac_terminals)
+        self.next_ac_terminals = copy.deepcopy(next_ac_terminals)
 
     def _lex_code(self, code) -> list[Token]:
         """

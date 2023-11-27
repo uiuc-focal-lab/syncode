@@ -105,5 +105,16 @@ def test_go_incremental_parser():
     res = inc_parser.get_acceptable_next_terminals(partial_code)
     assert 'NAME' in res.cur_accept_terminals
 
-tests = [test_go_parser, test_go_parser2, test_go_parser3, test_go_parser4, test_go_parser5, test_go_parser6, test_lexer, test_interactive_parser, test_go_incremental_parser]
+def test_go_incremental_parser2():
+    inc_parser = GoIncrementalParser()
+    prompt = 'package main\n\nimport (\n\t"encoding/json"\n\t"reflect"\n)\n'
+    generated_code = 'func truncate_number (number float64) float64 {\n\tvar (\n\n\t\tinteger_part float'
+
+    i = 0
+    while i<len(generated_code):
+        i += 2
+        r = inc_parser.get_acceptable_next_terminals(prompt + generated_code[:i])
+    assert r.remainder == 'float'
+
+tests = [test_go_parser, test_go_parser2, test_go_parser3, test_go_parser4, test_go_parser5, test_go_parser6, test_lexer, test_interactive_parser, test_go_incremental_parser, test_go_incremental_parser2]
 run_tests(tests)
