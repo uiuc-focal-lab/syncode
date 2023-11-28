@@ -52,6 +52,8 @@ class GoIncrementalParser(IncrementalParser):
             print('Time taken for parsing:', (time.time() - parsing_start_time))
 
         self.next_ac_terminals.add('EOS')
+        for term in self.parser.ignore_tokens:
+            self.next_ac_terminals.add(term)
 
         # Compute current terminal string
         remainder_state, current_term_str = self._get_remainder(partial_code)

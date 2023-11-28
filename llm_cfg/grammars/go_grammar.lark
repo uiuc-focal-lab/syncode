@@ -246,7 +246,7 @@ EOS: _NL | ";" | "/*' .*? '*/"
 COMMENT : /\/\/[^\n]*/ 
 _NL: ( /(\r?\n[\t ]*)+/ | COMMENT)+
 
-%import common.WS_INLINE
-%ignore WS_INLINE
-// %ignore COMMENT
+// %import common.WS_INLINE
+// %ignore WS_INLINE
+%ignore /[\t ]/
 %ignore /\\[\t \f]*\r?\n/   // LINE_CONT

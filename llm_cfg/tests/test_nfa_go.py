@@ -29,5 +29,10 @@ def test_nfa3():
     print(nfa.get_overapprox_tokens_mask(r, get_list=True))
     assert ":=" in nfa.get_overapprox_tokens_mask(r, get_list=True)
 
-tests = [test_nfa, test_nfa2, test_nfa3]
+def test_nfa4():
+    r = ParseResult({}, {'__IGNORE_0'}, '', RemainderState.COMPLETE)
+    print(nfa.get_overapprox_tokens_mask(r, get_list=True))
+    assert "\t" in nfa.get_overapprox_tokens_mask(r, get_list=True)
+
+tests = [test_nfa, test_nfa2, test_nfa3, test_nfa4]
 common.run_tests(tests)
