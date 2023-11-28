@@ -135,7 +135,7 @@ for_stmt: "for" (for_clause | range_clause?) block
 
 for_clause: simple_stmt (eos expression eos simple_stmt)?
 
-range_clause: "DDD" (expression_list "=" | identifier_list ":=")? "range"  expression
+range_clause: (expression_list "=" | identifier_list ":=")? "range"  expression
 
 go_stmt: "go"expression
 
