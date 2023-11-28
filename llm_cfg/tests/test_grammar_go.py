@@ -115,6 +115,13 @@ def test_go_parser9():
     res = inc_parser.get_acceptable_next_terminals(partial_code)
     assert 'LBRACE' in res.next_accept_terminals
 
+def test_go_parser10():
+    inc_parser = GoIncrementalParser()
+    partial_code = 'package main\n\nimport (\n\t"encoding/json"\n\t"reflect"\n)\nfunc has_close_elements (numbers []float64, threshold float64) bool { x:= 1; }\n'
+    res = inc_parser.get_acceptable_next_terminals(partial_code)
+    # Can probably be replaced by $END
+    assert 'EOF' in res.next_accept_terminals
+
 def test_go_incremental_parser():
     inc_parser = GoIncrementalParser()
     partial_code =  'package main\n\nimport (\n\t"encoding/json"\n\t"reflect"\n)\nfunc truncate_number (number float64) float64 {\n\tvar ('
@@ -134,5 +141,5 @@ def test_go_incremental_parser2():
         r = inc_parser.get_acceptable_next_terminals(prompt + generated_code[:i])
     assert r.remainder == 'float'
 
-tests = [test_go_parser, test_go_parser2, test_go_parser3, test_go_parser4, test_go_parser5, test_go_parser6, test_go_parser7, test_go_parser8, test_go_parser9, test_lexer, test_interactive_parser, test_go_incremental_parser, test_go_incremental_parser2]
+tests = [test_go_parser, test_go_parser2, test_go_parser3, test_go_parser4, test_go_parser5, test_go_parser6, test_go_parser7, test_go_parser8, test_go_parser9, test_go_parser10, test_lexer, test_interactive_parser, test_go_incremental_parser, test_go_incremental_parser2]
 run_tests(tests)
