@@ -177,7 +177,13 @@ parameters: "(" (parameter_decl ("," parameter_decl)* ","?)? ")"
 
 parameter_decl: identifier_list? "..."? type_
 
-expression: primary_expr | ("+" | "-" | "!" | "^" | "*" | "&" | "<-") expression | ("*" | "/" | "%" | "<<" | ">>" | "&" | "&^") expression | expression ("+" | "-" | "|" | "^") expression | expression ("==" | "!=" | "<" | "<=" | ">" | ">=") expression | expression "&&" expression | expression "||" expression
+expression: primary_expr 
+            | ("+" | "-" | "!" | "^" | "*" | "&" | "<-") expression 
+            | expression ("*" | "/" | "%" | "<<" | ">>" | "&" | "&^") expression 
+            | expression ("+" | "-" | "|" | "^") expression 
+            | expression ("==" | "!=" | "<" | "<=" | ">" | ">=") expression 
+            | expression "&&" expression 
+            | expression "||" expression
 
 primary_expr.4: (literal | NAME type_args? | "(" expression ")") | conversion | method_expr | primary_expr ("." NAME | index | slice_ | type_assertion | arguments)
 
