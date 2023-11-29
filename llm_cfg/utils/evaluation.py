@@ -1,4 +1,3 @@
-import time
 from mxeval.data import write_jsonl, read_problems, get_data
 from transformers import (
     PreTrainedModel,
@@ -50,13 +49,22 @@ def run_eval(args,
 
         batch_completions = hf_model.generate_batch_completion(prompt, num_samples_per_task)
 
-        for sample in batch_completions:
+        for raw_sample in batch_completions:
+            # Post-processing to filter out single function code for each language
+            if args.language == "python": 
+                sample = filter_code(fix_indents(raw_sample))
+            elif args.language == "go":
+                sample = raw_sample + '}\n'
+                sample = filter_code(sample)
+            
+            print('Raw sample:\n', raw_sample)   
+            print('Filtered sample:\n', sample)
+
             result = dict(
                 task_id=task_id,
                 language=problems[task_id]["language"],
                 completion=sample
             )
-
             samples += [result]
         
         pbar.update(num_samples_per_task)

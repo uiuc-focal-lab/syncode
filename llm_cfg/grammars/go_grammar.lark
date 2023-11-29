@@ -23,7 +23,7 @@
 //  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN "if"  ADVISED OF THE
 //  POSSIBILITY OF SUCH DAMAGE.
 
-file_input: package_clause eos (import_decl eos)* ((function_decl | method_decl | declaration) eos)* ("eof")?
+file_input: package_clause eos (import_decl eos)* ((function_decl | method_decl | declaration) eos)*
 
 package_clause: "package" NAME
 
@@ -61,7 +61,8 @@ type_term : "~"? type_
 
 // Function declarations
 
-function_decl: "func" NAME type_parameters? signature block?
+function_decl: "func" NAME type_parameters? signature ("{" statement_list? ("}" | "eof"))? 
+// eof: "}" // This indicates end of function body
 
 method_decl: "func" receiver NAME signature block?
 

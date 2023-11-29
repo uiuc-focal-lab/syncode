@@ -75,7 +75,6 @@ class HuggingFaceModel(LanguageModel):
             logits_processor=self.logit_processors
         )
 
-
         last_token_id = [len(generated_ids[i]) for i in range(batch_size)]
         if self.logit_processors is not None:
             python_decoder = self.logit_processors[0]
@@ -92,7 +91,7 @@ class HuggingFaceModel(LanguageModel):
             # print(f"Accept tokens sizes: {python_decoder.accept_tokens_sizes}")
         print('Completion:', batch_completions)
 
-        return [filter_code(fix_indents(completion)) for completion in batch_completions]
+        return batch_completions
 
     def generate_batch_completion_synchromesh(self, prompt, batch_size) -> list[str]:
         '''
@@ -104,10 +103,6 @@ class HuggingFaceModel(LanguageModel):
 
         while not comp_engine.is_complete(csd.get_current_prediction()):
             next_token = self.predict_unconstrained(csd.get_current_prediction(), max_tokens=1)
-            # print(type(continuation), repr(continuation))
-            # tokens = self.tokenize(continuation)
-            # print(type(tokens) ,tokens, [csd._vocab[t] for t in tokens])
-            # print(tokens[0], csd.can_token_follow(tokens[0]))
             if csd.can_token_follow(next_token):
                 csd.feed_prediction(next_token)
             else:
@@ -125,6 +120,7 @@ class HuggingFaceModel(LanguageModel):
         delta = time.time() - start_time
         print('Predicted:', repr(csd.get_current_prediction()))
         print('Throughput:', len(csd.get_current_prediction_tokens()) / delta, 'tokens/s')
+        return [csd.get_current_prediction()]
 
     def tokenize(self, s: str) -> list[int]:
         return self.tokenizer.encode(s, add_special_tokens=False)

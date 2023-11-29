@@ -117,9 +117,8 @@ def test_go_parser9():
 
 def test_go_parser10():
     inc_parser = GoIncrementalParser()
-    partial_code = 'package main\n\nimport (\n\t"encoding/json"\n\t"reflect"\n)\nfunc has_close_elements (numbers []float64, threshold float64) bool { x:= 1; }\n'
+    partial_code = 'package main\n\nimport (\n\t"encoding/json"\n\t"reflect"\n)\nfunc has_close_elements (numbers []float64, threshold float64) bool { x:= 1; '
     res = inc_parser.get_acceptable_next_terminals(partial_code)
-    # Can probably be replaced by $END
     assert 'EOF' in res.next_accept_terminals
 
 def test_go_incremental_parser():
