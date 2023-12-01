@@ -6,7 +6,7 @@ from parse_result import ParseResult
 
 class GoIncrementalParser(IncrementalParser):
     """
-    This class implements an incremental parser for Python code.
+    This class implements an incremental parser for Go code.
     """
 
     def __init__(self):

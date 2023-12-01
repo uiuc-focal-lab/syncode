@@ -10,13 +10,16 @@ class IncrementalParser:
     """
     This is the base class for all incremental parsers.
     """
-    def __init__(self, grammar_file, indenter=None) -> None:
+    def __init__(self, grammar_file, indenter=None, log_time=False) -> None:
+        self.log_time = log_time
         self.cur_ac_terminals = None
         self.next_ac_terminals = None
         self.cur_pos = 0 # Current cursor position in the lexer tokens list
         self.lexer_pos = 0 # Current lexer position in the code
         self.dedent_queue: list = []
 
+        # Initialize the parser
+        time_start = time.time()
         self.parser = Lark.open( # This is the standard Lark parser
             grammar_file,
             parser="lalr",
@@ -25,15 +28,18 @@ class IncrementalParser:
             postlex=indenter,
             propagate_positions=True,
         )
+        if self.log_time:
+            print('Time taken for loading parser:', time.time() - time_start)
+
         self.interactive = self.parser.parse_interactive('')
         self.parser_token_seq: list = []
-        self.log_time = False
 
         # To enable going back to old state of the parser
         self.prev_lexer_tokens: list[Token] = []
         self.cur_pos_to_interactive: dict = {}
     
-    def _store_parser_state(self, pos, parser_state, accepts):   
+    def _store_parser_state(self, pos, parser_state, accepts):  
+        time_start = time.time() 
         cur_ac_terminals = self.next_ac_terminals  
         next_ac_terminals = accepts 
         
@@ -41,13 +47,18 @@ class IncrementalParser:
         
         self.cur_ac_terminals = copy.deepcopy(cur_ac_terminals)
         self.next_ac_terminals = copy.deepcopy(next_ac_terminals)
+        if self.log_time:
+            print('Time taken for storing parser state:', time.time() - time_start)
 
     def _restore_parser_state(self, pos):
+        time_start = time.time()
         parser_state, cur_ac_terminals, next_ac_terminals, dedent_queue = self.cur_pos_to_interactive[pos]
         self.interactive.parser_state = parser_state.copy()
         self.dedent_queue = copy.deepcopy(dedent_queue)
         self.cur_ac_terminals = copy.deepcopy(cur_ac_terminals)
         self.next_ac_terminals = copy.deepcopy(next_ac_terminals)
+        if self.log_time:
+            print('Time taken for restoring parser state:', time.time() - time_start)
 
     def _lex_code(self, code) -> list[Token]:
         """
