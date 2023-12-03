@@ -21,7 +21,7 @@ if __name__ == "__main__":
     # Input grammar masking flag
     p = argparse.ArgumentParser()
     p.add_argument("--mode", choices=["original", "grammar_mask", "synchromesh"], default="original")
-    p.add_argument("--model_size", choices=["7B", "13B"], default="7B")
+    p.add_argument("--model", choices=["Llama-7b", "Llama-13b", "CodeLlama-7b", "CodeLlama-7b-Python"], default="Llama-7b")
     p.add_argument("--quantize", type=bool, default=True)
     p.add_argument("--gpu", type=int, default=1)
     p.add_argument("--num_samples", type=int, default=1)
@@ -30,13 +30,13 @@ if __name__ == "__main__":
     args = p.parse_args()
 
     num_samples_per_task = args.num_samples
-    out_dir = f"results/llama/{args.language}/{args.dataset}/"
-    out_path = out_dir + 'model_size' + str(args.model_size) +  '_samples_' + str(num_samples_per_task) + '_mode_' + str(args.mode) + "_eval.jsonl"
+    out_dir = f"results/{args.model}/{args.language}/{args.dataset}/"
+    out_path = out_dir + 'samples_' + str(num_samples_per_task) + '_mode_' + str(args.mode) + "_eval.jsonl"
     os.makedirs(out_dir, exist_ok=True)
 
     # Load model
     device = f"cuda:{args.gpu}"
-    model_location = "/share/models/llama_model/hf/" + args.model_size
+    model_location = "/share/models/hugging_face/" + args.model
     tokenizer = LlamaTokenizer.from_pretrained(model_location)
     model = LlamaForCausalLM.from_pretrained(model_location, torch_dtype=torch.bfloat16).eval().to(device)
     

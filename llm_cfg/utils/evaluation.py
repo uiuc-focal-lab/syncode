@@ -37,7 +37,6 @@ def run_eval(args,
     format_tabs: bool = False,
 ):
     problems = get_data(args.dataset, args.language)
-    # problems = dict(itertools.islice(problems.items(), 20))
     samples = []
     pbar = tqdm(total=len(problems) * num_samples_per_task)
 
