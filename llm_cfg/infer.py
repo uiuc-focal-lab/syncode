@@ -3,8 +3,8 @@ from language_model import HuggingFaceModel
 from transformers import (
     LlamaTokenizer,
     LlamaForCausalLM,
-    PreTrainedModel,
-    PreTrainedTokenizer,
+    AutoTokenizer,
+    AutoModelForCausalLM,
     LogitsProcessorList
 )
 from utils import run_eval
@@ -13,15 +13,19 @@ import torch
 import argparse
 from grammar_decoder import GrammarDecoder
 
-# TODO: move to python-dotenv
-# add hugging face access token here
-TOKEN = ""
+# Remove this in future and add instruction to set the HF_CACHE env variable
+os.environ['HF_CACHE'] = '/share/models/hugging_face/'
+
+# List of currently downloaded models
+# Llama models: Llama-7b, CodeLlama-7b, CodeLlama-7b-Python, Llama-13b
+# CodeGen models: Salesforce/codegen-350m-multi, Salesforce/codegen2-1b 
 
 if __name__ == "__main__":
     # Input grammar masking flag
     p = argparse.ArgumentParser()
     p.add_argument("--mode", choices=["original", "grammar_mask", "synchromesh"], default="original")
-    p.add_argument("--model", choices=["Llama-7b", "Llama-13b", "CodeLlama-7b", "CodeLlama-7b-Python"], default="Llama-7b")
+    p.add_argument("--model", choices=["Llama-7b", "Llama-13b", "CodeLlama-7b", "CodeLlama-7b-Python"], default=None)
+    p.add_argument("--model_id", type=str, default=None, help="model id for huggingface model hub")
     p.add_argument("--quantize", type=bool, default=True)
     p.add_argument("--gpu", type=int, default=1)
     p.add_argument("--num_samples", type=int, default=1)
@@ -30,16 +34,23 @@ if __name__ == "__main__":
     args = p.parse_args()
 
     num_samples_per_task = args.num_samples
-    out_dir = f"results/{args.model}/{args.language}/{args.dataset}/"
+    
+    # Load model
+    device = f"cuda:{args.gpu}"
+    
+    if args.model_id is not None:
+        tokenizer = AutoTokenizer.from_pretrained(args.model_id, cache_dir=os.environ['HF_CACHE'])
+        model = AutoModelForCausalLM.from_pretrained(args.model_id, torch_dtype=torch.bfloat16, cache_dir=os.environ['HF_CACHE']).eval().to(device)
+        out_dir = f"results/{args.model_id}/{args.language}/{args.dataset}/"
+    else:
+        model_location = "/share/models/hugging_face/" + args.model
+        tokenizer = LlamaTokenizer.from_pretrained(model_location)
+        model = LlamaForCausalLM.from_pretrained(model_location, torch_dtype=torch.bfloat16).eval().to(device)
+        out_dir = f"results/{args.model}/{args.language}/{args.dataset}/"
+    
     out_path = out_dir + 'samples_' + str(num_samples_per_task) + '_mode_' + str(args.mode) + "_eval.jsonl"
     os.makedirs(out_dir, exist_ok=True)
 
-    # Load model
-    device = f"cuda:{args.gpu}"
-    model_location = "/share/models/hugging_face/" + args.model
-    tokenizer = LlamaTokenizer.from_pretrained(model_location)
-    model = LlamaForCausalLM.from_pretrained(model_location, torch_dtype=torch.bfloat16).eval().to(device)
-    
     logit_processors = None
     if args.mode == 'grammar_mask':
         grammar_decoder = GrammarDecoder(args.language, tokenizer=tokenizer,)
