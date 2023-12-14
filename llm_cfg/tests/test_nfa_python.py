@@ -5,8 +5,10 @@ import common
 from incremental_parser import ParseResult
 from grammars.python_parser import PythonIncrementalParser
 from parse_result import IndentationConstraint, RemainderState
+from transformers import AutoTokenizer
 
-nfa = common.load_nfa(language='python', use_cache=True)
+tokenizer = AutoTokenizer.from_pretrained(common.HF_CACHE+'Llama-7b', cache_dir=common.HF_CACHE, token=common.HF_ACCESS_TOKEN, trust_remote_code=True)
+nfa = common.load_nfa(language='python', tokenizer=tokenizer, use_cache=True)
 
 def test_nfa():        
     query_start_time = time.time()

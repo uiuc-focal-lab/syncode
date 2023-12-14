@@ -1,12 +1,15 @@
 import os
 import pickle
-import re
 import transformers
 from grammars.python_parser import PythonIncrementalParser
 from grammars.go_parser import GoIncrementalParser
 from terminals_nfa import TerminalsNFA
-from transformers import LlamaTokenizer
 import time
+
+# Remove this in future and add instruction to set the HF_CACHE env variable
+HF_CACHE = '/share/models/hugging_face/'
+# HF_CACHE = os.environ['HF_CACHE']
+HF_ACCESS_TOKEN = os.environ['HF_ACCESS_TOKEN'] if 'HF_ACCESS_TOKEN' in os.environ else None
 
 def get_vocab_from_tokenizer(tokenizer):
     # self.vocab is a list of readable token strings (e.g., ' hello' and '\n')
@@ -16,25 +19,26 @@ def get_vocab_from_tokenizer(tokenizer):
                             for _, t_id in tokenizer.get_vocab().items()])]
 
     # HACK: Is there a better way to know if a token has a prefix space?
-    # We should only need this for LlamaTokenizer.
-    if isinstance(tokenizer, transformers.LlamaTokenizer):
-        for i in range(len(vocab)):
-            t = vocab[i]
-            if 2*len(t) != len(tokenizer.decode([i, i], add_special_tokens=False)):
-                vocab[i] = ' ' + t
-            if t == '':
-                vocab[i] = ' '
+    for i in range(len(vocab)):
+        t = vocab[i]
+        if 2*len(t) != len(tokenizer.decode([i, i], add_special_tokens=False)):
+            vocab[i] = ' ' + t
+        if t == '':
+            vocab[i] = ' '
     
     return vocab
 
-def load_nfa(language: str, tokenizer=None, inc_parser=None, use_cache=True):
-    NFA_LOC = 'results/' + language + '_nfa.pkl'
+def load_nfa(language: str, tokenizer, inc_parser=None, use_cache=True):
+    '''
+    Loads the NFA for the given language and tokenizer. If the NFA is not cached, it is created and cached. 
+    '''
+    tokenizer_name = type(tokenizer).__name__
+    nfa_dir = 'results/' + tokenizer_name + '/'
+    nfa_path = nfa_dir + language + '_nfa.pkl'
     start_time = time.time()
-    if use_cache and os.path.exists(NFA_LOC):
-        nfa = pickle.load(open(NFA_LOC, 'rb'))
+    if use_cache and os.path.exists(nfa_path):
+        nfa = pickle.load(open(nfa_path, 'rb'))
     else:
-        if tokenizer is None:
-            tokenizer = LlamaTokenizer.from_pretrained("/share/models/llama_model/hf/7B")
         vocab = get_vocab_from_tokenizer(tokenizer)
         print('Time taken for loading vocab:', time.time() - start_time, flush=True)
 
@@ -46,10 +50,11 @@ def load_nfa(language: str, tokenizer=None, inc_parser=None, use_cache=True):
         if language == 'python':
             exceptions = {'COMMENT': '#.*|\'\'\'.*?\'\'\'|""".*?"""/is', '_NL': '(\r?\n[\t ]*)+', 'LONG_STRING': '\'\'\'.*?\'\'\'|""".*?"""/is', 'STRING': '[ubf]?r?(".*?"|\'.*?\')'}
         
+        os.makedirs(nfa_dir, exist_ok=True)
         nfa = TerminalsNFA(inc_parser.parser.terminals, vocab, exceptions=exceptions, special_token_ids=[tokenizer.eos_token_id])
         print(f'Time taken for creating NFA:', time.time() - start_time, flush=True)
 
-        pickle.dump(nfa, open(NFA_LOC, 'wb'))
+        pickle.dump(nfa, open(nfa_path, 'wb'))
         print(f'Time taken for storing the NFA', time.time() - start_time, flush=True)
     return nfa
 

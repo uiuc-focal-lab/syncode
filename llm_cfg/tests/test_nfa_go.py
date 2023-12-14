@@ -5,10 +5,12 @@ import common
 from incremental_parser import ParseResult
 from grammars.python_parser import PythonIncrementalParser
 from parse_result import IndentationConstraint, RemainderState
+from transformers import AutoTokenizer
 
-nfa = common.load_nfa(language='go', use_cache=True)
+tokenizer = AutoTokenizer.from_pretrained(common.HF_CACHE+'Llama-7b', cache_dir=common.HF_CACHE, token=common.HF_ACCESS_TOKEN, trust_remote_code=True)
+nfa = common.load_nfa(language='go', tokenizer=tokenizer, use_cache=True)
 
-def test_nfa():        
+def test_nfa():
     query_start_time = time.time()
     r = ParseResult({}, {'PLUS'}, '1', RemainderState.MAYBE_COMPLETE)
     nfa.get_overapprox_tokens_mask(r) # 0.02 seconds for mask
@@ -18,6 +20,7 @@ def test_nfa():
     r = ParseResult({}, {'PLUS'}, '1', RemainderState.MAYBE_COMPLETE)
     nfa.get_overapprox_tokens_mask(r, get_list=True) # 10^-4 seconds for list
     print(f'Time taken for list query:', time.time() - query_start_time, flush=True)
+    print(nfa.get_overapprox_tokens_mask(r, get_list=True))
     assert all(t in nfa.get_overapprox_tokens_mask(r, get_list=True) for t in [' +', ' +=', ' ++'])
 
 def test_nfa2():

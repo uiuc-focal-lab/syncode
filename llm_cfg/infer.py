@@ -1,4 +1,4 @@
-import time
+import common
 from language_model import HuggingFaceModel
 from transformers import (
     LlamaTokenizer,
@@ -13,19 +13,14 @@ import torch
 import argparse
 from grammar_decoder import GrammarDecoder
 
-# Remove this in future and add instruction to set the HF_CACHE env variable
-HF_CACHE = '/share/models/hugging_face/'
-# HF_CACHE = os.environ['HF_CACHE']
-HF_ACCESS_TOKEN = os.environ['HF_ACCESS_TOKEN']
-
 # NOTE: List of currently downloaded models
 # Llama models: "Llama-7b", "CodeLlama-7b", "CodeLlama-7b-Python", "Llama-13b"
 # CodeGen models: "Salesforce/codegen-350m-multi", "Salesforce/codegen2-1b" 
 # Bigcode models: "bigcode/starcoderbase-1b", "bigcode/santacoder" (1.1b WIP)
-# WizardLM models: WizardCoder-1B-V1.0
+# WizardLM models: "WizardLM/WizardCoder-1B-V1.0"
+# Replit models: replit/replit-code-v1-3b  (WIP: 'ReplitLMTokenizer' object has no attribute 'sp_model')
 
 if __name__ == "__main__":
-    # Input grammar masking flag
     p = argparse.ArgumentParser()
     p.add_argument("--mode", choices=["original", "grammar_mask", "synchromesh"], default="original")
     p.add_argument("--model", choices=["Llama-7b", "Llama-13b", "CodeLlama-7b", "CodeLlama-7b-Python"], default=None)
@@ -43,8 +38,8 @@ if __name__ == "__main__":
     device = f"cuda:{args.gpu}"
     
     if args.model_id is not None:
-        tokenizer = AutoTokenizer.from_pretrained(args.model_id, cache_dir=HF_CACHE, token=HF_ACCESS_TOKEN)
-        model = AutoModelForCausalLM.from_pretrained(args.model_id, torch_dtype=torch.bfloat16, cache_dir=HF_CACHE, token=HF_ACCESS_TOKEN).eval().to(device)
+        tokenizer = AutoTokenizer.from_pretrained(args.model_id, cache_dir=common.HF_CACHE, token=common.HF_ACCESS_TOKEN, trust_remote_code=True)
+        model = AutoModelForCausalLM.from_pretrained(args.model_id, torch_dtype=torch.bfloat16, cache_dir=common.HF_CACHE, token=common.HF_ACCESS_TOKEN, trust_remote_code=True).eval().to(device)
         out_dir = f"results/{args.model_id}/{args.language}/{args.dataset}/"
     else:
         model_location = "/share/models/hugging_face/" + args.model
