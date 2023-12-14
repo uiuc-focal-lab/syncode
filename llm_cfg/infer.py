@@ -14,11 +14,15 @@ import argparse
 from grammar_decoder import GrammarDecoder
 
 # Remove this in future and add instruction to set the HF_CACHE env variable
-os.environ['HF_CACHE'] = '/share/models/hugging_face/'
+HF_CACHE = '/share/models/hugging_face/'
+# HF_CACHE = os.environ['HF_CACHE']
+HF_ACCESS_TOKEN = os.environ['HF_ACCESS_TOKEN']
 
-# List of currently downloaded models
-# Llama models: Llama-7b, CodeLlama-7b, CodeLlama-7b-Python, Llama-13b
-# CodeGen models: Salesforce/codegen-350m-multi, Salesforce/codegen2-1b 
+# NOTE: List of currently downloaded models
+# Llama models: "Llama-7b", "CodeLlama-7b", "CodeLlama-7b-Python", "Llama-13b"
+# CodeGen models: "Salesforce/codegen-350m-multi", "Salesforce/codegen2-1b" 
+# Bigcode models: "bigcode/starcoderbase-1b", "bigcode/santacoder" (1.1b WIP)
+# WizardLM models: WizardCoder-1B-V1.0
 
 if __name__ == "__main__":
     # Input grammar masking flag
@@ -39,8 +43,8 @@ if __name__ == "__main__":
     device = f"cuda:{args.gpu}"
     
     if args.model_id is not None:
-        tokenizer = AutoTokenizer.from_pretrained(args.model_id, cache_dir=os.environ['HF_CACHE'])
-        model = AutoModelForCausalLM.from_pretrained(args.model_id, torch_dtype=torch.bfloat16, cache_dir=os.environ['HF_CACHE']).eval().to(device)
+        tokenizer = AutoTokenizer.from_pretrained(args.model_id, cache_dir=HF_CACHE, token=HF_ACCESS_TOKEN)
+        model = AutoModelForCausalLM.from_pretrained(args.model_id, torch_dtype=torch.bfloat16, cache_dir=HF_CACHE, token=HF_ACCESS_TOKEN).eval().to(device)
         out_dir = f"results/{args.model_id}/{args.language}/{args.dataset}/"
     else:
         model_location = "/share/models/hugging_face/" + args.model
