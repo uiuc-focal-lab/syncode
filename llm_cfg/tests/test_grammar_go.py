@@ -15,7 +15,9 @@ def test_tree_printer():
     partial_code = f'''package main
     import "fmt"
 func main() {{
-  a = x.fun(num[i], 7);}}
+  a = x.fun(num[i], 7);
+  t(p.q.r)
+  }}
   '''
     # partial_code = 'package main\n\nfunc has_close_elements (numbers []float64, threshold float64) bool {\n\tvar (\t\tmin, max float64\n\t\tmin_index, max_index int\n\t)\n\tfor i, n := range 5 {\na=i\n}\n};'
     t = inc_parser.parser.parse(partial_code)
@@ -141,6 +143,25 @@ def test_go_parser11():
     res = inc_parser.get_acceptable_next_terminals(partial_code)
     assert 'DECIMAL_LIT' in res.next_accept_terminals
 
+def test_go_parser12():
+    inc_parser = GoIncrementalParser()
+    partial_code =   'package main\n\nimport (\n\t"encoding/json"\n\t"reflect"\n)\n// You\'re an expert Golang programmer\n// Insert a number \'delimeter\' between every two consecutive elements of input list `numbers\'\n// >>> intersperse([], 4)\n// []\n// >>> intersperse([1, 2, 3], 4)\n// [1, 4, 2, 4, 3]\n// \nfunc intersperse (numbers []int, delimeter int) []int {\n\tresult := make([]int64'
+    res = inc_parser.get_acceptable_next_terminals(partial_code)
+    assert 'COMMA' in res.next_accept_terminals
+
+def test_go_parser13():
+    inc_parser = GoIncrementalParser()
+    partial_code = 'package main\n\nimport (\n\t"math"\n\t"encoding/json"\n\t"reflect"\n)\n// You\'re an expert Golang programmer\n// Return list of prime factors of given integer in the order from smallest to largest.\n// Each of the factors should be listed number of times corresponding to how many times it appeares in factorization.\n// Input number should be equal to the product of all factors\n// >>> factorize(8)\n// [2, 2, 2]\n// >>> factorize(25)\n// [5, 5]\n// >>> factorize(70)\n// [2, 5, 7]\n// \nfunc factorize (n int) []int {\n\tfactors := make([]int, 0)\n\tfor i := 2; i <= int(math.Sqrtln'
+    res = inc_parser.get_acceptable_next_terminals(partial_code)
+    assert 'LPAR' in res.next_accept_terminals
+
+def test_go_parser14():
+    inc_parser = GoIncrementalParser()
+    partial_code = 'package main\n\nimport (\n\t"encoding/json"\n\t"reflect"\n)\n// You\'re an expert Golang programmer\n// Out of list of strings, return the longest one. Return the first one in case of multiple\n// strings of the same length. Return None in case the input list is empty.\n// >>> longest([])\n// \n// >>> longest([\'a\', \'b\', \'c\'])\n// \'a\'\n// >>> longest([\'a\', \'bb\', \'ccc\'])\n// \'ccc\'\n// \nfunc longest (strings []string) interface{} {\n\t'
+    res = inc_parser.get_acceptable_next_terminals(partial_code)
+    print(res)
+    assert 'IF' in res.next_accept_terminals
+
 def test_go_incremental_parser():
     inc_parser = GoIncrementalParser()
     partial_code =  'package main\n\nimport (\n\t"encoding/json"\n\t"reflect"\n)\nfunc truncate_number (number float64) float64 {\n\tvar ('
@@ -160,6 +181,7 @@ def test_go_incremental_parser2():
         r = inc_parser.get_acceptable_next_terminals(prompt + generated_code[:i])
     assert r.remainder == 'float'
 
-tests = [test_go_parser, test_go_parser2, test_go_parser3, test_go_parser4, test_go_parser5, test_go_parser6, test_go_parser7, test_go_parser8, test_go_parser9, test_go_parser10, test_go_parser11, test_lexer, test_interactive_parser, test_go_incremental_parser, test_go_incremental_parser2]
+tests = [test_go_parser, test_go_parser2, test_go_parser3, test_go_parser4, test_go_parser5, test_go_parser6, test_go_parser7, test_go_parser8, test_go_parser9, test_go_parser10, test_go_parser11, test_go_parser12, test_go_parser13, test_go_parser14, test_lexer, test_interactive_parser, test_go_incremental_parser, test_go_incremental_parser2]
 # tests = [test_tree_printer]
+# tests = [test_go_parser14]
 run_tests(tests)

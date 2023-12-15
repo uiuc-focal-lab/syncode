@@ -39,7 +39,7 @@ const_decl: "const"  (const_spec | "(" (const_spec eos)* ")")
 
 const_spec: identifier_list (type_? "=" expression_list)?
 
-identifier_list: type_ ("," type_)*
+identifier_list: NAME ("," NAME)*
 
 expression_list: expression ("," expression)*
 
@@ -140,14 +140,14 @@ range_clause: (expression_list "=" | expression_list ":=") "range"  expression
 
 go_stmt: "go"expression
 
-type_: literal_type | (NAME "." NAME | NAME ) type_args? | "(" type_ ")" 
+type_: literal_type | var_or_type_name type_args? | "(" type_ ")" 
 
 // type_lit: array_type | struct_type | pointer_type | function_type | interface_type | slice_type | map_type | channel_type
 
 type_args : "--"
 // type_args: "[" type_list ","? "]"   // This is useful for Golng gen
 
-type_name: NAME "." NAME | NAME 
+var_or_type_name: NAME "." NAME | NAME 
 
 array_type: "[" array_length "]" element_type
 
@@ -193,7 +193,7 @@ expression: primary_expr
             | expression "&&" expression 
             | expression "||" expression
 
-primary_expr: operand | primary_expr ("." NAME | index | slice_ | type_assertion | arguments)
+primary_expr: operand | primary_expr ("." NAME | index | slice_ | type_assertion | arguments) | type_
 
 // conversion is not needed since a method call has includes this syntax
 // conversion: type_ "(" expression ","? ")"
@@ -216,7 +216,7 @@ FLOAT_LIT.2: /((\d+\.\d*|\.\d+)(e[-+]?\d+)?|\d+(e[-+]?\d+))/i
 
 composite_lit: literal_type literal_value
 
-literal_type: struct_type | array_type | "[" "..." "]" element_type | slice_type | map_type 
+literal_type: struct_type | array_type | "[" "..." "]" element_type | slice_type | map_type  | "interface" "{" "}"
 
 literal_value: "{" (element_list ","?)? "}"
 
@@ -250,7 +250,8 @@ slice_: "[" ( expression? ":" expression? | expression? ":" expression ":" expre
 
 type_assertion: "." "(" type_ ")"
 
-arguments: "(" ( (expression_list | type_ ("," expression_list)?) "..."? ","?)? ")"
+// arguments: "(" ( (expression_list | type_ ("," expression_list)?) "..."? ","?)? ")"
+arguments: "(" ( (expression_list) "..."? ","?)? ")" | "(" type_ ")" | "(" type_ "," expression ")" | "(" type_ "," expression "," expression ")"
 
 // method_expr: type_ "." NAME
 
