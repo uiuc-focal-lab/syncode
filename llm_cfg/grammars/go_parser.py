@@ -40,7 +40,6 @@ class GoIncrementalParser(IncrementalParser):
 
                 self.parser_token_seq.append(token) # parser_token_seq holds all tokens
                 interactive.feed_token(token)
-
                 # Store the current state of the parser
                 self._store_parser_state(self.cur_pos-1, interactive.parser_state.copy(), interactive.accepts())
 

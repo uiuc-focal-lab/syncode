@@ -39,7 +39,7 @@ const_decl: "const"  (const_spec | "(" (const_spec eos)* ")")
 
 const_spec: identifier_list (type_? "=" expression_list)?
 
-identifier_list: NAME ("," NAME)*
+identifier_list: type_ ("," type_)*
 
 expression_list: expression ("," expression)*
 
@@ -132,19 +132,19 @@ comm_case: "case" (send_stmt | recv_stmt) | "default"
 
 recv_stmt: (expression_list "=" | identifier_list ":=")? expression
 
-for_stmt: "for" (for_clause | range_clause?) block
+for_stmt: "for" for_clause block
 
-for_clause: simple_stmt (eos expression eos simple_stmt)?
+for_clause: simple_stmt (eos expression eos simple_stmt)? | range_clause
 
-range_clause: (expression_list "=" | identifier_list ":=")? "range"  expression
+range_clause: (expression_list "=" | expression_list ":=") "range"  expression
 
 go_stmt: "go"expression
 
-type_: type_lit | (NAME "." NAME | NAME ) type_args? | "(" type_ ")"
+type_: literal_type | (NAME "." NAME | NAME ) type_args? | "(" type_ ")" 
 
-type_lit: array_type | struct_type | pointer_type | function_type | interface_type | slice_type | map_type | channel_type
+// type_lit: array_type | struct_type | pointer_type | function_type | interface_type | slice_type | map_type | channel_type
 
-type_args : "ZZZ"
+type_args : "--"
 // type_args: "[" type_list ","? "]"   // This is useful for Golng gen
 
 type_name: NAME "." NAME | NAME 
@@ -174,9 +174,16 @@ signature: parameters result?
 
 result: parameters | type_
 
-parameters: "(" (parameter_decl ("," parameter_decl)* ","?)? ")"
+parameters: "(" parameter_decl ("," parameter_decl)* ","? ")" | "(" ")" 
 
-parameter_decl: identifier_list? "..."? type_
+// a comma-separated list of either (a) name, (b) type, or (c) name and type 
+// https://groups.google.com/g/golang-nuts/c/jVjbH2-emMQ/m/UdZlSNhd3DwJ
+// parameter_decl: identifier_list? "..."? type_
+// parameter_decl: (NAME | "..."? type_ | NAME type_)
+
+// Although following is overapproximate it's an easy way to avoid reduce/reduce conflicts
+parameter_decl: (type_ | "..."? type_ | NAME type_)
+
 
 expression: primary_expr 
             | ("+" | "-" | "!" | "^" | "*" | "&" | "<-") expression 
@@ -186,11 +193,13 @@ expression: primary_expr
             | expression "&&" expression 
             | expression "||" expression
 
-primary_expr.4: (literal | NAME type_args? | "(" expression ")") | conversion | method_expr | primary_expr ("." NAME | index | slice_ | type_assertion | arguments)
+primary_expr: operand | primary_expr ("." NAME | index | slice_ | type_assertion | arguments)
 
-conversion: type_ "(" expression ","? ")"
+// conversion is not needed since a method call has includes this syntax
+// conversion: type_ "(" expression ","? ")"
 
-// operand: literal | NAME type_args? | "(" expression ")"
+// Giving operand higher precedence than type_ is a hack to avoid reduce/reduce conflicts
+operand.3: literal | NAME | "(" expression ")" // removed NAME type_args?
 
 literal: basic_lit | composite_lit | function_lit
 
@@ -207,7 +216,7 @@ FLOAT_LIT.2: /((\d+\.\d*|\.\d+)(e[-+]?\d+)?|\d+(e[-+]?\d+))/i
 
 composite_lit: literal_type literal_value
 
-literal_type: struct_type | array_type | "[" "..." "]" element_type | slice_type | map_type | (NAME "." NAME | NAME) type_args?
+literal_type: struct_type | array_type | "[" "..." "]" element_type | slice_type | map_type 
 
 literal_value: "{" (element_list ","?)? "}"
 
@@ -243,7 +252,7 @@ type_assertion: "." "(" type_ ")"
 
 arguments: "(" ( (expression_list | type_ ("," expression_list)?) "..."? ","?)? ")"
 
-method_expr: type_ "." NAME
+// method_expr: type_ "." NAME
 
 eos: ";" | EOS // | {this.closingBracket()}?
 	
