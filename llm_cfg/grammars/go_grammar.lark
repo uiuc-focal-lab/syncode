@@ -228,7 +228,7 @@ key: expression | literal_value
 
 element: expression | literal_value
 
-struct_type: "'struct" "{" (field_decl eos)* "}"
+struct_type: "struct" "{" (field_decl eos)* "}"
 
 field_decl: (identifier_list type_ | embedded_field) string_?
 
