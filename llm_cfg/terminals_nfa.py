@@ -126,7 +126,7 @@ class TerminalsNFA:
                 for token_idx, token in enumerate(vocab):
 
                     # For INCOMPLETE case:
-                    remainder = token
+                    remainder = token.replace('\t', '    ')
                     is_valid, remainder = self._consume_prefix(self._terminals_to_dfa[cur_terminal], dfa_state, remainder)
                     if is_valid:
                         if remainder is None:

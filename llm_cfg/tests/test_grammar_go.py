@@ -15,8 +15,9 @@ def test_tree_printer():
     partial_code = f'''package main
     import "fmt"
 func main() {{
-  a = x.fun(num[i], 7);
-  t(p.q.r)
+  //a = x.fun(num[i], 7);
+  //t(p.q.r)
+  x := y.(z)
   }}
   '''
     # partial_code = 'package main\n\nfunc has_close_elements (numbers []float64, threshold float64) bool {\n\tvar (\t\tmin, max float64\n\t\tmin_index, max_index int\n\t)\n\tfor i, n := range 5 {\na=i\n}\n};'
@@ -162,6 +163,24 @@ def test_go_parser14():
     print(res)
     assert 'IF' in res.next_accept_terminals
 
+def test_go_parser15():
+    inc_parser = GoIncrementalParser()
+    partial_code =  'package main\n\nimport (\n\t"encoding/json"\n\t"reflect"\n)\nfunc numerical_letter_grade (grades []interface{}) []string {\n\tletter_grades := make([]string, len(grades))\n\tfor i, grade := range grades {\n\t\tswitch grade.('
+    res = inc_parser.get_acceptable_next_terminals(partial_code)
+    assert 'TYPE' in res.next_accept_terminals
+
+def test_go_parser16():
+    inc_parser = GoIncrementalParser()
+    partial_code = 'package main\n\nimport (\n\t"encoding/json"\n\t"reflect"\n)\nfunc hex_key (num interface{}) int {\n\tvar hex_digits = []string{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F"}\n\tvar hex_count int\n\tvar hex_primes []int\n\tvar hex_prime_count int\n\tvar hex_prime_count_map = make(map[int]int)\n\n\t// Convert hexadecimal number to int\n\thex_num, ok := num.(string'
+    res = inc_parser.get_acceptable_next_terminals(partial_code)
+    assert 'RPAR' in res.next_accept_terminals
+
+def test_go_parser17():
+    inc_parser = GoIncrementalParser()
+    partial_code = 'package main\n\nimport (\n\t"sort"\n\t"encoding/json"\n\t"reflect"\n)\n// You\'re an expert Golang programmer\n// \n// In this Kata, you have to sort an array of non-negative integers according to\n// number of ones in their binary representation in ascending order.\n// For similar number of ones, sort based on decimal value.\n// \n// It must be implemented like this:\n// >>> sort_array([1, 5, 2, 3, 4]) == [1, 2, 3, 4, 5]\n// >>> sort_array([-2, -3, -4, -5, -6]) == [-6, -5, -4, -3, -2]\n// >>> sort_array([1, 0, 2, 3, 4]) [0, 1, 2, 3, 4]\n// \nfunc sort_array (arr []int) []int {\n\t// Convert array to string\n\tstr := make([]string, len(arr))\n\tfor i, v := range arr {\n\t\tstr[i] = strconv.Itoa(v)\n\t}\n\n\t// Sort string based on number of ones\n\tsort.Strings(str)\n\n\t// Convert sorted string back to array\n\tvar result []int\n\tfor _, s := range str {\n\t\tresult = append(result, strconv.Atoi(s))\n\t}\n\n\treturn result\n}\n\nfunc main() {\n\t// Test cases\n\tfmt.Println(sort_array([]int{1, 5, 2, 3, 4})) // [1, 2, 3, 4, 5]\n\tfmt.Println(sort_array([-2'
+    res = inc_parser.get_acceptable_next_terminals(partial_code)
+    print(res)    
+
 def test_go_incremental_parser():
     inc_parser = GoIncrementalParser()
     partial_code =  'package main\n\nimport (\n\t"encoding/json"\n\t"reflect"\n)\nfunc truncate_number (number float64) float64 {\n\tvar ('
@@ -181,7 +200,7 @@ def test_go_incremental_parser2():
         r = inc_parser.get_acceptable_next_terminals(prompt + generated_code[:i])
     assert r.remainder == 'float'
 
-tests = [test_go_parser, test_go_parser2, test_go_parser3, test_go_parser4, test_go_parser5, test_go_parser6, test_go_parser7, test_go_parser8, test_go_parser9, test_go_parser10, test_go_parser11, test_go_parser12, test_go_parser13, test_go_parser14, test_lexer, test_interactive_parser, test_go_incremental_parser, test_go_incremental_parser2]
+tests = [test_go_parser, test_go_parser2, test_go_parser3, test_go_parser4, test_go_parser5, test_go_parser6, test_go_parser7, test_go_parser8, test_go_parser9, test_go_parser10, test_go_parser11, test_go_parser12, test_go_parser13, test_go_parser14, test_go_parser15, test_go_parser16, test_lexer, test_interactive_parser, test_go_incremental_parser, test_go_incremental_parser2]
 # tests = [test_tree_printer]
-# tests = [test_go_parser14]
+# tests = [test_go_parser17]
 run_tests(tests)

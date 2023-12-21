@@ -116,7 +116,8 @@ expr_switch_case: "case" expression_list | "default"
 
 type_switch_stmt: "switch"  ( type_switch_guard | eos type_switch_guard | simple_stmt eos type_switch_guard) "{" type_case_clause* "}"
 
-type_switch_guard: (NAME ":=")? primary_expr "." "(" "type"  ")"
+// type_switch_guard: (NAME ":=")? primary_expr "." "(" "type"  ")"
+type_switch_guard: (NAME ":=")? NAME "." "(" "type"  ")"
 
 type_case_clause: type_switch_case ":" statement_list?
 
@@ -147,7 +148,7 @@ type_: literal_type | var_or_type_name type_args? | "(" type_ ")"
 type_args : "--"
 // type_args: "[" type_list ","? "]"   // This is useful for Golng gen
 
-var_or_type_name: NAME "." NAME | NAME 
+var_or_type_name: NAME "." NAME | NAME | NAME "." "(" type_ ")"
 
 array_type: "[" array_length "]" element_type
 
@@ -193,7 +194,7 @@ expression: primary_expr
             | expression "&&" expression 
             | expression "||" expression
 
-primary_expr: operand | primary_expr ("." NAME | index | slice_ | type_assertion | arguments) | type_
+primary_expr: operand | primary_expr ("." (NAME | "(" type_ ")") | index | slice_ | arguments) | type_
 
 // conversion is not needed since a method call has includes this syntax
 // conversion: type_ "(" expression ","? ")"
@@ -251,8 +252,7 @@ slice_: "[" ( expression? ":" expression? | expression? ":" expression ":" expre
 type_assertion: "." "(" type_ ")"
 
 // arguments: "(" ( (expression_list | type_ ("," expression_list)?) "..."? ","?)? ")"
-arguments: "(" ( (expression_list) "..."? ","?)? ")" | "(" type_ ")" | "(" type_ "," expression ")" | "(" type_ "," expression "," expression ")"
-
+arguments: "(" ( expression_list? "..."? ","?)? ")"
 // method_expr: type_ "." NAME
 
 eos: ";" | EOS // | {this.closingBracket()}?

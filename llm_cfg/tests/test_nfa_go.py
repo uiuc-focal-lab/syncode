@@ -8,7 +8,8 @@ from parse_result import IndentationConstraint, RemainderState
 from transformers import AutoTokenizer
 
 tokenizer = AutoTokenizer.from_pretrained(common.HF_CACHE+'Llama-7b', cache_dir=common.HF_CACHE, token=common.HF_ACCESS_TOKEN, trust_remote_code=True)
-nfa = common.load_nfa(language='go', tokenizer=tokenizer, use_cache=True)
+# tokenizer = AutoTokenizer.from_pretrained('WizardLM/WizardCoder-1B-V1.0', cache_dir=common.HF_CACHE, token=common.HF_ACCESS_TOKEN, trust_remote_code=True)
+nfa = common.load_nfa(language='go', tokenizer=tokenizer, use_cache=False)
 
 def test_nfa():
     query_start_time = time.time()
@@ -38,9 +39,11 @@ def test_nfa4():
     assert "\t" in nfa.get_overapprox_tokens_mask(r, get_list=True)
 
 def test_nfa5():
-    r = ParseResult({}, {'RAW_STRING_LIT', 'INTERPRETED_STRING_LIT'}, '==', RemainderState.MAYBE_COMPLETE)
-    print(nfa.get_overapprox_tokens_mask(r, get_list=True))
-    assert ' "' in nfa.get_overapprox_tokens_mask(r, get_list=True)
+    r = ParseResult({}, { '__IGNORE_0'}, '==', RemainderState.MAYBE_COMPLETE)
+    l = nfa.get_overapprox_tokens_mask(r, get_list=True)
+    print([t for t in l if t.startswith("'") or t.startswith(" '") or t.startswith("  '")])
+    assert " '" in nfa.get_overapprox_tokens_mask(r, get_list=True)
 
 tests = [test_nfa, test_nfa2, test_nfa3, test_nfa4, test_nfa5]
+# tests = [test_nfa5]
 common.run_tests(tests)
