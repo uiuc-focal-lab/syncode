@@ -10,7 +10,7 @@ class GrammarDecoder(LogitsProcessor):
     """
     This class is used to filter the logits of the model to only allow syntactically valid tokens for Python. 
     """
-    def __init__(self, language: str, tokenizer: PreTrainedTokenizer, **kwargs):
+    def __init__(self, language: str, tokenizer: PreTrainedTokenizer, use_cache=True, **kwargs):
         time_start = time.time()
         self.tokenizer = tokenizer
         self.language = language
@@ -28,7 +28,7 @@ class GrammarDecoder(LogitsProcessor):
         self.non_matching_token_cnt = 0
 
         # Load NFA
-        self.terminals_nfa = common.load_nfa(language=self.language, tokenizer=self.tokenizer, use_cache=True)
+        self.terminals_nfa = common.load_nfa(language=self.language, tokenizer=self.tokenizer, use_cache=use_cache)
 
         self.start_time = time.time()
         self.prev_time = self.start_time

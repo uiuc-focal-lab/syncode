@@ -342,12 +342,14 @@ def get_datafile(dataset="mbxp", language="python"):
 # Take the filename as input
 def compare(get_datafile, filename, language, dataset):
     problem_file=get_datafile(dataset, language)
+    problems = read_problems(problem_file)
     filename_original = filename.replace("grammar_mask", "original")
 
     count_original = 0
     count_grammar_mask = 0
     count_original_unique = 0
     count_grammar_mask_unique = 0
+    count_total = 0
 
     def print_comparison(p, c1, c2, task_id):
         print('-'*80)
@@ -366,22 +368,22 @@ def compare(get_datafile, filename, language, dataset):
         print(repr(c2['completion']))
         print('-'*80)
 
-    for p, c1, c2 in zip(tqdm.tqdm(stream_jsonl(problem_file)), tqdm.tqdm(stream_jsonl(filename_original)), tqdm.tqdm(stream_jsonl(filename))):
+    for c1, c2 in zip(tqdm.tqdm(stream_jsonl(filename_original)), tqdm.tqdm(stream_jsonl(filename))):
         task_id = c1["task_id"]
-        if c1['passed'] != c2['passed']:
-            # print_comparison(p, c1, c2, task_id)
-            pass
-        
-        if c2['error_type'] == 'TypeError':
-            print_comparison(p, c1, c2, task_id)
+        p = problems[task_id]
+        count_total += 1
 
         if c1['passed'] and not c2['passed']:
-            # print_comparison(p, c1, c2, task_id)
+            print_comparison(p, c1, c2, task_id)
             count_original_unique += 1
+
         if c2['passed'] and not c1['passed']:
             count_grammar_mask_unique += 1
+
         if c1['passed']:
+            print('Original passed')
             count_original += 1
+            
         if c2['passed']:
             count_grammar_mask += 1
 
@@ -389,7 +391,7 @@ def compare(get_datafile, filename, language, dataset):
     print(f"Grammar Mask: {count_grammar_mask}")
     print(f"Original unique: {count_original_unique}")
     print(f"Grammar Mask unique: {count_grammar_mask_unique}")
-
+    print(f"Total: {count_total}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

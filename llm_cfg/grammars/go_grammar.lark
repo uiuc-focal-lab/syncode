@@ -204,7 +204,7 @@ operand.3: literal | NAME | "(" expression ")" // removed NAME type_args?
 
 literal: basic_lit | composite_lit | function_lit
 
-basic_lit: "nil" | integer | string_ | FLOAT_LIT
+basic_lit: "nil" | integer | string_ | FLOAT_LIT | CHAR_LIT
 
 integer: DECIMAL_LIT | BINARY_LIT | OCTAL_LIT | HEX_LIT
 // integer: DECIMAL_LIT | BINARY_LIT | OCTAL_LIT | HEX_LIT | IMAGINARY_LIT | RUNE_LIT
@@ -214,6 +214,7 @@ HEX_LIT.2: /0x[\da-f]*/i
 OCTAL_LIT.2: /0o[0-7]*/i
 BINARY_LIT.2 : /0b[0-1]*/i
 FLOAT_LIT.2: /((\d+\.\d*|\.\d+)(e[-+]?\d+)?|\d+(e[-+]?\d+))/i
+CHAR_LIT: /'.'/i
 
 composite_lit: literal_type literal_value
 

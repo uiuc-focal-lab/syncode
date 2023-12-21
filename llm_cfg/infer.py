@@ -30,8 +30,8 @@ if __name__ == "__main__":
     p.add_argument("--num_samples", type=int, default=1)
     p.add_argument("--language", choices = ["python", "go"], default = "python", help = "language")
     p.add_argument("--dataset", choices = ["mbxp", "multi-humaneval", "mathqa-x"], default = "multi-humaneval", help = "dataset")
+    p.add_argument("--new_nfa", default=False, action='store_true')
     args = p.parse_args()
-
     num_samples_per_task = args.num_samples
     
     # Load model
@@ -52,7 +52,8 @@ if __name__ == "__main__":
 
     logit_processors = None
     if args.mode == 'grammar_mask':
-        grammar_decoder = GrammarDecoder(args.language, tokenizer=tokenizer,)
+        use_cache = not args.new_nfa
+        grammar_decoder = GrammarDecoder(args.language, tokenizer=tokenizer, use_cache=use_cache)
         logit_processors = LogitsProcessorList([grammar_decoder])
 
     hf_model = HuggingFaceModel(model, tokenizer=tokenizer, device=device, logit_processors=logit_processors, mode=args.mode)
