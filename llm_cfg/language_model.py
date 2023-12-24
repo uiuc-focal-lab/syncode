@@ -1,5 +1,5 @@
 import time
-from utils.evaluation import filter_code, fix_indents
+from utils.generation import filter_code, fix_indents
 from transformers import LlamaTokenizer
 import common
 from synchromesh.completion_engine import LarkCompletionEngine
@@ -29,9 +29,9 @@ class LanguageModel:
 
 class HuggingFaceModel(LanguageModel):
     def __init__(self, model, logger: common.Logger, prompt_template: str = '', api_key: str = None,
-                 temperature: float = 0.0, top_p: float = 1.0, best_of: int = 1, max_new_tokens: int = 400,
+                 temperature: float = 0.0, top_p: float = 1.0, best_of: int = 1, max_new_tokens: int = 400, 
                  before_prediction_hook=lambda: None, tokenizer:LlamaTokenizer=None, device='cuda', logit_processors=None, 
-                 mode: str ='original') -> None:
+                 mode: str ='original', language: str = 'python') -> None:
         super().__init__()
 
         self.prompt_template = prompt_template
@@ -44,9 +44,15 @@ class HuggingFaceModel(LanguageModel):
         self.device = device
         self.best_of = best_of
         self._before_prediction_hook = before_prediction_hook
-        self.logit_processors = logit_processors
+        self.logit_processors: list = logit_processors
         self.mode = mode
+        self.language = language
         self.vocab = common.get_vocab_from_tokenizer(self.tokenizer)
+
+    def get_grammar_decoder(self):
+        if len(self.logit_processors) > 0:
+            return self.logit_processors[0]
+        return None
 
     def generate_batch_completion(self, prompt, batch_size, mode='original') -> list[str]:
         if self.mode == 'synchromesh':
@@ -77,19 +83,42 @@ class HuggingFaceModel(LanguageModel):
             logits_processor=self.logit_processors
         )
 
-        last_token_id = [len(generated_ids[i]) for i in range(batch_size)]
-        if self.logit_processors is not None:
-            python_decoder = self.logit_processors[0]
-            last_token_id = [python_decoder.last_valid_state[i] for i in range(batch_size)]
-        
-        batch_completions = [
-            self.tokenizer.decode(ids[input_ids_cutoff-1:last_token_id[i]], skip_special_tokens=True)[1:] for i, ids in enumerate(generated_ids)
-        ]
+        grammar_decoder = self.get_grammar_decoder()
+        batch_completions = []
 
-        if self.logit_processors is not None:
-            python_decoder = self.logit_processors[0]
+        for i in range(batch_size):
+            last_token_id = len(generated_ids[i])
+            if grammar_decoder is not None:
+                self.logger.log(f"Last valid state: {grammar_decoder.last_valid_state[i]}")
+                self.logger.log(f"Function end: {grammar_decoder.function_end[i]}")
+
+                if grammar_decoder.function_end[i] is not None:
+                    # if the function end is not None, then the last valid state is the function end
+                    last_token_id = grammar_decoder.function_end[i]
+                else:
+                    # otherwise, the last valid state is the last valid state
+                    last_token_id = grammar_decoder.last_valid_state[i]
+
+            completion = self.tokenizer.decode(generated_ids[i][input_ids_cutoff-1:last_token_id],
+             skip_special_tokens=True)[1:]
+
+            # Can remove this logging in future
+            raw_completion = self.tokenizer.decode(generated_ids[i][input_ids_cutoff-1:len(generated_ids[i])], skip_special_tokens=True)[1:]                                       
+            self.logger.log_code("Raw completion", raw_completion)
+
+            # Post-processing to filter out using stop word (e.g. "\n\n")
+            if self.language == "python": 
+                completion = filter_code(fix_indents(completion))
+            elif self.language == "go" and self.mode == "original": 
+                # only filter with stop-word for original mode
+                completion = filter_code(completion)
+
+            self.logger.log_code("Filtered sample", completion)
+            batch_completions.append(completion)
+
+        if grammar_decoder is not None:
             self.logger.log(f"Time taken for generation: {time.time() - start_time:.2f}s")
-            self.logger.log(f"Token generation speed: {python_decoder.token_cnt / (time.time() - start_time):.2f} tokens/s")
+            self.logger.log(f"Token generation speed: {grammar_decoder.token_cnt / (time.time() - start_time):.2f} tokens/s")
         self.logger.log(f"Completion: {batch_completions}")
 
         return batch_completions

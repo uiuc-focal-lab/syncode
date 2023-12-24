@@ -17,11 +17,12 @@ class GrammarDecoder(LogitsProcessor):
         self.logger = logger
 
         self.batch_size = -1 # We update this in the first call to __call__
-        self.inc_parsers = None
+        self.inc_parsers: list = []
         
         # For backtracking to syntactically valid completions
         self.partial_codes_trace: list = []
-        self.last_valid_stage = 0
+        self.last_valid_stage: list = []
+        self.function_end: list = []
 
         # For profiling
         self.token_cnt = 0
@@ -45,6 +46,7 @@ class GrammarDecoder(LogitsProcessor):
     def _reset(self):
         self.inc_parsers = [common.create_parser(self.language) for _ in range(self.batch_size)]
         self.last_valid_state = [0 for _ in range(self.batch_size)]
+        self.function_end = [None for _ in range(self.batch_size)]
         self.accept_tokens_sizes = []
         self.partial_codes_trace = []
         self.token_cnt = 0
@@ -72,6 +74,8 @@ class GrammarDecoder(LogitsProcessor):
 
                 if 'EOF' in r.next_accept_terminals:
                     self.last_valid_state[i] = len(input_ids[i])
+                if 'EOC' in r.next_accept_terminals and self.function_end[i]==None:
+                    self.function_end[i] = len(input_ids[i])
 
                 self.accept_tokens_sizes.append(len(r.cur_accept_terminals))  # For profiling
                 self.logger.log(f"Time taken for compilation: {time.time() - compilation_start_time:.2f}s")

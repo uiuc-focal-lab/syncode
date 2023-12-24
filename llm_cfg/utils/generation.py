@@ -50,21 +50,11 @@ def run_eval(args,
 
         batch_completions = hf_model.generate_batch_completion(prompt, num_samples_per_task)
 
-        for raw_sample in batch_completions:
-            # Post-processing to filter out single function code for each language
-            if args.language == "python": 
-                sample = filter_code(fix_indents(raw_sample))
-            elif args.language == "go":
-                sample = raw_sample + '}\n'
-                sample = filter_code(sample)
-            
-            logger.log_code("Raw sample", raw_sample)
-            logger.log_code("Filtered sample", sample)
-
+        for i, completion in enumerate(batch_completions):
             result = dict(
                 task_id=task_id,
                 language=problems[task_id]["language"],
-                completion=sample
+                completion=completion
             )
             samples += [result]
         

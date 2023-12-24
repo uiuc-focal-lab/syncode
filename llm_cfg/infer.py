@@ -66,7 +66,8 @@ if __name__ == "__main__":
         device=device, 
         logit_processors=logit_processors, 
         mode=args.mode, 
-        max_new_tokens=400
+        max_new_tokens=400,
+        language=args.language,
         )
 
     run_eval(args, 
