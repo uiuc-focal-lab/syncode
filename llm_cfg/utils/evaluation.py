@@ -5,6 +5,7 @@ from transformers import (
 )
 from tqdm import tqdm
 import typing
+import common
 
 BatchGenerator = typing.Callable[
     [PreTrainedModel, PreTrainedTokenizer, str, int], list[str]
@@ -34,6 +35,7 @@ def run_eval(args,
     hf_model,
     num_samples_per_task: int,
     out_path: str,
+    logger: common.Logger,
     format_tabs: bool = False,
 ):
     problems = get_data(args.dataset, args.language)
@@ -56,8 +58,8 @@ def run_eval(args,
                 sample = raw_sample + '}\n'
                 sample = filter_code(sample)
             
-            print('Raw sample:\n', raw_sample)   
-            print('Filtered sample:\n', sample)
+            logger.log_code("Raw sample", raw_sample)
+            logger.log_code("Filtered sample", sample)
 
             result = dict(
                 task_id=task_id,

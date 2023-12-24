@@ -10,10 +10,11 @@ class GrammarDecoder(LogitsProcessor):
     """
     This class is used to filter the logits of the model to only allow syntactically valid tokens for Python. 
     """
-    def __init__(self, language: str, tokenizer: PreTrainedTokenizer, use_cache=True, **kwargs):
+    def __init__(self, language: str, tokenizer: PreTrainedTokenizer, logger: common.Logger, use_cache=True, **kwargs):
         time_start = time.time()
         self.tokenizer = tokenizer
         self.language = language
+        self.logger = logger
 
         self.batch_size = -1 # We update this in the first call to __call__
         self.inc_parsers = None
@@ -33,12 +34,12 @@ class GrammarDecoder(LogitsProcessor):
         self.start_time = time.time()
         self.prev_time = self.start_time
         self.debug = True
-            
-        print(f"Time taken for preprocessing: {time.time() - time_start:.2f}s")
+        self.logger.log(f"Time taken for preprocessing: {time.time() - time_start:.2f}s")
 
-    def _print_current_status(self, partial_code, r: ParseResult):
-        print('partial code:\n', repr(partial_code))
-        print(r)
+
+    def _log_current_status(self, partial_code, r: ParseResult):
+        self.logger.log_code('Partial code', partial_code)
+        self.logger.log(repr(r))
 
 
     def _reset(self):
@@ -73,32 +74,30 @@ class GrammarDecoder(LogitsProcessor):
                     self.last_valid_state[i] = len(input_ids[i])
 
                 self.accept_tokens_sizes.append(len(r.cur_accept_terminals))  # For profiling
-
-                print(i, 'Time taken for compilation:', time.time() - compilation_start_time)
+                self.logger.log(f"Time taken for compilation: {time.time() - compilation_start_time:.2f}s")
                 accept_mask = self.terminals_nfa.get_overapprox_tokens_mask(r)
+                self.logger.log(f"Time taken for overapproximation: {time.time() - compilation_start_time:.2f}s")
 
-                print(i, 'Time taken for overapproximation:', time.time() - compilation_start_time)
                 if self.debug:
-                    # print(scores[i][:20])
-                    self._print_current_status(partial_code, r)
+                    self._log_current_status(partial_code, r)
                 
                 if torch.sum(accept_mask) != 0: # If there are acceptable tokens for the current partial code 
                     scores[i] = scores[i].masked_fill(~accept_mask.to(scores.device), -float("inf"))
                 else: # Otherwise, report the error and mask no tokens
-                    print('No acceptable tokens for the current partial code!')
-                    self._print_current_status(partial_code, r)
+                    self.logger.log('No acceptable tokens for the current partial code!')
+                    self._log_current_status(partial_code, r)
 
-                print(i, 'Time taken for masking:', time.time() - compilation_start_time)  
+                self.logger.log(f"Time taken for masking: {time.time() - compilation_start_time:.2f}s")
                 
                 greedy_grammar_token = self.tokenizer.decode(scores[i].argmax(dim=-1))
 
                 if greedy_token != greedy_grammar_token:
-                    print('Greedy token:', repr(greedy_token))
-                    print('Greedy grammar-based token:', repr(greedy_grammar_token))
-                    self._print_current_status(partial_code, r)
+                    self.logger.log(f"Greedy token: {repr(greedy_token)}")
+                    self.logger.log(f"Greedy grammar-based token: {repr(greedy_grammar_token)}")
+                    self._log_current_status(partial_code, r)
                     self.non_matching_token_cnt += 1
             except Exception as e:
-                print("-"*80, '\n', 'Code lenght:', len(partial_code), '\n', partial_code, '\n', repr(partial_code), '\n', 'Error:', e)
+                self.logger.log(f"Exception: {e}")
 
         return scores
     

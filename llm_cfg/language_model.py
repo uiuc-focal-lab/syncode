@@ -28,7 +28,7 @@ class LanguageModel:
 
 
 class HuggingFaceModel(LanguageModel):
-    def __init__(self, model, prompt_template: str = '', api_key: str = None,
+    def __init__(self, model, logger: common.Logger, prompt_template: str = '', api_key: str = None,
                  temperature: float = 0.0, top_p: float = 1.0, best_of: int = 1,
                  before_prediction_hook=lambda: None, tokenizer:LlamaTokenizer=None, device='cuda', logit_processors=None, 
                  mode: str ='original') -> None:
@@ -36,6 +36,7 @@ class HuggingFaceModel(LanguageModel):
 
         self.prompt_template = prompt_template
         self.model = model
+        self.logger = logger
         self.tokenizer = tokenizer
         self.temperature = temperature
         self.top_p = top_p
@@ -86,10 +87,9 @@ class HuggingFaceModel(LanguageModel):
 
         if self.logit_processors is not None:
             python_decoder = self.logit_processors[0]
-            print(f"Time taken for generation: {time.time() - start_time:.2f}s")
-            print(f"Token generation speed: {python_decoder.token_cnt / (time.time() - start_time):.2f} tokens/s")
-            # print(f"Accept tokens sizes: {python_decoder.accept_tokens_sizes}")
-        print('Completion:', batch_completions)
+            self.logger.log(f"Time taken for generation: {time.time() - start_time:.2f}s")
+            self.logger.log(f"Token generation speed: {python_decoder.token_cnt / (time.time() - start_time):.2f} tokens/s")
+        self.logger.log(f"Completion: {batch_completions}")
 
         return batch_completions
 

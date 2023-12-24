@@ -65,7 +65,27 @@ def create_parser(language):
             return GoIncrementalParser()
         else:
             raise ValueError(f'Unknown language: {language}')
-        
+
+class Logger:
+    def __init__(self, filename):
+        self.filename = filename
+        self.file = open(filename, 'w')
+
+    def log(self, msg):
+        self.file.write(msg + '\n')
+        self.file.flush()
+    
+    def log_code(self, msg, code):
+        self.file.write(msg + ':\n')
+        self.file.write('-'*80 + '\n')
+        self.file.write(code + '\n')
+        self.file.write('-'*80 + '\n')
+        self.file.flush()
+
+    def close(self):
+        self.file.close()
+
+
 def run_tests(tests):
     test_result = {}
 

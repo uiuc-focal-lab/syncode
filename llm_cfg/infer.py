@@ -49,21 +49,27 @@ if __name__ == "__main__":
     
     out_path = out_dir + 'samples_' + str(num_samples_per_task) + '_mode_' + str(args.mode) + "_eval.jsonl"
     os.makedirs(out_dir, exist_ok=True)
-
+    log_file = out_dir + 'logs/' + 'samples_' + str(num_samples_per_task) + '_mode_' + str(args.mode) + "_eval.log"
+    os.makedirs(out_dir + 'logs/', exist_ok=True)
+    logger = common.Logger(log_file)
+    
     logit_processors = None
     if args.mode == 'grammar_mask':
         use_cache = not args.new_nfa
-        grammar_decoder = GrammarDecoder(args.language, tokenizer=tokenizer, use_cache=use_cache)
+        grammar_decoder = GrammarDecoder(args.language, tokenizer=tokenizer, logger=logger, use_cache=use_cache)
         logit_processors = LogitsProcessorList([grammar_decoder])
 
-    hf_model = HuggingFaceModel(model, tokenizer=tokenizer, device=device, logit_processors=logit_processors, mode=args.mode)
+    hf_model = HuggingFaceModel(model, logger, tokenizer=tokenizer, device=device, logit_processors=logit_processors, mode=args.mode)
 
     run_eval(args, 
         hf_model,
         num_samples_per_task,
         out_path,
+        logger,
         format_tabs=True,
         )
 
     if args.mode == 'grammar_mask':
-        print('Non matching token count: ', grammar_decoder.non_matching_token_cnt)
+        logger.log(log_file, 'Non matching token count: ' + str(grammar_decoder.non_matching_token_cnt))
+    
+    logger.close()

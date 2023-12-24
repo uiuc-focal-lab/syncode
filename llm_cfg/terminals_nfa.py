@@ -279,7 +279,7 @@ class TerminalsNFA:
             return torch.ones(len(self._vocab), dtype=torch.bool)
 
         cur_nfa_state = self._nfa_state(cur_incomplete_string)
-        print(cur_nfa_state)
+        # print(cur_nfa_state)
         
         overapprox_token_ids = self._lookup_next_tokens(cur_nfa_state, r)
 
