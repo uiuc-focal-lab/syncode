@@ -59,7 +59,15 @@ if __name__ == "__main__":
         grammar_decoder = GrammarDecoder(args.language, tokenizer=tokenizer, logger=logger, use_cache=use_cache)
         logit_processors = LogitsProcessorList([grammar_decoder])
 
-    hf_model = HuggingFaceModel(model, logger, tokenizer=tokenizer, device=device, logit_processors=logit_processors, mode=args.mode)
+    hf_model = HuggingFaceModel(
+        model, 
+        logger, 
+        tokenizer=tokenizer, 
+        device=device, 
+        logit_processors=logit_processors, 
+        mode=args.mode, 
+        max_new_tokens=400
+        )
 
     run_eval(args, 
         hf_model,
@@ -70,6 +78,6 @@ if __name__ == "__main__":
         )
 
     if args.mode == 'grammar_mask':
-        logger.log(log_file, 'Non matching token count: ' + str(grammar_decoder.non_matching_token_cnt))
+        logger.log('Non matching token count: ' + str(grammar_decoder.non_matching_token_cnt))
     
     logger.close()

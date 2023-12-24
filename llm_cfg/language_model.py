@@ -29,7 +29,7 @@ class LanguageModel:
 
 class HuggingFaceModel(LanguageModel):
     def __init__(self, model, logger: common.Logger, prompt_template: str = '', api_key: str = None,
-                 temperature: float = 0.0, top_p: float = 1.0, best_of: int = 1,
+                 temperature: float = 0.0, top_p: float = 1.0, best_of: int = 1, max_new_tokens: int = 400,
                  before_prediction_hook=lambda: None, tokenizer:LlamaTokenizer=None, device='cuda', logit_processors=None, 
                  mode: str ='original') -> None:
         super().__init__()
@@ -40,6 +40,7 @@ class HuggingFaceModel(LanguageModel):
         self.tokenizer = tokenizer
         self.temperature = temperature
         self.top_p = top_p
+        self.max_new_tokens = max_new_tokens
         self.device = device
         self.best_of = best_of
         self._before_prediction_hook = before_prediction_hook
@@ -67,7 +68,7 @@ class HuggingFaceModel(LanguageModel):
         generated_ids = self.model.generate(
             **inputs,
             use_cache=True,
-            max_new_tokens=200,
+            max_new_tokens=self.max_new_tokens,
             temperature=0.2,
             top_p=0.95,
             do_sample=True,
