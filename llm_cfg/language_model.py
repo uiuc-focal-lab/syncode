@@ -50,7 +50,7 @@ class HuggingFaceModel(LanguageModel):
         self.vocab = common.get_vocab_from_tokenizer(self.tokenizer)
 
     def get_grammar_decoder(self):
-        if len(self.logit_processors) > 0:
+        if self.logit_processors is not None and len(self.logit_processors) > 0:
             return self.logit_processors[0]
         return None
 
