@@ -15,7 +15,7 @@ from grammar_decoder import GrammarDecoder
 
 # NOTE: List of currently downloaded models
 # Llama models: "Llama-7b", "CodeLlama-7b", "CodeLlama-7b-Python", "Llama-13b"
-# CodeGen models: "Salesforce/codegen-350m-multi", "Salesforce/codegen2-1b" 
+# CodeGen models: "Salesforce/codegen-350M-multi", "Salesforce/codegen2-1b" 
 # Bigcode models: "bigcode/starcoderbase-1b", "bigcode/santacoder" (1.1b WIP)
 # WizardLM models: "WizardLM/WizardCoder-1B-V1.0"
 # Replit models: replit/replit-code-v1-3b  (WIP: 'ReplitLMTokenizer' object has no attribute 'sp_model')
@@ -66,7 +66,7 @@ if __name__ == "__main__":
         device=device, 
         logit_processors=logit_processors, 
         mode=args.mode, 
-        max_new_tokens=400,
+        max_new_tokens=200,
         language=args.language,
         )
 

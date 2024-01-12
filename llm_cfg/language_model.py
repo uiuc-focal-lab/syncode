@@ -85,6 +85,7 @@ class HuggingFaceModel(LanguageModel):
 
         grammar_decoder = self.get_grammar_decoder()
         batch_completions = []
+        function_incomplete = [False for _ in range(batch_size)]
 
         for i in range(batch_size):
             last_token_id = len(generated_ids[i])
@@ -97,6 +98,7 @@ class HuggingFaceModel(LanguageModel):
                     last_token_id = grammar_decoder.function_end[i]
                 else:
                     # otherwise, the last valid state is the last valid state
+                    function_incomplete[i] = True
                     last_token_id = grammar_decoder.last_valid_state[i]
 
             completion = self.tokenizer.decode(generated_ids[i][input_ids_cutoff-1:last_token_id],
@@ -112,6 +114,11 @@ class HuggingFaceModel(LanguageModel):
             elif self.language == "go" and self.mode == "original": 
                 # only filter with stop-word for original mode
                 completion = filter_code(completion)
+
+            if self.language == "go" and function_incomplete[i]:
+                self.logger.log(f"Function incomplete!")
+                # if the function is incomplete, then we need to add a closing brace
+                completion += "}"
 
             self.logger.log_code("Filtered sample", completion)
             batch_completions.append(completion)
