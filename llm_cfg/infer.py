@@ -31,6 +31,8 @@ if __name__ == "__main__":
     p.add_argument("--language", choices = ["python", "go"], default = "python", help = "language")
     p.add_argument("--dataset", choices = ["mbxp", "multi-humaneval", "mathqa-x"], default = "multi-humaneval", help = "dataset")
     p.add_argument("--new_nfa", default=False, action='store_true')
+    p.add_argument("--few_shot", default = False, help = 'run few shoting prompting')
+    p.add_argument("--num_examples", default = -1, help = 'num examples for few shot prompting')
     args = p.parse_args()
     num_samples_per_task = args.num_samples
     

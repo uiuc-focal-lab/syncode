@@ -407,7 +407,6 @@ if __name__ == "__main__":
         dataset = "multi-humaneval"
     elif re.search(r"mathqa", filename):
         dataset = "mathqa-x"
-    
     if args.compare:
         compare(get_datafile, filename, language, dataset)
     else:

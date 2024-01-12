@@ -1,4 +1,4 @@
-from mxeval.data import write_jsonl, read_problems, get_data
+from mxeval.data import write_jsonl, read_problems, get_data, get_examples
 from transformers import (
     PreTrainedModel,
     PreTrainedTokenizer,
@@ -38,7 +38,11 @@ def run_eval(args,
     logger: common.Logger,
     format_tabs: bool = False,
 ):
-    problems = get_data(args.dataset, args.language)
+    if args.few_shot:
+        problems = {problem['task_id'] : problem for problem in get_examples(args.dataset, args.language, args.num_examples)}
+    else:
+        problems = get_data(args.dataset, args.language)
+
     samples = []
     pbar = tqdm(total=len(problems) * num_samples_per_task)
 
