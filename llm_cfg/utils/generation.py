@@ -6,6 +6,9 @@ from transformers import (
 from tqdm import tqdm
 import typing
 import common
+import time
+import os
+import json
 
 BatchGenerator = typing.Callable[
     [PreTrainedModel, PreTrainedTokenizer, str, int], list[str]
@@ -41,8 +44,12 @@ def run_eval(args,
     problems = get_data(args.dataset, args.language)
     samples = []
     pbar = tqdm(total=len(problems) * num_samples_per_task)
-
+    count = 0
+    start_time = time.time()
     for task_id in problems:
+        if count == 10:
+            break
+        count += 1
         if format_tabs:
             prompt = problems[task_id]["prompt"].replace("    ", "\t")
         else:
@@ -59,4 +66,32 @@ def run_eval(args,
             samples += [result]
         
         pbar.update(num_samples_per_task)
+    end_time = time.time() - start_time
+    avg_time = end_time / count #len(problems)
+    # print(avg_time)
+    # avg_time_data = {"avg_time_generation" : avg_time}
+    if args.model_id is not None:
+        out_dir_time = f"results_time/{args.model_id}/{args.language}/{args.dataset}/{args.mode}/"
+        # out_path_time = out_dir_time + 'max_length_' + str(args.max_length) + '_mode_' + str(args.mode) + "_time.jsonl"
+        out_path_time_total = out_dir_time + '_mode_' + str(args.mode)+ '_no_inc_parse_'+ '_time.jsonl'
+    else:
+        out_dir_time = f"results_time/{args.model}/{args.language}/{args.dataset}/{args.mode}/"
+        # out_path_time = out_dir_time + 'max_length_' + str(args.max_length) + '_mode_' + str(args.mode) + "_time.jsonl"
+        out_path_time_total = out_dir_time + '_mode_' + str(args.mode)+'_no_inc_parse_'+'_time.jsonl'
+    os.makedirs(out_dir_time, exist_ok=True)
+
+
+    try:
+        with open(out_path_time_total, 'r') as outfile:
+            json_time = json.load(outfile)
+    except (FileNotFoundError, json.JSONDecodeError):
+    # If file does not exist or is not valid JSON, initialize json_decoded
+        json_time = {}
+    
+    json_time[args.max_length] = avg_time
+
+    with open(out_path_time_total, 'w') as json_file:
+        json.dump(json_time, json_file)
+    
+    
     write_jsonl(out_path, samples)
