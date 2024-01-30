@@ -1,9 +1,7 @@
-from mxeval.data import write_jsonl, read_problems, get_data, get_examples
 from transformers import (
     PreTrainedModel,
     PreTrainedTokenizer,
 )
-from tqdm import tqdm
 import typing
 import common
 
@@ -29,38 +27,3 @@ def split_batch(samples: list[str], size=4):
         mini_batches.append(samples[i : i + size])
 
     return mini_batches
-
-
-def run_eval(args, 
-    hf_model,
-    num_samples_per_task: int,
-    out_path: str,
-    logger: common.Logger,
-    format_tabs: bool = False,
-):
-    if args.few_shot:
-        problems = {problem['task_id'] : problem for problem in get_examples(args.dataset, args.language, args.num_examples)}
-    else:
-        problems = get_data(args.dataset, args.language)
-
-    samples = []
-    pbar = tqdm(total=len(problems) * num_samples_per_task)
-
-    for task_id in problems:
-        if format_tabs:
-            prompt = problems[task_id]["prompt"].replace("    ", "\t")
-        else:
-            prompt = problems[task_id]["prompt"]
-
-        batch_completions = hf_model.generate_batch_completion(prompt, num_samples_per_task)
-
-        for i, completion in enumerate(batch_completions):
-            result = dict(
-                task_id=task_id,
-                language=problems[task_id]["language"],
-                completion=completion
-            )
-            samples += [result]
-        
-        pbar.update(num_samples_per_task)
-    write_jsonl(out_path, samples)
