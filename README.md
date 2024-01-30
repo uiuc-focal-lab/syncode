@@ -21,11 +21,59 @@ pip install -e mxeval
 
 To run the tool, use the following command:
 ```
-python3 llm_cfg/infer.py --mode [original, grammar_mask, synchromesh] --model_size [7B, 13B] --quantize [True, False] --gpu [0, 1, 2, 3]
+python3 llm_cfg/infer.py
+    --mode [original, grammar_mask, synchromesh]
+    --model [model_name]
+    --quantize [True, False]
+    --gpu [0, 1, 2, 3]
+    --num_samples [num_samples]
+    --dataset [mbxp, multi-humaneval, mathqa-x, input]
+    --new_mask_store [True, False]
+    --few_shot [True, False]
+    --num_examples [num_examples]
+    --parse_prompt [True, False]
+    --dev_mode [True, False]
+    --log_time [True, False]
 ```
-The results of generation are stored in a json file in results directory. To evaluate the result of generation use following command
+
+## Inference Options:
+
+- `mode` (str, optional): Mode for inference. Defaults to "original". "grammar_mask" is the mode that enables our tool.
+  
+- `model` (str): Model ID for Hugging Face model hub or model name if stored locally.
+  
+- `quantize` (bool, optional): Quantize model. Defaults to True.
+  
+- `gpu` (int, optional): GPU number. Defaults to 1.
+  
+- `num_samples` (int, optional): Number of samples. Defaults to 1.
+  
+- `dataset` (str, optional): Dataset. Defaults to "input". "input" indicates that the user can provide input in CLI. 
+  
+- `new_mask_store` (bool, optional): Forces to use a new mask store otherwise use a cached mask store if available. Defaults to False.
+  
+- `few_shot` (bool, optional): Run few-shot prompting. Defaults to False.
+  
+- `num_examples` (int, optional): Number of examples for few shot prompting. Defaults to -1.
+  
+- `parse_prompt` (bool, optional): If False we parse (only output) instead of (prompt+output). Defaults to True. 
+  
+- `dev_mode` (bool, optional): Development mode where we do not fail silently with parser errors. Defaults to False.
+  
+- `log_time` (bool, optional): If True time taken by various components is logged in a separate log file. Defaults to False.
+
+
+The generation results are stored in a JSON file in the "results" directory. To evaluate the result of generation, use the following command:
 ```
 python3 llm_cfg/evaluation.py path_to_json_file
+```
+
+List of Currently Tested Models:
+```
+Llama models: "Llama-7b", "CodeLlama-7b", "CodeLlama-7b-Python", "Llama-13b"
+CodeGen models: "Salesforce/codegen-350M-multi", "Salesforce/codegen2-1b"
+Bigcode models: "bigcode/starcoderbase-1b", "bigcode/santacoder" (1.1b WIP)
+WizardLM models: "WizardLM/WizardCoder-1B-V1.0"
 ```
 
 [test-img]: https://github.com/shubhamugare/llm-cfg/actions/workflows/run_tests.yml/badge.svg
