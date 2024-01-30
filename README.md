@@ -36,7 +36,7 @@ python3 llm_cfg/infer.py
     --log_time [True, False]
 ```
 
-## Inference Options:
+### Inference Options:
 
 - `mode` (str, optional): Mode for inference. Defaults to "original". "grammar_mask" is the mode that enables our tool.
   
