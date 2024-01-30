@@ -1,9 +1,9 @@
-import os
+import os, time
 import pickle
 from grammars.python_parser import PythonIncrementalParser
 from grammars.go_parser import GoIncrementalParser
 from dfa_mask_store import DFAMaskStore
-import time
+from incremental_parser import IncrementalParser
 
 # Remove this in future and add instruction to set the HF_CACHE env variable
 HF_CACHE = '/share/models/hugging_face/'
@@ -27,13 +27,13 @@ def get_vocab_from_tokenizer(tokenizer):
     
     return vocab
 
-def load_dfa_mask_store(language: str, tokenizer, inc_parser=None, use_cache=True):
+def load_dfa_mask_store(grammar: str, tokenizer, inc_parser=None, use_cache=True):
     '''
     Loads the dfa for the given language and tokenizer. If the dfa is not cached, it is created and cached. 
     '''
     tokenizer_name = type(tokenizer).__name__
     dfa_dir = 'results/' + tokenizer_name + '/'
-    dfa_path = dfa_dir + language + '_dfa.pkl'
+    dfa_path = dfa_dir + grammar + '_dfa.pkl'
     start_time = time.time()
     if use_cache and os.path.exists(dfa_path):
         dfa = pickle.load(open(dfa_path, 'rb'))
@@ -42,11 +42,11 @@ def load_dfa_mask_store(language: str, tokenizer, inc_parser=None, use_cache=Tru
         print('Time taken for loading vocab:', time.time() - start_time, flush=True)
 
         if inc_parser is None:
-            inc_parser = create_parser(language)
+            inc_parser = create_parser(grammar)
             print('Time taken for loading parser:', time.time() - start_time, flush=True)
 
         exceptions = {}
-        if language == 'python':
+        if grammar == 'python':
             exceptions = {'COMMENT': '#.*|\'\'\'.*?\'\'\'|""".*?"""/is', '_NL': '(\r?\n[\t ]*)+', 'LONG_STRING': '\'\'\'.*?\'\'\'|""".*?"""/is', 'STRING': '[ubf]?r?(".*?"|\'.*?\')'}
         
         os.makedirs(dfa_dir, exist_ok=True)
@@ -57,13 +57,19 @@ def load_dfa_mask_store(language: str, tokenizer, inc_parser=None, use_cache=Tru
         print(f'Time taken for storing the dfa', time.time() - start_time, flush=True)
     return dfa
 
-def create_parser(language):
-        if language == 'python':
+def create_parser(grammar):
+        if grammar == 'python':
             return PythonIncrementalParser()
-        elif language == 'go':
+        elif grammar == 'go':
             return GoIncrementalParser()
-        else:
-            raise ValueError(f'Unknown language: {language}')
+        
+        # Check if file "llm_cfg/grammars/{grammar}_grammar.lark" exists
+        if os.path.exists(f'llm_cfg/grammars/{grammar}_grammar.lark'):
+            return IncrementalParser(f'llm_cfg/grammars/{grammar}_grammar.lark')
+
+        # If the grammar is not found, raise an error
+        raise ValueError(f'Unknown grammar: {grammar}')
+
 
 class Logger:
     def __init__(self, filename):

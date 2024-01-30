@@ -9,20 +9,38 @@ from grammars.python_parser import PythonIncrementalParser
 class GrammarDecoder(LogitsProcessor):
     """
     This class is used to filter the logits of the model to only allow syntactically valid tokens for Python. 
+
+    Args:
+        grammar (str): The grammar to use for parsing e.g. "python".
+        tokenizer (PreTrainedTokenizer): The tokenizer to use for decoding.
+        logger (common.Logger): The logger to use for logging.
+        use_cache (bool, optional): Whether to use the cache. Defaults to True.
+        parse_prompt (bool, optional): Whether to parse the prompt. Defaults to True.
     """
-    def __init__(self, language: str, tokenizer: PreTrainedTokenizer, logger: common.Logger, use_cache=True, **kwargs):
+    def __init__(self, 
+        grammar: str, 
+        tokenizer: PreTrainedTokenizer, 
+        logger: common.Logger, 
+        use_cache=True,
+        parse_prompt=True, 
+        **kwargs):
+
         time_start = time.time()
         self.tokenizer = tokenizer
-        self.language = language
+        self.grammar = grammar
         self.logger = logger
 
         self.batch_size = -1 # We update this in the first call to __call__
         self.inc_parsers: list = []
-        
+
         # For backtracking to syntactically valid completions
         self.partial_codes_trace: list = []
-        self.last_valid_stage: list = []
+        self.last_valid_state: list = []
         self.function_end: list = []
+
+        # We use this when only the LLM output is parsed and not (input+output)
+        self.parse_prompt = parse_prompt
+        self.start_from = None 
 
         # For profiling
         self.token_cnt = 0
@@ -30,7 +48,7 @@ class GrammarDecoder(LogitsProcessor):
         self.non_matching_token_cnt = 0
 
         # Load dfa mask store
-        self.dfa_mask_store = common.load_dfa_mask_store(language=self.language, tokenizer=self.tokenizer, use_cache=use_cache)
+        self.dfa_mask_store = common.load_dfa_mask_store(grammar=self.grammar, tokenizer=self.tokenizer, use_cache=use_cache)
 
         self.start_time = time.time()
         self.prev_time = self.start_time
@@ -44,24 +62,32 @@ class GrammarDecoder(LogitsProcessor):
 
 
     def _reset(self):
-        self.inc_parsers = [common.create_parser(self.language) for _ in range(self.batch_size)]
+        self.inc_parsers = [common.create_parser(self.grammar) for _ in range(self.batch_size)]
         self.last_valid_state = [0 for _ in range(self.batch_size)]
         self.function_end = [None for _ in range(self.batch_size)]
         self.accept_tokens_sizes = []
         self.partial_codes_trace = []
         self.token_cnt = 0
+        self.start_from = None 
         
 
     def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor) -> torch.FloatTensor:
-        partial_codes = self.tokenizer.batch_decode(input_ids, skip_special_tokens=True)
+        
+        # start_from is used for choosing where the parsing should start
+        if self.start_from == None:
+            if self.parse_prompt:
+                self.start_from = 0
+            else:
+                self.start_from = len(input_ids[0])
+                
+        partial_codes = self.tokenizer.batch_decode(input_ids[:, self.start_from:], skip_special_tokens=True)
 
         if self.batch_size == -1 or (len(self.partial_codes_trace) > 0 and self.partial_codes_trace[0] not in partial_codes[0]):
-            self.batch_size = len(partial_codes)
+            self.batch_size = len(input_ids)
             self._reset()
 
         self.token_cnt += self.batch_size
         greedy_grammar_token = None
-
         for i, partial_code in enumerate(partial_codes):
             try:
                 compilation_start_time = time.time()
@@ -69,10 +95,9 @@ class GrammarDecoder(LogitsProcessor):
 
                 # returns the names of the Terminals that are currently accepted.
                 r = self.inc_parsers[i].get_acceptable_next_terminals(partial_code)
-
+                
                 greedy_token = self.tokenizer.decode(scores[i].argmax(dim=-1)) # For debugging - remove later
-
-                if 'EOF' in r.next_accept_terminals:
+                if '$END' in r.next_accept_terminals:
                     self.last_valid_state[i] = len(input_ids[i])
                 if 'EOC' in r.next_accept_terminals and self.function_end[i]==None:
                     self.function_end[i] = len(input_ids[i])

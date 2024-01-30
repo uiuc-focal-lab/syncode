@@ -31,7 +31,7 @@ class HuggingFaceModel(LanguageModel):
     def __init__(self, model, logger: common.Logger, prompt_template: str = '', api_key: str = None,
                  temperature: float = 0.0, top_p: float = 1.0, best_of: int = 1, max_new_tokens: int = 400, 
                  before_prediction_hook=lambda: None, tokenizer:LlamaTokenizer=None, device='cuda', logit_processors=None, 
-                 mode: str ='original', language: str = 'python') -> None:
+                 mode: str ='original', grammar: str = 'python') -> None:
         super().__init__()
 
         self.prompt_template = prompt_template
@@ -46,7 +46,7 @@ class HuggingFaceModel(LanguageModel):
         self._before_prediction_hook = before_prediction_hook
         self.logit_processors: list = logit_processors
         self.mode = mode
-        self.language = language
+        self.grammar = grammar
         self.vocab = common.get_vocab_from_tokenizer(self.tokenizer)
 
     def get_grammar_decoder(self):
@@ -109,13 +109,13 @@ class HuggingFaceModel(LanguageModel):
             self.logger.log_code("Raw completion", raw_completion)
 
             # Post-processing to filter out using stop word (e.g. "\n\n")
-            if self.language == "python": 
+            if self.grammar == "python": 
                 completion = filter_code(fix_indents(completion))
-            elif self.language == "go" and self.mode == "original": 
+            elif self.grammar == "go" and self.mode == "original": 
                 # only filter with stop-word for original mode
                 completion = filter_code(completion)
 
-            if self.language == "go" and function_incomplete[i]:
+            if self.grammar == "go" and function_incomplete[i]:
                 self.logger.log(f"Function incomplete!")
                 # if the function is incomplete, then we need to add a closing brace
                 completion += "}"
