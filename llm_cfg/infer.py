@@ -18,10 +18,9 @@ from tqdm import tqdm
 
 class Infer:
     """Infer class for running inference on a model
-    self:
+    Args:
         mode (str, optional): Mode for inference. Defaults to "original".
-        model (str, optional): Model name. Defaults to None.
-        model_id (str, optional): Model id for huggingface model hub. Defaults to None.
+        model (str): Model id for huggingface model hub or model name if stored locally.
         quantize (bool, optional): Quantize model. Defaults to True.
         gpu (int, optional): GPU number. Defaults to 1.
         num_samples (int, optional): Number of samples. Defaults to 1.
@@ -39,9 +38,8 @@ class Infer:
     """
     def __init__(
         self, 
+        model: str,
         mode: Literal["original", "grammar_mask", "synchromesh"] = "original",
-        model: Optional[Literal["Llama-7b", "Llama-13b", "CodeLlama-7b", "CodeLlama-7b-Python"]] = None,
-        model_id: Optional[str] = None,
         quantize: bool = True,
         gpu: int = 1,
         num_samples: int = 1,
@@ -55,11 +53,10 @@ class Infer:
         assert mode in ["original", "grammar_mask", "synchromesh"]
         assert language in ["python", "go"]
         assert dataset in ["mbxp", "multi-humaneval", "mathqa-x"]
-        
+    
         # Set attributes
         self.mode = mode
         self.model = model
-        self.model_id = model_id
         self.quantize = quantize
         self.gpu = gpu
         self.num_samples = num_samples
@@ -72,17 +69,16 @@ class Infer:
 
         # Load model
         device = f"cuda:{self.gpu}"
-        if self.model_id is not None:
-            tokenizer = AutoTokenizer.from_pretrained(self.model_id, cache_dir=common.HF_CACHE, token=common.HF_ACCESS_TOKEN, trust_remote_code=True)
-            model = AutoModelForCausalLM.from_pretrained(self.model_id, torch_dtype=torch.bfloat16, cache_dir=common.HF_CACHE, token=common.HF_ACCESS_TOKEN, trust_remote_code=True).eval().to(device)
-            out_dir = f"results/{self.model_id}/{self.language}/{self.dataset}/"
-        elif self.model is not None:
+        llama_models = ["Llama-7b", "Llama-13b", "CodeLlama-7b", "CodeLlama-7b-Python"]
+        if self.model not in llama_models:
+            tokenizer = AutoTokenizer.from_pretrained(self.model, cache_dir=common.HF_CACHE, token=common.HF_ACCESS_TOKEN, trust_remote_code=True)
+            model = AutoModelForCausalLM.from_pretrained(self.model, torch_dtype=torch.bfloat16, cache_dir=common.HF_CACHE, token=common.HF_ACCESS_TOKEN, trust_remote_code=True).eval().to(device)
+            out_dir = f"results/{self.model}/{self.language}/{self.dataset}/"
+        elif self.model in llama_models:
             model_location = "/share/models/hugging_face/" + self.model
             tokenizer = LlamaTokenizer.from_pretrained(model_location)
             model = LlamaForCausalLM.from_pretrained(model_location, torch_dtype=torch.bfloat16).eval().to(device)
             out_dir = f"results/{self.model}/{self.language}/{self.dataset}/"
-        else:
-            raise ValueError("Either model or model_id must be provided")
 
         # Setup output directory
         out_path = out_dir + 'samples_' + str(num_samples_per_task) + '_mode_' + str(self.mode) + "_eval.jsonl"
