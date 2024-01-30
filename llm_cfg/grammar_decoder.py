@@ -16,6 +16,7 @@ class GrammarDecoder(LogitsProcessor):
         logger (common.Logger): The logger to use for logging.
         use_cache (bool, optional): Whether to use the cache. Defaults to True.
         parse_prompt (bool, optional): Whether to parse the prompt. Defaults to True.
+        dev_mode (bool, optional): Whether to run in development mode. Defaults to False.
     """
     def __init__(self, 
         grammar: str, 
@@ -23,12 +24,14 @@ class GrammarDecoder(LogitsProcessor):
         logger: common.Logger, 
         use_cache=True,
         parse_prompt=True, 
+        dev_mode=False,
         **kwargs):
 
         time_start = time.time()
         self.tokenizer = tokenizer
         self.grammar = grammar
         self.logger = logger
+        self.dev_mode = dev_mode
 
         self.batch_size = -1 # We update this in the first call to __call__
         self.inc_parsers: list = []
@@ -130,6 +133,8 @@ class GrammarDecoder(LogitsProcessor):
                     self._log_current_status(partial_code, r)
                     self.non_matching_token_cnt += 1
             except Exception as e:
+                if self.dev_mode == True:
+                    raise e
                 self.logger.log(f"Exception: {e}")
 
         return scores

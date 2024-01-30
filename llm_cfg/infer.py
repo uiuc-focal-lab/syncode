@@ -30,6 +30,7 @@ class Infer:
         few_shot (bool, optional): Run few shoting prompting. Defaults to False.
         num_examples (int, optional): Number of examples for few shot prompting. Defaults to -1.
         parse_prompt (bool, optional): Parse prompt. Defaults to True.
+        dev_mode (bool, optional): Development mode. Defaults to False.
 
         List of currently tested models:
         Llama models: "Llama-7b", "CodeLlama-7b", "CodeLlama-7b-Python", "Llama-13b"
@@ -50,6 +51,7 @@ class Infer:
         few_shot: bool = False,
         num_examples: int = -1,
         parse_prompt: bool = True,
+        dev_mode: bool = False,
     ):  
         # Check inputs
         assert mode in ["original", "grammar_mask", "synchromesh"]
@@ -92,7 +94,7 @@ class Infer:
         logit_processors = None
         if self.mode == 'grammar_mask':
             use_cache = not self.new_mask_store
-            grammar_decoder = GrammarDecoder(self.grammar, tokenizer=tokenizer, logger=logger, use_cache=use_cache, parse_prompt=parse_prompt)
+            grammar_decoder = GrammarDecoder(self.grammar, tokenizer=tokenizer, logger=logger, use_cache=use_cache, parse_prompt=parse_prompt, dev_mode=dev_mode)
             logit_processors = LogitsProcessorList([grammar_decoder])
 
         hf_model = HuggingFaceModel(
