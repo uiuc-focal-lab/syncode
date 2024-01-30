@@ -24,7 +24,8 @@ class Infer:
         quantize (bool, optional): Quantize model. Defaults to True.
         gpu (int, optional): GPU number. Defaults to 1.
         num_samples (int, optional): Number of samples. Defaults to 1.
-        language (str, optional): Language. Defaults to "python".
+        grammar (str, optional): Language. Defaults to "input". "input" is used for user input. 
+            other options currently supported are "python", "go", "calc"
         dataset (str, optional): Dataset. Defaults to "multi-humaneval".
         new_nfa (bool, optional): Use new NFA. Defaults to False.
         few_shot (bool, optional): Run few shoting prompting. Defaults to False.
