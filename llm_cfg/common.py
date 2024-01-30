@@ -1,9 +1,6 @@
 import os, time
 import pickle
-from grammars.python_parser import PythonIncrementalParser
-from grammars.go_parser import GoIncrementalParser
 from dfa_mask_store import DFAMaskStore
-from incremental_parser import IncrementalParser
 
 # Remove this in future and add instruction to set the HF_CACHE env variable
 HF_CACHE = '/share/models/hugging_face/'
@@ -27,7 +24,7 @@ def get_vocab_from_tokenizer(tokenizer):
     
     return vocab
 
-def load_dfa_mask_store(grammar: str, tokenizer, inc_parser=None, use_cache=True):
+def load_dfa_mask_store(grammar: str, tokenizer, inc_parser=None, use_cache=True, logger=None):
     '''
     Loads the dfa for the given language and tokenizer. If the dfa is not cached, it is created and cached. 
     '''
@@ -39,11 +36,16 @@ def load_dfa_mask_store(grammar: str, tokenizer, inc_parser=None, use_cache=True
         dfa = pickle.load(open(dfa_path, 'rb'))
     else:
         vocab = get_vocab_from_tokenizer(tokenizer)
-        print('Time taken for loading vocab:', time.time() - start_time, flush=True)
+        if logger is not None:
+            logger.log_time(f"Time taken for loading vocab: {time.time() - start_time:.2f}s")
+        # TODO: add logger in tests
+        print('Time taken for loading vocab:', time.time() - start_time, flush=True) # Keeping this for tests
 
         if inc_parser is None:
             inc_parser = create_parser(grammar)
-            print('Time taken for loading parser:', time.time() - start_time, flush=True)
+        if logger is not None:
+            logger.log_time(f"Time taken for loading parser: {time.time() - start_time:.2f}s")
+        print('Time taken for loading parser:', time.time() - start_time, flush=True)
 
         exceptions = {}
         if grammar == 'python':
@@ -51,34 +53,41 @@ def load_dfa_mask_store(grammar: str, tokenizer, inc_parser=None, use_cache=True
         
         os.makedirs(dfa_dir, exist_ok=True)
         dfa = DFAMaskStore(inc_parser.parser.terminals, vocab, exceptions=exceptions, special_token_ids=[tokenizer.eos_token_id])
+
+        if logger is not None:
+            logger.log_time(f"Time taken for creating dfa: {time.time() - start_time:.2f}s")
         print(f'Time taken for creating dfa:', time.time() - start_time, flush=True)
 
         pickle.dump(dfa, open(dfa_path, 'wb'))
+        if logger is not None:
+            logger.log_time(f"Time taken for storing the dfa: {time.time() - start_time:.2f}s")
         print(f'Time taken for storing the dfa', time.time() - start_time, flush=True)
     return dfa
 
-def create_parser(grammar):
-        if grammar == 'python':
-            return PythonIncrementalParser()
-        elif grammar == 'go':
-            return GoIncrementalParser()
-        
-        # Check if file "llm_cfg/grammars/{grammar}_grammar.lark" exists
-        if os.path.exists(f'llm_cfg/grammars/{grammar}_grammar.lark'):
-            return IncrementalParser(f'llm_cfg/grammars/{grammar}_grammar.lark')
-
-        # If the grammar is not found, raise an error
-        raise ValueError(f'Unknown grammar: {grammar}')
-
-
+"""
+Logger class for logging the output of the model
+"""
 class Logger:
-    def __init__(self, filename):
-        self.filename = filename
-        self.file = open(filename, 'w')
+    def __init__(self, num_samples_per_task, mode, out_dir, log_time=True):
+        self.log_time_on = log_time
+        log_file = out_dir + 'logs/' + 'samples_' + str(num_samples_per_task) + '_mode_' + str(mode) + "_eval.log"
+        log_time_file = out_dir + 'logs/' + 'time_samples_' + str(num_samples_per_task) + '_mode_' + str(mode) + "_eval.log"
+        os.makedirs(out_dir + 'logs/', exist_ok=True)
+
+        self.log_file = log_file
+        self.file = open(log_file, 'w')
+
+        self.log_time_file = log_time_file
+        self.time_file = open(log_time_file, 'w')
 
     def log(self, msg):
         self.file.write(msg + '\n')
         self.file.flush()
+    
+    def log_time(self, msg):
+        if self.log_time_on:
+            self.time_file.write(msg + '\n')
+            self.time_file.flush()
     
     def log_code(self, msg, code):
         self.file.write(msg + ':\n')
@@ -89,6 +98,21 @@ class Logger:
 
     def close(self):
         self.file.close()
+
+class TestLogger(Logger):
+    """
+    A logger that does not write to file. Used while running tests.
+    """
+    def __init__(self):
+        pass
+    def log(self, msg):
+        pass  
+    def log_time(self, msg):
+        pass   
+    def log_code(self, msg, code):
+        pass
+    def close(self):
+        pass
 
 
 def run_tests(tests):

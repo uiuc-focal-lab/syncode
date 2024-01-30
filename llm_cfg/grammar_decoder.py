@@ -4,6 +4,7 @@ import common
 from transformers import LogitsProcessor, PreTrainedTokenizer
 from incremental_parser import ParseResult
 from grammars.python_parser import PythonIncrementalParser
+from grammars import create_parser
 
 
 class GrammarDecoder(LogitsProcessor):
@@ -51,12 +52,12 @@ class GrammarDecoder(LogitsProcessor):
         self.non_matching_token_cnt = 0
 
         # Load dfa mask store
-        self.dfa_mask_store = common.load_dfa_mask_store(grammar=self.grammar, tokenizer=self.tokenizer, use_cache=use_cache)
+        self.dfa_mask_store = common.load_dfa_mask_store(grammar=self.grammar, tokenizer=self.tokenizer, use_cache=use_cache, logger=self.logger)
 
         self.start_time = time.time()
         self.prev_time = self.start_time
         self.debug = True
-        self.logger.log(f"Time taken for preprocessing: {time.time() - time_start:.2f}s")
+        self.logger.log_time(f"Time taken for preprocessing: {time.time() - time_start:.2f}s")
 
 
     def _log_current_status(self, partial_code, r: ParseResult):
@@ -65,7 +66,7 @@ class GrammarDecoder(LogitsProcessor):
 
 
     def _reset(self):
-        self.inc_parsers = [common.create_parser(self.grammar) for _ in range(self.batch_size)]
+        self.inc_parsers = [create_parser(self.grammar, logger=self.logger) for _ in range(self.batch_size)]
         self.last_valid_state = [0 for _ in range(self.batch_size)]
         self.function_end = [None for _ in range(self.batch_size)]
         self.accept_tokens_sizes = []
@@ -106,9 +107,9 @@ class GrammarDecoder(LogitsProcessor):
                     self.function_end[i] = len(input_ids[i])
 
                 self.accept_tokens_sizes.append(len(r.cur_accept_terminals))  # For profiling
-                self.logger.log(f"Time taken for compilation: {time.time() - compilation_start_time:.2f}s")
+                self.logger.log_time(f"Time taken for compilation: {time.time() - compilation_start_time:.2f}s")
                 accept_mask = self.dfa_mask_store.get_overapprox_tokens_mask(r)
-                self.logger.log(f"Time taken for overapproximation: {time.time() - compilation_start_time:.2f}s")
+                self.logger.log_time(f"Time taken for overapproximation: {time.time() - compilation_start_time:.2f}s")
 
                 if self.debug:
                     self._log_current_status(partial_code, r)
@@ -123,7 +124,7 @@ class GrammarDecoder(LogitsProcessor):
                     self.logger.log('No acceptable tokens for the current partial code!')
                     self._log_current_status(partial_code, r)
 
-                self.logger.log(f"Time taken for masking: {time.time() - compilation_start_time:.2f}s")
+                self.logger.log_time(f"Time taken for masking: {time.time() - compilation_start_time:.2f}s")
                 
                 greedy_grammar_token = self.tokenizer.decode(scores[i].argmax(dim=-1))
 

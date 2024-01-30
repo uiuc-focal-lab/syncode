@@ -3,6 +3,7 @@ import time
 from typing import Iterator
 import lark
 import regex
+import common
 from lark import Token
 from lark.indenter import Indenter
 from incremental_parser import IncrementalParser
@@ -13,9 +14,9 @@ class PythonIncrementalParser(IncrementalParser):
     """
     This class implements an incremental parser for Python code.
     """
-    def __init__(self, partial_code=None):
+    def __init__(self, logger:Optional[common.Logger]=None, partial_code=None):
         indenter = PythonIndenter()
-        super().__init__("llm_cfg/grammars/python_grammar.lark", indenter=indenter)
+        super().__init__("llm_cfg/grammars/python_grammar.lark", logger=logger, indenter=indenter)
 
         if partial_code is not None: # extract indentation type from partial code
             indenter.tab_len = self._get_indentation(partial_code)  # NOTE: tab_len is useful when \t and spaces are used for indentation in same code
@@ -43,6 +44,8 @@ class PythonIncrementalParser(IncrementalParser):
 
         # Parse the tokens
         parsing_start_time = time.time()
+        self.time_accepts = 0
+        
         try:
             while self.cur_pos < len(lexer_tokens):
                 token = lexer_tokens[self.cur_pos]
@@ -69,15 +72,15 @@ class PythonIncrementalParser(IncrementalParser):
                 self._store_parser_state(
                     self.cur_pos-1, 
                     interactive.parser_state.copy(), 
-                    interactive.accepts(), 
+                    self._accepts(interactive),
                     indent_levels=copy.copy(self.indent_level)
                 )
 
         except lark.exceptions.UnexpectedToken as e:
             pass
 
-        if self.log_time:
-            print('Time taken for parsing:', (time.time() - parsing_start_time))
+        self.logger.log_time(f'Time taken for parsing:{time.time() - parsing_start_time}')
+        self.logger.log_time(f'Time taken for computing accepts:{self.time_accepts}')
 
         remainder_state = None
         # Compute current terminal string
@@ -162,8 +165,7 @@ class PythonIncrementalParser(IncrementalParser):
         except EOFError as e:
             pass
 
-        if self.log_time:
-            print('Time taken for lexing:', time.time() - lexing_start_time)
+        self.logger.log_time(f'Time taken for lexing:{time.time() - lexing_start_time}')
         return lexer_tokens
 
 

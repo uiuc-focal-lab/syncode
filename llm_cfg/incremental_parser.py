@@ -2,6 +2,7 @@ import copy
 import re
 import time
 import lark
+import common
 from parse_result import ParseResult, RemainderState
 from lark.lexer import Token
 from lark import Lark
@@ -12,8 +13,7 @@ class IncrementalParser:
     """
     This is the base class for all incremental parsers.
     """
-    def __init__(self, grammar_file, indenter=None, log_time=False) -> None:
-        self.log_time = log_time
+    def __init__(self, grammar_file, logger: Optional[common.Logger]=None, indenter=None) -> None:
         self.cur_ac_terminals: Optional[set] = None
         self.next_ac_terminals: Optional[set] = None
         self.cur_pos = 0 # Current cursor position in the lexer tokens list
@@ -30,8 +30,9 @@ class IncrementalParser:
             postlex=indenter,
             propagate_positions=True,
         )
-        if self.log_time:
-            print('Time taken for loading parser:', time.time() - time_start)
+
+        self.logger = logger if logger is not None else common.TestLogger()
+        self.logger.log_time(f"Time taken for loading parser: {time.time() - time_start:.2f}s")
 
         self.interactive = self.parser.parse_interactive('')
         self.parser_token_seq: list = []
@@ -41,6 +42,9 @@ class IncrementalParser:
         
         # parser_state, cur_ac_terminals, next_ac_terminals, indent_levels (optional), dedent_queue
         self.cur_pos_to_parser_state: dict[int, Tuple[Any, Optional[set], Optional[set], Optional[list], list]] = {}
+
+        # Profiling
+        self.time_accepts = 0
     
     def _store_parser_state(self, pos: int, parser_state, accepts: Optional[set], indent_levels: Optional[list] = None):  
         time_start = time.time() 
@@ -52,8 +56,7 @@ class IncrementalParser:
         
         self.cur_ac_terminals = copy.deepcopy(cur_ac_terminals)
         self.next_ac_terminals = copy.deepcopy(next_ac_terminals)
-        if self.log_time:
-            print('Time taken for storing parser state:', time.time() - time_start)
+        self.logger.log_time(f'Time taken for storing parser state:{time.time() - time_start}')
 
     def _restore_parser_state(self, pos: int):
         time_start = time.time()
@@ -68,8 +71,7 @@ class IncrementalParser:
         if indent_levels is not None:
             self.indent_level = copy.deepcopy(indent_levels)
 
-        if self.log_time:
-            print('Time taken for restoring parser state:', time.time() - time_start)
+        self.logger.log_time(f'Time taken for restoring parser state:{time.time() - time_start}')
 
     def _lex_code(self, code) -> list[Token]:
         """
@@ -92,8 +94,7 @@ class IncrementalParser:
         except EOFError as e:
             pass
         self.lexer_pos = lexer_state.line_ctr.char_pos
-        if self.log_time:
-            print('Time taken for lexing:', time.time() - lexing_start_time)
+        self.logger.log_time(f'Time taken for lexing:{time.time() - lexing_start_time}')
         return lexer_tokens
     
     def _restore_recent_parser_state(self, lexer_tokens):
@@ -129,6 +130,8 @@ class IncrementalParser:
 
         # Parse the tokens
         parsing_start_time = time.time()
+        self.time_accepts = 0
+        
         try:
             while self.cur_pos < len(lexer_tokens):
                 token = lexer_tokens[self.cur_pos]
@@ -137,13 +140,16 @@ class IncrementalParser:
                 interactive.feed_token(token)
 
                 # Store the current state of the parser
-                self._store_parser_state(self.cur_pos-1, interactive.parser_state.copy(), interactive.accepts())
+                self._store_parser_state(
+                    self.cur_pos-1, 
+                    interactive.parser_state.copy(), 
+                    self._accepts(interactive))
 
         except lark.exceptions.UnexpectedToken as e:
             pass
 
-        if self.log_time:
-            print('Time taken for parsing:', (time.time() - parsing_start_time))
+        self.logger.log_time(f'Time taken for parsing:{time.time() - parsing_start_time}')
+        self.logger.log_time(f'Time taken for computing accepts:{self.time_accepts}')
 
         # Compute current terminal string
         remainder_state, current_term_str = self._get_remainder(partial_code)
@@ -164,3 +170,9 @@ class IncrementalParser:
             remainder_state = RemainderState.MAYBE_COMPLETE
         return remainder_state,current_term_str
     
+    def _accepts(self, interactive_parser):
+        start_time = time.time()
+        accepts = interactive_parser.accepts()
+        self.time_accepts += time.time() - start_time
+        return accepts
+        
