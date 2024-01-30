@@ -29,7 +29,7 @@ class GrammarDecoder(LogitsProcessor):
         self.accept_tokens_sizes: list = []
         self.non_matching_token_cnt = 0
 
-        # Load dfa
+        # Load dfa mask store
         self.dfa_mask_store = common.load_dfa_mask_store(language=self.language, tokenizer=self.tokenizer, use_cache=use_cache)
 
         self.start_time = time.time()

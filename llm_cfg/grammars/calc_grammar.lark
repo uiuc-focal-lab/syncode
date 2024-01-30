@@ -1,0 +1,16 @@
+start: expr
+
+?expr: term
+     | expr "+" term  -> add
+     | expr "-" term  -> subtract
+
+?term: factor
+     | term "*" factor  -> multiply
+     | term "/" factor  -> divide
+
+?factor: NUMBER        -> number
+       | "(" expr ")"
+
+%import common.NUMBER
+%import common.WS
+%ignore WS

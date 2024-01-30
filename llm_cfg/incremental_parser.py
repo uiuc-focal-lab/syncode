@@ -26,7 +26,7 @@ class IncrementalParser:
             grammar_file,
             parser="lalr",
             lexer="basic",
-            start="file_input",
+            start="start",
             postlex=indenter,
             propagate_positions=True,
         )

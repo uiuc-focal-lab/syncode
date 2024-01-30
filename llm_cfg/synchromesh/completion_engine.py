@@ -19,7 +19,7 @@ class LarkCompletionEngine(CompletionEngine):
             "llm_cfg/grammars/python_grammar.lark",
             parser="lalr",
             lexer="basic",
-            start="file_input",
+            start="start",
             postlex=PythonIndenter(),
             propagate_positions=True,
         )

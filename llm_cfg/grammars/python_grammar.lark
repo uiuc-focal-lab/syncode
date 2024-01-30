@@ -12,7 +12,7 @@
 //       eval_input is the input for the eval() functions.
 // NB: compound_stmt in single_input is followed by extra _NL!
 single_input: _NL | simple_stmt | compound_stmt _NL
-file_input: (_NL | stmt)*
+start: (_NL | stmt)*
 eval_input: testlist _NL*
 
 !decorator: "@" dotted_name [ "(" [arguments] ")" ] _NL
