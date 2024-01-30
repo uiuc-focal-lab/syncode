@@ -1,9 +1,8 @@
 import os
 import pickle
-import transformers
 from grammars.python_parser import PythonIncrementalParser
 from grammars.go_parser import GoIncrementalParser
-from terminals_nfa import TerminalsNFA
+from dfa_mask_store import DFAMaskStore
 import time
 
 # Remove this in future and add instruction to set the HF_CACHE env variable
@@ -28,16 +27,16 @@ def get_vocab_from_tokenizer(tokenizer):
     
     return vocab
 
-def load_nfa(language: str, tokenizer, inc_parser=None, use_cache=True):
+def load_dfa_mask_store(language: str, tokenizer, inc_parser=None, use_cache=True):
     '''
-    Loads the NFA for the given language and tokenizer. If the NFA is not cached, it is created and cached. 
+    Loads the dfa for the given language and tokenizer. If the dfa is not cached, it is created and cached. 
     '''
     tokenizer_name = type(tokenizer).__name__
-    nfa_dir = 'results/' + tokenizer_name + '/'
-    nfa_path = nfa_dir + language + '_nfa.pkl'
+    dfa_dir = 'results/' + tokenizer_name + '/'
+    dfa_path = dfa_dir + language + '_dfa.pkl'
     start_time = time.time()
-    if use_cache and os.path.exists(nfa_path):
-        nfa = pickle.load(open(nfa_path, 'rb'))
+    if use_cache and os.path.exists(dfa_path):
+        dfa = pickle.load(open(dfa_path, 'rb'))
     else:
         vocab = get_vocab_from_tokenizer(tokenizer)
         print('Time taken for loading vocab:', time.time() - start_time, flush=True)
@@ -50,13 +49,13 @@ def load_nfa(language: str, tokenizer, inc_parser=None, use_cache=True):
         if language == 'python':
             exceptions = {'COMMENT': '#.*|\'\'\'.*?\'\'\'|""".*?"""/is', '_NL': '(\r?\n[\t ]*)+', 'LONG_STRING': '\'\'\'.*?\'\'\'|""".*?"""/is', 'STRING': '[ubf]?r?(".*?"|\'.*?\')'}
         
-        os.makedirs(nfa_dir, exist_ok=True)
-        nfa = TerminalsNFA(inc_parser.parser.terminals, vocab, exceptions=exceptions, special_token_ids=[tokenizer.eos_token_id])
-        print(f'Time taken for creating NFA:', time.time() - start_time, flush=True)
+        os.makedirs(dfa_dir, exist_ok=True)
+        dfa = DFAMaskStore(inc_parser.parser.terminals, vocab, exceptions=exceptions, special_token_ids=[tokenizer.eos_token_id])
+        print(f'Time taken for creating dfa:', time.time() - start_time, flush=True)
 
-        pickle.dump(nfa, open(nfa_path, 'wb'))
-        print(f'Time taken for storing the NFA', time.time() - start_time, flush=True)
-    return nfa
+        pickle.dump(dfa, open(dfa_path, 'wb'))
+        print(f'Time taken for storing the dfa', time.time() - start_time, flush=True)
+    return dfa
 
 def create_parser(language):
         if language == 'python':

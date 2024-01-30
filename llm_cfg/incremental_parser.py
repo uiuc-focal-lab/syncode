@@ -5,6 +5,8 @@ import lark
 from parse_result import ParseResult, RemainderState
 from lark.lexer import Token
 from lark import Lark
+from typing import Optional, Any, Tuple
+
 
 class IncrementalParser:    
     """
@@ -12,8 +14,8 @@ class IncrementalParser:
     """
     def __init__(self, grammar_file, indenter=None, log_time=False) -> None:
         self.log_time = log_time
-        self.cur_ac_terminals = None
-        self.next_ac_terminals = None
+        self.cur_ac_terminals: Optional[set] = None
+        self.next_ac_terminals: Optional[set] = None
         self.cur_pos = 0 # Current cursor position in the lexer tokens list
         self.lexer_pos = 0 # Current lexer position in the code
         self.dedent_queue: list = []
@@ -36,27 +38,36 @@ class IncrementalParser:
 
         # To enable going back to old state of the parser
         self.prev_lexer_tokens: list[Token] = []
-        self.cur_pos_to_interactive: dict = {}
+        
+        # parser_state, cur_ac_terminals, next_ac_terminals, indent_levels (optional), dedent_queue
+        self.cur_pos_to_parser_state: dict[int, Tuple[Any, Optional[set], Optional[set], Optional[list], list]] = {}
     
-    def _store_parser_state(self, pos, parser_state, accepts):  
+    def _store_parser_state(self, pos: int, parser_state, accepts: Optional[set], indent_levels: Optional[list] = None):  
         time_start = time.time() 
         cur_ac_terminals = self.next_ac_terminals  
         next_ac_terminals = accepts 
         
-        self.cur_pos_to_interactive[pos] = (parser_state, cur_ac_terminals, next_ac_terminals, copy.deepcopy(self.dedent_queue))
+        # parser_state, cur_ac_terminals, next_ac_terminals, indent_levels, dedent_queue
+        self.cur_pos_to_parser_state[pos] = (parser_state, cur_ac_terminals, next_ac_terminals, indent_levels, copy.deepcopy(self.dedent_queue))
         
         self.cur_ac_terminals = copy.deepcopy(cur_ac_terminals)
         self.next_ac_terminals = copy.deepcopy(next_ac_terminals)
         if self.log_time:
             print('Time taken for storing parser state:', time.time() - time_start)
 
-    def _restore_parser_state(self, pos):
+    def _restore_parser_state(self, pos: int):
         time_start = time.time()
-        parser_state, cur_ac_terminals, next_ac_terminals, dedent_queue = self.cur_pos_to_interactive[pos]
+        # parser_state, cur_ac_terminals, next_ac_terminals, indent_levels, dedent_queue
+        parser_state, cur_ac_terminals, next_ac_terminals, indent_levels, dedent_queue = self.cur_pos_to_parser_state[pos]
         self.interactive.parser_state = parser_state.copy()
+
         self.dedent_queue = copy.deepcopy(dedent_queue)
         self.cur_ac_terminals = copy.deepcopy(cur_ac_terminals)
         self.next_ac_terminals = copy.deepcopy(next_ac_terminals)
+
+        if indent_levels is not None:
+            self.indent_level = copy.deepcopy(indent_levels)
+
         if self.log_time:
             print('Time taken for restoring parser state:', time.time() - time_start)
 
@@ -89,17 +100,16 @@ class IncrementalParser:
         """
         Restores the parser state to the most recent prefix matching state that was stored. 
         """
-        # Find the maximum index such that the tokens are same and the parser state is stored
         max_matching_index = -1
         for i in range(min(len(self.prev_lexer_tokens), len(lexer_tokens))):
             if self.prev_lexer_tokens[i] != lexer_tokens[i]:
                 break
-            if i in self.cur_pos_to_interactive:
+            if i in self.cur_pos_to_parser_state:
                 max_matching_index = i
 
         if max_matching_index != -1:
             self.cur_pos = max_matching_index + 1
-            assert (max_matching_index) in self.cur_pos_to_interactive
+            assert (max_matching_index) in self.cur_pos_to_parser_state
             self._restore_parser_state(max_matching_index)
 
 

@@ -7,45 +7,7 @@ from lark import Token
 from lark.indenter import Indenter
 from incremental_parser import IncrementalParser
 from parse_result import IndentationConstraint, ParseResult, RemainderState
-
-
-class PythonIndenter(Indenter):
-        NL_type = "_NL"
-        OPEN_PAREN_types = ["LPAR", "LSQB", "LBRACE"]
-        CLOSE_PAREN_types = ["RPAR", "RSQB", "RBRACE"]
-        INDENT_type = "_INDENT"
-        DEDENT_type = "_DEDENT"
-        tab_len = 4
-
-        def _handle_NL(self, token: Token) -> Iterator[Token]:
-            '''
-            This is taken from Lark library and modified to handle the case when there is a LONG_STRING comment in the _NL token.
-            '''
-            if self.paren_level > 0:
-                return
-
-            m = regex.match(r'(.*)(\'\'\'.*?\'\'\'|""".*?""")(.*)', token.value, flags=regex.DOTALL)
-            if m is not None: # There is a LONG_STRING comment in the _NL token
-                indent_str = m.group(1).rsplit('\n', 1)[1] # Tabs and spaces
-                indent = indent_str.count(' ') + indent_str.count('\t') * self.tab_len
-                self.indent_level.append(indent)
-                yield Token.new_borrow_pos(self.NL_type, m.group(0), token)
-                yield Token.new_borrow_pos(self.INDENT_type, indent_str, token) 
-                yield Token.new_borrow_pos('LONG_STRING', m.group(1), token)
-
-            yield token
-
-            indent_str = token.rsplit('\n', 1)[1] # Tabs and spaces
-            indent = indent_str.count(' ') + indent_str.count('\t') * self.tab_len
-
-            if indent > self.indent_level[-1]:
-                self.indent_level.append(indent)
-                yield Token.new_borrow_pos(self.INDENT_type, indent_str, token)
-            else:
-                while indent < self.indent_level[-1]:
-                    self.indent_level.pop()
-                    yield Token.new_borrow_pos(self.DEDENT_type, indent_str, token)
-
+from typing import Optional
 
 class PythonIncrementalParser(IncrementalParser):
     """
@@ -74,22 +36,7 @@ class PythonIncrementalParser(IncrementalParser):
         lexer_tokens = self._lex_code(code)
 
         # Restore the previous state of the parser
-        if self.prev_lexer_tokens is not None:
-            # Find the maximum index such that the tokens are same and the parser state is stored
-            max_matching_index = -1
-            for i in range(min(len(self.prev_lexer_tokens), len(lexer_tokens))):
-                if self.prev_lexer_tokens[i] != lexer_tokens[i]:
-                    break
-                if i in self.cur_pos_to_interactive:
-                    max_matching_index = i
-
-            if max_matching_index != -1:
-                self.cur_pos = max_matching_index + 1
-                # print('********Restoring parser state 1!', max_matching_index )
-                # print(self.prev_lexer_tokens[self.cur_pos-1], lexer_tokens[self.cur_pos-1])
-                assert (max_matching_index) in self.cur_pos_to_interactive
-                self._restore_parser_state(max_matching_index)
-
+        self._restore_recent_parser_state(lexer_tokens)
         
         self.prev_lexer_tokens = lexer_tokens  # Set the previous lexer tokens
         next_ac_indents = None
@@ -119,7 +66,12 @@ class PythonIncrementalParser(IncrementalParser):
                 interactive.feed_token(token)
 
                 # Store the current state of the parser
-                self._store_parser_state(self.cur_pos-1, interactive.parser_state.copy(), interactive.accepts())
+                self._store_parser_state(
+                    self.cur_pos-1, 
+                    interactive.parser_state.copy(), 
+                    interactive.accepts(), 
+                    indent_levels=copy.copy(self.indent_level)
+                )
 
         except lark.exceptions.UnexpectedToken as e:
             pass
@@ -180,11 +132,11 @@ class PythonIncrementalParser(IncrementalParser):
         # Collect Lexer tokens
         lexer_tokens: list[Token] = []
         interactive = self.parser.parse_interactive(code)
-        lexing_start_time = time.time()
         lexer_state = interactive.lexer_thread.state
         indenter: PythonIndenter = self.parser.lexer_conf.postlex
 
         # Reset the indentation level
+        lexing_start_time = time.time()
         indenter.indent_level, indenter.paren_level = [0], 0
 
         try:
@@ -213,15 +165,44 @@ class PythonIncrementalParser(IncrementalParser):
         if self.log_time:
             print('Time taken for lexing:', time.time() - lexing_start_time)
         return lexer_tokens
-    
-    def _store_parser_state(self, pos, parser_state, accepts):      
-        indent_levels = copy.deepcopy(self.indent_level)  
-        self.cur_pos_to_interactive[pos] = (parser_state, indent_levels, accepts, copy.deepcopy(self.dedent_queue))
-        self.cur_ac_terminals = copy.deepcopy(self.next_ac_terminals)
-        self.next_ac_terminals = copy.deepcopy(accepts)
 
-    def _restore_parser_state(self, pos):
-        parser_state, indent_levels, self.cur_ac_terminals, dedent_queue = self.cur_pos_to_interactive[pos]
-        self.interactive.parser_state = parser_state.copy()
-        self.dedent_queue = copy.deepcopy(dedent_queue)
-        self.indent_level = copy.deepcopy(indent_levels)
+
+class PythonIndenter(Indenter):
+        """
+        This class implements the indenter for Python code.
+        """
+        NL_type = "_NL"
+        OPEN_PAREN_types = ["LPAR", "LSQB", "LBRACE"]
+        CLOSE_PAREN_types = ["RPAR", "RSQB", "RBRACE"]
+        INDENT_type = "_INDENT"
+        DEDENT_type = "_DEDENT"
+        tab_len = 4
+
+        def _handle_NL(self, token: Token) -> Iterator[Token]:
+            '''
+            This is taken from Lark library and modified to handle the case when there is a LONG_STRING comment in the _NL token.
+            '''
+            if self.paren_level > 0:
+                return
+
+            m = regex.match(r'(.*)(\'\'\'.*?\'\'\'|""".*?""")(.*)', token.value, flags=regex.DOTALL)
+            if m is not None: # There is a LONG_STRING comment in the _NL token
+                indent_str = m.group(1).rsplit('\n', 1)[1] # Tabs and spaces
+                indent = indent_str.count(' ') + indent_str.count('\t') * self.tab_len
+                self.indent_level.append(indent)
+                yield Token.new_borrow_pos(self.NL_type, m.group(0), token)
+                yield Token.new_borrow_pos(self.INDENT_type, indent_str, token) 
+                yield Token.new_borrow_pos('LONG_STRING', m.group(1), token)
+
+            yield token
+
+            indent_str = token.rsplit('\n', 1)[1] # Tabs and spaces
+            indent = indent_str.count(' ') + indent_str.count('\t') * self.tab_len
+
+            if indent > self.indent_level[-1]:
+                self.indent_level.append(indent)
+                yield Token.new_borrow_pos(self.INDENT_type, indent_str, token)
+            else:
+                while indent < self.indent_level[-1]:
+                    self.indent_level.pop()
+                    yield Token.new_borrow_pos(self.DEDENT_type, indent_str, token)

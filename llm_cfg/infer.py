@@ -45,7 +45,7 @@ class Infer:
         num_samples: int = 1,
         language: Literal["python", "go"] = "python",
         dataset: Literal["mbxp", "multi-humaneval", "mathqa-x"] = "multi-humaneval",
-        new_nfa: bool = False,
+        new_mask_store: bool = False,
         few_shot: bool = False,
         num_examples: int = -1
     ):  
@@ -62,7 +62,7 @@ class Infer:
         self.num_samples = num_samples
         self.language = language
         self.dataset = dataset
-        self.new_nfa = new_nfa
+        self.new_mask_store = new_mask_store
         self.few_shot = few_shot
         self.num_examples = num_examples
         num_samples_per_task = self.num_samples
@@ -90,7 +90,7 @@ class Infer:
         # Initialize logit processors
         logit_processors = None
         if self.mode == 'grammar_mask':
-            use_cache = not self.new_nfa
+            use_cache = not self.new_mask_store
             grammar_decoder = GrammarDecoder(self.language, tokenizer=tokenizer, logger=logger, use_cache=use_cache)
             logit_processors = LogitsProcessorList([grammar_decoder])
 

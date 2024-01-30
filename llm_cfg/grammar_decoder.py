@@ -29,8 +29,8 @@ class GrammarDecoder(LogitsProcessor):
         self.accept_tokens_sizes: list = []
         self.non_matching_token_cnt = 0
 
-        # Load NFA
-        self.terminals_nfa = common.load_nfa(language=self.language, tokenizer=self.tokenizer, use_cache=use_cache)
+        # Load dfa
+        self.dfa_mask_store = common.load_dfa_mask_store(language=self.language, tokenizer=self.tokenizer, use_cache=use_cache)
 
         self.start_time = time.time()
         self.prev_time = self.start_time
@@ -79,7 +79,7 @@ class GrammarDecoder(LogitsProcessor):
 
                 self.accept_tokens_sizes.append(len(r.cur_accept_terminals))  # For profiling
                 self.logger.log(f"Time taken for compilation: {time.time() - compilation_start_time:.2f}s")
-                accept_mask = self.terminals_nfa.get_overapprox_tokens_mask(r)
+                accept_mask = self.dfa_mask_store.get_overapprox_tokens_mask(r)
                 self.logger.log(f"Time taken for overapproximation: {time.time() - compilation_start_time:.2f}s")
 
                 if self.debug:

@@ -18,9 +18,9 @@ class Exception:
     def match_original(self, s):
         return regex.match(self.original_regex, s) is not None
     
-class TerminalsNFA:
+class DFAMaskStore:
     """
-    We build an NFA that consists of DFAs for each terminal. We simulate the NFA by consuming the input string for each terminal DFA.
+    We build an DFA that consists of DFAs for each terminal. We simulate the DFA by consuming the input string for each terminal DFA.
 
     There are 3 possible cases for the remainder string:
 
@@ -216,16 +216,16 @@ class TerminalsNFA:
         return dfa_state
 
 
-    def _nfa_state(self, input_str):
+    def _DFA_state(self, input_str):
         """
-        consume input_str and get the list of pairs of (terminal, dfa_state). This denotes our current NFA state
+        consume input_str and get the list of pairs of (terminal, dfa_state). This denotes our current DFA state
         """
-        nfa_state = []
+        DFA_state = []
         for (termianl, dfa) in self._terminals_to_dfa.items():
             dfa_state = self._consume_input(dfa, input_str)
             if dfa_state is not None:
-                nfa_state.append((termianl, dfa_state)) 
-        return nfa_state
+                DFA_state.append((termianl, dfa_state)) 
+        return DFA_state
     
     def _convert_lookup_from_list_to_mask(self):
         for key, val in self._dfa_state_and_next_terminal_to_tokens.items():
@@ -246,18 +246,18 @@ class TerminalsNFA:
             return self._get_default_mask()
         return tokens
 
-    def _lookup_next_tokens(self, nfa_state, r: ParseResult) -> torch.Tensor:
+    def _lookup_next_tokens(self, DFA_state, r: ParseResult) -> torch.Tensor:
         overapprox_token_ids = self._get_default_mask()
-        # print('Time taken for NFA state:', time.time() - start_time, flush=True)
+        # print('Time taken for DFA state:', time.time() - start_time, flush=True)
 
         if r.remainder_state == RemainderState.COMPLETE:
-            for (terminal, dfa_state) in nfa_state:
+            for (terminal, dfa_state) in DFA_state:
                 if terminal in r.next_accept_terminals:
                     overapprox_token_ids |= self._complete_case_lookup[(terminal, dfa_state)]
             return overapprox_token_ids
         
         # Case when the final string may be incomplete
-        for (cur_terminal, dfa_state) in nfa_state:
+        for (cur_terminal, dfa_state) in DFA_state:
             if r.next_accept_terminals == None: # This is the case when we have incomplete final string
                 overapprox_token_ids |= self._incomplete_case_lookup[(cur_terminal, dfa_state)]
             else:
@@ -278,10 +278,10 @@ class TerminalsNFA:
         if cur_incomplete_string is None:
             return torch.ones(len(self._vocab), dtype=torch.bool)
 
-        cur_nfa_state = self._nfa_state(cur_incomplete_string)
-        # print(cur_nfa_state)
+        cur_DFA_state = self._DFA_state(cur_incomplete_string)
+        # print(cur_DFA_state)
         
-        overapprox_token_ids = self._lookup_next_tokens(cur_nfa_state, r)
+        overapprox_token_ids = self._lookup_next_tokens(cur_DFA_state, r)
 
         if self.indentation and r.next_ac_indents is not None:
             indent_ac_token = self._get_indentation_tokens(r.next_ac_indents)
