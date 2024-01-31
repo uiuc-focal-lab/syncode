@@ -1,10 +1,10 @@
 import copy
-import re
 import time
 import common
+import larkm as lark
 from parse_result import ParseResult, RemainderState
-from larkm.lexer import Token
-from larkm import Lark
+from lark.lexer import Token
+from lark import Lark
 from typing import Optional, Any, Tuple
 
 
