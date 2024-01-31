@@ -80,18 +80,16 @@ class LR1Item:
 
 LR1State = FrozenSet[LR1Item]
 class LR1ItemSet:
-    __slots__ = ('kernel', 'closure', 'transitions', 'lookaheads')
+    __slots__ = ('kernel', 'closure', 'transitions')
 
     kernel: LR1State
     closure: LR1State
     transitions: Dict[Symbol, 'LR1ItemSet']
-    lookaheads: Dict[Symbol, Set[Rule]]
 
     def __init__(self, kernel, closure):
         self.kernel = fzset(kernel)
         self.closure = fzset(closure)
         self.transitions = {}
-        self.lookaheads = defaultdict(set)
 
     def __repr__(self):
         return '{%s | %s}' % (', '.join([repr(r) for r in self.kernel]), ', '.join([repr(r) for r in self.closure]))
@@ -187,7 +185,7 @@ class GrammarAnalyzer:
                 if not (sym.is_term or sym in self.rules_by_origin):
                     raise GrammarError("Using an undefined rule: %s" % sym)
 
-        self.start_states = {start: self.expand_rule(root_rule.origin)
+        self.start_states = {start: self.expand_rule_lr0(root_rule.origin)
                              for start, root_rule in root_rules.items()}
 
         self.end_states = {start: fzset({RulePtr(root_rule, len(root_rule.expansion))})
@@ -207,8 +205,8 @@ class GrammarAnalyzer:
             self.lr1_start_states = {start: 
                                         LR1ItemSet(
                                             [LR1Item(RulePtr(root_rule, 0), Terminal('$END'))],  # kernel
-                                            # TODO: Here also use FIRST since we are using LR1
-                                            self.expand_rule(root_rule.origin, self.lr1_rules_by_origin)) # closure
+                                                self.expand_rule_lr1(root_rule.origin, self.lr1_rules_by_origin)
+                                                ) # closure
                                     for start, root_rule in lr1_root_rules.items()}
         else:
             lr0_root_rules = {start: Rule(NonTerminal('$root_' + start), [NonTerminal(start)])
@@ -223,12 +221,15 @@ class GrammarAnalyzer:
             self.lr0_start_states = {start: 
                                      LR0ItemSet(
                                         [RulePtr(root_rule, 0)],  # kernel
-                                        self.expand_rule(root_rule.origin, self.lr0_rules_by_origin) # closure
+                                        self.expand_rule_lr0(root_rule.origin, self.lr0_rules_by_origin) # closure
                                     )
                                     for start, root_rule in lr0_root_rules.items()}
-
-
-    def expand_rule(self, source_rule: NonTerminal, rules_by_origin=None) -> State:
+            
+    def expand_rule_lr0(
+            self, 
+            source_rule: NonTerminal, 
+            rules_by_origin: Dict[NonTerminal, Iterator[Rule]]=None
+            ) -> State:
         "Returns all init_ptrs accessible by rule (recursive)"
 
         if rules_by_origin is None:
@@ -252,3 +253,48 @@ class GrammarAnalyzer:
             pass
 
         return fzset(init_ptrs)
+
+    def expand_rule_lr1(
+            self, 
+            source_rule: NonTerminal, 
+            rules_by_origin: Dict[NonTerminal, Iterator[Rule]]=None,
+            lookahead: Symbol=None
+            ) -> LR1State:
+        "Returns all lr1states accessible by rule (recursive)"
+
+        if rules_by_origin is None:
+            rules_by_origin = self.lr1_rules_by_origin
+        
+        init_lr1items = set()
+        def _expand_rule(rl_tuple: Tuple[NonTerminal, Symbol]) -> Iterator[NonTerminal]:
+            rule, lookahead = rl_tuple
+            assert not rule.is_term, rule
+
+            for r in rules_by_origin[rule]:
+                init_lr1item = LR1Item(RulePtr(r, 0), lookahead)
+                init_lr1items.add(init_lr1item)
+
+                if r.expansion:
+                    new_r = init_lr1item.rp.next
+                    new_lookaheads = []
+                    
+                    # Compute FIRST of the rest of the expansion
+                    for i in range(init_lr1item.rp.index+2, len(r.expansion)):
+                        if r.expansion[i].is_term:
+                            new_lookaheads.append(r.expansion[i])
+                            break
+                        else: # if non-terminal
+                            new_lookaheads += list(self.FIRST[r.expansion[i]])
+                            if len(self.NULLABLE) == 0 or not self.NULLABLE[r.expansion[i]]:
+                                break
+                    
+                    if len(new_lookaheads) == 0:
+                        new_lookaheads.append('$END')
+                    if not new_r.is_term:
+                        assert isinstance(new_r, NonTerminal)
+                        for new_lookahead in new_lookaheads:
+                            yield (new_r, new_lookahead)
+
+        for _ in bfs([(source_rule, lookahead)], _expand_rule):
+            pass
+        return fzset(init_lr1items)

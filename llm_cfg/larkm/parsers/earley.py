@@ -55,7 +55,7 @@ class Parser:
         self.forest_sum_visitor = None
         for rule in parser_conf.rules:
             if rule.origin not in self.predictions:
-                self.predictions[rule.origin] = [x.rule for x in analysis.expand_rule(rule.origin)]
+                self.predictions[rule.origin] = [x.rule for x in analysis.expand_rule_lr0(rule.origin)]
 
             ## Detect if any rules/terminals have priorities set. If the user specified priority = None, then
             #  the priorities will be stripped from all rules/terminals before they reach us, allowing us to

@@ -179,7 +179,7 @@ class LALR_Analyzer(GrammarAnalyzer):
                     closure = set(kernel)
                     for rp in kernel:
                         if not rp.is_satisfied and not rp.next.is_term:
-                            closure |= self.expand_rule(rp.next, self.lr0_rules_by_origin)
+                            closure |= self.expand_rule_lr0(rp.next, self.lr0_rules_by_origin)
                     new_state = LR0ItemSet(kernel, closure)
                     cache[kernel] = new_state
 
@@ -360,17 +360,21 @@ class LR_Analyzer(GrammarAnalyzer):
             _, unsat = classify_bool(state.closure, lambda lr1item: lr1item.rp.is_satisfied) # lr1item.rp is a RulePtr
             d = classify(unsat, lambda lr1item: lr1item.rp.next) # lr1item.rp.next is a Symbol
             for sym, lr1items in d.items(): 
-                kernel = fzset({LR1Item(lr1item.rp.advance(sym), lr1item.lookahead) for lr1item in lr1items}) # rp.advance(sym) returns a new RulePtr with the dot moved to the right
-                new_state = cache.get(kernel, None)
+                # rp.advance(sym) returns a new RulePtr with the dot moved to the right
+                kernel = fzset({LR1Item(lr1item.rp.advance(sym), lr1item.lookahead) for lr1item in lr1items}) 
+                new_state: LR1ItemSet = cache.get(kernel, None)
+
                 if new_state is None:
                     closure = set(kernel)
                     for lr1item in kernel:
                         if not lr1item.rp.is_satisfied and not lr1item.rp.next.is_term:
                             # expand_rule returns a set of RulePtrs
-                            closure |= self.expand_rule(
+                            new_closure_item = self.expand_rule_lr1(
                                 lr1item.rp.next, 
-                                rules_by_origin=self.lr0_rules_by_origin
+                                rules_by_origin=self.lr1_rules_by_origin
                                 )
+                            # add new LR1Item to closure
+                            closure |= new_closure_item
                     new_state = LR1ItemSet(kernel, closure)
                     cache[kernel] = new_state
 
