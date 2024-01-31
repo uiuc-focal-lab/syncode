@@ -12,7 +12,7 @@ from collections import defaultdict
 from ..utils import classify, classify_bool, bfs, fzset, Enumerator, logger
 from ..exceptions import GrammarError
 
-from .grammar_analysis import GrammarAnalyzer, Terminal, LR0ItemSet, RulePtr, State
+from .grammar_analysis import GrammarAnalyzer, Terminal, LR0ItemSet, RulePtr, State, LR1ItemSet, LR1Item
 from ..grammar import Rule, Symbol
 from ..common import ParserConf
 
@@ -333,12 +333,12 @@ class LALR_Analyzer(GrammarAnalyzer):
 
 
 class LR_Analyzer(GrammarAnalyzer):
-    lr0_itemsets: Set[LR0ItemSet]
-    nonterminal_transitions: List[Tuple[LR0ItemSet, Symbol]]
-    lookback: Dict[Tuple[LR0ItemSet, Symbol], Set[Tuple[LR0ItemSet, Rule]]]
-    includes: Dict[Tuple[LR0ItemSet, Symbol], Set[Tuple[LR0ItemSet, Symbol]]]
-    reads: Dict[Tuple[LR0ItemSet, Symbol], Set[Tuple[LR0ItemSet, Symbol]]]
-    directly_reads: Dict[Tuple[LR0ItemSet, Symbol], Set[Symbol]]
+    lr0_itemsets: Set[LR1ItemSet]
+    nonterminal_transitions: List[Tuple[LR1ItemSet, Symbol]]
+    lookback: Dict[Tuple[LR1ItemSet, Symbol], Set[Tuple[LR1ItemSet, Rule]]]
+    includes: Dict[Tuple[LR1ItemSet, Symbol], Set[Tuple[LR1ItemSet, Symbol]]]
+    reads: Dict[Tuple[LR1ItemSet, Symbol], Set[Tuple[LR1ItemSet, Symbol]]]
+    directly_reads: Dict[Tuple[LR1ItemSet, Symbol], Set[Symbol]]
 
 
     def __init__(self, parser_conf: ParserConf, debug: bool=False, strict: bool=False):
@@ -350,32 +350,36 @@ class LR_Analyzer(GrammarAnalyzer):
         self.lookback = defaultdict(set)
 
 
-    def compute_lr0_states(self) -> None:
-        self.lr0_itemsets = set()
-        # map of kernels to LR0ItemSets
-        cache: Dict['State', LR0ItemSet] = {}
+    def compute_lr1_states(self) -> None:
+        self.lr1_itemsets = set()
+        # map of kernels to LR1ItemSets
+        cache: Dict['State', LR1ItemSet] = {}
 
-        def step(state: LR0ItemSet) -> Iterator[LR0ItemSet]:
-            _, unsat = classify_bool(state.closure, lambda rp: rp.is_satisfied)
-
-            d = classify(unsat, lambda rp: rp.next)
-            for sym, rps in d.items():
-                kernel = fzset({rp.advance(sym) for rp in rps})
+        def step(state: LR1ItemSet) -> Iterator[LR1ItemSet]:
+            # Checking if all rules in the closure are satisfied 
+            _, unsat = classify_bool(state.closure, lambda lr1item: lr1item.rp.is_satisfied) # lr1item.rp is a RulePtr
+            d = classify(unsat, lambda lr1item: lr1item.rp.next) # lr1item.rp.next is a Symbol
+            for sym, lr1items in d.items(): 
+                kernel = fzset({LR1Item(lr1item.rp.advance(sym), lr1item.lookahead) for lr1item in lr1items}) # rp.advance(sym) returns a new RulePtr with the dot moved to the right
                 new_state = cache.get(kernel, None)
                 if new_state is None:
                     closure = set(kernel)
-                    for rp in kernel:
-                        if not rp.is_satisfied and not rp.next.is_term:
-                            closure |= self.expand_rule(rp.next, self.lr0_rules_by_origin)
-                    new_state = LR0ItemSet(kernel, closure)
+                    for lr1item in kernel:
+                        if not lr1item.rp.is_satisfied and not lr1item.rp.next.is_term:
+                            # expand_rule returns a set of RulePtrs
+                            closure |= self.expand_rule(
+                                lr1item.rp.next, 
+                                rules_by_origin=self.lr0_rules_by_origin
+                                )
+                    new_state = LR1ItemSet(kernel, closure)
                     cache[kernel] = new_state
 
                 state.transitions[sym] = new_state
                 yield new_state
 
-            self.lr0_itemsets.add(state)
+            self.lr1_itemsets.add(state)
 
-        for _ in bfs(self.lr0_start_states.values(), step):
+        for _ in bfs(self.lr1_start_states.values(), step):
             pass
 
     def compute_reads_relations(self):
@@ -512,7 +516,7 @@ class LR_Analyzer(GrammarAnalyzer):
             self.parse_table = IntParseTable.from_ParseTable(_parse_table)
 
     def compute_lr(self):
-        self.compute_lr0_states()
+        self.compute_lr1_states()
         self.compute_reads_relations()
         self.compute_includes_lookback()
         self.compute_lookaheads()

@@ -1,7 +1,7 @@
 "Provides for superficial grammar analysis."
 
 from collections import Counter, defaultdict
-from typing import List, Dict, Iterator, FrozenSet, Set
+from typing import List, Dict, Iterator, FrozenSet, Set, Tuple
 
 from ..utils import bfs, fzset, classify
 from ..exceptions import GrammarError
@@ -66,6 +66,36 @@ class LR0ItemSet:
     def __repr__(self):
         return '{%s | %s}' % (', '.join([repr(r) for r in self.kernel]), ', '.join([repr(r) for r in self.closure]))
 
+
+class LR1Item:
+    rp: RulePtr
+    lookahead: Symbol
+
+    def __init__(self, rp: RulePtr, lookahead: Symbol):
+        self.rp = rp
+        self.lookahead = lookahead
+    
+    def __repr__(self):
+        return '%s . %s' % (repr(self.rp), self.lookahead.name)
+
+LR1State = FrozenSet[LR1Item]
+class LR1ItemSet:
+    __slots__ = ('kernel', 'closure', 'transitions', 'lookaheads')
+
+    kernel: LR1State
+    closure: LR1State
+    transitions: Dict[Symbol, 'LR1ItemSet']
+    lookaheads: Dict[Symbol, Set[Rule]]
+
+    def __init__(self, kernel, closure):
+        self.kernel = fzset(kernel)
+        self.closure = fzset(closure)
+        self.transitions = {}
+        self.lookaheads = defaultdict(set)
+
+    def __repr__(self):
+        return '{%s | %s}' % (', '.join([repr(r) for r in self.kernel]), ', '.join([repr(r) for r in self.closure]))
+    
 
 def update_set(set1, set2):
     if not set2 or set1 > set2:
@@ -163,19 +193,40 @@ class GrammarAnalyzer:
         self.end_states = {start: fzset({RulePtr(root_rule, len(root_rule.expansion))})
                            for start, root_rule in root_rules.items()}
 
-        lr0_root_rules = {start: Rule(NonTerminal('$root_' + start), [NonTerminal(start)])
-                for start in parser_conf.start}
-
-        lr0_rules = parser_conf.rules + list(lr0_root_rules.values())
-        assert(len(lr0_rules) == len(set(lr0_rules)))
-
-        self.lr0_rules_by_origin = classify(lr0_rules, lambda r: r.origin)
-
-        # cache RulePtr(r, 0) in r (no duplicate RulePtr objects)
-        self.lr0_start_states = {start: LR0ItemSet([RulePtr(root_rule, 0)], self.expand_rule(root_rule.origin, self.lr0_rules_by_origin))
-                for start, root_rule in lr0_root_rules.items()}
-
         self.FIRST, self.FOLLOW, self.NULLABLE = calculate_sets(rules)
+
+        if parser_conf.parser_type == 'lr': 
+            lr1_root_rules = {start: Rule(NonTerminal('$root_' + start), [NonTerminal(start)])
+                    for start in parser_conf.start}
+            lr1_rules = parser_conf.rules + list(lr1_root_rules.values())
+            assert(len(lr1_rules) == len(set(lr1_rules)))
+
+            self.lr1_rules_by_origin = classify(lr1_rules, lambda r: r.origin)
+
+            # cache RulePtr(r, 0) in r (no duplicate RulePtr objects)
+            self.lr1_start_states = {start: 
+                                        LR1ItemSet(
+                                            [LR1Item(RulePtr(root_rule, 0), Terminal('$END'))],  # kernel
+                                            # TODO: Here also use FIRST since we are using LR1
+                                            self.expand_rule(root_rule.origin, self.lr1_rules_by_origin)) # closure
+                                    for start, root_rule in lr1_root_rules.items()}
+        else:
+            lr0_root_rules = {start: Rule(NonTerminal('$root_' + start), [NonTerminal(start)])
+                    for start in parser_conf.start}
+
+            lr0_rules = parser_conf.rules + list(lr0_root_rules.values())
+            assert(len(lr0_rules) == len(set(lr0_rules)))
+
+            self.lr0_rules_by_origin = classify(lr0_rules, lambda r: r.origin)
+
+            # cache RulePtr(r, 0) in r (no duplicate RulePtr objects)
+            self.lr0_start_states = {start: 
+                                     LR0ItemSet(
+                                        [RulePtr(root_rule, 0)],  # kernel
+                                        self.expand_rule(root_rule.origin, self.lr0_rules_by_origin) # closure
+                                    )
+                                    for start, root_rule in lr0_root_rules.items()}
+
 
     def expand_rule(self, source_rule: NonTerminal, rules_by_origin=None) -> State:
         "Returns all init_ptrs accessible by rule (recursive)"
@@ -193,7 +244,7 @@ class GrammarAnalyzer:
 
                 if r.expansion: # if not empty rule
                     new_r = init_ptr.next
-                    if not new_r.is_term:
+                    if not new_r.is_term: # if non-terminal
                         assert isinstance(new_r, NonTerminal)
                         yield new_r
 

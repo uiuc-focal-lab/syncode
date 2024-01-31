@@ -1,4 +1,4 @@
-"""This module implements a LALR(1) Parser
+"""This module implements a LR(1) and LALR(1) Parser
 """
 # Author: Erez Shinan (2017)
 # Email : erezshin@gmail.com
