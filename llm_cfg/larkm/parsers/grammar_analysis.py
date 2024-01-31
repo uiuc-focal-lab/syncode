@@ -77,6 +77,14 @@ class LR1Item:
     
     def __repr__(self):
         return '%s . %s' % (repr(self.rp), self.lookahead.name)
+    
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, LR1Item):
+            return NotImplemented
+        return self.rp == other.rp and self.lookahead == other.lookahead
+    
+    def __hash__(self) -> int:
+        return hash((self.rp, self.lookahead))
 
 LR1State = FrozenSet[LR1Item]
 class LR1ItemSet:

@@ -388,7 +388,7 @@ class LR_Analyzer(GrammarAnalyzer):
 
     def compute_reads_relations(self):
         # handle start state
-        for root in self.lr0_start_states.values():
+        for root in self.lr1_start_states.values():
             assert(len(root.kernel) == 1)
             for rp in root.kernel:
                 assert(rp.index == 0)
