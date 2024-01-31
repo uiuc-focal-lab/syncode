@@ -1,11 +1,10 @@
 import copy
 import re
 import time
-import lark
 import common
 from parse_result import ParseResult, RemainderState
-from lark.lexer import Token
-from lark import Lark
+from larkm.lexer import Token
+from larkm import Lark
 from typing import Optional, Any, Tuple
 
 
@@ -13,7 +12,7 @@ class IncrementalParser:
     """
     This is the base class for all incremental parsers.
     """
-    def __init__(self, grammar_file, logger: Optional[common.Logger]=None, indenter=None) -> None:
+    def __init__(self, grammar_file, logger: Optional[common.Logger]=None, indenter=None, parser="lalr") -> None:
         self.cur_ac_terminals: Optional[set] = None
         self.next_ac_terminals: Optional[set] = None
         self.cur_pos = 0 # Current cursor position in the lexer tokens list
@@ -24,7 +23,7 @@ class IncrementalParser:
         time_start = time.time()
         self.parser = Lark.open( # This is the standard Lark parser
             grammar_file,
-            parser="lalr",
+            parser=parser,
             lexer="basic",
             start="start",
             postlex=indenter,
