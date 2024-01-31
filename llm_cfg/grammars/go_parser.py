@@ -1,6 +1,6 @@
 import time
 from typing import Optional
-import lark
+import larkm as lark
 from incremental_parser import IncrementalParser
 import common
 from parse_result import ParseResult

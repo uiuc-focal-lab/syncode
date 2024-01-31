@@ -1,11 +1,11 @@
 import copy
 import time
 from typing import Iterator
-import lark
+import larkm as lark
 import regex
 import common
-from lark import Token
-from lark.indenter import Indenter
+from larkm import Token
+from larkm.indenter import Indenter
 from incremental_parser import IncrementalParser
 from parse_result import IndentationConstraint, ParseResult, RemainderState
 from typing import Optional
