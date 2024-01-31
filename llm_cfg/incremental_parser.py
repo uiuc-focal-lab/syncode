@@ -4,7 +4,7 @@ import common
 import larkm as lark
 from parse_result import ParseResult, RemainderState
 from lark.lexer import Token
-from lark import Lark
+from larkm import Lark
 from typing import Optional, Any, Tuple
 
 

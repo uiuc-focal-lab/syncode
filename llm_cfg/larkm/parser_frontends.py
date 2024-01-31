@@ -4,7 +4,7 @@ from .exceptions import ConfigurationError, GrammarError, assert_config
 from .utils import get_regexp_width, Serialize
 from .lexer import LexerThread, BasicLexer, ContextualLexer, Lexer
 from .parsers import earley, xearley, cyk
-from .parsers.lalr_parser import LALR_Parser
+from .parsers.lr_parsers import LALR_Parser, LR_Parser
 from .tree import Tree
 from .common import LexerConf, ParserConf, _ParserArgType, _LexerArgType
 
@@ -107,17 +107,18 @@ class ParsingFrontend(Serialize):
         # TODO BREAK - Change text from Optional[str] to text: str = ''.
         #   Would break behavior of exhaust_lexer(), which currently raises TypeError, and after the change would just return []
         chosen_start = self._verify_start(start)
-        if self.parser_conf.parser_type != 'lalr':
+        if self.parser_conf.parser_type != 'lalr' and self.parser_conf.parser_type != 'lr':
             raise ConfigurationError("parse_interactive() currently only works with parser='lalr' ")
         stream = self._make_lexer_thread(text)  # type: ignore[arg-type]
         return self.parser.parse_interactive(stream, chosen_start)
 
 
 def _validate_frontend_args(parser, lexer) -> None:
-    assert_config(parser, ('lalr', 'earley', 'cyk'))
+    assert_config(parser, ('lalr', 'earley', 'cyk', 'lr'))
     if not isinstance(lexer, type):     # not custom lexer?
         expected = {
             'lalr': ('basic', 'contextual'),
+            'lr': ('basic'),
             'earley': ('basic', 'dynamic', 'dynamic_complete'),
             'cyk': ('basic', ),
          }[parser]
@@ -160,7 +161,14 @@ def create_lalr_parser(lexer_conf: LexerConf, parser_conf: ParserConf, options=N
     cls = (options and options._plugins.get('LALR_Parser')) or LALR_Parser
     return cls(parser_conf, debug=debug, strict=strict)
 
+def create_lr_parser(lexer_conf: LexerConf, parser_conf: ParserConf, options=None) -> LALR_Parser:
+    debug = options.debug if options else False
+    strict = options.strict if options else False
+    cls = (options and options._plugins.get('LR_Parser')) or LR_Parser
+    return cls(parser_conf, debug=debug, strict=strict)
+
 _parser_creators['lalr'] = create_lalr_parser
+_parser_creators['lr'] = create_lr_parser
 
 ###}
 

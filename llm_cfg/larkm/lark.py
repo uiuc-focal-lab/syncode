@@ -208,7 +208,7 @@ class LarkOptions(Serialize):
         self.__dict__['options'] = options
 
 
-        assert_config(self.parser, ('earley', 'lalr', 'cyk', None))
+        assert_config(self.parser, ('earley', 'lalr', 'cyk', 'lr', None))
 
         if self.parser == 'earley' and self.transformer:
             raise ConfigurationError('Cannot specify an embedded transformer when using the Earley algorithm. '
