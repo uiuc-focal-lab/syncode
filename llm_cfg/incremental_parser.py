@@ -32,18 +32,26 @@ class IncrementalParser:
 
         self.logger = logger if logger is not None else common.TestLogger()
         self.logger.log_time(f"Time taken for loading parser: {time.time() - time_start:.2f}s")
-
         self.interactive = self.parser.parse_interactive('')
         self.parser_token_seq: list = []
+        self.prev_lexer_tokens: list[Token] = [] # To enable going back to old state of the parser
+        self.cur_pos_to_parser_state: dict[int, Tuple[Any, Optional[set], Optional[set], Optional[list], list]] = {} # parser_state, cur_ac_terminals, next_ac_terminals, indent_levels (optional), dedent_queue
+        self.time_accepts = 0 # Profiling
 
-        # To enable going back to old state of the parser
-        self.prev_lexer_tokens: list[Token] = []
-        
-        # parser_state, cur_ac_terminals, next_ac_terminals, indent_levels (optional), dedent_queue
-        self.cur_pos_to_parser_state: dict[int, Tuple[Any, Optional[set], Optional[set], Optional[list], list]] = {}
-
-        # Profiling
+    def reset(self):
+        """
+        Resets the parser to the initial state.
+        """
+        self.cur_ac_terminals = None
+        self.next_ac_terminals = None
+        self.cur_pos = 0
+        self.lexer_pos = 0
+        self.dedent_queue = []
+        self.parser_token_seq = []
+        self.prev_lexer_tokens = []
+        self.cur_pos_to_parser_state = {}
         self.time_accepts = 0
+        self.interactive = self.parser.parse_interactive('')
     
     def _store_parser_state(self, pos: int, parser_state, accepts: Optional[set], indent_levels: Optional[list] = None):  
         time_start = time.time() 
@@ -59,7 +67,6 @@ class IncrementalParser:
 
     def _restore_parser_state(self, pos: int):
         time_start = time.time()
-        # parser_state, cur_ac_terminals, next_ac_terminals, indent_levels, dedent_queue
         parser_state, cur_ac_terminals, next_ac_terminals, indent_levels, dedent_queue = self.cur_pos_to_parser_state[pos]
         self.interactive.parser_state = parser_state.copy()
 

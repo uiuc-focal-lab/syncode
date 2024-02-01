@@ -22,6 +22,10 @@ class PythonIncrementalParser(IncrementalParser):
             indenter.tab_len = self._get_indentation(partial_code)  # NOTE: tab_len is useful when \t and spaces are used for indentation in same code
         self.tab_len = indenter.tab_len
         self.indent_level = [0] # Current indentation level
+    
+    def reset(self):
+        super().reset()
+        self.indent_level = [0]
 
     def _get_indentation(self, partial_code) -> int:
         m = regex.match(r"(.*?):(.*?)\n(.*?)(?![ \t])", partial_code, flags=regex.DOTALL)

@@ -43,7 +43,7 @@ class Infer:
     def __init__(
         self, 
         model: str,
-        mode: Literal["original", "grammar_mask", "synchromesh"] = "original",
+        mode: Literal["original", "grammar_mask"] = "original",
         quantize: bool = True,
         gpu: int = 1,
         num_samples: int = 1,
@@ -57,7 +57,7 @@ class Infer:
         log_time: bool = False,
     ):  
         # Check inputs
-        assert mode in ["original", "grammar_mask", "synchromesh"]
+        assert mode in ["original", "grammar_mask"]
         assert dataset in ["mbxp", "multi-humaneval", "mathqa-x", "input"]
     
         # Set attributes
@@ -95,7 +95,15 @@ class Infer:
         logit_processors = None
         if self.mode == 'grammar_mask':
             use_cache = not self.new_mask_store
-            grammar_decoder = GrammarDecoder(self.grammar, tokenizer=tokenizer, logger=logger, use_cache=use_cache, parse_prompt=parse_prompt, dev_mode=dev_mode)
+            grammar_decoder = GrammarDecoder(
+                self.grammar, 
+                tokenizer=tokenizer, 
+                logger=logger, 
+                use_cache=use_cache, 
+                parse_prompt=parse_prompt,
+                num_samples=num_samples_per_task, 
+                dev_mode=dev_mode
+                )
             logit_processors = LogitsProcessorList([grammar_decoder])
 
         hf_model = HuggingFaceModel(
@@ -116,6 +124,7 @@ class Infer:
                 out_path,
                 logger,
                 format_tabs=True,
+                grammar_decoder=grammar_decoder
                 )
         else:
             self.user_input(hf_model, logger, grammar_decoder)
@@ -132,6 +141,7 @@ class Infer:
         out_path: str,
         logger: common.Logger,
         format_tabs: bool = False,
+        grammar_decoder: Optional[GrammarDecoder] = None,
         ):
         """
         Run evaluation on the model
@@ -145,6 +155,9 @@ class Infer:
         pbar = tqdm(total=len(problems) * num_samples_per_task)
 
         for task_id in problems:
+            if grammar_decoder is not None:
+                grammar_decoder.reset()
+
             if format_tabs:
                 prompt = problems[task_id]["prompt"].replace("    ", "\t")
             else:

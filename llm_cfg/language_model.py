@@ -2,8 +2,6 @@ import time
 from utils.generation import filter_code, fix_indents
 from transformers import LlamaTokenizer
 import common
-from synchromesh.completion_engine import LarkCompletionEngine
-from synchromesh.synchromesh import StreamingCSD
 import torch
 
 class LanguageModel:
@@ -55,10 +53,7 @@ class HuggingFaceModel(LanguageModel):
         return None
 
     def generate_batch_completion(self, prompt, batch_size, mode='original') -> list[str]:
-        if self.mode == 'synchromesh':
-            return self.generate_batch_completion_synchromesh(prompt, batch_size)
-        else:
-            return self.generate_batch_completion_grammar(prompt, batch_size)
+        return self.generate_batch_completion_grammar(prompt, batch_size)
 
     @torch.inference_mode()
     def generate_batch_completion_grammar(self, prompt, batch_size) -> list[str]:
@@ -129,36 +124,7 @@ class HuggingFaceModel(LanguageModel):
         self.logger.log(f"Completion: {batch_completions}")
 
         return batch_completions
-
-    def generate_batch_completion_synchromesh(self, prompt, batch_size) -> list[str]:
-        '''
-        Generates batch_size completions for the given prompt of human-eval using Synchromesh. 
-        '''
-        comp_engine = LarkCompletionEngine('dict', True)
-        csd = StreamingCSD(comp_engine, self.vocabulary(), prefix=prompt)
-        start_time = time.time()
-
-        while not comp_engine.is_complete(csd.get_current_prediction()):
-            next_token = self.predict_unconstrained(csd.get_current_prediction(), max_tokens=1)
-            if csd.can_token_follow(next_token):
-                csd.feed_prediction(next_token)
-            else:
-                print('Cannot follow token:', csd._vocab[next_token])
-                valid_tokens = csd.get_valid_tokens()
-                tokens, _ = self.predict_token(csd.get_current_prediction(), valid_tokens)
-                print('valid tokens:', [csd._vocab[t] for t in tokens])
-                print('Predicted token:', csd._vocab[tokens[0]])
-                csd.feed_prediction(tokens[0])
-            s = csd.get_current_prediction()
-            if len(s) > 500:
-                break
-            csd.fast_forward()
-
-        delta = time.time() - start_time
-        print('Predicted:', repr(csd.get_current_prediction()))
-        print('Throughput:', len(csd.get_current_prediction_tokens()) / delta, 'tokens/s')
-        return [csd.get_current_prediction()]
-
+    
     def tokenize(self, s: str) -> list[int]:
         return self.tokenizer.encode(s, add_special_tokens=False)
 

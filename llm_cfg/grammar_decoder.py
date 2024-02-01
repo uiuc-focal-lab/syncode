@@ -2,7 +2,7 @@ import time
 import torch
 import common
 from transformers import LogitsProcessor, PreTrainedTokenizer
-from incremental_parser import ParseResult
+from incremental_parser import IncrementalParser, ParseResult
 from grammars.python_parser import PythonIncrementalParser
 from grammars import create_parser
 
@@ -25,6 +25,7 @@ class GrammarDecoder(LogitsProcessor):
         logger: common.Logger, 
         use_cache=True,
         parse_prompt=True, 
+        num_samples=1,
         dev_mode=False,
         **kwargs):
 
@@ -33,9 +34,8 @@ class GrammarDecoder(LogitsProcessor):
         self.grammar = grammar
         self.logger = logger
         self.dev_mode = dev_mode
-
-        self.batch_size = -1 # We update this in the first call to __call__
-        self.inc_parsers: list = []
+        self.batch_size = num_samples
+        self.inc_parsers: list[IncrementalParser] = []
 
         # For backtracking to syntactically valid completions
         self.partial_codes_trace: list = []
@@ -44,39 +44,40 @@ class GrammarDecoder(LogitsProcessor):
 
         # We use this when only the LLM output is parsed and not (input+output)
         self.parse_prompt = parse_prompt
-        self.start_from = None 
+        self.start_from = None         
+
+        # Load dfa mask store
+        self.dfa_mask_store = common.load_dfa_mask_store(grammar=self.grammar, tokenizer=self.tokenizer, use_cache=use_cache, logger=self.logger)
+
+        # Create parsers
+        self.inc_parsers = [create_parser(self.grammar, logger=self.logger) for _ in range(self.batch_size)]
 
         # For profiling
         self.token_cnt = 0
         self.accept_tokens_sizes: list = []
         self.non_matching_token_cnt = 0
-
-        # Load dfa mask store
-        self.dfa_mask_store = common.load_dfa_mask_store(grammar=self.grammar, tokenizer=self.tokenizer, use_cache=use_cache, logger=self.logger)
-
-        self.start_time = time.time()
-        self.prev_time = self.start_time
         self.debug = True
         self.logger.log_time(f"Time taken for preprocessing: {time.time() - time_start:.2f}s")
-
-
+        
     def _log_current_status(self, partial_code, r: ParseResult):
         self.logger.log_code('Partial code', partial_code)
         self.logger.log(repr(r))
 
-
-    def _reset(self):
-        self.inc_parsers = [create_parser(self.grammar, logger=self.logger) for _ in range(self.batch_size)]
+    def reset(self):
+        """
+        Resets the decoder state on every new prompt.
+        """
         self.last_valid_state = [0 for _ in range(self.batch_size)]
         self.function_end = [None for _ in range(self.batch_size)]
         self.accept_tokens_sizes = []
         self.partial_codes_trace = []
         self.token_cnt = 0
         self.start_from = None 
-        
+        for p in self.inc_parsers:
+            p.reset()
 
-    def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor) -> torch.FloatTensor:
-        
+
+    def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor) -> torch.FloatTensor:     
         # start_from is used for choosing where the parsing should start
         if self.start_from == None:
             if self.parse_prompt:
@@ -85,10 +86,6 @@ class GrammarDecoder(LogitsProcessor):
                 self.start_from = len(input_ids[0])
                 
         partial_codes = self.tokenizer.batch_decode(input_ids[:, self.start_from:], skip_special_tokens=True)
-
-        if self.batch_size == -1 or (len(self.partial_codes_trace) > 0 and self.partial_codes_trace[0] not in partial_codes[0]):
-            self.batch_size = len(input_ids)
-            self._reset()
 
         self.token_cnt += self.batch_size
         greedy_grammar_token = None
