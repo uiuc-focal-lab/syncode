@@ -23,3 +23,4 @@ jobs:
         python llm_cfg/tests/test_synchromesh.py
         python llm_cfg/tests/test_grammar_python.py
         python llm_cfg/tests/test_grammar_go.py
+        python llm_cfg/tests/test_lr_parser.py

@@ -343,8 +343,8 @@ class LR_Analyzer(GrammarAnalyzer):
         # map of kernels to LR1ItemSets
         cache: Dict['State', LR1ItemSet] = {}
 
-        def populate_lookaheads(init_rule, init_lr1item, new_lookaheads):
-            for i in range(init_lr1item.rp.index+2, len(init_rule.expansion)):
+        def _populate_lookaheads(init_rule, init_lr1item, new_lookaheads, old_lookahead):
+            for i in range(init_lr1item.rp.index+1, len(init_rule.expansion)):
                 if init_rule.expansion[i].is_term:
                     new_lookaheads.append(init_rule.expansion[i])
                     break
@@ -352,6 +352,8 @@ class LR_Analyzer(GrammarAnalyzer):
                     new_lookaheads += list(self.FIRST[init_rule.expansion[i]])
                     if len(self.NULLABLE) == 0 or not self.NULLABLE[init_rule.expansion[i]]:
                         break
+            if len(new_lookaheads) == 0:
+                new_lookaheads.append(old_lookahead)
 
         def step(state: LR1ItemSet) -> Iterator[LR1ItemSet]:
             # Checking if all rules in the closure are satisfied 
@@ -369,7 +371,7 @@ class LR_Analyzer(GrammarAnalyzer):
                             # expand_rule returns a set of RulePtrs
                             new_lookaheads = []
                             
-                            populate_lookaheads(lr1item.rp.rule, lr1item, new_lookaheads)
+                            _populate_lookaheads(lr1item.rp.rule, lr1item, new_lookaheads, lr1item.lookahead)
 
                             for lookahead in new_lookaheads:
                                 new_closure_item = self.expand_rule_lr1(

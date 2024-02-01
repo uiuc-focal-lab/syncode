@@ -292,9 +292,9 @@ class GrammarAnalyzer:
                     
                     # Compute FIRST of the rest of the expansion
                     populate_lookaheads(r, init_lr1item, new_lookaheads)
-                    
                     if len(new_lookaheads) == 0:
                         new_lookaheads.append(lookahead)
+
                     if not new_r.is_term:
                         assert isinstance(new_r, NonTerminal)
                         for new_lookahead in new_lookaheads:
@@ -302,7 +302,7 @@ class GrammarAnalyzer:
                             yield (new_r, new_lookahead)
 
         def populate_lookaheads(init_rule, init_lr1item, new_lookaheads):
-            for i in range(init_lr1item.rp.index+2, len(init_rule.expansion)):
+            for i in range(init_lr1item.rp.index+1, len(init_rule.expansion)):
                 if init_rule.expansion[i].is_term:
                     new_lookaheads.append(init_rule.expansion[i])
                     break
