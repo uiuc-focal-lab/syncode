@@ -6,6 +6,7 @@ from transformers import LogitsProcessor, PreTrainedTokenizer
 from incremental_parser import IncrementalParser, ParseResult
 from grammars.python_parser import PythonIncrementalParser
 from grammars import create_parser
+from dfa_mask_store import load_dfa_mask_store
 
 
 class GrammarDecoder(LogitsProcessor):
@@ -49,7 +50,7 @@ class GrammarDecoder(LogitsProcessor):
         self.start_from = None         
 
         # Load dfa mask store
-        self.dfa_mask_store = common.load_dfa_mask_store(
+        self.dfa_mask_store = load_dfa_mask_store(
             grammar=self.grammar, 
             tokenizer=self.tokenizer, 
             use_cache=use_cache, 

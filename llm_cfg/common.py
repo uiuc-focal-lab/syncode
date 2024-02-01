@@ -1,6 +1,4 @@
-import os, time
-import pickle
-from dfa_mask_store import DFAMaskStore
+import os
 
 # Remove this in future and add instruction to set the HF_CACHE env variable
 HF_CACHE = '/share/models/hugging_face/'
@@ -24,42 +22,11 @@ def get_vocab_from_tokenizer(tokenizer):
     
     return vocab
 
-def load_dfa_mask_store(grammar: str, tokenizer, inc_parser=None, use_cache=True, logger=None):
-    '''
-    Loads the dfa for the given language and tokenizer. If the dfa is not cached, it is created and cached. 
-    '''
-    tokenizer_name = type(tokenizer).__name__
-    dfa_dir = 'results/' + tokenizer_name + '/'
-    dfa_path = dfa_dir + grammar + '_dfa.pkl'
-    start_time = time.time()
-    if use_cache and os.path.exists(dfa_path):
-        dfa = pickle.load(open(dfa_path, 'rb'))
-    else:
-        print(f"Creating dfa for {tokenizer_name} and {grammar}, may take more than 10 minutes.", flush=True)
-        vocab = get_vocab_from_tokenizer(tokenizer)
-        logger.log_time(f"Time taken for loading vocab: {time.time() - start_time:.2f}s")
-        # TODO: add logger in tests
 
-        if inc_parser is None:
-            raise ValueError("inc_parser cannot be None if use_cache is False")
-        logger.log_time(f"Time taken for loading parser: {time.time() - start_time:.2f}s")
-
-        exceptions = {}
-        if grammar == 'python':
-            exceptions = {'COMMENT': '#.*|\'\'\'.*?\'\'\'|""".*?"""/is', '_NL': '(\r?\n[\t ]*)+', 'LONG_STRING': '\'\'\'.*?\'\'\'|""".*?"""/is', 'STRING': '[ubf]?r?(".*?"|\'.*?\')'}
-        
-        os.makedirs(dfa_dir, exist_ok=True)
-        dfa = DFAMaskStore(inc_parser.parser.terminals, vocab, exceptions=exceptions, special_token_ids=[tokenizer.eos_token_id])
-        logger.log_time(f"Time taken for creating dfa: {time.time() - start_time:.2f}s")
-
-        pickle.dump(dfa, open(dfa_path, 'wb'))
-        logger.log_time(f"Time taken for storing the dfa: {time.time() - start_time:.2f}s")
-    return dfa
-
-"""
-Logger class for logging the output of the model
-"""
 class Logger:
+    """
+    Logger class for logging the output of the model
+    """
     def __init__(self, num_samples_per_task, mode, out_dir, log_level=1):
         self.log_level = log_level
         log_file = out_dir + 'logs/' + 'samples_' + str(num_samples_per_task) + '_mode_' + str(mode) + "_eval.log"

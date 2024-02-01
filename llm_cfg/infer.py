@@ -166,7 +166,7 @@ class Infer:
             write_jsonl(out_path, samples)
         
         else: # Debugging a specific task
-            debug_task_id = list(problems.keys())[debug_task_id]
+            debug_task_id = list()
             self.run_eval_for_task(hf_model, num_samples_per_task, format_tabs, grammar_decoder, problems, samples, pbar, debug_task_id)
 
 
