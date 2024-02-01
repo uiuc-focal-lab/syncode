@@ -32,7 +32,7 @@ class Infer:
         num_examples (int, optional): Number of examples for few shot prompting. Defaults to -1.
         parse_prompt (bool, optional): Parse prompt. Defaults to True.
         dev_mode (bool, optional): Development mode. Defaults to False.
-        log_time (bool, optional): Log time. Defaults to False.
+        log_level (int, optional): Log level. Defaults to 2. 0 for no logs, 1 for minimal logs, 2 for all logs including time.
 
         List of currently tested models:
         Llama models: "Llama-7b", "CodeLlama-7b", "CodeLlama-7b-Python", "Llama-13b"
@@ -54,7 +54,7 @@ class Infer:
         num_examples: int = -1,
         parse_prompt: bool = True,
         dev_mode: bool = False,
-        log_time: bool = False,
+        log_level: int = 1,
     ):  
         # Check inputs
         assert mode in ["original", "grammar_mask"]
@@ -89,7 +89,7 @@ class Infer:
         # Setup output directory
         out_path = out_dir + 'samples_' + str(num_samples_per_task) + '_mode_' + str(self.mode) + "_eval.jsonl"
         os.makedirs(out_dir, exist_ok=True)
-        logger = common.Logger(num_samples_per_task, mode, out_dir, log_time=log_time)
+        logger = common.Logger(num_samples_per_task, mode, out_dir, log_level=log_level)
         
         # Initialize logit processors
         logit_processors = None

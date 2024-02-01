@@ -33,7 +33,7 @@ python3 llm_cfg/infer.py
     --num_examples [num_examples]
     --parse_prompt [True, False]
     --dev_mode [True, False]
-    --log_time [True, False]
+    --log_level [0, 1, 2]
 ```
 
 ### Inference Options:
@@ -60,7 +60,7 @@ python3 llm_cfg/infer.py
   
 - `dev_mode` (bool, optional): Development mode where we do not fail silently with parser errors. Defaults to False.
   
-- `log_time` (bool, optional): If True time taken by various components is logged in a separate log file. Defaults to False.
+- `log_level` 0 for no logs, 1 for minimal logs, 2 for all logs including time. Defaults to 2.
 
 
 The generation results are stored in a JSON file in the "results" directory. To evaluate the result of generation, use the following command:

@@ -68,33 +68,34 @@ def load_dfa_mask_store(grammar: str, tokenizer, inc_parser=None, use_cache=True
 Logger class for logging the output of the model
 """
 class Logger:
-    def __init__(self, num_samples_per_task, mode, out_dir, log_time=True):
-        self.log_time_on = log_time
+    def __init__(self, num_samples_per_task, mode, out_dir, log_level=1):
+        self.log_level = log_level
         log_file = out_dir + 'logs/' + 'samples_' + str(num_samples_per_task) + '_mode_' + str(mode) + "_eval.log"
         log_time_file = out_dir + 'logs/' + 'time_samples_' + str(num_samples_per_task) + '_mode_' + str(mode) + "_eval.log"
         os.makedirs(out_dir + 'logs/', exist_ok=True)
 
         self.log_file = log_file
         self.file = open(log_file, 'w')
-
         self.log_time_file = log_time_file
         self.time_file = open(log_time_file, 'w')
 
     def log(self, msg):
-        self.file.write(msg + '\n')
-        self.file.flush()
+        if self.log_level >= 1:
+            self.file.write(msg + '\n')
+            self.file.flush()
     
     def log_time(self, msg):
-        if self.log_time_on:
+        if self.log_level >= 2:
             self.time_file.write(msg + '\n')
             self.time_file.flush()
     
     def log_code(self, msg, code):
-        self.file.write(msg + ':\n')
-        self.file.write('-'*80 + '\n')
-        self.file.write(code + '\n')
-        self.file.write('-'*80 + '\n')
-        self.file.flush()
+        if self.log_level >= 1:
+            self.file.write(msg + ':\n')
+            self.file.write('-'*80 + '\n')
+            self.file.write(code + '\n')
+            self.file.write('-'*80 + '\n')
+            self.file.flush()
 
     def close(self):
         self.file.close()
