@@ -22,7 +22,7 @@ pip install -e mxeval
 To run the tool, use the following command:
 ```
 python3 llm_cfg/infer.py
-    --mode [original, grammar_mask, synchromesh]
+    --mode [original, grammar_mask]
     --model [model_name]
     --quantize [True, False]
     --gpu [0, 1, 2, 3]

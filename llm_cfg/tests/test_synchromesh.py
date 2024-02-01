@@ -5,8 +5,6 @@ import sys, os
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../')
 import copy
 from common import run_tests
-from synchromesh.synchromesh import is_prefix_valid
-from synchromesh.completion_engine import LarkCompletionEngine
 
 def setup():
     comp_engine = LarkCompletionEngine('dict', True)
