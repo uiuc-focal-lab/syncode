@@ -153,7 +153,7 @@ class PythonIncrementalParser(IncrementalParser):
                 
                 # Perform postlexing indentation
                 if token.type == indenter.NL_type:
-                    lexer_tokens += indenter._handle_NL(token)
+                    lexer_tokens += indenter._handle_NL(token, self.logger)
                 else:
                     lexer_tokens.append(token)
                 if token.type in indenter.OPEN_PAREN_types:
@@ -181,7 +181,7 @@ class PythonIndenter(Indenter):
         DEDENT_type = "_DEDENT"
         tab_len = 4
 
-        def _handle_NL(self, token: Token) -> Iterator[Token]:
+        def _handle_NL(self, token: Token, logger=None) -> Iterator[Token]:
             '''
             This is taken from Lark library and modified to handle the case when there is a LONG_STRING comment in the _NL token.
             '''
@@ -190,7 +190,13 @@ class PythonIndenter(Indenter):
 
             m = regex.match(r'(.*)(\'\'\'.*?\'\'\'|""".*?""")(.*)', token.value, flags=regex.DOTALL)
             if m is not None: # There is a LONG_STRING comment in the _NL token
-                indent_str = m.group(1).rsplit('\n', 1)[1] # Tabs and spaces
+                try:
+                    indent_str = m.group(1).rsplit('\n', 1)[1] # Tabs and spaces
+                except IndexError:
+                    if logger is not None:
+                        logger.log(f'Could not find the indentation for LONG_STRING comment in the token: {token}')
+                    indent_str = ''
+
                 indent = indent_str.count(' ') + indent_str.count('\t') * self.tab_len
                 self.indent_level.append(indent)
                 yield Token.new_borrow_pos(self.NL_type, m.group(0), token)

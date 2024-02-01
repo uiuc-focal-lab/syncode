@@ -34,6 +34,7 @@ class Infer:
         dev_mode (bool, optional): Development mode. Defaults to False.
         log_level (int, optional): Log level. Defaults to 2. 0 for no logs, 1 for minimal logs, 2 for all logs including time.
         parser (str, optional): Parser to use. Defaults to "lalr".
+        task_id (int, optional): For debugging a specific task. Defaults to None.
 
         List of currently tested models:
         Llama models: "Llama-7b", "CodeLlama-7b", "CodeLlama-7b-Python", "Llama-13b"
@@ -57,6 +58,7 @@ class Infer:
         log_level: int = 1,
         new_mask_store: bool = False,
         parser: Literal["lr", "lalr"] = "lalr",
+        task_id: Optional[int] = None
     ):  
         # Check inputs
         assert mode in ["original", "grammar_mask"]
@@ -126,7 +128,8 @@ class Infer:
                 out_path,
                 logger,
                 format_tabs=True,
-                grammar_decoder=grammar_decoder
+                grammar_decoder=grammar_decoder,
+                debug_task_id=task_id
                 )
         else:
             self.user_input(hf_model, logger, grammar_decoder)
@@ -144,6 +147,7 @@ class Infer:
         logger: common.Logger,
         format_tabs: bool = False,
         grammar_decoder: Optional[GrammarDecoder] = None,
+        debug_task_id: Optional[int] = None
         ):
         """
         Run evaluation on the model
@@ -156,27 +160,39 @@ class Infer:
         samples = []
         pbar = tqdm(total=len(problems) * num_samples_per_task)
 
-        for task_id in problems:
-            if grammar_decoder is not None:
-                grammar_decoder.reset()
+        if debug_task_id is None:
+            for task_id in problems:
+                self.run_eval_for_task(hf_model, num_samples_per_task, format_tabs, grammar_decoder, problems, samples, pbar, task_id)
+            write_jsonl(out_path, samples)
+        
+        else: # Debugging a specific task
+            debug_task_id = list(problems.keys())[debug_task_id]
+            self.run_eval_for_task(hf_model, num_samples_per_task, format_tabs, grammar_decoder, problems, samples, pbar, debug_task_id)
 
-            if format_tabs:
-                prompt = problems[task_id]["prompt"].replace("    ", "\t")
-            else:
-                prompt = problems[task_id]["prompt"]
 
-            batch_completions = hf_model.generate_batch_completion(prompt, num_samples_per_task)
+    def run_eval_for_task(self, hf_model, num_samples_per_task, format_tabs, grammar_decoder, problems, samples, pbar, task_id):
+        """
+        run evaluation for a specific task
+        """
+        if grammar_decoder is not None:
+            grammar_decoder.reset()
 
-            for i, completion in enumerate(batch_completions):
-                result = dict(
+        if format_tabs:
+            prompt = problems[task_id]["prompt"].replace("    ", "\t")
+        else:
+            prompt = problems[task_id]["prompt"]
+
+        batch_completions = hf_model.generate_batch_completion(prompt, num_samples_per_task)
+
+        for i, completion in enumerate(batch_completions):
+            result = dict(
                     task_id=task_id,
                     language=problems[task_id]["language"],
                     completion=completion
                 )
-                samples += [result]
+            samples += [result]
             
-            pbar.update(num_samples_per_task)
-        write_jsonl(out_path, samples)
+        pbar.update(num_samples_per_task)
     
 
     def user_input(self, hf_model, logger, grammar_decoder):
