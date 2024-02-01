@@ -3,7 +3,6 @@ sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../')
 
 from incremental_parser import IncrementalParser
 from common import run_tests
-from parse_result import RemainderState
 
 def test_tiny():
     inc_parser = IncrementalParser('llm_cfg/grammars/tiny_grammar.lark', parser='lr')
@@ -12,9 +11,17 @@ def test_tiny():
     print(out)
 
 def test_calc():
+    # 17 states become 31 from LALR(1) to LR(1)
     inc_parser = IncrementalParser('llm_cfg/grammars/calc_grammar.lark', parser='lr')
-    partial_code = "113 + 235 + 17"
+    partial_code = "113 + 235 + 1111"
     out = inc_parser.parser.parse(partial_code)
     assert out.children[0].children[0].children[1].children[0] == '235'
 
-run_tests([test_calc, test_tiny]) 
+def test_python_size():
+    # 752 states become 4926 from LALR(1) to LR(1)
+    inc_parser = IncrementalParser('llm_cfg/grammars/python_grammar.lark', parser='lr')
+    print(len(inc_parser.parser.parser.parser._parse_table.states))
+
+# Not adding test_python_size as it may take about 3-4 minutes to run
+tests = [test_calc, test_tiny]
+run_tests(tests) 

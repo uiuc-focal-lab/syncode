@@ -308,7 +308,7 @@ class GrammarAnalyzer:
                     break
                 else: # if non-terminal
                     new_lookaheads += list(self.FIRST[init_rule.expansion[i]])
-                    if len(self.NULLABLE) == 0 or not self.NULLABLE[init_rule.expansion[i]]:
+                    if len(self.NULLABLE) == 0 or not init_rule.expansion[i] in self.NULLABLE:
                         break
             
         for _ in bfs([(source_rule, lookahead)], _expand_rule):

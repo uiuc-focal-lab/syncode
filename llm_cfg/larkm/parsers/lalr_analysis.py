@@ -350,7 +350,7 @@ class LR_Analyzer(GrammarAnalyzer):
                     break
                 else: # if non-terminal
                     new_lookaheads += list(self.FIRST[init_rule.expansion[i]])
-                    if len(self.NULLABLE) == 0 or not self.NULLABLE[init_rule.expansion[i]]:
+                    if len(self.NULLABLE) == 0 or not init_rule.expansion[i] in self.NULLABLE:
                         break
             if len(new_lookaheads) == 0:
                 new_lookaheads.append(old_lookahead)
