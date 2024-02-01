@@ -53,7 +53,6 @@ class PythonIncrementalParser(IncrementalParser):
         try:
             while self.cur_pos < len(lexer_tokens):
                 token = lexer_tokens[self.cur_pos]
-                # print(self.cur_pos, repr(token), self.indent_level)
                 self.cur_pos += 1
 
                 if token.type == '_INDENT':
@@ -91,7 +90,6 @@ class PythonIncrementalParser(IncrementalParser):
         if self.lexer_pos < len(code):
             remainder_state = RemainderState.INCOMPLETE
             current_term_str = code[self.lexer_pos:]
-            # print('current_term_str 1:', repr(current_term_str))
 
             current_term_str = current_term_str.lstrip(' ') # Remove space from the beginning
             if current_term_str == '':
@@ -101,7 +99,6 @@ class PythonIncrementalParser(IncrementalParser):
             # e.g., 'de' may seem like a variable name that is complete, but it may be just a prefix of 'def'
             current_term_str = self.parser_token_seq[-1].value
             remainder_state = RemainderState.MAYBE_COMPLETE
-            # print('current_term_str 2:', current_term_str, self.parser_token_seq)
 
         next_ac_indents = None
         if remainder_state == RemainderState.MAYBE_COMPLETE or remainder_state == RemainderState.COMPLETE:
@@ -120,7 +117,7 @@ class PythonIncrementalParser(IncrementalParser):
                 self.next_ac_terminals.add('_NL') # '_NL' is always accepted in this case
 
         else: # Since current terminal is incomplete, next token should add to current terminal
-            self.next_ac_terminals = None
+            self.next_ac_terminals = set()
 
         if self.next_ac_terminals is not None and '_NL' in self.next_ac_terminals:
             self.next_ac_terminals.add('COMMENT')

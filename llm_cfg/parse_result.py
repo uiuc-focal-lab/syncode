@@ -1,3 +1,4 @@
+import copy
 from enum import Enum
 
 class RemainderState(Enum):
@@ -15,12 +16,12 @@ class ParseResult:
     def __init__(self, cur_accept_terminals, next_accept_terminals, remainder, remainder_state: RemainderState, next_ac_indents=None):
         self.remainder = remainder
         self.remainder_state = remainder_state # Whether the final_string is a complete terminal
-        self.cur_accept_terminals = cur_accept_terminals
-        self.next_accept_terminals = next_accept_terminals 
+        self.cur_accept_terminals = copy.copy(cur_accept_terminals)
+        self.next_accept_terminals = copy.copy(next_accept_terminals) 
         self.next_ac_indents: IndentationConstraint = next_ac_indents
 
         if remainder_state == RemainderState.INCOMPLETE: # If the terminal is not complete, then next_accept_terminals should be None
-            assert next_accept_terminals is None 
+            assert len(next_accept_terminals) == 0
 
     def __repr__(self):
         return 'final_incomplete_str: {}\nis_terminal_complete: {}\ncur_accept_terminals: {}\nnext_accept_terminals: {}\nNext indent:{}'.format(repr(self.remainder), self.remainder_state, self.cur_accept_terminals, self.next_accept_terminals, self.next_ac_indents)

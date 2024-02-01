@@ -14,8 +14,8 @@ class IncrementalParser:
     This is the base class for all incremental parsers.
     """
     def __init__(self, grammar_file, logger: Optional[common.Logger]=None, indenter=None, parser="lalr") -> None:
-        self.cur_ac_terminals: Optional[set] = None
-        self.next_ac_terminals: Optional[set] = None
+        self.cur_ac_terminals: set = set()
+        self.next_ac_terminals: set = set()
         self.cur_pos = 0 # Current cursor position in the lexer tokens list
         self.lexer_pos = 0 # Current lexer position in the code
         self.dedent_queue: list = []
@@ -36,15 +36,15 @@ class IncrementalParser:
         self.interactive = self.parser.parse_interactive('')
         self.parser_token_seq: list = []
         self.prev_lexer_tokens: list[Token] = [] # To enable going back to old state of the parser
-        self.cur_pos_to_parser_state: dict[int, Tuple[Any, Optional[set], Optional[set], Optional[list], list]] = {} # parser_state, cur_ac_terminals, next_ac_terminals, indent_levels (optional), dedent_queue
+        self.cur_pos_to_parser_state: dict[int, Tuple[Any, set, set, Optional[list], list]] = {} # parser_state, cur_ac_terminals, next_ac_terminals, indent_levels (optional), dedent_queue
         self.time_accepts = 0 # Profiling
 
     def reset(self):
         """
         Resets the parser to the initial state.
         """
-        self.cur_ac_terminals = None
-        self.next_ac_terminals = None
+        self.cur_ac_terminals = set()
+        self.next_ac_terminals = set()
         self.cur_pos = 0
         self.lexer_pos = 0
         self.dedent_queue = []
@@ -54,7 +54,7 @@ class IncrementalParser:
         self.time_accepts = 0
         self.interactive = self.parser.parse_interactive('')
     
-    def _store_parser_state(self, pos: int, parser_state, accepts: Optional[set], indent_levels: Optional[list] = None):  
+    def _store_parser_state(self, pos: int, parser_state, accepts: set, indent_levels: Optional[list] = None):  
         time_start = time.time() 
         cur_ac_terminals = self.next_ac_terminals  
         next_ac_terminals = accepts 

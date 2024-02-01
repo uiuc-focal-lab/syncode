@@ -27,12 +27,13 @@ class Infer:
         grammar (str, optional): Language. Defaults to "input". "input" is used for user input. 
             other options currently supported are "python", "go", "calc"
         dataset (str, optional): Dataset. Defaults to "multi-humaneval".
-        new_nfa (bool, optional): Use new NFA. Defaults to False.
+        new_mask_store (bool, optional): Use new DFA mask store. Defaults to False.
         few_shot (bool, optional): Run few shoting prompting. Defaults to False.
         num_examples (int, optional): Number of examples for few shot prompting. Defaults to -1.
         parse_prompt (bool, optional): Parse prompt. Defaults to True.
         dev_mode (bool, optional): Development mode. Defaults to False.
         log_level (int, optional): Log level. Defaults to 2. 0 for no logs, 1 for minimal logs, 2 for all logs including time.
+        parser (str, optional): Parser to use. Defaults to "lalr".
 
         List of currently tested models:
         Llama models: "Llama-7b", "CodeLlama-7b", "CodeLlama-7b-Python", "Llama-13b"
@@ -49,12 +50,13 @@ class Infer:
         num_samples: int = 1,
         grammar: str = "python",
         dataset: Literal["mbxp", "multi-humaneval", "mathqa-x", "input"] = "input",
-        new_mask_store: bool = False,
         few_shot: bool = False,
         num_examples: int = -1,
         parse_prompt: bool = True,
         dev_mode: bool = False,
         log_level: int = 1,
+        new_mask_store: bool = False,
+        parser: Literal["lr", "lalr"] = "lalr",
     ):  
         # Check inputs
         assert mode in ["original", "grammar_mask"]
@@ -94,15 +96,15 @@ class Infer:
         # Initialize logit processors
         logit_processors = None
         if self.mode == 'grammar_mask':
-            use_cache = not self.new_mask_store
             grammar_decoder = GrammarDecoder(
                 self.grammar, 
                 tokenizer=tokenizer, 
                 logger=logger, 
-                use_cache=use_cache, 
+                use_cache=(not self.new_mask_store), 
                 parse_prompt=parse_prompt,
                 num_samples=num_samples_per_task, 
-                dev_mode=dev_mode
+                dev_mode=dev_mode,
+                parser=parser
                 )
             logit_processors = LogitsProcessorList([grammar_decoder])
 

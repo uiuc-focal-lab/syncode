@@ -35,17 +35,14 @@ def load_dfa_mask_store(grammar: str, tokenizer, inc_parser=None, use_cache=True
     if use_cache and os.path.exists(dfa_path):
         dfa = pickle.load(open(dfa_path, 'rb'))
     else:
+        print(f"Creating dfa for {tokenizer_name} and {grammar}, may take more than 10 minutes.", flush=True)
         vocab = get_vocab_from_tokenizer(tokenizer)
-        if logger is not None:
-            logger.log_time(f"Time taken for loading vocab: {time.time() - start_time:.2f}s")
+        logger.log_time(f"Time taken for loading vocab: {time.time() - start_time:.2f}s")
         # TODO: add logger in tests
-        print('Time taken for loading vocab:', time.time() - start_time, flush=True) # Keeping this for tests
 
         if inc_parser is None:
-            inc_parser = create_parser(grammar)
-        if logger is not None:
-            logger.log_time(f"Time taken for loading parser: {time.time() - start_time:.2f}s")
-        print('Time taken for loading parser:', time.time() - start_time, flush=True)
+            raise ValueError("inc_parser cannot be None if use_cache is False")
+        logger.log_time(f"Time taken for loading parser: {time.time() - start_time:.2f}s")
 
         exceptions = {}
         if grammar == 'python':
@@ -53,15 +50,10 @@ def load_dfa_mask_store(grammar: str, tokenizer, inc_parser=None, use_cache=True
         
         os.makedirs(dfa_dir, exist_ok=True)
         dfa = DFAMaskStore(inc_parser.parser.terminals, vocab, exceptions=exceptions, special_token_ids=[tokenizer.eos_token_id])
-
-        if logger is not None:
-            logger.log_time(f"Time taken for creating dfa: {time.time() - start_time:.2f}s")
-        print(f'Time taken for creating dfa:', time.time() - start_time, flush=True)
+        logger.log_time(f"Time taken for creating dfa: {time.time() - start_time:.2f}s")
 
         pickle.dump(dfa, open(dfa_path, 'wb'))
-        if logger is not None:
-            logger.log_time(f"Time taken for storing the dfa: {time.time() - start_time:.2f}s")
-        print(f'Time taken for storing the dfa', time.time() - start_time, flush=True)
+        logger.log_time(f"Time taken for storing the dfa: {time.time() - start_time:.2f}s")
     return dfa
 
 """

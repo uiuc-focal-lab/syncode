@@ -1,3 +1,4 @@
+import copy
 import time
 import torch
 import common
@@ -27,6 +28,7 @@ class GrammarDecoder(LogitsProcessor):
         parse_prompt=True, 
         num_samples=1,
         dev_mode=False,
+        parser='lalr',
         **kwargs):
 
         time_start = time.time()
@@ -47,10 +49,15 @@ class GrammarDecoder(LogitsProcessor):
         self.start_from = None         
 
         # Load dfa mask store
-        self.dfa_mask_store = common.load_dfa_mask_store(grammar=self.grammar, tokenizer=self.tokenizer, use_cache=use_cache, logger=self.logger)
+        self.dfa_mask_store = common.load_dfa_mask_store(
+            grammar=self.grammar, 
+            tokenizer=self.tokenizer, 
+            use_cache=use_cache, 
+            logger=self.logger
+            )
 
         # Create parsers
-        self.inc_parsers = [create_parser(self.grammar, logger=self.logger) for _ in range(self.batch_size)]
+        self.inc_parsers = [create_parser(self.grammar, logger=self.logger, parser=parser) for _ in range(self.batch_size)]
 
         # For profiling
         self.token_cnt = 0
@@ -77,7 +84,8 @@ class GrammarDecoder(LogitsProcessor):
             p.reset()
 
 
-    def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor) -> torch.FloatTensor:     
+    def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor) -> torch.FloatTensor:    
+        time1 = time.time() 
         # start_from is used for choosing where the parsing should start
         if self.start_from == None:
             if self.parse_prompt:
@@ -91,12 +99,11 @@ class GrammarDecoder(LogitsProcessor):
         greedy_grammar_token = None
         for i, partial_code in enumerate(partial_codes):
             try:
-                compilation_start_time = time.time()
+                time2 = time.time()
                 self.partial_codes_trace.append(partial_code)
 
                 # returns the names of the Terminals that are currently accepted.
                 r = self.inc_parsers[i].get_acceptable_next_terminals(partial_code)
-                
                 greedy_token = self.tokenizer.decode(scores[i].argmax(dim=-1)) # For debugging - remove later
                 if '$END' in r.next_accept_terminals:
                     self.last_valid_state[i] = len(input_ids[i])
@@ -104,9 +111,9 @@ class GrammarDecoder(LogitsProcessor):
                     self.function_end[i] = len(input_ids[i])
 
                 self.accept_tokens_sizes.append(len(r.cur_accept_terminals))  # For profiling
-                self.logger.log_time(f"Time taken for compilation: {time.time() - compilation_start_time:.2f}s")
+                self.logger.log_time(f"Time taken for compilation: {time.time() - time2:.3f}s")
                 accept_mask = self.dfa_mask_store.get_overapprox_tokens_mask(r)
-                self.logger.log_time(f"Time taken for overapproximation: {time.time() - compilation_start_time:.2f}s")
+                self.logger.log_time(f"Time taken for overapproximation: {time.time() - time2:.3f}s")
 
                 if self.debug:
                     self._log_current_status(partial_code, r)
@@ -121,7 +128,7 @@ class GrammarDecoder(LogitsProcessor):
                     self.logger.log('No acceptable tokens for the current partial code!')
                     self._log_current_status(partial_code, r)
 
-                self.logger.log_time(f"Time taken for masking: {time.time() - compilation_start_time:.2f}s")
+                self.logger.log_time(f"Time taken for masking: {time.time() - time2:.3f}s")
                 
                 greedy_grammar_token = self.tokenizer.decode(scores[i].argmax(dim=-1))
 
@@ -135,5 +142,6 @@ class GrammarDecoder(LogitsProcessor):
                     raise e
                 self.logger.log(f"Exception: {e}")
 
+        self.logger.log_time(f"Time taken for decoding: {time.time() - time1:.3f}s")
         return scores
     
