@@ -297,7 +297,7 @@ class GrammarAnalyzer:
                                 break
                     
                     if len(new_lookaheads) == 0:
-                        new_lookaheads.append('$END')
+                        new_lookaheads.append(lookahead)
                     if not new_r.is_term:
                         assert isinstance(new_r, NonTerminal)
                         for new_lookahead in new_lookaheads:

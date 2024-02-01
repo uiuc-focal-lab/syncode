@@ -333,22 +333,10 @@ class LALR_Analyzer(GrammarAnalyzer):
 
 
 class LR_Analyzer(GrammarAnalyzer):
-    lr0_itemsets: Set[LR1ItemSet]
-    nonterminal_transitions: List[Tuple[LR1ItemSet, Symbol]]
-    lookback: Dict[Tuple[LR1ItemSet, Symbol], Set[Tuple[LR1ItemSet, Rule]]]
-    includes: Dict[Tuple[LR1ItemSet, Symbol], Set[Tuple[LR1ItemSet, Symbol]]]
-    reads: Dict[Tuple[LR1ItemSet, Symbol], Set[Tuple[LR1ItemSet, Symbol]]]
-    directly_reads: Dict[Tuple[LR1ItemSet, Symbol], Set[Symbol]]
-
+    lr1_itemsets: Set[LR1ItemSet]
 
     def __init__(self, parser_conf: ParserConf, debug: bool=False, strict: bool=False):
         GrammarAnalyzer.__init__(self, parser_conf, debug, strict)
-        self.nonterminal_transitions = []
-        self.directly_reads = defaultdict(set)
-        self.reads = defaultdict(set)
-        self.includes = defaultdict(set)
-        self.lookback = defaultdict(set)
-
 
     def compute_lr1_states(self) -> None:
         self.lr1_itemsets = set()
@@ -386,86 +374,22 @@ class LR_Analyzer(GrammarAnalyzer):
         for _ in bfs(self.lr1_start_states.values(), step):
             pass
 
-    def compute_reads_relations(self):
-        # handle start state
-        for root in self.lr1_start_states.values():
-            assert(len(root.kernel) == 1)
-            for rp in root.kernel:
-                assert(rp.index == 0)
-                self.directly_reads[(root, rp.next)] = set([ Terminal('$END') ])
-
-        for state in self.lr0_itemsets:
-            seen = set()
-            for rp in state.closure:
-                if rp.is_satisfied:
-                    continue
-                s = rp.next
-                # if s is a not a nonterminal
-                if s not in self.lr0_rules_by_origin:
-                    continue
-                if s in seen:
-                    continue
-                seen.add(s)
-                nt = (state, s)
-                self.nonterminal_transitions.append(nt)
-                dr = self.directly_reads[nt]
-                r = self.reads[nt]
-                next_state = state.transitions[s]
-                for rp2 in next_state.closure:
-                    if rp2.is_satisfied:
-                        continue
-                    s2 = rp2.next
-                    # if s2 is a terminal
-                    if s2 not in self.lr0_rules_by_origin:
-                        dr.add(s2)
-                    if s2 in self.NULLABLE:
-                        r.add((next_state, s2))
-
-    def compute_includes_lookback(self):
-        for nt in self.nonterminal_transitions:
-            state, nonterminal = nt
-            includes = []
-            lookback = self.lookback[nt]
-            for rp in state.closure:
-                if rp.rule.origin != nonterminal:
-                    continue
-                # traverse the states for rp(.rule)
-                state2 = state
-                for i in range(rp.index, len(rp.rule.expansion)):
-                    s = rp.rule.expansion[i]
-                    nt2 = (state2, s)
-                    state2 = state2.transitions[s]
-                    if nt2 not in self.reads:
-                        continue
-                    for j in range(i + 1, len(rp.rule.expansion)):
-                        if rp.rule.expansion[j] not in self.NULLABLE:
-                            break
-                    else:
-                        includes.append(nt2)
-                # state2 is at the final state for rp.rule
-                if rp.index == 0:
-                    for rp2 in state2.closure:
-                        if (rp2.rule == rp.rule) and rp2.is_satisfied:
-                            lookback.add((state2, rp2.rule))
-            for nt2 in includes:
-                self.includes[nt2].add(nt)
-
-    def compute_lookaheads(self):
-        read_sets = digraph(self.nonterminal_transitions, self.reads, self.directly_reads)
-        follow_sets = digraph(self.nonterminal_transitions, self.includes, read_sets)
-
-        for nt, lookbacks in self.lookback.items():
-            for state, rule in lookbacks:
-                for s in follow_sets[nt]:
-                    state.lookaheads[s].add(rule)
-
-    def compute_lalr1_states(self) -> None:
-        m: Dict[LR0ItemSet, Dict[str, Tuple]] = {}
+    def compute_lr1_table(self) -> None:
+        m: Dict[LR1ItemSet, Dict[str, Tuple]] = {}
         reduce_reduce = []
-        for itemset in self.lr0_itemsets:
+        for itemset in self.lr1_itemsets:
+            # Shift elements are added to the actions dictionary
             actions: Dict[Symbol, Tuple] = {la: (Shift, next_state.closure)
                                                       for la, next_state in itemset.transitions.items()}
-            for la, rules in itemset.lookaheads.items():
+            
+            # For each lr1item compute the pairs of lookahead and rules for reduce actions
+            la_rules_map: Dict[Symbol, Set[Rule]] = defaultdict(set)
+            for lr1item in itemset.closure:
+                # Check if it is a reduce action i.e. the index of the rule is at the end
+                if lr1item.rp.is_satisfied:
+                    la_rules_map[lr1item.lookahead].add(lr1item.rp.rule)
+
+            for la, rules in la_rules_map:
                 if len(rules) > 1:
                     # Try to resolve conflict based on priority
                     p = [(r.options.priority or 0, r) for r in rules]
@@ -521,7 +445,4 @@ class LR_Analyzer(GrammarAnalyzer):
 
     def compute_lr(self):
         self.compute_lr1_states()
-        self.compute_reads_relations()
-        self.compute_includes_lookback()
-        self.compute_lookaheads()
-        self.compute_lalr1_states()
+        self.compute_lr1_table()
