@@ -62,8 +62,25 @@ def test_time():
     time5 = time.time()
     print("Time taken for parsing with LR(1):", time5 - time4)
 
+def test_correct():
+    inc_lr_parser = PythonIncrementalParser(parser='lr')
+    inc_lalr_parser = PythonIncrementalParser(parser='lalr')
 
-# Not adding test_time as it may take about 3-4 minutes to run
+    prompt = 'from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n\t""" Check if in given list of numbers, are any two numbers closer to each other than\n\tgiven threshold.\n\t>>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n\tFalse\n\t>>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n\tTrue\n'
+
+    generated_code = '\t"""\n\tfor i in range(len(numbers) -1, -1, -1):\n\t\tfor j in range(i+1, len(numbers) -1, -1):\n\t\t\tif abs(numbers[i] - numbers[j] ) < threshold:\n\t\t\t\treturn True\n\treturn False\n\n\ndef has_close_elements_with_threshold(numbers: List[float] , threshold: float) -> bool:\n\ta="shu'
+
+    i = 0
+    while i<len(generated_code):
+        i += 2
+        r1 = inc_lalr_parser.get_acceptable_next_terminals(prompt + generated_code[:i])
+        r2 = inc_lr_parser.get_acceptable_next_terminals(prompt + generated_code[:i])
+        assert r1 == r2, (r1, r2)
+
+# Not adding test_time, test_correct as it may take about 3-4 minutes to run
+# TODO: Add them when parser caching is added
+        
 tests = [test_calc, test_tiny]
 # tests = [test_time]
+# tests = [test_correct]
 run_tests(tests) 

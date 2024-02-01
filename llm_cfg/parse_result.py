@@ -25,6 +25,9 @@ class ParseResult:
 
     def __repr__(self):
         return 'final_incomplete_str: {}\nis_terminal_complete: {}\ncur_accept_terminals: {}\nnext_accept_terminals: {}\nNext indent:{}'.format(repr(self.remainder), self.remainder_state, self.cur_accept_terminals, self.next_accept_terminals, self.next_ac_indents)
+    
+    def __eq__(self, other):
+        return self.remainder == other.remainder and self.remainder_state == other.remainder_state and self.cur_accept_terminals == other.cur_accept_terminals and self.next_accept_terminals == other.next_accept_terminals and self.next_ac_indents == other.next_ac_indents
 
 class IndentationConstraint:
     """
@@ -37,4 +40,7 @@ class IndentationConstraint:
 
     def __repr__(self):
         return 'accept_indents: {}, greater_than_indent_val: {}'.format(self.accept_indents, self.greater_than_indent_val)
+
+    def __eq__(self, other):
+        return self.accept_indents == other.accept_indents and self.greater_than_indent_val == other.greater_than_indent_val
     
