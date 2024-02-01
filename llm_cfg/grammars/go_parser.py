@@ -11,8 +11,8 @@ class GoIncrementalParser(IncrementalParser):
     This class implements an incremental parser for Go code.
     """
 
-    def __init__(self, logger: Optional[common.Logger] = None):
-        super().__init__("llm_cfg/grammars/go_grammar.lark", logger=logger)
+    def __init__(self, **kwargs):
+        super().__init__("llm_cfg/grammars/go_grammar.lark", **kwargs)
 
 
     def get_acceptable_next_terminals(self, partial_code) -> ParseResult:

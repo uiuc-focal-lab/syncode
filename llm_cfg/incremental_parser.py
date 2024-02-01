@@ -2,6 +2,7 @@ import copy
 import time
 import common
 import larkm as lark
+from larkm.parsers.lalr_interactive_parser import InteractiveParser
 from parse_result import ParseResult, RemainderState
 from larkm.lexer import Token
 from larkm import Lark
@@ -129,7 +130,7 @@ class IncrementalParser:
         lexer_tokens: list[Token] = self._lex_code(partial_code)
 
         # Restore the previous state of the parser
-        if self.prev_lexer_tokens is not None:
+        if len(self.prev_lexer_tokens) > 0:
             self._restore_recent_parser_state(lexer_tokens)
         
         self.prev_lexer_tokens, next_ac_indents = lexer_tokens, None  # Set the previous lexer tokens
@@ -176,7 +177,7 @@ class IncrementalParser:
             remainder_state = RemainderState.MAYBE_COMPLETE
         return remainder_state,current_term_str
     
-    def _accepts(self, interactive_parser):
+    def _accepts(self, interactive_parser: InteractiveParser) -> set:
         start_time = time.time()
         accepts = interactive_parser.accepts()
         self.time_accepts += time.time() - start_time

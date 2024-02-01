@@ -14,9 +14,9 @@ class PythonIncrementalParser(IncrementalParser):
     """
     This class implements an incremental parser for Python code.
     """
-    def __init__(self, logger:Optional[common.Logger]=None, partial_code=None):
+    def __init__(self, logger:Optional[common.Logger]=None, partial_code=None, **kwargs):
         indenter = PythonIndenter()
-        super().__init__("llm_cfg/grammars/python_grammar.lark", logger=logger, indenter=indenter)
+        super().__init__("llm_cfg/grammars/python_grammar.lark", logger=logger, indenter=indenter, **kwargs)
 
         if partial_code is not None: # extract indentation type from partial code
             indenter.tab_len = self._get_indentation(partial_code)  # NOTE: tab_len is useful when \t and spaces are used for indentation in same code

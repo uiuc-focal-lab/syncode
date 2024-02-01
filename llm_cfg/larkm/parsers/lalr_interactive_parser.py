@@ -107,7 +107,15 @@ class InteractiveParser:
         # We don't want to call callbacks here since those might have arbitrary side effects
         # and are unnecessarily slow.
         conf_no_callbacks.callbacks = {}
-        for t in self.choices():
+        choices = self.choices()
+
+        if self.parser.parser_type == 'lr':
+            for t in choices:
+                if t.isupper():
+                    accepts.add(t)
+            return accepts
+
+        for t in choices:
             if t.isupper(): # is terminal?
                 new_cursor = copy(self)
                 new_cursor.parser_state.parse_conf = conf_no_callbacks

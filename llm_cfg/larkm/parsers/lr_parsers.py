@@ -1,6 +1,6 @@
 """This module implements a LR(1) and LALR(1) Parser
 """
-# Author: Erez Shinan (2017)
+# Author: Erez Shinan (2017), Shubham Ugare (2024)
 # Email : erezshin@gmail.com
 from typing import Dict, Any, Optional
 
@@ -26,13 +26,13 @@ class LR_Parser(Serialize):
 
         self._parse_table = analysis.parse_table
         self.parser_conf = parser_conf
-        self.parser = _Parser(analysis.parse_table, callbacks, debug)
+        self.parser = _Parser(analysis.parse_table, callbacks, debug, parser_type='lr')
 
     @classmethod
     def deserialize(cls, data, memo, callbacks, debug=False):
         inst = cls.__new__(cls)
         inst._parse_table = IntParseTable.deserialize(data, memo)
-        inst.parser = _Parser(inst._parse_table, callbacks, debug)
+        inst.parser = _Parser(inst._parse_table, callbacks, debug, parser_type='lr')
         return inst
 
     def serialize(self, memo: Any = None) -> Dict[str, Any]:
@@ -135,10 +135,11 @@ class _Parser:
     callbacks: ParserCallbacks
     debug: bool
 
-    def __init__(self, parse_table: ParseTableBase, callbacks: ParserCallbacks, debug: bool=False):
+    def __init__(self, parse_table: ParseTableBase, callbacks: ParserCallbacks, debug: bool=False, parser_type='lalr'):
         self.parse_table = parse_table
         self.callbacks = callbacks
         self.debug = debug
+        self.parser_type = parser_type
 
     def parse(self, lexer: LexerThread, start: str, value_stack=None, state_stack=None, start_interactive=False):
         parse_conf = ParseConf(self.parse_table, self.callbacks, start)
