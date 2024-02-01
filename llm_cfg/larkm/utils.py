@@ -281,6 +281,8 @@ def bfs(initial: Iterable, expand: Callable) -> Iterator:
         for next_node in expand(node):
             if next_node not in visited:
                 visited.add(next_node)
+                if isinstance(next_node, tuple):
+                    assert next_node[1] is not None
                 open_q.append(next_node)
 
 def bfs_all_unique(initial, expand):

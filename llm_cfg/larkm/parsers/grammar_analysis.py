@@ -74,6 +74,7 @@ class LR1Item:
     def __init__(self, rp: RulePtr, lookahead: Symbol):
         self.rp = rp
         self.lookahead = lookahead
+        assert lookahead is not None
     
     def __repr__(self):
         return '%s . %s' % (repr(self.rp), self.lookahead.name)
@@ -212,8 +213,11 @@ class GrammarAnalyzer:
             # cache RulePtr(r, 0) in r (no duplicate RulePtr objects)
             self.lr1_start_states = {start: 
                                         LR1ItemSet(
-                                            [LR1Item(RulePtr(root_rule, 0), Terminal('$END'))],  # kernel
-                                                self.expand_rule_lr1(root_rule.origin, self.lr1_rules_by_origin)
+                                            [LR1Item(RulePtr(root_rule, 0), NonTerminal('$END'))],  # kernel
+                                                self.expand_rule_lr1(
+                                                    root_rule.origin, 
+                                                    NonTerminal('$END'),
+                                                    self.lr1_rules_by_origin)
                                                 ) # closure
                                     for start, root_rule in lr1_root_rules.items()}
         else:
@@ -265,8 +269,8 @@ class GrammarAnalyzer:
     def expand_rule_lr1(
             self, 
             source_rule: NonTerminal, 
+            lookahead: Symbol,
             rules_by_origin: Dict[NonTerminal, Iterator[Rule]]=None,
-            lookahead: Symbol=None
             ) -> LR1State:
         "Returns all lr1states accessible by rule (recursive)"
 
@@ -287,22 +291,26 @@ class GrammarAnalyzer:
                     new_lookaheads = []
                     
                     # Compute FIRST of the rest of the expansion
-                    for i in range(init_lr1item.rp.index+2, len(r.expansion)):
-                        if r.expansion[i].is_term:
-                            new_lookaheads.append(r.expansion[i])
-                            break
-                        else: # if non-terminal
-                            new_lookaheads += list(self.FIRST[r.expansion[i]])
-                            if len(self.NULLABLE) == 0 or not self.NULLABLE[r.expansion[i]]:
-                                break
+                    populate_lookaheads(r, init_lr1item, new_lookaheads)
                     
                     if len(new_lookaheads) == 0:
                         new_lookaheads.append(lookahead)
                     if not new_r.is_term:
                         assert isinstance(new_r, NonTerminal)
                         for new_lookahead in new_lookaheads:
+                            assert new_lookahead is not None
                             yield (new_r, new_lookahead)
 
+        def populate_lookaheads(init_rule, init_lr1item, new_lookaheads):
+            for i in range(init_lr1item.rp.index+2, len(init_rule.expansion)):
+                if init_rule.expansion[i].is_term:
+                    new_lookaheads.append(init_rule.expansion[i])
+                    break
+                else: # if non-terminal
+                    new_lookaheads += list(self.FIRST[init_rule.expansion[i]])
+                    if len(self.NULLABLE) == 0 or not self.NULLABLE[init_rule.expansion[i]]:
+                        break
+            
         for _ in bfs([(source_rule, lookahead)], _expand_rule):
             pass
         return fzset(init_lr1items)

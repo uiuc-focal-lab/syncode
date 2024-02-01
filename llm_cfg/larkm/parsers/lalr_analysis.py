@@ -343,6 +343,16 @@ class LR_Analyzer(GrammarAnalyzer):
         # map of kernels to LR1ItemSets
         cache: Dict['State', LR1ItemSet] = {}
 
+        def populate_lookaheads(init_rule, init_lr1item, new_lookaheads):
+            for i in range(init_lr1item.rp.index+2, len(init_rule.expansion)):
+                if init_rule.expansion[i].is_term:
+                    new_lookaheads.append(init_rule.expansion[i])
+                    break
+                else: # if non-terminal
+                    new_lookaheads += list(self.FIRST[init_rule.expansion[i]])
+                    if len(self.NULLABLE) == 0 or not self.NULLABLE[init_rule.expansion[i]]:
+                        break
+
         def step(state: LR1ItemSet) -> Iterator[LR1ItemSet]:
             # Checking if all rules in the closure are satisfied 
             _, unsat = classify_bool(state.closure, lambda lr1item: lr1item.rp.is_satisfied) # lr1item.rp is a RulePtr
@@ -357,12 +367,18 @@ class LR_Analyzer(GrammarAnalyzer):
                     for lr1item in kernel:
                         if not lr1item.rp.is_satisfied and not lr1item.rp.next.is_term:
                             # expand_rule returns a set of RulePtrs
-                            new_closure_item = self.expand_rule_lr1(
-                                lr1item.rp.next, 
-                                rules_by_origin=self.lr1_rules_by_origin
-                                )
-                            # add new LR1Item to closure
-                            closure |= new_closure_item
+                            new_lookaheads = []
+                            
+                            populate_lookaheads(lr1item.rp.rule, lr1item, new_lookaheads)
+
+                            for lookahead in new_lookaheads:
+                                new_closure_item = self.expand_rule_lr1(
+                                    lr1item.rp.next,
+                                    lookahead=lookahead,
+                                    rules_by_origin=self.lr1_rules_by_origin
+                                    )
+                                # add new LR1Item to closure
+                                closure |= new_closure_item
                     new_state = LR1ItemSet(kernel, closure)
                     cache[kernel] = new_state
 
@@ -389,7 +405,7 @@ class LR_Analyzer(GrammarAnalyzer):
                 if lr1item.rp.is_satisfied:
                     la_rules_map[lr1item.lookahead].add(lr1item.rp.rule)
 
-            for la, rules in la_rules_map:
+            for la, rules in la_rules_map.items():
                 if len(rules) > 1:
                     # Try to resolve conflict based on priority
                     p = [(r.options.priority or 0, r) for r in rules]
@@ -429,13 +445,13 @@ class LR_Analyzer(GrammarAnalyzer):
         # compute end states
         end_states: Dict[str, 'State'] = {}
         for state in states:
-            for rp in state:
-                for start in self.lr0_start_states:
-                    if rp.rule.origin.name == ('$root_' + start) and rp.is_satisfied:
+            for lr1state in state:
+                for start in self.lr1_start_states:
+                    if lr1state.rp.rule.origin.name == ('$root_' + start) and lr1state.rp.is_satisfied:
                         assert start not in end_states
                         end_states[start] = state
 
-        start_states = { start: state.closure for start, state in self.lr0_start_states.items() }
+        start_states = { start: state.closure for start, state in self.lr1_start_states.items() }
         _parse_table = ParseTable(states, start_states, end_states)
 
         if self.debug:
