@@ -7,6 +7,7 @@ import interegular
 import torch
 import regex
 from common import get_vocab_from_tokenizer
+from grammars import create_parser
 from parse_result import IndentationConstraint, RemainderState, ParseResult
 
 def load_dfa_mask_store(grammar: str, tokenizer, inc_parser=None, use_cache=True, logger=None):
@@ -26,7 +27,7 @@ def load_dfa_mask_store(grammar: str, tokenizer, inc_parser=None, use_cache=True
         # TODO: add logger in tests
 
         if inc_parser is None:
-            raise ValueError("inc_parser cannot be None if use_cache is False")
+            inc_parser = create_parser(grammar, logger=logger)
         logger.log_time(f"Time taken for loading parser: {time.time() - start_time:.2f}s")
 
         exceptions = {}
@@ -251,7 +252,7 @@ class DFAMaskStore:
         return dfa_state
 
 
-    def _DFA_state(self, input_str):
+    def _dfa_state(self, input_str):
         """
         consume input_str and get the list of pairs of (terminal, dfa_state). This denotes our current DFA state
         """
@@ -309,20 +310,16 @@ class DFAMaskStore:
     def get_overapprox_tokens_mask(self, r: ParseResult, get_list=False):
         # start_time = time.time()
         cur_incomplete_string = self._exception_rule(r.remainder, self.exceptions)
-        # print(cur_incomplete_string)
         if cur_incomplete_string is None:
             return torch.ones(len(self._vocab), dtype=torch.bool)
 
-        cur_DFA_state = self._DFA_state(cur_incomplete_string)
-        # print(cur_DFA_state)
-        
-        overapprox_token_ids = self._lookup_next_tokens(cur_DFA_state, r)
+        cur_dfa_state = self._dfa_state(cur_incomplete_string)
+        overapprox_token_ids = self._lookup_next_tokens(cur_dfa_state, r)
 
         if self.indentation and r.next_ac_indents is not None:
             indent_ac_token = self._get_indentation_tokens(r.next_ac_indents)
             overapprox_token_ids &= indent_ac_token
-            # print('Indentation tokens:\n', self._get_tokens_list(indent_ac_token)[:100])
-            # print('Overapprox tokens:\n', self._get_tokens_list(overapprox_token_ids)[:100])
+            
         if get_list: # This is useful for testing
             return self._get_tokens_list(overapprox_token_ids)
         # print('Time taken for mask to list:', time.time() - start_time, flush=True)
