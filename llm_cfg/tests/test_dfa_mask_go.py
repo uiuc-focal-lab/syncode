@@ -7,8 +7,10 @@ from parse_result import RemainderState
 from transformers import AutoTokenizer
 from dfa_mask_store import load_dfa_mask_store
 
-tokenizer = AutoTokenizer.from_pretrained(common.HF_CACHE+'Llama-7b', cache_dir=common.HF_CACHE, token=common.HF_ACCESS_TOKEN, trust_remote_code=True)
-# tokenizer = AutoTokenizer.from_pretrained('WizardLM/WizardCoder-1B-V1.0', cache_dir=common.HF_CACHE, token=common.HF_ACCESS_TOKEN, trust_remote_code=True)
+model = 'Salesforce/codegen-350M-multi'
+# model = 'WizardLM/WizardCoder-1B-V1.0'
+# model = 'Llama-7b'
+tokenizer = common.load_tokenizer(model)
 dfa_mask = load_dfa_mask_store(grammar='go', tokenizer=tokenizer, use_cache=True, logger=common.TestLogger())
 
 def test_dfa_mask():

@@ -6,11 +6,7 @@ import common
 from incremental_parser import ParseResult
 from grammars.python_parser import PythonIncrementalParser
 from parse_result import IndentationConstraint, RemainderState
-from transformers import AutoTokenizer
 from dfa_mask_store import load_dfa_mask_store
-
-tokenizer = AutoTokenizer.from_pretrained(common.HF_CACHE+'Llama-7b', cache_dir=common.HF_CACHE, token=common.HF_ACCESS_TOKEN, trust_remote_code=True)
-dfa_mask = load_dfa_mask_store(grammar='python', tokenizer=tokenizer, use_cache=True, logger=common.TestLogger())
 
 def test_dfa_mask():        
     query_start_time = time.time()
@@ -71,6 +67,12 @@ def test_dfa_mask9():
     ac_list = dfa_mask.get_overapprox_tokens_mask(r, get_list=True)
     assert '</s>' in ac_list # special token should always be in the list
 
+def test_dfa_mask10():
+    assert " '" in dfa_mask.get_overapprox_tokens_mask(ParseResult({'RETURN'}, {'STRING'}, 'return', RemainderState.MAYBE_COMPLETE, next_ac_indents=None), get_list=True)
+
+def test_dfa_mask11():
+    assert " '." in dfa_mask.get_overapprox_tokens_mask(ParseResult({'STRING'}, {}, "'", RemainderState.INCOMPLETE, next_ac_indents=None), get_list=True)
+
 def test_indent():
     ac_list = dfa_mask._get_indentation_tokens(IndentationConstraint(accept_indents=[1]), get_list=True)
     assert all(t in ac_list for t in [' int', ' '])
@@ -121,5 +123,18 @@ def test_indetantaion():
     assert p._get_indentation(mbpp['MBPP/2']["prompt"]) == 2
     assert p._get_indentation(mbpp['MBPP/8']["prompt"]) == 1
 
-tests = [test_dfa_mask, test_dfa_mask2, test_dfa_mask3, test_dfa_mask4, test_dfa_mask5, test_dfa_mask6, test_dfa_mask7, test_dfa_mask8, test_dfa_mask9, test_indent, test_dfa_mask_with_indent]
-common.run_tests(tests)
+Run tests for Llama model
+model = 'Llama-7b'
+tokenizer = common.load_tokenizer(model)
+dfa_mask = load_dfa_mask_store(grammar='python', tokenizer=tokenizer, use_cache=True, logger=common.TestLogger())
+tests_llama = [test_dfa_mask, test_dfa_mask2, test_dfa_mask3, test_dfa_mask4, test_dfa_mask5, test_dfa_mask6, test_dfa_mask7, test_dfa_mask8, test_dfa_mask9, test_indent, test_dfa_mask_with_indent]
+common.run_tests(tests_llama)
+
+# Run tests for Codegen model
+model = 'Salesforce/codegen-350M-multi'
+tokenizer = common.load_tokenizer(model)
+dfa_mask = load_dfa_mask_store(grammar='python', tokenizer=tokenizer, use_cache=True, logger=common.TestLogger())
+tests_codegen = [test_dfa_mask10, test_dfa_mask11]
+common.run_tests(tests_codegen)
+
+# model = 'WizardLM/WizardCoder-1B-V1.0'

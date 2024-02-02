@@ -282,19 +282,19 @@ class DFAMaskStore:
             return self._get_default_mask()
         return tokens
 
-    def _lookup_next_tokens(self, DFA_state, r: ParseResult) -> torch.Tensor:
+    def _lookup_next_tokens(self, dfa_states, r: ParseResult) -> torch.Tensor:
         overapprox_token_ids = self._get_default_mask()
         # print('Time taken for DFA state:', time.time() - start_time, flush=True)
 
         if r.remainder_state == RemainderState.COMPLETE:
-            for (terminal, dfa_state) in DFA_state:
+            for (terminal, dfa_state) in dfa_states:
                 if terminal in r.next_accept_terminals:
                     overapprox_token_ids |= self._complete_case_lookup[(terminal, dfa_state)]
             return overapprox_token_ids
         
         # Case when the final string may be incomplete
-        for (cur_terminal, dfa_state) in DFA_state:
-            if r.next_accept_terminals == None: # This is the case when we have incomplete final string
+        for (cur_terminal, dfa_state) in dfa_states:
+            if len(r.next_accept_terminals) == 0: # This is the case when we have incomplete final string
                 overapprox_token_ids |= self._incomplete_case_lookup[(cur_terminal, dfa_state)]
             else:
                 for next_terminal in r.next_accept_terminals:

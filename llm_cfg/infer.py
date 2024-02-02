@@ -1,15 +1,8 @@
 import common
 import fire
 from language_model import HuggingFaceModel
-from transformers import (
-    LlamaTokenizer,
-    LlamaForCausalLM,
-    AutoTokenizer,
-    AutoModelForCausalLM,
-    LogitsProcessorList
-)
+from transformers import LogitsProcessorList
 import os
-import torch
 from grammar_decoder import GrammarDecoder
 from typing import Optional, Literal
 from mxeval.data import write_jsonl, read_problems, get_data, get_examples
@@ -66,7 +59,7 @@ class Infer:
     
         # Set attributes
         self.mode = mode
-        self.model = model
+        self.model_name = model
         self.quantize = quantize
         self.gpu = gpu
         self.num_samples = num_samples
@@ -79,21 +72,14 @@ class Infer:
 
         # Load model
         device = f"cuda:{self.gpu}"
-        llama_models = ["Llama-7b", "Llama-13b", "CodeLlama-7b", "CodeLlama-7b-Python"]
-        if self.model not in llama_models:
-            tokenizer = AutoTokenizer.from_pretrained(self.model, cache_dir=common.HF_CACHE, token=common.HF_ACCESS_TOKEN, trust_remote_code=True)
-            model = AutoModelForCausalLM.from_pretrained(self.model, torch_dtype=torch.bfloat16, cache_dir=common.HF_CACHE, token=common.HF_ACCESS_TOKEN, trust_remote_code=True).eval().to(device)
-            out_dir = f"results/{self.model}/{self.grammar}/{self.dataset}/"
-        elif self.model in llama_models:
-            model_location = "/share/models/hugging_face/" + self.model
-            tokenizer = LlamaTokenizer.from_pretrained(model_location)
-            model = LlamaForCausalLM.from_pretrained(model_location, torch_dtype=torch.bfloat16).eval().to(device)
-            out_dir = f"results/{self.model}/{self.grammar}/{self.dataset}/"
-
+        model = common.load_model(self.model_name, device)
+        tokenizer = common.load_tokenizer(self.model_name)
+        
         # Setup output directory
+        out_dir = f"results/{self.model_name}/{self.grammar}/{self.dataset}/"
         out_path = out_dir + 'samples_' + str(num_samples_per_task) + '_mode_' + str(self.mode) + "_eval.jsonl"
         os.makedirs(out_dir, exist_ok=True)
-        logger = common.Logger(num_samples_per_task, mode, out_dir, log_level=log_level)
+        self.logger = common.Logger(num_samples_per_task, mode, out_dir, log_level=log_level)
         
         # Initialize logit processors
         logit_processors = None
@@ -101,7 +87,7 @@ class Infer:
             grammar_decoder = GrammarDecoder(
                 self.grammar, 
                 tokenizer=tokenizer, 
-                logger=logger, 
+                logger=self.logger, 
                 use_cache=(not self.new_mask_store), 
                 parse_prompt=parse_prompt,
                 num_samples=num_samples_per_task, 
@@ -112,7 +98,7 @@ class Infer:
 
         hf_model = HuggingFaceModel(
             model, 
-            logger, 
+            self.logger, 
             tokenizer=tokenizer, 
             device=device, 
             logit_processors=logit_processors, 
@@ -126,25 +112,25 @@ class Infer:
                 hf_model,
                 num_samples_per_task,
                 out_path,
-                logger,
                 format_tabs=True,
                 grammar_decoder=grammar_decoder,
                 debug_task_id=task_id
                 )
         else:
-            self.user_input(hf_model, logger, grammar_decoder)
+            self.user_input(hf_model, grammar_decoder)
 
         if self.mode == 'grammar_mask':
-            logger.log('Non matching token count: ' + str(grammar_decoder.non_matching_token_cnt))
+            self.logger.log('Non matching token count: ' + str(grammar_decoder.non_matching_token_cnt))
         
-        logger.close()
+        self.logger.close()
+
+    
     
 
     def run_code_eval(self, 
         hf_model,
         num_samples_per_task: int,
         out_path: str,
-        logger: common.Logger,
         format_tabs: bool = False,
         grammar_decoder: Optional[GrammarDecoder] = None,
         debug_task_id: Optional[int] = None
@@ -166,7 +152,7 @@ class Infer:
             write_jsonl(out_path, samples)
         
         else: # Debugging a specific task
-            debug_task_id = list()
+            debug_task_id = list(problems.keys())[debug_task_id]
             self.run_eval_for_task(hf_model, num_samples_per_task, format_tabs, grammar_decoder, problems, samples, pbar, debug_task_id)
 
 
@@ -174,6 +160,7 @@ class Infer:
         """
         run evaluation for a specific task
         """
+        self.logger.log(f"Running eval for task {task_id}")
         if grammar_decoder is not None:
             grammar_decoder.reset()
 
@@ -184,7 +171,7 @@ class Infer:
 
         batch_completions = hf_model.generate_batch_completion(prompt, num_samples_per_task)
 
-        for i, completion in enumerate(batch_completions):
+        for _, completion in enumerate(batch_completions):
             result = dict(
                     task_id=task_id,
                     language=problems[task_id]["language"],
@@ -195,7 +182,7 @@ class Infer:
         pbar.update(num_samples_per_task)
     
 
-    def user_input(self, hf_model, logger, grammar_decoder):
+    def user_input(self, hf_model, grammar_decoder):
         """
         Run user input on the model
         Args:

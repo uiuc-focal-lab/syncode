@@ -62,7 +62,6 @@ class GrammarDecoder(LogitsProcessor):
 
         # For profiling
         self.token_cnt = 0
-        self.accept_tokens_sizes: list = []
         self.non_matching_token_cnt = 0
         self.debug = True
         self.logger.log_time(f"Time taken for preprocessing: {time.time() - time_start:.2f}s")
@@ -77,7 +76,6 @@ class GrammarDecoder(LogitsProcessor):
         """
         self.last_valid_state = [0 for _ in range(self.batch_size)]
         self.function_end = [None for _ in range(self.batch_size)]
-        self.accept_tokens_sizes = []
         self.partial_codes_trace = []
         self.token_cnt = 0
         self.start_from = None 
@@ -105,20 +103,20 @@ class GrammarDecoder(LogitsProcessor):
 
                 # returns the names of the Terminals that are currently accepted.
                 r = self.inc_parsers[i].get_acceptable_next_terminals(partial_code)
-                greedy_token = self.tokenizer.decode(scores[i].argmax(dim=-1)) # For debugging - remove later
+                
                 if '$END' in r.next_accept_terminals:
                     self.last_valid_state[i] = len(input_ids[i])
                 if 'EOC' in r.next_accept_terminals and self.function_end[i]==None:
                     self.function_end[i] = len(input_ids[i])
 
-                self.accept_tokens_sizes.append(len(r.cur_accept_terminals))  # For profiling
                 self.logger.log_time(f"Time taken for compilation: {time.time() - time2:.3f}s")
                 accept_mask = self.dfa_mask_store.get_overapprox_tokens_mask(r)
                 self.logger.log_time(f"Time taken for overapproximation: {time.time() - time2:.3f}s")
 
                 if self.debug:
                     self._log_current_status(partial_code, r)
-                
+                greedy_token = self.tokenizer.decode(scores[i].argmax(dim=-1)) # For debugging, do not move this line
+
                 if torch.sum(accept_mask) != 0: # If there are acceptable tokens for the current partial code 
                     if len(scores[i]) != len(accept_mask):
                         # Pad accept_mask with 0 values. Since scores[i] may be longer than tokenizer vocab size, we need to pad accept_mask with 0 values
@@ -131,8 +129,8 @@ class GrammarDecoder(LogitsProcessor):
 
                 self.logger.log_time(f"Time taken for masking: {time.time() - time2:.3f}s")
                 
+                # For debugging - remove later
                 greedy_grammar_token = self.tokenizer.decode(scores[i].argmax(dim=-1))
-
                 if greedy_token != greedy_grammar_token:
                     self.logger.log(f"Greedy token: {repr(greedy_token)}")
                     self.logger.log(f"Greedy grammar-based token: {repr(greedy_grammar_token)}")
