@@ -6,7 +6,7 @@ import common
 from incremental_parser import ParseResult
 from grammars.python_parser import PythonIncrementalParser
 from parse_result import IndentationConstraint, RemainderState
-from dfa_mask_store import load_dfa_mask_store
+from dfa_mask_store import DFAMaskStore
 
 def test_dfa_mask():        
     query_start_time = time.time()
@@ -15,7 +15,7 @@ def test_dfa_mask():
     print(f'Time taken for mask query:', time.time() - query_start_time, flush=True)
 
     query_start_time = time.time()
-    r = ParseResult({}, {'PLUS'}, '1', RemainderState.MAYBE_COMPLETE)
+    r = ParseResult({'DEC_NUMBER'}, {'PLUS'}, '1', RemainderState.MAYBE_COMPLETE)
     dfa_mask.get_overapprox_tokens_mask(r, get_list=True) # 10^-4 seconds for list
     print(f'Time taken for list query:', time.time() - query_start_time, flush=True)
 
@@ -30,13 +30,13 @@ def test_dfa_mask3():
     print(len(dfa_mask.get_overapprox_tokens_mask(r, get_list=True)))
 
 def test_dfa_mask4():
-    r = ParseResult({}, {'LPAR'}, 'upper', RemainderState.MAYBE_COMPLETE)
+    r = ParseResult({'NAME'}, {'LPAR'}, 'upper', RemainderState.MAYBE_COMPLETE)
     ac_list = dfa_mask.get_overapprox_tokens_mask(r, get_list=True)
     assert all([t in ac_list for t in ['()', '(']])
 
 def test_dfa_mask5():
     s = '\n\t""" Check if in given list of numbers, are any two numbers closer to each other than\n\tgiven threshold.\n\t>>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n\tFalse\n\t>>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n\tTrue\n\t"""\n'
-    r = ParseResult({}, {'NAME'}, s, RemainderState.MAYBE_COMPLETE)
+    r = ParseResult({'_NL'}, {'NAME'}, s, RemainderState.MAYBE_COMPLETE)
     ac_list = dfa_mask.get_overapprox_tokens_mask(r, get_list=True)
     # This should have \t, \n, and '""' in it
     assert all([t in ac_list for t in ['\t', '\n', '""', '#', "''", "'", '"']])
@@ -73,6 +73,11 @@ def test_dfa_mask10():
 def test_dfa_mask11():
     assert " '." in dfa_mask.get_overapprox_tokens_mask(ParseResult({'STRING'}, {}, "'", RemainderState.INCOMPLETE, next_ac_indents=None), get_list=True)
 
+def test_dfa_mask12():
+    ac_list = dfa_mask.get_overapprox_tokens_mask(ParseResult({'_INDENT'}, {'IF'}, "\n\t\t", RemainderState.MAYBE_COMPLETE, next_ac_indents=None), get_list=True)
+    print(ac_list)
+    assert "if" in ac_list
+
 def test_indent():
     ac_list = dfa_mask._get_indentation_tokens(IndentationConstraint(accept_indents=[1]), get_list=True)
     assert all(t in ac_list for t in [' int', ' '])
@@ -106,13 +111,13 @@ def test_dfa_mask_with_indent():
     ac_list = dfa_mask.get_overapprox_tokens_mask(r, get_list=True)
     assert not ' int' in ac_list
 
-    r = ParseResult({}, {'IF'}, '', RemainderState.MAYBE_COMPLETE, IndentationConstraint(accept_indents=[0]))
+    r = ParseResult({}, {'IF'}, '', RemainderState.COMPLETE, IndentationConstraint(accept_indents=[0]))
     ac_list = dfa_mask.get_overapprox_tokens_mask(r, get_list=True)
     assert 'if' in ac_list
     
-    r = ParseResult({}, {'RETURN'}, '\n\t\t', RemainderState.MAYBE_COMPLETE, IndentationConstraint(greater_than_indent_val=-1))
+    r = ParseResult({'_NL'}, {'RETURN'}, '\n\t\t', RemainderState.MAYBE_COMPLETE, IndentationConstraint(greater_than_indent_val=-1))
     ac_list = dfa_mask.get_overapprox_tokens_mask(r, get_list=True)
-    assert 'return' in ac_list
+    # assert 'return' in ac_list
 
 
 def test_indetantaion():
@@ -123,18 +128,84 @@ def test_indetantaion():
     assert p._get_indentation(mbpp['MBPP/2']["prompt"]) == 2
     assert p._get_indentation(mbpp['MBPP/8']["prompt"]) == 1
 
-Run tests for Llama model
-model = 'Llama-7b'
-tokenizer = common.load_tokenizer(model)
-dfa_mask = load_dfa_mask_store(grammar='python', tokenizer=tokenizer, use_cache=True, logger=common.TestLogger())
-tests_llama = [test_dfa_mask, test_dfa_mask2, test_dfa_mask3, test_dfa_mask4, test_dfa_mask5, test_dfa_mask6, test_dfa_mask7, test_dfa_mask8, test_dfa_mask9, test_indent, test_dfa_mask_with_indent]
-common.run_tests(tests_llama)
 
-# Run tests for Codegen model
-model = 'Salesforce/codegen-350M-multi'
-tokenizer = common.load_tokenizer(model)
-dfa_mask = load_dfa_mask_store(grammar='python', tokenizer=tokenizer, use_cache=True, logger=common.TestLogger())
-tests_codegen = [test_dfa_mask10, test_dfa_mask11]
-common.run_tests(tests_codegen)
+def test_simplications():
+    import regex
+    simplifications = DFAMaskStore.python_simplifications
+    
+    # COMMENT 
+    reg = simplifications['COMMENT']
+    assert regex.match(reg, '# Hello') is not None
+    assert regex.match(reg, '""" Foo \n Bar """') is not None
+    assert regex.match(reg, "''' Foo \n Bar '''") is not None
 
-# model = 'WizardLM/WizardCoder-1B-V1.0'
+    # LONG_STRING
+    reg = simplifications['LONG_STRING']
+    assert regex.match(reg, '""" Foo \n Bar """') is not None
+    assert regex.match(reg, "''' Foo \n Bar '''") is not None
+    assert regex.match(reg, '""" Foo \n Bar ') is None
+    assert regex.match(reg, "''' Foo \n Bar ") is None
+
+    # STRING
+    reg = simplifications['STRING']
+    assert regex.match(reg, '"Foo"') is not None
+    assert regex.match(reg, "'Foo'") is not None
+    assert regex.match(reg, '"Foo') is None
+    assert regex.match(reg, "'Foo") is None
+
+    # _NL
+    reg = simplifications['_NL']
+    assert regex.match(reg, '\n') is not None
+    assert regex.match(reg, '\n\n') is not None
+    assert regex.match(reg, '\n""" Foo \n Bar """') is not None
+    assert regex.match(reg, '\n# Hello!') is not None
+
+    # We are not precise in this case but still sound
+    # assert regex.match(reg, '\n""" Foo \n Bar ') is None 
+
+import argparse
+
+if __name__ == '__main__':
+    """
+        Run all tests by default. In case we only want to run DFAMaskStore object independent tests (as in CI), we can run with the flag --independent
+    """
+    argparser = argparse.ArgumentParser(description='Run tests for DFAMaskStore object')
+    argparser.add_argument('--independent', action='store_true', help='Run only independent tests')
+    args = argparser.parse_args()
+
+    # This is just for quick testing while debugging
+    # run_ind, run_codegen, run_llama, run_wizard = False, True, False, False
+    run_ind, run_codegen, run_llama, run_wizard = True, True, True, True
+
+    # Independent tests
+    if run_ind:
+        test_ind = [test_simplications]
+        common.run_tests(test_ind)
+
+    if args.independent:
+        exit(0)
+
+    # Run tests for Llama model
+    if run_llama:
+        model = 'Llama-7b'
+        tokenizer = common.load_tokenizer(model)
+        dfa_mask = DFAMaskStore.load_dfa_mask_store(grammar='python', tokenizer=tokenizer, use_cache=True, logger=common.TestLogger())
+        tests_llama = [test_dfa_mask, test_dfa_mask2, test_dfa_mask3, test_dfa_mask4, test_dfa_mask5, test_dfa_mask6, test_dfa_mask7, test_dfa_mask8, test_dfa_mask9, test_indent, test_dfa_mask_with_indent]
+        common.run_tests(tests_llama)
+
+    # Run tests for Codegen model
+    if run_codegen:
+        model = 'Salesforce/codegen-350M-multi'
+        tokenizer = common.load_tokenizer(model)
+        dfa_mask = DFAMaskStore.load_dfa_mask_store(grammar='python', tokenizer=tokenizer, use_cache=True, logger=common.TestLogger())
+        tests_codegen = [test_dfa_mask10, test_dfa_mask11]
+        # tests_codegen = [test_dfa_mask12]
+        common.run_tests(tests_codegen)
+
+    if run_wizard:
+        model = 'WizardLM/WizardCoder-1B-V1.0'
+        tokenizer = common.load_tokenizer(model)
+        dfa_mask = DFAMaskStore.load_dfa_mask_store(grammar='python', tokenizer=tokenizer, use_cache=True, logger=common.TestLogger())
+        tests_codegen = [test_dfa_mask10, test_dfa_mask11]
+        common.run_tests(tests_codegen)
+

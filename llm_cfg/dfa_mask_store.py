@@ -10,42 +10,12 @@ from common import get_vocab_from_tokenizer
 from grammars import create_parser
 from parse_result import IndentationConstraint, RemainderState, ParseResult
 
-def load_dfa_mask_store(grammar: str, tokenizer, inc_parser=None, use_cache=True, logger=None):
-    '''
-    Loads the dfa for the given language and tokenizer. If the dfa is not cached, it is created and cached. 
-    '''
-    tokenizer_name = type(tokenizer).__name__
-    dfa_dir = 'results/' + tokenizer_name + '/'
-    dfa_path = dfa_dir + grammar + '_dfa.pkl'
-    start_time = time.time()
-    if use_cache and os.path.exists(dfa_path):
-        dfa = pickle.load(open(dfa_path, 'rb'))
-    else:
-        print(f"Creating dfa for {tokenizer_name} and {grammar}, may take more than 10 minutes.", flush=True)
-        vocab = get_vocab_from_tokenizer(tokenizer)
-        logger.log_time(f"Time taken for loading vocab: {time.time() - start_time:.2f}s")
-        # TODO: add logger in tests
-
-        if inc_parser is None:
-            inc_parser = create_parser(grammar, logger=logger)
-        logger.log_time(f"Time taken for loading parser: {time.time() - start_time:.2f}s")
-
-        exceptions = {}
-        if grammar == 'python':
-            exceptions = {'COMMENT': '#.*|\'\'\'.*?\'\'\'|""".*?"""/is', '_NL': '(\r?\n[\t ]*)+', 'LONG_STRING': '\'\'\'.*?\'\'\'|""".*?"""/is', 'STRING': '[ubf]?r?(".*?"|\'.*?\')'}
-        
-        os.makedirs(dfa_dir, exist_ok=True)
-        dfa = DFAMaskStore(inc_parser.parser.terminals, vocab, exceptions=exceptions, special_token_ids=[tokenizer.eos_token_id])
-        logger.log_time(f"Time taken for creating dfa: {time.time() - start_time:.2f}s")
-
-        pickle.dump(dfa, open(dfa_path, 'wb'))
-        logger.log_time(f"Time taken for storing the dfa: {time.time() - start_time:.2f}s")
-    return dfa
-
-class Exception:
+class Simplification:
     """
-    The exception class presents a mapping from the original regex to the simplified regex for certain terminals. 
+    The Simplification class presents a mapping from the original regex to the simplified regex for certain terminals. 
     There are two reasons for doing this. In some cases, the original regex is complex and requires large DFAs. Computing the overapproximate tokens for such DFAs is expensive. The other reason is that the interegular library does not support some regex features such as lookaheads. Thus, we use the simplified regex to compute the overapproximate tokens.
+
+    # NOTE: We are not changing the actual regex of the terminals while parsing. We are only using the simplified regex for computing the overapproximate tokens maintaining the soundness.
     """
     def __init__(self, original_regex, simplified_regex):
         self.original_regex = original_regex
@@ -66,17 +36,22 @@ class DFAMaskStore:
 
     3. MAYBE_COMPLETE: In this case the remainder matches a type of terminal. It may happen that we add to the same matched part of the remainder. In that case, there are two possibilities. i) the matched terminal type does not change and thus we can use the next terminal set computed by assuming that. ii) the matched terminal type changes and then we do not know the next terminal set. Thus, we need to compute all tokens such that consuming the token leads to a live state for the current terminal DFA or again it reaches a final state for the current terminal DFA at some point.
     """
-    def __init__(self, terminals: list, vocab, exceptions={}, special_token_ids=[], indentation=True):
+    def __init__(self, 
+                 terminals: list, 
+                 vocab: list[str], 
+                 simplifications: dict = {}, 
+                 special_token_ids: list = [], 
+                 indentation: bool = True
+                 ):
         self._terminals_to_dfa = {}
         self._vocab = vocab
         self.anything_else = interegular.fsm.anything_else # This is special character used for the DFAs
-        self.exceptions = []      
         self.special_token_ids = special_token_ids  
+        self._simplifications: dict[str, str] = simplifications
 
         for terminal in terminals:
-            if terminal.name in exceptions:
-                terminal_regex = exceptions[terminal.name]
-                self.exceptions.append(Exception(terminal.pattern.to_regexp(), terminal_regex))
+            if terminal.name in simplifications:
+                terminal_regex = simplifications[terminal.name]
             else:
                 terminal_regex = terminal.pattern.to_regexp()
             self._terminals_to_dfa[terminal.name] = interegular.parse_pattern(terminal_regex).to_fsm()
@@ -95,6 +70,54 @@ class DFAMaskStore:
         
         # NOTE: This should be called at the end of the constructor
         self._convert_lookup_from_list_to_mask()  # convert to boolean tensor mask. This is useful for fast union operations
+
+    # Simplifications for python
+    python_simplifications = {
+                    'COMMENT': '(?i:(?s:(#.*|\'\'\'.*?\'\'\'|""".*?""")))', 
+                    '_NL': '(?s:(?i:\n(.*)))', 
+                    'LONG_STRING': '(?i:(?s:(\'\'\'.*?\'\'\'|""".*?""")))', 
+                    'STRING': '(?s:(?i:[ubf]?r?(".*?"|\'.*?\')))'
+                    }
+
+    @staticmethod
+    def load_dfa_mask_store(grammar: str, tokenizer, inc_parser=None, use_cache=True, logger=None):
+        '''
+        Loads the dfa for the given language and tokenizer. If the dfa is not cached, it is created and cached. 
+        '''
+        tokenizer_name = type(tokenizer).__name__
+        dfa_dir = 'results/' + tokenizer_name + '/'
+        dfa_path = dfa_dir + grammar + '_dfa.pkl'
+        start_time = time.time()
+        
+        if use_cache and os.path.exists(dfa_path):
+            try:
+                dfa = pickle.load(open(dfa_path, 'rb'))
+                logger.log_time(f"Time taken for loading dfa: {time.time() - start_time:.2f}s")
+                return dfa
+            except: # If we cannot load the file, we will create the dfa from scratch
+                pass
+    
+        print(f"Creating DFA mask store for {tokenizer_name} and {grammar}, may take more than 10 minutes.", flush=True)
+        vocab = get_vocab_from_tokenizer(tokenizer)
+        logger.log_time(f"Time taken for loading vocab: {time.time() - start_time:.2f}s")
+        # TODO: add logger in tests
+
+        if inc_parser is None:
+            inc_parser = create_parser(grammar, logger=logger)
+        logger.log_time(f"Time taken for loading parser: {time.time() - start_time:.2f}s")
+
+        simplifications = {}
+        if grammar == 'python':
+            # These simplifications should overapproximate the actual tokens for the terminals to be sound
+            simplifications = DFAMaskStore.python_simplifications
+        
+        os.makedirs(dfa_dir, exist_ok=True)
+        dfa = DFAMaskStore(inc_parser.parser.terminals, vocab, simplifications=simplifications, special_token_ids=[tokenizer.eos_token_id])
+        logger.log_time(f"Time taken for creating dfa: {time.time() - start_time:.2f}s")
+
+        pickle.dump(dfa, open(dfa_path, 'wb'))
+        logger.log_time(f"Time taken for storing the dfa: {time.time() - start_time:.2f}s")
+        return dfa
 
     def _get_default_mask(self) -> torch.Tensor:
         mask = torch.zeros(len(self._vocab), dtype=torch.bool)
@@ -124,9 +147,9 @@ class DFAMaskStore:
         return False, 0   
 
     def _get_indentation_tokens(self, indent_constraint: IndentationConstraint, get_list=False):
-        '''
+        """
         Returns the tokens mask for the indentation constraint
-        '''
+        """
         out_mask = self._get_default_mask()
         if indent_constraint.greater_than_indent_val is not None:
             for indent in self._indentation_to_tokens_map.keys():
@@ -151,7 +174,7 @@ class DFAMaskStore:
         return out_mask
 
 
-    def _store_overapproximate_tokens(self, terminals, vocab):
+    def _store_overapproximate_tokens(self, terminals, vocab: list[str]):
         for cur_terminal in terminals:
             for dfa_state in self._terminals_to_dfa[cur_terminal].states:
                 
@@ -165,7 +188,7 @@ class DFAMaskStore:
                     remainder = token.replace('\t', '    ')
                     is_valid, remainder = self._consume_prefix(self._terminals_to_dfa[cur_terminal], dfa_state, remainder)
                     if is_valid:
-                        if remainder is None:
+                        if remainder is None or remainder == '':
                             # We reached a live state for the current terminal, thus we add the token in all overapproximate sets of next terminals
                             for next_terminal in terminals:
                                 self._dfa_state_and_next_terminal_to_tokens[(cur_terminal, dfa_state, next_terminal)].append(token_idx)
@@ -252,15 +275,15 @@ class DFAMaskStore:
         return dfa_state
 
 
-    def _dfa_state(self, input_str):
+    def _dfa_states(self, input_str):
         """
         consume input_str and get the list of pairs of (terminal, dfa_state). This denotes our current DFA state
         """
         DFA_state = []
-        for (termianl, dfa) in self._terminals_to_dfa.items():
+        for (terminal, dfa) in self._terminals_to_dfa.items():
             dfa_state = self._consume_input(dfa, input_str)
             if dfa_state is not None:
-                DFA_state.append((termianl, dfa_state)) 
+                DFA_state.append((terminal, dfa_state)) 
         return DFA_state
     
     def _convert_lookup_from_list_to_mask(self):
@@ -294,6 +317,8 @@ class DFAMaskStore:
         
         # Case when the final string may be incomplete
         for (cur_terminal, dfa_state) in dfa_states:
+            if cur_terminal not in r.cur_accept_terminals:
+                continue
             if len(r.next_accept_terminals) == 0: # This is the case when we have incomplete final string
                 overapprox_token_ids |= self._incomplete_case_lookup[(cur_terminal, dfa_state)]
             else:
@@ -301,7 +326,7 @@ class DFAMaskStore:
                     overapprox_token_ids |= self._lookup_next_tokens_for_dfa_state(cur_terminal, dfa_state, next_terminal)
         return overapprox_token_ids
 
-    def _exception_rule(self, s, exceptions: list[Exception]) -> str:
+    def _exception_rule(self, s, exceptions: list[Simplification]) -> str:
         for e in exceptions:
             if e.match_original(s):
                 return ""
@@ -309,12 +334,13 @@ class DFAMaskStore:
 
     def get_overapprox_tokens_mask(self, r: ParseResult, get_list=False):
         # start_time = time.time()
-        cur_incomplete_string = self._exception_rule(r.remainder, self.exceptions)
+        # cur_incomplete_string = self._exception_rule(r.remainder, self.exceptions)
+        cur_incomplete_string = r.remainder
         if cur_incomplete_string is None:
             return torch.ones(len(self._vocab), dtype=torch.bool)
 
-        cur_dfa_state = self._dfa_state(cur_incomplete_string)
-        overapprox_token_ids = self._lookup_next_tokens(cur_dfa_state, r)
+        cur_dfa_states = self._dfa_states(cur_incomplete_string)
+        overapprox_token_ids = self._lookup_next_tokens(cur_dfa_states, r)
 
         if self.indentation and r.next_ac_indents is not None:
             indent_ac_token = self._get_indentation_tokens(r.next_ac_indents)
