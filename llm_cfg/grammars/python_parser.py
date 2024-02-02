@@ -117,6 +117,7 @@ class PythonIncrementalParser(IncrementalParser):
                 self.next_ac_terminals.add('_NL') # '_NL' is always accepted in this case
 
         else: # Since current terminal is incomplete, next token should add to current terminal
+            self.cur_ac_terminals = self.next_ac_terminals
             self.next_ac_terminals = set()
 
         if self.next_ac_terminals is not None and '_NL' in self.next_ac_terminals:

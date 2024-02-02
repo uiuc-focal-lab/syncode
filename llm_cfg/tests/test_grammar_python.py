@@ -283,5 +283,14 @@ def test_incremental_parser4():
         r2 = new_inc_parser.get_acceptable_next_terminals(partial_code)
         assert r1.next_accept_terminals == r2.next_accept_terminals, i 
 
-tests = [test_parser1, test_parser2, test_parser3, test_parser4, test_parser5, test_parser6, test_parser7, test_parser8, test_parser9, test_parser10, test_parser11, test_parser12, test_parser13, test_parser14, test_parser15, test_parser16, test_parser17, test_parser18, test_parser19, test_incremental_parser, test_incremental_parser2, test_incremental_parser3, test_incremental_parser4]
+def test_parser20():
+    inc_parser.reset()
+    partial_code = "def separate_paren_groups(paren_string: str) -> List[str]:\n\treturn [paren_string.strip() for paren_string in paren_string.split('"
+    r = inc_parser.get_acceptable_next_terminals(partial_code)
+    print(r)
+    assert r.remainder == "'"
+    assert 'STRING' in r.cur_accept_terminals
+
+tests = [test_parser1, test_parser2, test_parser3, test_parser4, test_parser5, test_parser6, test_parser7, test_parser8, test_parser9, test_parser10, test_parser11, test_parser12, test_parser13, test_parser14, test_parser15, test_parser16, test_parser17, test_parser18, test_parser19, test_parser20, test_incremental_parser, test_incremental_parser2, test_incremental_parser3, test_incremental_parser4]
+# tests = [test_parser20]
 run_tests(tests)
