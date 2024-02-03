@@ -43,7 +43,7 @@ class PythonIncrementalParser(IncrementalParser):
         # Restore the previous state of the parser
         self._restore_recent_parser_state(lexer_tokens)
         
-        self.prev_lexer_tokens = lexer_tokens  # Set the previous lexer tokens
+        self.prev_lexer_tokens = lexer_tokens  # Set the previous lexer tokens for retrieving the state of the parser in next iterations
         next_ac_indents = None
 
         # Parse the tokens
@@ -78,9 +78,8 @@ class PythonIncrementalParser(IncrementalParser):
                     self._accepts(interactive),
                     indent_levels=copy.copy(self.indent_level)
                 )
-
         except lark.exceptions.UnexpectedToken as e:
-            pass
+            self._handle_final_lexer_token_error(lexer_tokens, token)
 
         self.logger.log_time(f'Time taken for parsing:{time.time() - parsing_start_time}')
         self.logger.log_time(f'Time taken for computing accepts:{self.time_accepts}')
@@ -114,7 +113,9 @@ class PythonIncrementalParser(IncrementalParser):
                 else:  
                     next_ac_indents = IndentationConstraint(accept_indents=next_ac_indents)  
 
-                self.next_ac_terminals.add('_NL') # '_NL' is always accepted in this case
+                # '_NL' is always accepted in this case
+                self.cur_ac_terminals.add('_NL')
+                self.next_ac_terminals.add('_NL') 
 
         else: # Since current terminal is incomplete, next token should add to current terminal
             self.cur_ac_terminals = self.next_ac_terminals
@@ -124,6 +125,8 @@ class PythonIncrementalParser(IncrementalParser):
             self.next_ac_terminals.add('COMMENT')
 
         return ParseResult(self.cur_ac_terminals, self.next_ac_terminals, current_term_str, remainder_state, next_ac_indents=next_ac_indents)
+
+    
 
     def _update_indent_levels(self, indent_level, indent):
         # if self.cur_pos != len(lexer_tokens): # Store previous indentation levels except the last one

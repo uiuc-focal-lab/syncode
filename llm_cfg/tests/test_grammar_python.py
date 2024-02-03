@@ -291,6 +291,21 @@ def test_parser20():
     assert r.remainder == "'"
     assert 'STRING' in r.cur_accept_terminals
 
-tests = [test_parser1, test_parser2, test_parser3, test_parser4, test_parser5, test_parser6, test_parser7, test_parser8, test_parser9, test_parser10, test_parser11, test_parser12, test_parser13, test_parser14, test_parser15, test_parser16, test_parser17, test_parser18, test_parser19, test_parser20, test_incremental_parser, test_incremental_parser2, test_incremental_parser3, test_incremental_parser4]
-# tests = [test_parser20]
+def test_parser21():
+    inc_parser.reset()
+    partial_code = "def factorize(n: int) -> List[int]:\n\tfactors = []\n\tfor i in range(2, n + 1):\n\t\t"
+    r = inc_parser.get_acceptable_next_terminals(partial_code)
+    assert '_NL' in r.cur_accept_terminals
+    assert '_NL' in r.next_accept_terminals
+    assert r.remainder == '\n\t\t'
+
+def test_parser22():
+    inc_parser.reset()
+    partial_code = "def intersperse(numbers: List[int], delimeter: int) -> List[int]:\n\treturn [n for n in numbers if n % 2 == 0 and n // 2 == del"
+
+    r = inc_parser.get_acceptable_next_terminals(partial_code)
+    assert r.remainder == 'del'
+    assert 'NAME' in r.cur_accept_terminals
+
+tests = [test_parser1, test_parser2, test_parser3, test_parser4, test_parser5, test_parser6, test_parser7, test_parser8, test_parser9, test_parser10, test_parser11, test_parser12, test_parser13, test_parser14, test_parser15, test_parser16, test_parser17, test_parser18, test_parser19, test_parser20, test_parser21, test_parser22, test_incremental_parser, test_incremental_parser2, test_incremental_parser3, test_incremental_parser4]
 run_tests(tests)

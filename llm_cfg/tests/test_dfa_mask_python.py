@@ -74,8 +74,7 @@ def test_dfa_mask11():
     assert " '." in dfa_mask.get_overapprox_tokens_mask(ParseResult({'STRING'}, {}, "'", RemainderState.INCOMPLETE, next_ac_indents=None), get_list=True)
 
 def test_dfa_mask12():
-    ac_list = dfa_mask.get_overapprox_tokens_mask(ParseResult({'_INDENT'}, {'IF'}, "\n\t\t", RemainderState.MAYBE_COMPLETE, next_ac_indents=None), get_list=True)
-    print(ac_list)
+    ac_list = dfa_mask.get_overapprox_tokens_mask(ParseResult({'_NL'}, {'IF'}, "\n\t\t", RemainderState.MAYBE_COMPLETE, next_ac_indents=None), get_list=True)
     assert "if" in ac_list
 
 def test_indent():
@@ -198,7 +197,7 @@ if __name__ == '__main__':
         model = 'Salesforce/codegen-350M-multi'
         tokenizer = common.load_tokenizer(model)
         dfa_mask = DFAMaskStore.load_dfa_mask_store(grammar='python', tokenizer=tokenizer, use_cache=True, logger=common.TestLogger())
-        tests_codegen = [test_dfa_mask10, test_dfa_mask11]
+        tests_codegen = [test_dfa_mask10, test_dfa_mask11, test_dfa_mask12]
         # tests_codegen = [test_dfa_mask12]
         common.run_tests(tests_codegen)
 
