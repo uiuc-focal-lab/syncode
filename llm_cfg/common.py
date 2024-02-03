@@ -69,6 +69,18 @@ class Logger:
             self.file.write(msg + '\n')
             self.file.flush()
     
+    def log_check(self, msg):
+        if self.log_level >= 1:
+            # Log warning in yellow color
+            self.file.write(f"\n\n[Check]\n{msg}\n")
+            self.file.flush()
+
+    def log_error(self, msg):
+        if self.log_level >= 1:
+            # Log error in red color
+            self.file.write(f"\n\n[ERROR]\n{msg}\n")
+            self.file.flush()
+
     def log_time(self, msg):
         if self.log_level >= 2:
             self.time_file.write(msg + '\n')

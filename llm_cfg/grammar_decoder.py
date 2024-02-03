@@ -62,7 +62,6 @@ class GrammarDecoder(LogitsProcessor):
 
         # For profiling
         self.token_cnt = 0
-        self.non_matching_token_cnt = 0
         self.debug = True
         self.logger.log_time(f"Time taken for preprocessing: {time.time() - time_start:.2f}s")
         
@@ -132,10 +131,7 @@ class GrammarDecoder(LogitsProcessor):
                 # For debugging - remove later
                 greedy_grammar_token = self.tokenizer.decode(scores[i].argmax(dim=-1))
                 if greedy_token != greedy_grammar_token:
-                    self.logger.log(f"Greedy token: {repr(greedy_token)}")
-                    self.logger.log(f"Greedy grammar-based token: {repr(greedy_grammar_token)}")
-                    self._log_current_status(partial_code, r)
-                    self.non_matching_token_cnt += 1
+                    self._log_greedy_difference(greedy_grammar_token, partial_code, r, greedy_token)
             except Exception as e:
                 if self.dev_mode == True:
                     raise e
@@ -143,4 +139,10 @@ class GrammarDecoder(LogitsProcessor):
 
         self.logger.log_time(f"Time taken for decoding: {time.time() - time1:.3f}s")
         return scores
+
+    def _log_greedy_difference(self, greedy_grammar_token, partial_code, r, greedy_token):
+        self.logger.log_check(f"Greedy token and greedy grammar-based token do not match!")
+        self.logger.log(f"Greedy token: {repr(greedy_token)}")
+        self.logger.log(f"Greedy grammar-based token: {repr(greedy_grammar_token)}")
+        self._log_current_status(partial_code, r)
     

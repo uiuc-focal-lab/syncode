@@ -153,7 +153,7 @@ class IncrementalParser:
                     self._accepts(interactive))
 
         except lark.exceptions.UnexpectedToken as e:
-            self._handle_final_lexer_token_error(lexer_tokens, token)
+            self._handle_parsing_error(lexer_tokens, token)
 
         self.logger.log_time(f'Time taken for parsing:{time.time() - parsing_start_time}')
         self.logger.log_time(f'Time taken for computing accepts:{self.time_accepts}')
@@ -183,14 +183,14 @@ class IncrementalParser:
         self.time_accepts += time.time() - start_time
         return accepts
     
-    def _handle_final_lexer_token_error(self, lexer_tokens, token):
+    def _handle_parsing_error(self, lexer_tokens, token):
         """
         Handles the error that occurs when the lexer token is not parsed correctly.
         1. If the final token is not parsed correctly, then it is okay.
         2. If a non-final token is not parsed correctly, then it is an issue. We log the warning in that case. 
         """
         if token != lexer_tokens[-1]:
-            self.logger.log(f'Error in parsing the token: {token} which is not the last token in the lexer_tokens: {lexer_tokens}')
+            self.logger.log_error(f'Error in parsing the token: {token} which is not the last token in the lexer_tokens: {lexer_tokens}')
         else:
                 # If it is the final token that gave the error, then it is okay
             self.cur_ac_terminals = self.next_ac_terminals

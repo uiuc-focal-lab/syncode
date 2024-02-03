@@ -79,7 +79,7 @@ class PythonIncrementalParser(IncrementalParser):
                     indent_levels=copy.copy(self.indent_level)
                 )
         except lark.exceptions.UnexpectedToken as e:
-            self._handle_final_lexer_token_error(lexer_tokens, token)
+            self._handle_parsing_error(lexer_tokens, token)
 
         self.logger.log_time(f'Time taken for parsing:{time.time() - parsing_start_time}')
         self.logger.log_time(f'Time taken for computing accepts:{self.time_accepts}')
