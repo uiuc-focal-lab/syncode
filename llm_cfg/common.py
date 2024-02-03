@@ -55,8 +55,10 @@ class Logger:
     """
     def __init__(self, num_samples_per_task, mode, out_dir, log_level=1):
         self.log_level = log_level
-        log_file = out_dir + 'logs/' + 'samples_' + str(num_samples_per_task) + '_mode_' + str(mode) + "_eval.log"
-        log_time_file = out_dir + 'logs/' + 'time_samples_' + str(num_samples_per_task) + '_mode_' + str(mode) + "_eval.log"
+        prefix = 'samples_' + str(num_samples_per_task) + '_mode_' + str(mode) + "_eval.log"
+        log_file = out_dir + 'logs/' + prefix
+        log_time_file = out_dir + 'logs/' + 'time_' + prefix
+        log_eval_file = out_dir + 'logs/' + 'eval_' + prefix
         os.makedirs(out_dir + 'logs/', exist_ok=True)
 
         self.log_file = log_file
@@ -86,6 +88,11 @@ class Logger:
             self.time_file.write(msg + '\n')
             self.time_file.flush()
     
+    def log_eval(self, msg):
+        if self.log_level >= 0:
+            self.file.write(msg + '\n')
+            self.file.flush()
+
     def log_code(self, msg, code):
         if self.log_level >= 1:
             self.file.write(msg + ':\n')
@@ -97,7 +104,7 @@ class Logger:
     def close(self):
         self.file.close()
 
-class TestLogger(Logger):
+class EmptyLogger(Logger):
     """
     A logger that does not write to file. Used while running tests.
     """
@@ -108,6 +115,12 @@ class TestLogger(Logger):
     def log_time(self, msg):
         pass   
     def log_code(self, msg, code):
+        pass
+    def log_eval(self, msg):
+        pass
+    def log_check(self, msg):
+        pass
+    def log_error(self, msg):
         pass
     def close(self):
         pass

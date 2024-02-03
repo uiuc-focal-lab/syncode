@@ -31,7 +31,7 @@ class IncrementalParser:
             propagate_positions=True,
         )
 
-        self.logger = logger if logger is not None else common.TestLogger()
+        self.logger = logger if logger is not None else common.EmptyLogger()
         self.logger.log_time(f"Time taken for loading parser: {time.time() - time_start:.2f}s")
         self.interactive = self.parser.parse_interactive('')
         self.parser_token_seq: list = []
@@ -133,7 +133,7 @@ class IncrementalParser:
         if len(self.prev_lexer_tokens) > 0:
             self._restore_recent_parser_state(lexer_tokens)
         
-        self.prev_lexer_tokens, next_ac_indents = lexer_tokens, None  # Set the previous lexer tokens
+        self.prev_lexer_tokens = lexer_tokens  # Set the previous lexer tokens
 
         # Parse the tokens
         parsing_start_time = time.time()
@@ -161,7 +161,7 @@ class IncrementalParser:
         # Compute current terminal string
         remainder_state, current_term_str = self._get_remainder(partial_code)
         
-        return ParseResult(self.cur_ac_terminals, self.next_ac_terminals, current_term_str, remainder_state, next_ac_indents=next_ac_indents)
+        return ParseResult(self.cur_ac_terminals, self.next_ac_terminals, current_term_str, remainder_state)
 
     def _get_remainder(self, code):
         if self.lexer_pos < len(code):

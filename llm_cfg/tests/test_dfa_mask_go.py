@@ -11,7 +11,7 @@ model = 'Salesforce/codegen-350M-multi'
 # model = 'WizardLM/WizardCoder-1B-V1.0'
 # model = 'Llama-7b'
 tokenizer = common.load_tokenizer(model)
-dfa_mask = load_dfa_mask_store(grammar='go', tokenizer=tokenizer, use_cache=True, logger=common.TestLogger())
+dfa_mask = load_dfa_mask_store(grammar='go', tokenizer=tokenizer, use_cache=True, logger=common.EmptyLogger())
 
 def test_dfa_mask():
     query_start_time = time.time()

@@ -1,23 +1,19 @@
-import argparse
 from collections import defaultdict, Counter
 from concurrent.futures import ThreadPoolExecutor, as_completed
-import json
-import sys
+import sys, os, time 
 import traceback
-from typing import List, Union, Iterable, Dict
-import itertools
-import os
+from typing import List, Dict
+import fire
 import numpy as np
-import time
 import tqdm
-from typing import Optional, Callable, Dict
+from typing import Optional, Dict
 import multiprocessing
 import subprocess
 import re
-
+import common
 from mxeval.data import read_problems, stream_jsonl, write_jsonl, get_metadata
 from mxeval.execution import swallow_io, time_limit, TimeoutException, create_tempdir, reliability_guard, setup_base_path
-from mxeval.evaluation import estimate_pass_at_k, get_execute_function
+from mxeval.evaluation import estimate_pass_at_k
 
 
 def evaluate_functional_correctness(
@@ -26,16 +22,16 @@ def evaluate_functional_correctness(
     n_workers: int = os.cpu_count() - 1,
     timeout: float = 10.0,
     problem_file: str = '',
+    logger: common.Logger = common.EmptyLogger(),
 ):
     """
     Evaluates the functional correctness of generated samples, and writes
     results to f"{sample_file}_results.jsonl"
     """
-
     if type(problem_file) is not dict:
         problems = read_problems(problem_file)
     else:
-        print("Skip reading problems -- using problem_file (dict) as problems")
+        logger.log_eval("Skip reading problems -- using problem_file (dict) as problems")
         problems = problem_file
     
     error_types = {}
@@ -43,7 +39,7 @@ def evaluate_functional_correctness(
     # see execution.py for details
     # Check the generated samples against test suites.
     check_correctness_function_map = {
-        "python": check_correctness,
+        "python": check_correctness_python,
         "go": check_correctness_go
     }
     seed = int(time.time() * 1000000) % 1000000
@@ -55,11 +51,11 @@ def evaluate_functional_correctness(
         n_samples = 0
         results = defaultdict(list)
 
-        print("Reading samples...")
+        logger.log_eval("Reading samples...")
         for sample in tqdm.tqdm(stream_jsonl(sample_file)):
             task_id = sample["task_id"]
             completion = sample["completion"]
-            args = (problems[task_id], completion, timeout, completion_id[task_id])
+            args = (problems[task_id], completion, timeout, completion_id[task_id], logger)
             language = sample["language"]
             check_correctness_function = check_correctness_function_map[language]
             future = executor.submit(check_correctness_function, *args)
@@ -69,7 +65,7 @@ def evaluate_functional_correctness(
 
         assert len(completion_id) == len(problems), "Some problems are not attempted."
 
-        print("Running test suites...")
+        logger.log_eval("Running test suites...")
         i = 0
         for future in tqdm.tqdm(as_completed(futures), total=len(futures)):
             result = future.result()  # this is the execution stage
@@ -80,7 +76,8 @@ def evaluate_functional_correctness(
                 error_types[result["error_type"]] = 0
             error_types[result["error_type"]] += 1
 
-    print(error_types)
+    logger.log_eval(f"Error types: {error_types}")
+    print(f"Error types: {error_types}")
 
     # common code for all languages
     # Calculate pass@k.
@@ -112,15 +109,14 @@ def evaluate_functional_correctness(
             yield sample
 
     out_file = sample_file + "_results.jsonl"
-    print(f"Writing results to {out_file}...")
+    logger.log_eval(f"Writing results to {out_file}...")
     write_jsonl(out_file, tqdm.tqdm(combine_results(), total=n_samples))
 
     return pass_at_k
 
 
-
-def check_correctness(
-    problem: Dict, completion: str, timeout: float, completion_id: Optional[int] = None
+def check_correctness_python(
+    problem: Dict, completion: str, timeout: float, completion_id: Optional[int] = None, logger: common.Logger = common.EmptyLogger()
 ) -> Dict:
     """
     Evaluates the functional correctness of a completion by running the test
@@ -160,29 +156,29 @@ def check_correctness(
                 with swallow_io():
                     with time_limit(timeout):
                         exec(check_program, exec_globals)
-                print('Passed')
+                logger.log_eval("Passed")
                 error_types.append('No Error')
                 result.append("passed")
             except AssertionError as e:
-                _, _, tb = sys.exc_info()
-                traceback.print_tb(tb) # Fixed format
-                tb_info = traceback.extract_tb(tb)
-                filename, line, func, text = tb_info[-1]
+                # _, _, tb = sys.exc_info()
+                # traceback.print_tb(tb) # Fixed format
+                # tb_info = traceback.extract_tb(tb)
+                # filename, line, func, text = tb_info[-1]
+                # logger.log_eval(f"An assertion error occurred on line {line} in statement {text}.{func}.{filename}")
                 error_types.append(type(e).__name__)
-                print('An assertion error occurred on line {} in statement {}.{}.{}'.format(line, text, func, filename))
-                print(e)
+                result.append(f"failed: {e}")
             except TimeoutException:
                 result.append("timed out")
                 error_types.append(type(e).__name__)
-                print('Timeout!')
+                logger.log_eval("Timeout!")
             except SyntaxError as e:
-                print('Syntax Error!')
+                logger.log_eval(f"Syntax Error: {e}")
                 error_types.append(type(e).__name__)
             except Exception as e:
                 tb = traceback.format_exc()
                 error_types.append(type(e).__name__)
                 result.append(f"failed: {e}")
-                print('Failed!')
+                logger.log_eval(f"An error occurred: {e}")
 
             # Needed for cleaning up.
             shutil.rmtree = rmtree
@@ -229,6 +225,7 @@ def check_correctness_helper(
     compile_command_lambda=None,
     extra_cleanup=None,
     cwd=None,
+    logger: common.Logger = common.EmptyLogger()
 ):
     current_dir = os.path.dirname(os.path.realpath(__file__))
     entire_string = problem["prompt"] + completion + problem["test"]
@@ -268,7 +265,7 @@ def check_correctness_helper(
             )
             elapsed = 1000.0 * (time.time() - start)
             if verbose:
-                print("exec result run", exec_result_run)
+                logger.log_eval(f"Exec result run: {exec_result_run}")
             if 'syntax error' in exec_result_run.stderr: # Works for go
                 error_type = 'SyntaxError'
             elif exec_result_run.returncode != 0:
@@ -282,7 +279,7 @@ def check_correctness_helper(
 
     except Exception as e:
         if verbose:
-            print(f"error occurred when running test cases: {e}")
+            logger.log_eval(f"error occurred when running test cases: {e}")
         message = str(e)
         error_type = type(e).__name__
         passed, elapsed, compiled = False, None, False
@@ -292,7 +289,7 @@ def check_correctness_helper(
         os.remove(path)
     except Exception as e:
         if verbose:
-            print(f"Error trying to clean up file: {e}")
+            logger.log_eval(f"Error trying to clean up file: {e}")
     try:
         if extra_cleanup is not None:
             extra_remove_path = extra_cleanup(base_path)
@@ -300,7 +297,7 @@ def check_correctness_helper(
             os.remove(extra_remove_path)
     except Exception as e:
         if verbose:
-            print(f"Error trying to clean up file: {e}")
+            logger.log_eval(f"Error trying to clean up file: {e}")
 
     # get result
     return dict(
@@ -319,6 +316,7 @@ def check_correctness_go(
     timeout: float,
     completion_id: Optional[int] = None,
     verbose=False,
+    logger: common.Logger = common.EmptyLogger(),
 ):
     return check_correctness_helper(
         problem=problem,
@@ -329,6 +327,7 @@ def check_correctness_go(
         language="go",
         extension=".go",
         subprocess_command_lambda=lambda x: ["go", "run", f"{x}.go"],
+        logger=logger,
     )
 
 def get_datafile(dataset="mbxp", language="python"):
@@ -351,22 +350,22 @@ def compare(get_datafile, filename, language, dataset):
     count_grammar_mask_unique = 0
     count_total = 0
 
-    def print_comparison(p, c1, c2, task_id):
-        print('-'*80)
-        print(f"Task ID: {task_id}")
-        print('Prompt:')
-        print(p["prompt"])
-        print('Original Completion:')
-        print(c1["completion"])
-        print('Result:', c1["result"])
-        print('Error Type:', c1["error_type"])
-        print('Grammar Mask Completion:')
-        print(c2["completion"])
-        print('Result:', c2["result"])
-        print('Error Type:', c2["error_type"])
-        print(repr(p['prompt']))
-        print(repr(c2['completion']))
-        print('-'*80)
+    def log_comparison(p, c1, c2, task_id):
+        logger.log_eval('-'*80)
+        logger.log_eval(f"Task ID: {task_id}")
+        logger.log_eval('Prompt:')
+        logger.log_eval(p["prompt"])
+        logger.log_eval('Original Completion:')
+        logger.log_eval(c1["completion"])
+        logger.log_eval('Result:', c1["result"])
+        logger.log_eval('Error Type:', c1["error_type"])
+        logger.log_eval('Grammar Mask Completion:')
+        logger.log_eval(c2["completion"])
+        logger.log_eval('Result:', c2["result"])
+        logger.log_eval('Error Type:', c2["error_type"])
+        logger.log_eval(repr(p['prompt']))
+        logger.log_eval(repr(c2['completion']))
+        logger.log_eval('-'*80)
 
     for c1, c2 in zip(tqdm.tqdm(stream_jsonl(filename_original)), tqdm.tqdm(stream_jsonl(filename))):
         task_id = c1["task_id"]
@@ -374,7 +373,7 @@ def compare(get_datafile, filename, language, dataset):
         count_total += 1
 
         if c1['passed'] and not c2['passed']:
-            print_comparison(p, c1, c2, task_id)
+            log_comparison(p, c1, c2, task_id)
             count_original_unique += 1
 
         if c2['passed'] and not c1['passed']:
@@ -387,28 +386,45 @@ def compare(get_datafile, filename, language, dataset):
         if c2['passed']:
             count_grammar_mask += 1
 
-    print(f"Original: {count_original}")
-    print(f"Grammar Mask: {count_grammar_mask}")
-    print(f"Original unique: {count_original_unique}")
-    print(f"Grammar Mask unique: {count_grammar_mask_unique}")
-    print(f"Total: {count_total}")
+    logger.log_eval(f"Original: {count_original}")
+    logger.log_eval(f"Grammar Mask: {count_grammar_mask}")
+    logger.log_eval(f"Original unique: {count_original_unique}")
+    logger.log_eval(f"Grammar Mask unique: {count_grammar_mask_unique}")
+    logger.log_eval(f"Total: {count_total}")
+                                        
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--filename", help="Enter the filename")
-    parser.add_argument("--compare", help="comparison mode compares results of original and grammar_mask modes", action="store_true")
-    args = parser.parse_args()
-    filename = args.filename
+def check_coorectness(
+        filename: str,
+        compare: bool = False,
+        logger: common.Logger = common.EmptyLogger(),
+    ):
+    """
+    Evaluate the functional correctness of a completion by running the test
+    Args:
+        filename: str: The filename of the completion
+        compare: bool: Whether to compare the completions with standard generation
+    """
+    os.environ["TOKENIZERS_PARALLELISM"] = "false"
     language = "go"
     dataset = "mbxp"
     if re.search(r"python", filename,):
         language = "python"
     if re.search( r"humaneval", filename):
-        dataset = "multi-humaneval"
+        dataset = "humaneval"
     elif re.search(r"mathqa", filename):
         dataset = "mathqa-x"
-    if args.compare:
+    if compare:
         compare(get_datafile, filename, language, dataset)
     else:
-        results = evaluate_functional_correctness(filename, problem_file=get_datafile(dataset, language))
-        print(results)
+        results = evaluate_functional_correctness(
+            filename, 
+            problem_file=get_datafile(dataset, language),
+            logger = logger
+            )
+    logger.log_eval(f"Results: {results}")
+    print(results)
+    return results
+
+if __name__ == "__main__":
+    logger = common.EmptyLogger()
+    fire.Fire(check_coorectness)

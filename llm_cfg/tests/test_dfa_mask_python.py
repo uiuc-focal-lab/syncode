@@ -188,7 +188,7 @@ if __name__ == '__main__':
     if run_llama:
         model = 'Llama-7b'
         tokenizer = common.load_tokenizer(model)
-        dfa_mask = DFAMaskStore.load_dfa_mask_store(grammar='python', tokenizer=tokenizer, use_cache=True, logger=common.TestLogger())
+        dfa_mask = DFAMaskStore.load_dfa_mask_store(grammar='python', tokenizer=tokenizer, use_cache=True, logger=common.EmptyLogger())
         tests_llama = [test_dfa_mask, test_dfa_mask2, test_dfa_mask3, test_dfa_mask4, test_dfa_mask5, test_dfa_mask6, test_dfa_mask7, test_dfa_mask8, test_dfa_mask9, test_indent, test_dfa_mask_with_indent]
         common.run_tests(tests_llama)
 
@@ -196,7 +196,7 @@ if __name__ == '__main__':
     if run_codegen:
         model = 'Salesforce/codegen-350M-multi'
         tokenizer = common.load_tokenizer(model)
-        dfa_mask = DFAMaskStore.load_dfa_mask_store(grammar='python', tokenizer=tokenizer, use_cache=True, logger=common.TestLogger())
+        dfa_mask = DFAMaskStore.load_dfa_mask_store(grammar='python', tokenizer=tokenizer, use_cache=True, logger=common.EmptyLogger())
         tests_codegen = [test_dfa_mask10, test_dfa_mask11, test_dfa_mask12]
         # tests_codegen = [test_dfa_mask12]
         common.run_tests(tests_codegen)
@@ -204,7 +204,7 @@ if __name__ == '__main__':
     if run_wizard:
         model = 'WizardLM/WizardCoder-1B-V1.0'
         tokenizer = common.load_tokenizer(model)
-        dfa_mask = DFAMaskStore.load_dfa_mask_store(grammar='python', tokenizer=tokenizer, use_cache=True, logger=common.TestLogger())
+        dfa_mask = DFAMaskStore.load_dfa_mask_store(grammar='python', tokenizer=tokenizer, use_cache=True, logger=common.EmptyLogger())
         tests_codegen = [test_dfa_mask10, test_dfa_mask11]
         common.run_tests(tests_codegen)
 

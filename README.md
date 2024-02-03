@@ -27,7 +27,7 @@ python3 llm_cfg/infer.py
     --quantize [True, False]
     --gpu [0, 1, 2, 3]
     --num_samples [num_samples]
-    --dataset [mbxp, multi-humaneval, mathqa-x, input]
+    --dataset [mbxp, humaneval, mathqa-x, input]
     --new_mask_store [True, False]
     --few_shot [True, False]
     --num_examples [num_examples]

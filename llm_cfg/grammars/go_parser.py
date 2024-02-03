@@ -26,7 +26,7 @@ class GoIncrementalParser(IncrementalParser):
         # Restore the previous state of the parser
         self._restore_recent_parser_state(lexer_tokens)
         
-        self.prev_lexer_tokens, next_ac_tokens = lexer_tokens, None  # Set the previous lexer tokens
+        self.prev_lexer_tokens = lexer_tokens  # Set the previous lexer tokens
 
         # Parse the tokens
         parsing_start_time = time.time()
@@ -35,7 +35,6 @@ class GoIncrementalParser(IncrementalParser):
         try:
             while self.cur_pos < len(lexer_tokens):
                 token = lexer_tokens[self.cur_pos]
-                # print(self.cur_pos, repr(token))
                 self.cur_pos += 1
 
                 if token.type == 'EOS' and self.next_ac_terminals is not None:
@@ -51,10 +50,8 @@ class GoIncrementalParser(IncrementalParser):
                     interactive.parser_state.copy(), 
                     self._accepts(interactive)
                     )
-
         except lark.exceptions.UnexpectedToken as e:
-            print(e)
-            pass
+            self._handle_parsing_error(lexer_tokens, token)
         
         self.logger.log_time(f'Time taken for parsing:{time.time() - parsing_start_time}')
         self.logger.log_time(f'Time taken for computing accepts:{self.time_accepts}')

@@ -330,7 +330,7 @@ class DFAMaskStore:
             self, 
             r: ParseResult, 
             get_list=False, 
-            logger: common.Logger=common.TestLogger()
+            logger: common.Logger=common.EmptyLogger()
             ) -> torch.Tensor:
         start_time = time.time()
         cur_incomplete_string = r.remainder

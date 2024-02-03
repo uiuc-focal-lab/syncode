@@ -8,6 +8,7 @@ from grammar_decoder import GrammarDecoder
 from typing import Optional, Literal
 from mxeval.data import write_jsonl, read_problems, get_data, get_examples
 from tqdm import tqdm
+from evaluation import check_coorectness
 
 
 class Infer:
@@ -20,7 +21,7 @@ class Infer:
         num_samples (int, optional): Number of samples. Defaults to 1.
         grammar (str, optional): Language. Defaults to "input". "input" is used for user input. 
             other options currently supported are "python", "go", "calc"
-        dataset (str, optional): Dataset. Defaults to "multi-humaneval".
+        dataset (str, optional): Dataset. Defaults to "humaneval".
         new_mask_store (bool, optional): Use new DFA mask store. Defaults to False.
         few_shot (bool, optional): Run few shoting prompting. Defaults to False.
         num_examples (int, optional): Number of examples for few shot prompting. Defaults to -1.
@@ -44,7 +45,7 @@ class Infer:
         gpu: int = 1,
         num_samples: int = 1,
         grammar: str = "python",
-        dataset: Literal["mbxp", "multi-humaneval", "mathqa-x", "input"] = "input",
+        dataset: Literal["mbxp", "humaneval", "mathqa-x", "input"] = "input",
         few_shot: bool = False,
         num_examples: int = -1,
         parse_prompt: bool = True,
@@ -57,7 +58,7 @@ class Infer:
     ):  
         # Check inputs
         assert mode in ["original", "grammar_mask"]
-        assert dataset in ["mbxp", "multi-humaneval", "mathqa-x", "input"]
+        assert dataset in ["mbxp", "humaneval", "mathqa-x", "input"]
         assert len(kwargs) == 0, f"Invalid arguments: {kwargs}"
 
         # Set attributes
@@ -86,6 +87,8 @@ class Infer:
         
         # Initialize logit processors
         logit_processors = None
+        grammar_decoder = None
+        
         if self.mode == 'grammar_mask':
             grammar_decoder = GrammarDecoder(
                 self.grammar, 
@@ -149,7 +152,8 @@ class Infer:
                 self.run_eval_for_task(hf_model, num_samples_per_task, format_tabs, grammar_decoder, problems, samples, pbar, task_id)
             write_jsonl(out_path, samples)
             self.logger.log_time(f"Averge time taken for each task: {(time.time() - time1) / (len(problems)):.2f}s")
-        
+            functional_result = check_coorectness(out_path, logger=self.logger)
+            self.logger.log(f"Functional result: {functional_result}")
         else: # Debugging a specific task
             debug_task_id = list(problems.keys())[debug_task_id]
             self.run_eval_for_task(hf_model, num_samples_per_task, format_tabs, grammar_decoder, problems, samples, pbar, debug_task_id)
@@ -177,7 +181,6 @@ class Infer:
                     completion=completion
                 )
             samples += [result]
-            
         pbar.update(num_samples_per_task)
     
 
@@ -197,7 +200,7 @@ class Infer:
             for i, completion in enumerate(batch_completions):
                 print(completion)
             if self.mode == 'grammar_mask':
-                logger.log('Non matching token count: ' + str(grammar_decoder.non_matching_token_cnt))
+                self.logger.log('Non matching token count: ' + str(grammar_decoder.non_matching_token_cnt))
 
 if __name__ == "__main__":
     fire.Fire(Infer)
