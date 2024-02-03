@@ -102,15 +102,14 @@ class GrammarDecoder(LogitsProcessor):
 
                 # returns the names of the Terminals that are currently accepted.
                 r = self.inc_parsers[i].get_acceptable_next_terminals(partial_code)
-                
+                self.logger.log_time(f"Time taken for compilation: {time.time() - time2:.3f}s")
+
                 if '$END' in r.next_accept_terminals:
                     self.last_valid_state[i] = len(input_ids[i])
                 if 'EOC' in r.next_accept_terminals and self.function_end[i]==None:
                     self.function_end[i] = len(input_ids[i])
-
-                self.logger.log_time(f"Time taken for compilation: {time.time() - time2:.3f}s")
-                accept_mask = self.dfa_mask_store.get_overapprox_tokens_mask(r)
-                self.logger.log_time(f"Time taken for overapproximation: {time.time() - time2:.3f}s")
+            
+                accept_mask = self.dfa_mask_store.get_overapprox_tokens_mask(r, logger=self.logger)
 
                 if self.debug:
                     self._log_current_status(partial_code, r)

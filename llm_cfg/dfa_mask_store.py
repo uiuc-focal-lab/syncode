@@ -6,7 +6,7 @@ from typing import Tuple
 import interegular
 import torch
 import regex
-from common import get_vocab_from_tokenizer
+import common
 from grammars import create_parser
 from parse_result import IndentationConstraint, RemainderState, ParseResult
 
@@ -98,7 +98,7 @@ class DFAMaskStore:
                 pass
     
         print(f"Creating DFA mask store for {tokenizer_name} and {grammar}, may take more than 10 minutes.", flush=True)
-        vocab = get_vocab_from_tokenizer(tokenizer)
+        vocab = common.get_vocab_from_tokenizer(tokenizer)
         logger.log_time(f"Time taken for loading vocab: {time.time() - start_time:.2f}s")
         # TODO: add logger in tests
 
@@ -326,15 +326,13 @@ class DFAMaskStore:
                     overapprox_token_ids |= self._lookup_next_tokens_for_dfa_state(cur_terminal, dfa_state, next_terminal)
         return overapprox_token_ids
 
-    def _exception_rule(self, s, exceptions: list[Simplification]) -> str:
-        for e in exceptions:
-            if e.match_original(s):
-                return ""
-        return s
-
-    def get_overapprox_tokens_mask(self, r: ParseResult, get_list=False):
-        # start_time = time.time()
-        # cur_incomplete_string = self._exception_rule(r.remainder, self.exceptions)
+    def get_overapprox_tokens_mask(
+            self, 
+            r: ParseResult, 
+            get_list=False, 
+            logger: common.Logger=common.TestLogger()
+            ) -> torch.Tensor:
+        start_time = time.time()
         cur_incomplete_string = r.remainder
         if cur_incomplete_string is None:
             return torch.ones(len(self._vocab), dtype=torch.bool)
@@ -348,7 +346,7 @@ class DFAMaskStore:
             
         if get_list: # This is useful for testing
             return self._get_tokens_list(overapprox_token_ids)
-        # print('Time taken for mask to list:', time.time() - start_time, flush=True)
+        logger.log_time(f"Time taken for computing the mask: {time.time() - start_time:.3f}s")
         return overapprox_token_ids
     
     def _get_tokens_mask(self, tokens_idx_list) -> torch.Tensor:

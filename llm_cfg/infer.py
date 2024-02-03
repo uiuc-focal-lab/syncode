@@ -1,3 +1,4 @@
+import time
 import common
 import fire
 from language_model import HuggingFaceModel
@@ -51,12 +52,14 @@ class Infer:
         log_level: int = 1,
         new_mask_store: bool = False,
         parser: Literal["lr", "lalr"] = "lalr",
-        task_id: Optional[int] = None
+        task_id: Optional[int] = None,
+        **kwargs
     ):  
         # Check inputs
         assert mode in ["original", "grammar_mask"]
         assert dataset in ["mbxp", "multi-humaneval", "mathqa-x", "input"]
-    
+        assert len(kwargs) == 0, f"Invalid arguments: {kwargs}"
+
         # Set attributes
         self.mode = mode
         self.model_name = model
@@ -118,14 +121,8 @@ class Infer:
                 )
         else:
             self.user_input(hf_model, grammar_decoder)
-
-        if self.mode == 'grammar_mask':
-            self.logger.log('Non matching token count: ' + str(grammar_decoder.non_matching_token_cnt))
-        
         self.logger.close()
 
-    
-    
 
     def run_code_eval(self, 
         hf_model,
@@ -147,9 +144,11 @@ class Infer:
         pbar = tqdm(total=len(problems) * num_samples_per_task)
 
         if debug_task_id is None:
+            time1 = time.time()
             for task_id in problems:
                 self.run_eval_for_task(hf_model, num_samples_per_task, format_tabs, grammar_decoder, problems, samples, pbar, task_id)
             write_jsonl(out_path, samples)
+            self.logger.log_time(f"Averge time taken for each task: {(time.time() - time1) / (len(problems)):.2f}s")
         
         else: # Debugging a specific task
             debug_task_id = list(problems.keys())[debug_task_id]
