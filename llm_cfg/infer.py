@@ -72,7 +72,6 @@ class Infer:
         self.new_mask_store = new_mask_store
         self.few_shot = few_shot
         self.num_examples = num_examples
-        num_samples_per_task = self.num_samples
 
         # Load model
         device = f"cuda:{self.gpu}"
@@ -80,10 +79,8 @@ class Infer:
         tokenizer = common.load_tokenizer(self.model_name)
         
         # Setup output directory
-        out_dir = f"results/{self.model_name}/{self.grammar}/{self.dataset}/"
-        out_path = out_dir + 'samples_' + str(num_samples_per_task) + '_mode_' + str(self.mode) + "_eval.jsonl"
-        os.makedirs(out_dir, exist_ok=True)
-        self.logger = common.Logger(num_samples_per_task, mode, out_dir, log_level=log_level)
+        out_dir, out_path = self.get_output_path()
+        self.logger = common.Logger(self.num_samples, mode, parser, out_dir, log_level=log_level)
         
         # Initialize logit processors
         logit_processors = None
@@ -96,7 +93,7 @@ class Infer:
                 logger=self.logger, 
                 use_cache=(not self.new_mask_store), 
                 parse_prompt=parse_prompt,
-                num_samples=num_samples_per_task, 
+                num_samples=self.num_samples, 
                 dev_mode=dev_mode,
                 parser=parser
                 )
@@ -116,7 +113,7 @@ class Infer:
         if self.dataset != "input": 
             self.run_code_eval(
                 hf_model,
-                num_samples_per_task,
+                self.num_samples,
                 out_path,
                 format_tabs=True,
                 grammar_decoder=grammar_decoder,
@@ -126,6 +123,11 @@ class Infer:
             self.user_input(hf_model, grammar_decoder)
         self.logger.close()
 
+    def get_output_path(self):
+        out_dir = f"results/{self.model_name}/{self.grammar}/{self.dataset}/"
+        out_path = out_dir + 'samples_' + str(self.num_samples) + '_mode_' + str(self.mode) + "_eval.jsonl"
+        os.makedirs(out_dir, exist_ok=True)
+        return out_dir,out_path
 
     def run_code_eval(self, 
         hf_model,

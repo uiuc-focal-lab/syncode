@@ -53,9 +53,9 @@ class Logger:
     """
     Logger class for logging the output of the model
     """
-    def __init__(self, num_samples_per_task, mode, out_dir, log_level=1):
+    def __init__(self, num_samples_per_task, mode, parser, out_dir, log_level=1):
         self.log_level = log_level
-        prefix = 'samples_' + str(num_samples_per_task) + '_mode_' + str(mode) + "_eval.log"
+        prefix = f"mode_{mode}_samples_{num_samples_per_task}_parser_{parser}_eval.log"
         log_file = out_dir + 'logs/' + prefix
         log_time_file = out_dir + 'logs/' + 'time_' + prefix
         log_eval_file = out_dir + 'logs/' + 'eval_' + prefix
@@ -65,6 +65,8 @@ class Logger:
         self.file = open(log_file, 'w')
         self.log_time_file = log_time_file
         self.time_file = open(log_time_file, 'w')
+        self.log_eval_file = log_eval_file
+        self.eval_file = open(log_eval_file, 'w')
 
     def log(self, msg):
         if self.log_level >= 1:
@@ -90,8 +92,8 @@ class Logger:
     
     def log_eval(self, msg):
         if self.log_level >= 0:
-            self.file.write(msg + '\n')
-            self.file.flush()
+            self.eval_file.write(msg + '\n')
+            self.eval_file.flush()
 
     def log_code(self, msg, code):
         if self.log_level >= 1:
