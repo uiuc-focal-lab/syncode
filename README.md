@@ -93,7 +93,7 @@ python3 syncode/evaluation.py path_to_json_file
 </p>
 </details>
 
-<details><summary> List of Currently Tested Models </summary>
+<details><summary> List of currently tested models </summary>
 <p>
 
 
