@@ -1,4 +1,4 @@
-# LLM-CFG
+# Syncode
 
 [![Test Status][test-img]][tests]
 > [!WARNING]  
