@@ -10,9 +10,13 @@ from mxeval.data import write_jsonl, read_problems, get_data, get_examples
 from tqdm import tqdm
 from evaluation import check_coorectness
 
+def compile_and_run(model, mode="original", quantize=True, gpu=1, num_samples=1, grammar="python", dataset="input", few_shot=False, num_examples=-1, parse_prompt=True, dev_mode=False, log_level=1, new_mask_store=False, parser="lalr", task_id=None, **kwargs):
+    sc = Syncode(model, mode=mode, quantize=quantize, gpu=gpu, num_samples=num_samples, grammar=grammar, dataset=dataset, few_shot=few_shot, num_examples=num_examples, parse_prompt=parse_prompt, dev_mode=dev_mode, log_level=log_level, new_mask_store=new_mask_store, parser=parser, **kwargs)
 
-class Infer:
-    """Infer class for running inference on a model
+    sc.infer(task_id=task_id)
+
+class Syncode:
+    """Syncode class for running inference on a model
     Args:
         mode (str, optional): Mode for inference. Defaults to "original".
         model (str): Model id for huggingface model hub or model name if stored locally.
@@ -79,15 +83,15 @@ class Infer:
         tokenizer = common.load_tokenizer(self.model_name)
         
         # Setup output directory
-        out_dir, out_path = self.get_output_path()
+        out_dir, self.out_path = self.get_output_path()
         self.logger = common.Logger(self.num_samples, mode, parser, out_dir, log_level=log_level)
         
         # Initialize logit processors
         logit_processors = None
-        grammar_decoder = None
+        self.grammar_decoder = None
         
         if self.mode == 'grammar_mask':
-            grammar_decoder = GrammarDecoder(
+            self.grammar_decoder = GrammarDecoder(
                 self.grammar, 
                 tokenizer=tokenizer, 
                 logger=self.logger, 
@@ -97,9 +101,9 @@ class Infer:
                 dev_mode=dev_mode,
                 parser=parser
                 )
-            logit_processors = LogitsProcessorList([grammar_decoder])
+            logit_processors = LogitsProcessorList([self.grammar_decoder])
 
-        hf_model = HuggingFaceModel(
+        self.model = HuggingFaceModel(
             model, 
             self.logger, 
             tokenizer=tokenizer, 
@@ -110,18 +114,18 @@ class Infer:
             grammar=self.grammar,
             )
 
+    def infer(self, task_id=None):
         if self.dataset != "input": 
             self.run_code_eval(
-                hf_model,
                 self.num_samples,
-                out_path,
+                self.out_path,
                 format_tabs=True,
-                grammar_decoder=grammar_decoder,
                 debug_task_id=task_id
                 )
         else:
-            self.user_input(hf_model, grammar_decoder)
+            self.user_input()
         self.logger.close()
+
 
     def get_output_path(self):
         out_dir = f"results/{self.model_name}/{self.grammar}/{self.dataset}/"
@@ -130,11 +134,9 @@ class Infer:
         return out_dir,out_path
 
     def run_code_eval(self, 
-        hf_model,
         num_samples_per_task: int,
         out_path: str,
         format_tabs: bool = False,
-        grammar_decoder: Optional[GrammarDecoder] = None,
         debug_task_id: Optional[int] = None
         ):
         """
@@ -151,30 +153,30 @@ class Infer:
         if debug_task_id is None:
             time1 = time.time()
             for task_id in problems:
-                self.run_eval_for_task(hf_model, num_samples_per_task, format_tabs, grammar_decoder, problems, samples, pbar, task_id)
+                self.run_eval_for_task(num_samples_per_task, format_tabs, problems, samples, pbar, task_id)
             write_jsonl(out_path, samples)
             self.logger.log_time(f"Averge time taken for each task: {(time.time() - time1) / (len(problems)):.2f}s")
             functional_result = check_coorectness(out_path, logger=self.logger)
             self.logger.log(f"Functional result: {functional_result}")
         else: # Debugging a specific task
             debug_task_id = list(problems.keys())[debug_task_id]
-            self.run_eval_for_task(hf_model, num_samples_per_task, format_tabs, grammar_decoder, problems, samples, pbar, debug_task_id)
+            self.run_eval_for_task(num_samples_per_task, format_tabs, problems, samples, pbar, debug_task_id)
 
 
-    def run_eval_for_task(self, hf_model, num_samples_per_task, format_tabs, grammar_decoder, problems, samples, pbar, task_id):
+    def run_eval_for_task(self, num_samples_per_task, format_tabs, problems, samples, pbar, task_id):
         """
         run evaluation for a specific task
         """
         self.logger.log(f"Running eval for task {task_id}")
-        if grammar_decoder is not None:
-            grammar_decoder.reset()
+        if self.grammar_decoder is not None:
+            self.grammar_decoder.reset()
 
         if format_tabs:
             prompt = problems[task_id]["prompt"].replace("    ", "\t")
         else:
             prompt = problems[task_id]["prompt"]
 
-        batch_completions = hf_model.generate_batch_completion(prompt, num_samples_per_task)
+        batch_completions = self.model.generate_batch_completion(prompt, num_samples_per_task)
 
         for _, completion in enumerate(batch_completions):
             result = dict(
@@ -186,7 +188,7 @@ class Infer:
         pbar.update(num_samples_per_task)
     
 
-    def user_input(self, hf_model, grammar_decoder):
+    def user_input(self):
         """
         Run user input on the model
         Args:
@@ -198,11 +200,9 @@ class Infer:
             prompt = input("Enter prompt: ")
             if prompt == "exit":
                 break
-            batch_completions = hf_model.generate_batch_completion(prompt, 1)
+            batch_completions = self.model.generate_batch_completion(prompt, 1)
             for i, completion in enumerate(batch_completions):
                 print(completion)
-            if self.mode == 'grammar_mask':
-                self.logger.log('Non matching token count: ' + str(grammar_decoder.non_matching_token_cnt))
 
 if __name__ == "__main__":
-    fire.Fire(Infer)
+    fire.Fire(compile_and_run)
