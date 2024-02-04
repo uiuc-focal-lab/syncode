@@ -2,7 +2,7 @@
 
 
 <p align="center">
-  <img width="500" alt="syncode" src="https://github.com/shubhamugare/syncode/assets/14147610/99c30a9d-b5f5-49ab-9295-33738fde1de2" />
+  <img width="400" alt="syncode" src="https://github.com/shubhamugare/syncode/assets/14147610/99c30a9d-b5f5-49ab-9295-33738fde1de2" />
 </p>
 
 [![Test Status][test-img]][tests]
