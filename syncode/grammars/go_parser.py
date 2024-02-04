@@ -12,7 +12,7 @@ class GoIncrementalParser(IncrementalParser):
     """
 
     def __init__(self, **kwargs):
-        super().__init__("llm_cfg/grammars/go_grammar.lark", **kwargs)
+        super().__init__("syncode/grammars/go_grammar.lark", **kwargs)
 
 
     def get_acceptable_next_terminals(self, partial_code) -> ParseResult:

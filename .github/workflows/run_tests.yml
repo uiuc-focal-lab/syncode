@@ -20,7 +20,7 @@ jobs:
         pip install -r requirements.txt
     - name: Run Tests
       run: |
-        python llm_cfg/tests/test_grammar_python.py
-        python llm_cfg/tests/test_grammar_go.py
-        python llm_cfg/tests/test_lr_parser.py
-        python llm_cfg/tests/test_dfa_mask_python.py --independent
+        python syncode/tests/test_grammar_python.py
+        python syncode/tests/test_grammar_go.py
+        python syncode/tests/test_lr_parser.py
+        python syncode/tests/test_dfa_mask_python.py --independent

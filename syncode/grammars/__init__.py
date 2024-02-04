@@ -14,9 +14,9 @@ def create_parser(grammar, **kwargs):
         elif grammar == 'go':
             return GoIncrementalParser(**kwargs)
 
-        # Check if file "llm_cfg/grammars/{grammar}_grammar.lark" exists
-        if os.path.exists(f'llm_cfg/grammars/{grammar}_grammar.lark'):
-            return incremental_parser.IncrementalParser(f'llm_cfg/grammars/{grammar}_grammar.lark', **kwargs)
+        # Check if file "syncode/grammars/{grammar}_grammar.lark" exists
+        if os.path.exists(f'syncode/grammars/{grammar}_grammar.lark'):
+            return incremental_parser.IncrementalParser(f'syncode/grammars/{grammar}_grammar.lark', **kwargs)
 
         # If the grammar is not found, raise an error
         raise ValueError(f'Unknown grammar: {grammar}')

@@ -1,7 +1,7 @@
 results/
 core/__pycache__
 __pycache__
-llm_cfg/__pycache__
-llm_cfg/core/__pycache__
+syncode/__pycache__
+syncode/core/__pycache__
 .vscode/
 tmp*

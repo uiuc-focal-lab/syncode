@@ -6,14 +6,14 @@ from grammars.python_parser import PythonIncrementalParser
 from common import run_tests
 
 def test_tiny():
-    inc_parser = IncrementalParser('llm_cfg/grammars/tiny_grammar.lark', parser='lr')
+    inc_parser = IncrementalParser('syncode/grammars/tiny_grammar.lark', parser='lr')
     partial_code = "ccdd"
     out = inc_parser.parser.parse(partial_code)
     print(out)
 
 def test_calc():
     # 17 states become 31 from LALR(1) to LR(1)
-    inc_parser = IncrementalParser('llm_cfg/grammars/calc_grammar.lark', parser='lr')
+    inc_parser = IncrementalParser('syncode/grammars/calc_grammar.lark', parser='lr')
     partial_code = "113 + 235 + 1111"
     out = inc_parser.parser.parse(partial_code)
     inc_parser.get_acceptable_next_terminals(partial_code)

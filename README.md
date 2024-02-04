@@ -21,7 +21,7 @@ pip install -e mxeval
 
 To run the tool, use the following command:
 ```
-python3 llm_cfg/infer.py
+python3 syncode/infer.py
     --mode [original, grammar_mask]
     --model [model_name]
     --quantize [True, False]
@@ -65,7 +65,7 @@ python3 llm_cfg/infer.py
 
 The generation results are stored in a JSON file in the "results" directory. To evaluate the result of generation, use the following command:
 ```
-python3 llm_cfg/evaluation.py path_to_json_file
+python3 syncode/evaluation.py path_to_json_file
 ```
 
 List of Currently Tested Models:
