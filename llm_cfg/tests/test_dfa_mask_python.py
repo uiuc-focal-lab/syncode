@@ -10,7 +10,7 @@ from dfa_mask_store import DFAMaskStore
 
 def test_dfa_mask():        
     query_start_time = time.time()
-    r = ParseResult({}, {'PLUS'}, '1', RemainderState.MAYBE_COMPLETE)
+    r = ParseResult({'DEC_NUMBER'}, {'PLUS'}, '1', RemainderState.MAYBE_COMPLETE)
     dfa_mask.get_overapprox_tokens_mask(r) # 0.02 seconds for mask
     print(f'Time taken for mask query:', time.time() - query_start_time, flush=True)
 
@@ -190,6 +190,7 @@ if __name__ == '__main__':
         tokenizer = common.load_tokenizer(model)
         dfa_mask = DFAMaskStore.load_dfa_mask_store(grammar='python', tokenizer=tokenizer, use_cache=True, logger=common.EmptyLogger())
         tests_llama = [test_dfa_mask, test_dfa_mask2, test_dfa_mask3, test_dfa_mask4, test_dfa_mask5, test_dfa_mask6, test_dfa_mask7, test_dfa_mask8, test_dfa_mask9, test_indent, test_dfa_mask_with_indent]
+        # tests_llama = [test_dfa_mask7]
         common.run_tests(tests_llama)
 
     # Run tests for Codegen model
@@ -207,4 +208,3 @@ if __name__ == '__main__':
         dfa_mask = DFAMaskStore.load_dfa_mask_store(grammar='python', tokenizer=tokenizer, use_cache=True, logger=common.EmptyLogger())
         tests_codegen = [test_dfa_mask10, test_dfa_mask11]
         common.run_tests(tests_codegen)
-
