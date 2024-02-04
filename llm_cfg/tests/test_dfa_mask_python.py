@@ -85,19 +85,19 @@ def test_dfa_mask13():
     assert " x" in ac_list
 
 def test_indent():
-    ac_list = dfa_mask._get_indentation_tokens(IndentationConstraint(accept_indents=[1]), get_list=True)
+    ac_list = dfa_mask._lookup_table.get_indentation_tokens(IndentationConstraint(accept_indents=[1]), get_list=True)
     assert all(t in ac_list for t in [' int', ' '])
     assert not '  ' in ac_list
-    ac_list = dfa_mask._get_indentation_tokens(IndentationConstraint(accept_indents=[2]), get_list=True)
+    ac_list = dfa_mask._lookup_table.get_indentation_tokens(IndentationConstraint(accept_indents=[2]), get_list=True)
     assert all(t in ac_list for t in [' ', '  '])
-    ac_list = dfa_mask._get_indentation_tokens(IndentationConstraint(accept_indents=[4]), get_list=True)
+    ac_list = dfa_mask._lookup_table.get_indentation_tokens(IndentationConstraint(accept_indents=[4]), get_list=True)
     assert all(t in ac_list for t in ['\t', ' ', '  ', '    ', '   ', ' '])
-    ac_list = dfa_mask._get_indentation_tokens(IndentationConstraint(greater_than_indent_val=0), get_list=True)
+    ac_list = dfa_mask._lookup_table.get_indentation_tokens(IndentationConstraint(greater_than_indent_val=0), get_list=True)
     assert ' int' in ac_list
-    ac_list = dfa_mask._get_indentation_tokens(IndentationConstraint(greater_than_indent_val=1), get_list=True)
+    ac_list = dfa_mask._lookup_table.get_indentation_tokens(IndentationConstraint(greater_than_indent_val=1), get_list=True)
     assert not ' int' in ac_list
     assert '  ' in ac_list
-    ac_list = dfa_mask._get_indentation_tokens(IndentationConstraint(greater_than_indent_val=3), get_list=True)
+    ac_list = dfa_mask._lookup_table.get_indentation_tokens(IndentationConstraint(greater_than_indent_val=3), get_list=True)
     assert '              ' in ac_list
 
 def test_dfa_mask_with_indent():
