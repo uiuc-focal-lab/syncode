@@ -58,6 +58,6 @@ class GoIncrementalParser(IncrementalParser):
         self.next_ac_terminals.add('EOS')
         
         # Compute current terminal string
-        remainder_state, current_term_str = self._get_remainder(partial_code)
-        return ParseResult(self.cur_ac_terminals, self.next_ac_terminals, current_term_str, remainder_state)
+        remainder_state, current_term_str, final_terminal = self._get_remainder(partial_code)
+        return ParseResult.from_accept_terminals(self.cur_ac_terminals, self.next_ac_terminals, current_term_str, remainder_state, final_terminal=final_terminal)
     

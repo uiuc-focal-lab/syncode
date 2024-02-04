@@ -1,5 +1,28 @@
 import copy
 from enum import Enum
+from typing import Optional
+
+class AcceptSequence(list):
+    """
+    Stores the sequence of terminals that are accepted by the parser.
+    """
+    def __init__(self, accept_terminals: list[str]):
+        self.accept_terminals = accept_terminals
+    
+    def __getitem__(self, id):
+        return self.accept_terminals[id]
+
+    def __repr__(self):
+        return 'accept_terminals: {}'.format(self.accept_terminals)
+    
+    def __eq__(self, other):
+        return self.accept_terminals == other.accept_terminals
+
+    def __hash__(self):
+        return hash(str(self.accept_terminals))
+
+    def __len__(self):
+        return len(self.accept_terminals)
 
 class RemainderState(Enum):
     """
@@ -13,18 +36,40 @@ class ParseResult:
     """ 
     Stores the result of parsing. 
     """
-    def __init__(self, cur_accept_terminals, next_accept_terminals, remainder, remainder_state: RemainderState, next_ac_indents=None):
+    def __init__(self, accept_sequences, remainder, remainder_state: RemainderState, next_ac_indents=None):
         self.remainder = remainder
-        self.remainder_state = remainder_state # Whether the final_string is a complete terminal
-        self.cur_accept_terminals = copy.copy(cur_accept_terminals)
-        self.next_accept_terminals = copy.copy(next_accept_terminals) 
-        self.next_ac_indents: IndentationConstraint = next_ac_indents
+        self.remainder_state = remainder_state
+        self.accept_sequences = accept_sequences
+        self.next_ac_indents: Optional[IndentationConstraint] = next_ac_indents
+        
+    @staticmethod
+    def from_accept_terminals(cur_accept_terminals, next_accept_terminals, remainder, remainder_state: RemainderState, next_ac_indents=None, final_terminal=None) -> 'ParseResult':
+        """
+        Create a ParseResult from current and next accept terminals.
+        """
+        if remainder_state == RemainderState.COMPLETE: 
+            accept_sequences = {AcceptSequence([t]) for t in next_accept_terminals}
+        elif remainder_state == RemainderState.INCOMPLETE:
+            accept_sequences = {AcceptSequence([t]) for t in cur_accept_terminals}
+        else:
+            accept_sequences = set()
+            assert final_terminal is not None
+            for t in cur_accept_terminals:
+                if t == final_terminal:
+                    for t2 in next_accept_terminals:
+                        accept_sequences.add(AcceptSequence([final_terminal, t2]))
+                else:
+                    accept_sequences.add(AcceptSequence([t]))
+        
+        next_ac_indents: IndentationConstraint = next_ac_indents
 
         if remainder_state == RemainderState.INCOMPLETE: # If the terminal is not complete, then next_accept_terminals should be None
             assert len(next_accept_terminals) == 0
+        return ParseResult(accept_sequences, remainder, remainder_state, next_ac_indents)
+
 
     def __repr__(self):
-        return 'final_incomplete_str: {}\nis_terminal_complete: {}\ncur_accept_terminals: {}\nnext_accept_terminals: {}\nNext indent:{}'.format(repr(self.remainder), self.remainder_state, self.cur_accept_terminals, self.next_accept_terminals, self.next_ac_indents)
+        return 'remainder : {}, remainder_state: {}, accept_sequences: {}, next_ac_indents: {}'.format(self.remainder, self.remainder_state, self.accept_sequences, self.next_ac_indents)
     
     def __eq__(self, other):
         return self.remainder == other.remainder and self.remainder_state == other.remainder_state and self.cur_accept_terminals == other.cur_accept_terminals and self.next_accept_terminals == other.next_accept_terminals and self.next_ac_indents == other.next_ac_indents

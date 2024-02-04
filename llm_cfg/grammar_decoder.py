@@ -104,10 +104,7 @@ class GrammarDecoder(LogitsProcessor):
                 r = self.inc_parsers[i].get_acceptable_next_terminals(partial_code)
                 self.logger.log_time(f"Time taken for compilation: {time.time() - time2:.3f}s")
 
-                if '$END' in r.next_accept_terminals:
-                    self.last_valid_state[i] = len(input_ids[i])
-                if 'EOC' in r.next_accept_terminals and self.function_end[i]==None:
-                    self.function_end[i] = len(input_ids[i])
+                self.update_valid_state(input_ids, i, r)
             
                 accept_mask = self.dfa_mask_store.get_overapprox_tokens_mask(r, logger=self.logger)
 
@@ -138,6 +135,13 @@ class GrammarDecoder(LogitsProcessor):
 
         self.logger.log_time(f"Time taken for decoding: {time.time() - time1:.3f}s")
         return scores
+
+    def update_valid_state(self, input_ids, i: int, r: ParseResult):
+        for accept_seq in r.accept_sequences:
+            if accept_seq[0] == '$EOC' and self.function_end[i]==None:
+                self.function_end[i] = len(input_ids[i])
+            if accept_seq[0] == '$END':
+                self.last_valid_state[i] = len(input_ids[i])
 
     def _log_greedy_difference(self, greedy_grammar_token, partial_code, r, greedy_token):
         self.logger.log_check(f"Greedy token and greedy grammar-based token do not match!")

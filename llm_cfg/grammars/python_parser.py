@@ -84,7 +84,7 @@ class PythonIncrementalParser(IncrementalParser):
         self.logger.log_time(f'Time taken for parsing:{time.time() - parsing_start_time}')
         self.logger.log_time(f'Time taken for computing accepts:{self.time_accepts}')
 
-        remainder_state = None
+        remainder_state, final_terminal = None, None
         # Compute current terminal string
         if self.lexer_pos < len(code):
             remainder_state = RemainderState.INCOMPLETE
@@ -98,6 +98,7 @@ class PythonIncrementalParser(IncrementalParser):
             # e.g., 'de' may seem like a variable name that is complete, but it may be just a prefix of 'def'
             current_term_str = self.parser_token_seq[-1].value
             remainder_state = RemainderState.MAYBE_COMPLETE
+            final_terminal = self.parser_token_seq[-1].type
 
         next_ac_indents = None
         if remainder_state == RemainderState.MAYBE_COMPLETE or remainder_state == RemainderState.COMPLETE:
@@ -124,7 +125,7 @@ class PythonIncrementalParser(IncrementalParser):
         if self.next_ac_terminals is not None and '_NL' in self.next_ac_terminals:
             self.next_ac_terminals.add('COMMENT')
 
-        return ParseResult(self.cur_ac_terminals, self.next_ac_terminals, current_term_str, remainder_state, next_ac_indents=next_ac_indents)
+        return ParseResult.from_accept_terminals(self.cur_ac_terminals, self.next_ac_terminals, current_term_str, remainder_state, next_ac_indents=next_ac_indents, final_terminal=final_terminal)
 
     
 

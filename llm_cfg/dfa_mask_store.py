@@ -402,21 +402,27 @@ class DFAMaskStore:
     def _lookup_next_tokens(self, dfa_states: list[DFAState], r: ParseResult) -> torch.Tensor:
         overapprox_token_ids = self._get_default_mask()
 
-        if r.remainder_state == RemainderState.COMPLETE:
-            for dfa_state in dfa_states:
-                if dfa_state.terminal in r.next_accept_terminals:
-                    overapprox_token_ids |= self._lookup_table.complete_case_lookup(dfa_state)
-            return overapprox_token_ids
-        
         # Case when the final string may be incomplete
         for dfa_state in dfa_states:
-            if dfa_state.terminal not in r.cur_accept_terminals:
-                continue
-            if len(r.next_accept_terminals) == 0: # This is the case when we have incomplete final string
-                overapprox_token_ids |= self._lookup_table.incomplete_case_lookup(dfa_state)
-            else:
-                for next_terminal in r.next_accept_terminals:
-                    overapprox_token_ids |= self._lookup_next_tokens_for_dfa_state(dfa_state, next_terminal)
+                for accept_sequence in r.accept_sequences:
+                    if dfa_state.terminal != accept_sequence[0]:
+                        continue
+
+                    if r.remainder_state == RemainderState.COMPLETE:
+                            assert len(accept_sequence) == 1 # Since we only store length 1 accept sequences in this case
+                            overapprox_token_ids |= self._lookup_table.complete_case_lookup(dfa_state)
+
+                    if r.remainder_state == RemainderState.INCOMPLETE:
+                            overapprox_token_ids |= self._lookup_table.incomplete_case_lookup(dfa_state)
+                    
+                    if r.remainder_state == RemainderState.MAYBE_COMPLETE:
+                            if len(accept_sequence) == 1:
+                                overapprox_token_ids |= self._lookup_table.complete_case_lookup(dfa_state)
+                            elif len(accept_sequence) == 2:
+                                overapprox_token_ids |= self._lookup_next_tokens_for_dfa_state(dfa_state, accept_sequence[1])
+                            else:
+                                raise ValueError(f"Invalid accept sequence: {accept_sequence}")
+                            
         return overapprox_token_ids
 
     def get_overapprox_tokens_mask(

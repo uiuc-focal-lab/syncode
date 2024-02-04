@@ -100,7 +100,7 @@ class IncrementalParser:
             pass
         except EOFError as e:
             pass
-        self.lexer_pos = lexer_state.line_ctr.char_pos
+        # self.lexer_pos = lexer_state.line_ctr.char_pos  # Any reason why this was here?
         self.logger.log_time(f'Time taken for lexing:{time.time() - lexing_start_time}')
         return lexer_tokens
     
@@ -159,11 +159,12 @@ class IncrementalParser:
         self.logger.log_time(f'Time taken for computing accepts:{self.time_accepts}')
 
         # Compute current terminal string
-        remainder_state, current_term_str = self._get_remainder(partial_code)
+        remainder_state, current_term_str, final_terminal = self._get_remainder(partial_code)
         
-        return ParseResult(self.cur_ac_terminals, self.next_ac_terminals, current_term_str, remainder_state)
+        return ParseResult.from_accept_terminals(self.cur_ac_terminals, self.next_ac_terminals, current_term_str, remainder_state, final_terminal=final_terminal)
 
     def _get_remainder(self, code):
+        final_terminal = None
         if self.lexer_pos < len(code):
             remainder_state = RemainderState.INCOMPLETE
             current_term_str = code[self.lexer_pos:]
@@ -175,7 +176,8 @@ class IncrementalParser:
             # e.g., 'de' may seem like a variable name that is complete, but it may be just a prefix of 'def'
             current_term_str = self.parser_token_seq[-1].value
             remainder_state = RemainderState.MAYBE_COMPLETE
-        return remainder_state,current_term_str
+            final_terminal = self.parser_token_seq[-1].type
+        return remainder_state, current_term_str, final_terminal
     
     def _accepts(self, interactive_parser: InteractiveParser) -> set:
         start_time = time.time()
