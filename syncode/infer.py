@@ -72,10 +72,11 @@ class Syncode:
         self.gpu = gpu
         self.num_samples = num_samples
         self.grammar = grammar
-        self.dataset = dataset
         self.new_mask_store = new_mask_store
         self.few_shot = few_shot
         self.num_examples = num_examples
+        dataset_dirmap = {"mbxp": "mbxp", "humaneval": "multi-humaneval", "mathqa-x": "mathqa-x"}
+        self.dataset = dataset_dirmap[dataset]
 
         # Load model
         device = f"cuda:{self.gpu}"

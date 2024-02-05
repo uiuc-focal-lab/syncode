@@ -410,7 +410,7 @@ def check_coorectness(
     if re.search(r"python", filename,):
         language = "python"
     if re.search( r"humaneval", filename):
-        dataset = "humaneval"
+        dataset = "multi-humaneval"
     elif re.search(r"mathqa", filename):
         dataset = "mathqa-x"
     if compare:
