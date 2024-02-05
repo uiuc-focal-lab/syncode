@@ -59,5 +59,5 @@ class GoIncrementalParser(IncrementalParser):
         
         # Compute current terminal string
         remainder_state, current_term_str, final_terminal = self._get_remainder(partial_code)
-        return ParseResult.from_accept_terminals(self.cur_ac_terminals, self.next_ac_terminals, current_term_str, remainder_state, final_terminal=final_terminal)
+        return ParseResult.from_accept_terminals(self.cur_ac_terminals, self.next_ac_terminals, current_term_str, remainder_state, final_terminal=final_terminal, ignore_terminals=self.parser.ignore_tokens)
     

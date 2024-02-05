@@ -122,10 +122,7 @@ class PythonIncrementalParser(IncrementalParser):
             self.cur_ac_terminals = self.next_ac_terminals
             self.next_ac_terminals = set()
 
-        if self.next_ac_terminals is not None and '_NL' in self.next_ac_terminals:
-            self.next_ac_terminals.add('COMMENT')
-
-        return ParseResult.from_accept_terminals(self.cur_ac_terminals, self.next_ac_terminals, current_term_str, remainder_state, next_ac_indents=next_ac_indents, final_terminal=final_terminal)
+        return ParseResult.from_accept_terminals(self.cur_ac_terminals, self.next_ac_terminals, current_term_str, remainder_state, next_ac_indents=next_ac_indents, final_terminal=final_terminal, ignore_terminals=self.parser.ignore_tokens)
 
     
 
@@ -166,8 +163,8 @@ class PythonIncrementalParser(IncrementalParser):
                 elif token.type in indenter.CLOSE_PAREN_types:
                         indenter.paren_level -= 1
                         assert indenter.paren_level >= 0
-        except lark.exceptions.UnexpectedCharacters as e:
-            pass
+        except lark.exceptions.UnexpectedCharacters as e: 
+            pass # This may happen when the partial code has an ignore terminal
         except EOFError as e:
             pass
 

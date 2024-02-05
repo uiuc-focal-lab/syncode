@@ -43,7 +43,7 @@ class ParseResult:
         self.next_ac_indents: Optional[IndentationConstraint] = next_ac_indents
         
     @staticmethod
-    def from_accept_terminals(cur_accept_terminals, next_accept_terminals, remainder, remainder_state: RemainderState, next_ac_indents=None, final_terminal=None) -> 'ParseResult':
+    def from_accept_terminals(cur_accept_terminals, next_accept_terminals, remainder, remainder_state: RemainderState, next_ac_indents=None, final_terminal=None, ignore_terminals=None) -> 'ParseResult':
         """
         Create a ParseResult from current and next accept terminals.
         """
@@ -61,6 +61,9 @@ class ParseResult:
                 else:
                     accept_sequences.add(AcceptSequence([t]))
         
+        if ignore_terminals is not None: # Does this cause imprecision?
+            accept_sequences = accept_sequences.union({AcceptSequence([t]) for t in ignore_terminals})
+
         next_ac_indents: IndentationConstraint = next_ac_indents
 
         if remainder_state == RemainderState.INCOMPLETE: # If the terminal is not complete, then next_accept_terminals should be None

@@ -305,5 +305,12 @@ def test_parser22():
     assert r.remainder == 'del'
     assert AcceptSequence(['NAME']) in r.accept_sequences
 
-tests = [test_parser1, test_parser2, test_parser3, test_parser4, test_parser5, test_parser6, test_parser7, test_parser8, test_parser9, test_parser10, test_parser11, test_parser12, test_parser13, test_parser14, test_parser15, test_parser16, test_parser17, test_parser18, test_parser19, test_parser20, test_parser21, test_parser22, test_incremental_parser, test_incremental_parser2, test_incremental_parser3, test_incremental_parser4]
+def test_parser23():
+    inc_parser.reset()
+    partial_code = "def make_palindrome(string: str) -> str:\n\t#"
+    r = inc_parser.get_acceptable_next_terminals(partial_code)
+    assert AcceptSequence(['COMMENT']) in r.accept_sequences
+
+tests = [test_parser1, test_parser2, test_parser3, test_parser4, test_parser5, test_parser6, test_parser7, test_parser8, test_parser9, test_parser10, test_parser11, test_parser12, test_parser13, test_parser14, test_parser15, test_parser16, test_parser17, test_parser18, test_parser19, test_parser20, test_parser21, test_parser22, test_parser23, test_incremental_parser, test_incremental_parser2, test_incremental_parser3, test_incremental_parser4]
+# tests = [test_parser11]
 run_tests(tests)
