@@ -58,7 +58,7 @@ class HuggingFaceModel(LanguageModel):
     @torch.inference_mode()
     def generate_batch_completion_grammar(self, prompt, batch_size) -> list[str]:
         '''
-        Generates batch_size completions for the given prompt of human-eval. 
+        Generates batch_size completions for the given prompt. 
         '''
         input_batch = [prompt for _ in range(batch_size)]
         inputs = self.tokenizer(input_batch, return_tensors="pt").to(self.model.device)
@@ -77,43 +77,23 @@ class HuggingFaceModel(LanguageModel):
             pad_token_id=self.tokenizer.eos_token_id,  # model has no pad token
             logits_processor=self.logit_processors
         )
-
         grammar_decoder = self.get_grammar_decoder()
         batch_completions = []
         function_incomplete = [False for _ in range(batch_size)]
+        stop_word = "\n\n"
 
         for i in range(batch_size):
-            last_token_id = len(generated_ids[i])
-            if grammar_decoder is not None:
-                self.logger.log(f"Last valid state: {grammar_decoder.last_valid_state[i]}")
-                self.logger.log(f"Function end: {grammar_decoder.function_end[i]}")
-
-                if grammar_decoder.function_end[i] is not None:
-                    # if the function end is not None, then the last valid state is the function end
-                    last_token_id = grammar_decoder.function_end[i]
-                else:
-                    # otherwise, the last valid state is the last valid state
-                    function_incomplete[i] = True
-                    last_token_id = grammar_decoder.last_valid_state[i]
-
-            completion = self.tokenizer.decode(generated_ids[i][input_ids_cutoff-1:last_token_id],
-             skip_special_tokens=True)[1:]
-
-            # Can remove this logging in future
             raw_completion = self.tokenizer.decode(generated_ids[i][input_ids_cutoff-1:len(generated_ids[i])], skip_special_tokens=True)[1:]                                       
             self.logger.log_code("Raw completion", raw_completion)
 
             # Post-processing to filter out using stop word (e.g. "\n\n")
-            if self.grammar == "python": 
-                completion = filter_code(fix_indents(completion))
-            elif self.grammar == "go" and self.mode == "original": 
-                # only filter with stop-word for original mode
-                completion = filter_code(completion)
-
-            if self.grammar == "go" and function_incomplete[i]:
-                self.logger.log(f"Function incomplete!")
-                # if the function is incomplete, then we need to add a closing brace
-                completion += "}"
+            if self.grammar == "python":
+                self.completion_for_python(input_ids_cutoff, generated_ids, grammar_decoder, function_incomplete, stop_word, i, raw_completion)
+            elif self.grammar == "go":
+                # For go
+                completion = self.completion_for_go(function_incomplete, i, raw_completion)
+            else: # TODO: handle the case for other grammars
+                completion = raw_completion
 
             self.logger.log_code("Filtered sample", completion)
             batch_completions.append(completion)
@@ -124,8 +104,44 @@ class HuggingFaceModel(LanguageModel):
         self.logger.log(f"Completion: {batch_completions}")
 
         return batch_completions
+
+    def completion_for_python(self, input_ids_cutoff, generated_ids, grammar_decoder, function_incomplete, stop_word, i, raw_completion):
+        completion_with_eos = filter_code(fix_indents(raw_completion))
+        if stop_word in raw_completion or grammar_decoder is None:
+            completion = completion_with_eos
+        else:
+                    # Use when the stop word does not exist in the completion and grammar_decoder is used
+            completion = self.compute_backup_completion(grammar_decoder, function_incomplete, i, input_ids_cutoff, generated_ids)
+
+    def completion_for_go(self, function_incomplete, i, raw_completion):
+        if self.grammar == "go" and self.mode == "original": 
+                # only filter with stop-word for original mode
+            completion = filter_code(raw_completion)
+
+        if self.grammar == "go" and function_incomplete[i]:
+            self.logger.log(f"Function incomplete!")
+                # if the function is incomplete, then we need to add a closing brace
+            completion += "}"
+        return completion
+
+    def compute_backup_completion(self, grammar_decoder, function_incomplete, i, input_ids_cutoff, generated_ids):
+        self.logger.log(f"Last valid state: {grammar_decoder.last_valid_state[i]}")
+        self.logger.log(f"Function end: {grammar_decoder.function_end[i]}")
+
+        if grammar_decoder.function_end[i] is not None:
+                    # if the function end is not None, then the last valid state is the function end
+            last_token_id = grammar_decoder.function_end[i]
+        else:
+                    # otherwise, the last valid state is the last valid state
+            function_incomplete[i] = True
+            last_token_id = grammar_decoder.last_valid_state[i]
+        # return last_token_id
+        # Use when the stop word does not exist in the completion
+        backup_completion = self.tokenizer.decode(generated_ids[i][input_ids_cutoff-1:last_token_id],
+        skip_special_tokens=True)[1:]  
+        return backup_completion
     
-    def tokenize(self, s: str) -> list[int]:
+    def tokenize(self, s: str) -> 'list[int]':
         return self.tokenizer.encode(s, add_special_tokens=False)
 
     def vocabulary(self) -> list[str]:
