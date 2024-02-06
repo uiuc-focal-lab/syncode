@@ -11,7 +11,7 @@ grammars = ['python', 'go']
 datasets = ['humaneval']
 modes = ['original', 'grammar_mask']
 
-product = [(model, grammar, dataset, mode) for model in models for grammar in grammars for dataset in datasets for mode in modes]
+product = [(model, dataset, mode, grammar) for model in models for dataset in datasets for mode in modes for grammar in grammars]
 
 for model, grammar, dataset, mode in product:
     if mode == 'original':

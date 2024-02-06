@@ -114,14 +114,16 @@ class HuggingFaceModel(LanguageModel):
         return completion
 
     def completion_for_go(self, function_incomplete, i, raw_completion):
-        if self.grammar == "go" and self.mode == "original": 
-                # only filter with stop-word for original mode
+        if self.mode == "original": 
+            # only filter with stop-word for original mode
             completion = filter_code(raw_completion)
-
-        if self.grammar == "go" and function_incomplete[i]:
+        elif function_incomplete[i]:
             self.logger.log(f"Function incomplete!")
                 # if the function is incomplete, then we need to add a closing brace
             completion += "}"
+        else:
+            completion = raw_completion
+            
         return completion
 
     def compute_backup_completion(self, grammar_decoder, function_incomplete, i, input_ids_cutoff, generated_ids):
