@@ -10,16 +10,17 @@ grammars = ['python', 'go']
 # datasets = ['mbxp', 'humaneval']
 datasets = ['humaneval']
 modes = ['original', 'grammar_mask']
-parsers = ['lalr', 'lr']
 
+product = [(model, grammar, dataset, mode) for model in models for grammar in grammars for dataset in datasets for mode in modes]
 
-for model, grammar, dataset, mode in zip(models, grammars, datasets, modes):
+for model, grammar, dataset, mode in product:
     if mode == 'original':
         parsers = [None]
     else:
         parsers = ['lalr', 'lr']
 
     for parser in parsers: 
+        print(f"Running {model} with {grammar} grammar and {dataset} dataset in {mode} mode with {parser} parser")
         compile_and_run(
             model, 
             mode=mode, 
