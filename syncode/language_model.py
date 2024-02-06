@@ -106,11 +106,10 @@ class HuggingFaceModel(LanguageModel):
         return batch_completions
 
     def completion_for_python(self, input_ids_cutoff, generated_ids, grammar_decoder, function_incomplete, stop_word, i, raw_completion):
-        completion_with_eos = filter_code(fix_indents(raw_completion))
-        if stop_word in raw_completion or grammar_decoder is None:
-            completion = completion_with_eos
+        if stop_word in raw_completion or self.tokenizer.eos_token_id == generated_ids[i][-1] or grammar_decoder is None:
+            completion = filter_code(fix_indents(raw_completion))
         else:
-                    # Use when the stop word does not exist in the completion and grammar_decoder is used
+            # Use when the stop word does not exist in the completion and grammar_decoder is used
             completion = self.compute_backup_completion(grammar_decoder, function_incomplete, i, input_ids_cutoff, generated_ids)
         return completion
 

@@ -136,11 +136,17 @@ class GrammarDecoder(LogitsProcessor):
         return scores
 
     def update_valid_state(self, input_ids, i: int, r: ParseResult):
+        """
+        This a simple heuristic to cut off the generated output at the end of the function. 
+        TODO: Put this under a flag to enable/disable this heuristic.
+        """
         for accept_seq in r.accept_sequences:
             if accept_seq[0] == '$EOC' and self.function_end[i]==None:
                 self.function_end[i] = len(input_ids[i])
-            if accept_seq[0] == '$END':
-                self.last_valid_state[i] = len(input_ids[i])
+            
+            # 'EOF' is special terminal since $END does not work with pythong
+            if accept_seq[0] == '$END' or accept_seq[0] == 'EOF':
+                self.last_valid_state[i] = len(input_ids[i])-1
 
     def _log_greedy_difference(self, greedy_grammar_token, partial_code, r, greedy_token):
         self.logger.log_check(f"Greedy token and greedy grammar-based token do not match!")
