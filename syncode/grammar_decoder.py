@@ -4,7 +4,6 @@ import torch
 import common
 from transformers import LogitsProcessor, PreTrainedTokenizer
 from incremental_parser import IncrementalParser, ParseResult
-from grammars.python_parser import PythonIncrementalParser
 from grammars import create_parser
 from dfa_mask_store import DFAMaskStore
 
