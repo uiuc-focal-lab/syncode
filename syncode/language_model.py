@@ -79,8 +79,6 @@ class HuggingFaceModel(LanguageModel):
         )
         grammar_decoder = self.get_grammar_decoder()
         batch_completions = []
-        function_incomplete = [False for _ in range(batch_size)]
-        stop_word = "\n\n"
 
         for i in range(batch_size):
             raw_completion = self.tokenizer.decode(generated_ids[i][input_ids_cutoff-1:len(generated_ids[i])], skip_special_tokens=True)[1:]                                       
@@ -88,10 +86,9 @@ class HuggingFaceModel(LanguageModel):
 
             # Post-processing to filter out using stop word (e.g. "\n\n")
             if self.grammar == "python":
-                completion = self.completion_for_python(input_ids_cutoff, generated_ids, grammar_decoder, function_incomplete, stop_word, i, raw_completion)
-            elif self.grammar == "go":
-                # For go
-                completion = self.completion_for_go(function_incomplete, i, raw_completion)
+                completion = self.completion_for_python(i, batch_size, input_ids_cutoff, generated_ids, grammar_decoder, raw_completion)
+            elif self.grammar == "go": 
+                completion = self.completion_for_go(i, batch_size, raw_completion, generated_ids, grammar_decoder, input_ids_cutoff)
             else: # TODO: handle the case for other grammars
                 completion = raw_completion
 
@@ -105,25 +102,31 @@ class HuggingFaceModel(LanguageModel):
 
         return batch_completions
 
-    def completion_for_python(self, input_ids_cutoff, generated_ids, grammar_decoder, function_incomplete, stop_word, i, raw_completion):
+    def completion_for_python(self, i, batch_size, input_ids_cutoff, generated_ids, grammar_decoder, raw_completion):
+        stop_word = "\n\n"
         if stop_word in raw_completion or self.tokenizer.eos_token_id == generated_ids[i][-1] or grammar_decoder is None:
             completion = filter_code(fix_indents(raw_completion))
         else:
             # Use when the stop word does not exist in the completion and grammar_decoder is used
+            function_incomplete = [False for _ in range(batch_size)]
             completion = self.compute_backup_completion(grammar_decoder, function_incomplete, i, input_ids_cutoff, generated_ids)
         return completion
 
-    def completion_for_go(self, function_incomplete, i, raw_completion):
-        if self.mode == "original": 
+    def completion_for_go(self, i, batch_size, raw_completion, generated_ids, grammar_decoder, input_ids_cutoff):
+        stop_word = "\n\n"
+        if self.mode == "original" or stop_word in raw_completion or self.tokenizer.eos_token_id == generated_ids[i][-1]: 
             # only filter with stop-word for original mode
             completion = filter_code(raw_completion)
-        elif function_incomplete[i]:
-            self.logger.log(f"Function incomplete!")
-                # if the function is incomplete, then we need to add a closing brace
-            completion += "}"
         else:
-            completion = raw_completion
-            
+            # Use when the stop word does not exist in the completion and grammar_decoder is used
+            function_incomplete = [False for _ in range(batch_size)]
+            self.logger.log(f"Function incomplete!")
+            completion = self.compute_backup_completion(grammar_decoder, function_incomplete, i, input_ids_cutoff, generated_ids)
+
+            if function_incomplete[i]:
+                # if the function is incomplete, then we need to add a closing brace
+                completion += "}"
+
         return completion
 
     def compute_backup_completion(self, grammar_decoder, function_incomplete, i, input_ids_cutoff, generated_ids):
@@ -134,7 +137,7 @@ class HuggingFaceModel(LanguageModel):
                     # if the function end is not None, then the last valid state is the function end
             last_token_id = grammar_decoder.function_end[i]
         else:
-                    # otherwise, the last valid state is the last valid state
+            # otherwise, the last valid state is the last valid state
             function_incomplete[i] = True
             last_token_id = grammar_decoder.last_valid_state[i]
         # return last_token_id

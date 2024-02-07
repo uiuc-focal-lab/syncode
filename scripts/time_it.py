@@ -13,7 +13,7 @@ modes = ['original', 'grammar_mask']
 
 product = [(model, dataset, mode, grammar) for model in models for dataset in datasets for mode in modes for grammar in grammars]
 
-for model, grammar, dataset, mode in product:
+for model, dataset, mode, grammar in product:
     if mode == 'original':
         parsers = [None]
     else:
@@ -29,6 +29,6 @@ for model, grammar, dataset, mode in product:
             grammar=grammar, 
             dataset=dataset, 
             few_shot=False, 
-            log_level=1, 
+            log_level=0, 
             new_mask_store=False, 
             parser=parser)
