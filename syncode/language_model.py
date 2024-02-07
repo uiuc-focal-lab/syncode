@@ -113,7 +113,7 @@ class HuggingFaceModel(LanguageModel):
         return completion
 
     def completion_for_go(self, i, batch_size, raw_completion, generated_ids, grammar_decoder, input_ids_cutoff):
-        stop_word = "\n\n"
+        stop_word = "\n\n\n"
         if self.mode == "original" or stop_word in raw_completion or self.tokenizer.eos_token_id == generated_ids[i][-1]: 
             # only filter with stop-word for original mode
             completion = filter_code(raw_completion)
@@ -134,7 +134,7 @@ class HuggingFaceModel(LanguageModel):
         self.logger.log(f"Function end: {grammar_decoder.function_end[i]}")
 
         if grammar_decoder.function_end[i] is not None:
-                    # if the function end is not None, then the last valid state is the function end
+            # if the function end is not None, then the last valid state is the function end
             last_token_id = grammar_decoder.function_end[i]
         else:
             # otherwise, the last valid state is the last valid state
