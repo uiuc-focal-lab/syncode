@@ -20,7 +20,7 @@ func main() {{
   }}
   '''
     # partial_code = 'package main\n\nfunc has_close_elements (numbers []float64, threshold float64) bool {\n\tvar (\t\tmin, max float64\n\t\tmin_index, max_index int\n\t)\n\tfor i, n := range 5 {\na=i\n}\n};'
-    t = inc_parser.parser.parse(partial_code)
+    t = inc_parser.base_parser.parse(partial_code)
     print(t.pretty())
 
 def test_lexer():
@@ -58,7 +58,7 @@ func main() {{
     a, b = 3, 5
 }}
 '''
-    out = inc_parser.parser.parse(code)
+    out = inc_parser.base_parser.parse(code)
     print(out.pretty())
 
 def test_go_parser2():
@@ -74,7 +74,7 @@ func main() {{
   fmt.Println(z)
 }}
 '''
-    out = inc_parser.parser.parse(code)
+    out = inc_parser.base_parser.parse(code)
 
 def test_go_parser3():
     failed = False
@@ -90,7 +90,7 @@ func main() {{
   fmt.Println(z)
 }}
 ''' 
-        out = inc_parser.parser.parse(code)
+        out = inc_parser.base_parser.parse(code)
     except Exception as e:
         failed = True
     assert failed

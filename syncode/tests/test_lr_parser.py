@@ -4,18 +4,20 @@ sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../')
 from incremental_parser import IncrementalParser
 from grammars.python_parser import PythonIncrementalParser
 from common import run_tests
+from grammars import create_parser
+
 
 def test_tiny():
     inc_parser = IncrementalParser('syncode/grammars/tiny_grammar.lark', parser='lr')
     partial_code = "ccdd"
-    out = inc_parser.parser.parse(partial_code)
+    out = inc_parser.base_parser.parse(partial_code)
     print(out)
 
 def test_calc():
     # 17 states become 31 from LALR(1) to LR(1)
     inc_parser = IncrementalParser('syncode/grammars/calc_grammar.lark', parser='lr')
     partial_code = "113 + 235 + 1111"
-    out = inc_parser.parser.parse(partial_code)
+    out = inc_parser.base_parser.parse(partial_code)
     inc_parser.get_acceptable_next_terminals(partial_code)
     assert out.children[0].children[0].children[1].children[0] == '235'
 
@@ -37,8 +39,8 @@ def test_time():
     time3 = time.time()
     print("Time taken for building LALR(1):", time3 - time2)
     
-    print(len(inc_lr_parser.parser.parser.parser._parse_table.states))
-    print(len(inc_lalr_parser.parser.parser.parser._parse_table.states))
+    print(len(inc_lr_parser.base_parser.parser.parser._parse_table.states))
+    print(len(inc_lalr_parser.base_parser.parser.parser._parse_table.states))
 
     prompt = 'from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n\t""" Check if in given list of numbers, are any two numbers closer to each other than\n\tgiven threshold.\n\t>>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n\tFalse\n\t>>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n\tTrue\n'
 
@@ -77,10 +79,19 @@ def test_correct():
         r2 = inc_lr_parser.get_acceptable_next_terminals(prompt + generated_code[:i])
         assert r1 == r2, (r1, r2)
 
-# Not adding test_time, test_correct as it may take about 3-4 minutes to run
-# TODO: Add them when parser caching is added
+def test_caching():
+    time1 = time.time()
+    inc_parser1 = create_parser('python', parser='lr')
+    time2 = time.time()
+    print("Time taken for creating LR(1) parser:", time2 - time1)
+    inc_parser2 = create_parser('python', parser='lr')
+    time3 = time.time()
+    print("Time taken for creating LR(1) parser second time:", time3 - time2)
+
+# Not adding test_time, test_correct and test_caching as it may take about 3-4 minutes to run on CI
         
 tests = [test_calc, test_tiny]
+# tests = [test_caching]
 # tests = [test_time]
 # tests = [test_correct]
 run_tests(tests) 
