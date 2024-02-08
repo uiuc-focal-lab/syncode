@@ -5,3 +5,4 @@ syncode/__pycache__
 syncode/core/__pycache__
 .vscode/
 tmp*
+cache/

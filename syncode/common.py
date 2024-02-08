@@ -10,6 +10,7 @@ import torch
 
 # Remove this in future and add instruction to set the HF_CACHE env variable
 HF_CACHE = '/share/models/hugging_face/'
+SYNCODE_CACHE = 'cache/'
 # HF_CACHE = os.environ['HF_CACHE']
 HF_ACCESS_TOKEN = os.environ['HF_ACCESS_TOKEN'] if 'HF_ACCESS_TOKEN' in os.environ else None
 

@@ -1,12 +1,12 @@
 import sys, os
-
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../')
 import time
 import common
-from incremental_parser import ParseResult
-from grammars.python_parser import PythonIncrementalParser
+from parsers.incremental_parser import ParseResult
 from parse_result import AcceptSequence, IndentationConstraint, RemainderState
 from dfa_mask_store import DFAMaskStore
+from parsers import create_parser
+
 
 def test_dfa_mask():        
     query_start_time = time.time()
@@ -131,7 +131,7 @@ def test_dfa_mask_with_indent():
 def test_indetantaion():
     from mxeval.data import get_data
     mbpp = get_data("mbxp", "python")
-    p = PythonIncrementalParser()
+    p = create_parser('python')
     assert p._get_indentation(mbpp['MBPP/1']["prompt"]) == 4
     assert p._get_indentation(mbpp['MBPP/2']["prompt"]) == 2
     assert p._get_indentation(mbpp['MBPP/8']["prompt"]) == 1

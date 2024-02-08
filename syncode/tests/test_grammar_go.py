@@ -1,11 +1,11 @@
 import sys, os
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../')
-from grammars.go_parser import GoIncrementalParser
+from parsers.go_parser import GoIncrementalParser
 from common import run_tests
 from parse_result import AcceptSequence, RemainderState
+from parsers import create_parser
 
-
-inc_parser = GoIncrementalParser()
+inc_parser = create_parser('go')
 def test_tree_printer():
     '''
     NOTE: The EOS ignoring is handled seperately in Go incremental parser. Just calling the standard lark parser for printing the tree will not ignore EOS.
@@ -20,7 +20,7 @@ func main() {{
   }}
   '''
     # partial_code = 'package main\n\nfunc has_close_elements (numbers []float64, threshold float64) bool {\n\tvar (\t\tmin, max float64\n\t\tmin_index, max_index int\n\t)\n\tfor i, n := range 5 {\na=i\n}\n};'
-    t = inc_parser.parser.parse(partial_code)
+    t = inc_parser.base_parser.parse(partial_code)
     print(t.pretty())
 
 def test_lexer():
@@ -58,7 +58,7 @@ func main() {{
     a, b = 3, 5
 }}
 '''
-    out = inc_parser.parser.parse(code)
+    out = inc_parser.base_parser.parse(code)
     print(out.pretty())
 
 def test_go_parser2():
@@ -74,7 +74,7 @@ func main() {{
   fmt.Println(z)
 }}
 '''
-    out = inc_parser.parser.parse(code)
+    out = inc_parser.base_parser.parse(code)
 
 def test_go_parser3():
     failed = False
@@ -90,7 +90,7 @@ func main() {{
   fmt.Println(z)
 }}
 ''' 
-        out = inc_parser.parser.parse(code)
+        out = inc_parser.base_parser.parse(code)
     except Exception as e:
         failed = True
     assert failed

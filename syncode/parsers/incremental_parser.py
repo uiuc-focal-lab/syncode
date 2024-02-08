@@ -13,7 +13,7 @@ class IncrementalParser:
     """
     This is the base class for all incremental parsers.
     """
-    def __init__(self, grammar, logger: Optional[common.Logger]=None, indenter=None, parser="lalr") -> None:
+    def __init__(self, base_parser, logger: Optional[common.Logger]=None) -> None:
         self.cur_ac_terminals: set = set()
         self.next_ac_terminals: set = set()
         self.cur_pos = 0 # Current cursor position in the lexer tokens list
@@ -22,22 +22,11 @@ class IncrementalParser:
 
         # Initialize the parser
         time_start = time.time()
-        if os.path.exists(grammar):
-            with open(grammar, 'r') as file:
-                grammar = file.read()
-
-        self.parser = Lark( # This is the standard Lark parser
-            grammar,
-            parser=parser,
-            lexer="basic",
-            start="start",
-            postlex=indenter,
-            propagate_positions=True,
-        )
+        self.base_parser = base_parser
 
         self.logger = logger if logger is not None else common.EmptyLogger()
         self.logger.log_time(f"Time taken for loading parser: {time.time() - time_start:.2f}s")
-        self.interactive = self.parser.parse_interactive('')
+        self.interactive = self.base_parser.parse_interactive('')
         self.parser_token_seq: list = []
         self.prev_lexer_tokens: list[Token] = [] # To enable going back to old state of the parser
         self.cur_pos_to_parser_state: dict[int, Tuple[Any, set, set, Optional[list], list]] = {} # parser_state, cur_ac_terminals, next_ac_terminals, indent_levels (optional), dedent_queue
@@ -56,7 +45,7 @@ class IncrementalParser:
         self.prev_lexer_tokens = []
         self.cur_pos_to_parser_state = {}
         self.time_accepts = 0
-        self.interactive = self.parser.parse_interactive('')
+        self.interactive = self.base_parser.parse_interactive('')
     
     def _store_parser_state(self, pos: int, parser_state, accepts: set, indent_levels: Optional[list] = None):  
         time_start = time.time() 
@@ -90,7 +79,7 @@ class IncrementalParser:
         """
         # Collect Lexer tokens
         lexer_tokens: list[Token] = []
-        interactive = self.parser.parse_interactive(code)
+        interactive = self.base_parser.parse_interactive(code)
         lexing_start_time = time.time()
         lexer_state = interactive.lexer_thread.state
 
@@ -169,7 +158,7 @@ class IncrementalParser:
             self.cur_ac_terminals = self.next_ac_terminals
             self.next_ac_terminals = set()
         
-        return ParseResult.from_accept_terminals(self.cur_ac_terminals, self.next_ac_terminals, current_term_str, remainder_state, final_terminal=final_terminal, ignore_terminals=self.parser.ignore_tokens)
+        return ParseResult.from_accept_terminals(self.cur_ac_terminals, self.next_ac_terminals, current_term_str, remainder_state, final_terminal=final_terminal, ignore_terminals=self.base_parser.lexer_conf.ignore)
 
     def _get_remainder(self, code):
         final_terminal = None

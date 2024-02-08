@@ -1,7 +1,6 @@
 import time
-from typing import Optional
 import larkm as lark
-from incremental_parser import IncrementalParser
+from parsers.incremental_parser import IncrementalParser
 from parse_result import ParseResult, RemainderState
 
 
@@ -9,9 +8,8 @@ class GoIncrementalParser(IncrementalParser):
     """
     This class implements an incremental parser for Go code.
     """
-
-    def __init__(self, **kwargs):
-        super().__init__("syncode/grammars/go_grammar.lark", **kwargs)
+    def __init__(self, base_parser, **kwargs):
+        super().__init__(base_parser, **kwargs)
 
 
     def get_acceptable_next_terminals(self, partial_code) -> ParseResult:
@@ -63,5 +61,5 @@ class GoIncrementalParser(IncrementalParser):
             self.cur_ac_terminals = self.next_ac_terminals
             self.next_ac_terminals = set()
             
-        return ParseResult.from_accept_terminals(self.cur_ac_terminals, self.next_ac_terminals, current_term_str, remainder_state, final_terminal=final_terminal, ignore_terminals=self.parser.ignore_tokens)
+        return ParseResult.from_accept_terminals(self.cur_ac_terminals, self.next_ac_terminals, current_term_str, remainder_state, final_terminal=final_terminal, ignore_terminals=self.base_parser.lexer_conf.ignore)
     

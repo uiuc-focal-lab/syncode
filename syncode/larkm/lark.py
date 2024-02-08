@@ -307,7 +307,7 @@ class Lark(Serialize):
                     raise ConfigurationError("Grammar must be ascii only, when use_bytes=True")
 
             if self.options.cache:
-                if self.options.parser != 'lalr':
+                if self.options.parser != 'lalr' and self.options.parser != 'lr':
                     raise ConfigurationError("cache only works with parser='lalr' for now")
 
                 unhashable = ('transformer', 'postlex', 'lexer_callbacks', 'edit_terminals', '_plugins')
@@ -342,6 +342,7 @@ class Lark(Serialize):
                         file_sha256 = f.readline().rstrip(b'\n')
                         cached_used_files = pickle.load(f)
                         if file_sha256 == cache_sha256.encode('utf8') and verify_used_files(cached_used_files):
+                            print(f"Loading Lark base parser from cache: {cache_fn}")
                             cached_parser_data = pickle.load(f)
                             self._load(cached_parser_data, **options)
                             return
@@ -498,7 +499,7 @@ class Lark(Serialize):
 
         Useful for caching and multiprocessing.
         """
-        if self.options.parser != 'lalr':
+        if self.options.parser != 'lalr' and self.options.parser != 'lr':
             raise NotImplementedError("Lark.save() is only implemented for the LALR(1) parser.")
         data, m = self.memo_serialize([TerminalDef, Rule])
         if exclude_options:

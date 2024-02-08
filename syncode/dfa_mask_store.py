@@ -8,7 +8,7 @@ import interegular
 import torch
 import regex
 import common
-from grammars import create_parser
+from parsers import create_parser
 from larkm.lexer import TerminalDef
 from parse_result import IndentationConstraint, RemainderState, ParseResult
 
@@ -346,7 +346,7 @@ class DFAMaskStore:
             simplifications = DFAMaskStore.python_simplifications
         
         os.makedirs(dfa_dir, exist_ok=True)
-        mask_store = DFAMaskStore(inc_parser.parser.terminals, vocab, simplifications=simplifications, special_token_ids=[tokenizer.eos_token_id])
+        mask_store = DFAMaskStore(inc_parser.base_parser.terminals, vocab, simplifications=simplifications, special_token_ids=[tokenizer.eos_token_id])
         logger.log_time(f"Time taken for creating dfa: {time.time() - start_time:.2f}s")
 
         pickle.dump(mask_store, open(dfa_path, 'wb'))
