@@ -1,21 +1,21 @@
 import sys, os
 import time
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../')
-from incremental_parser import IncrementalParser
-from grammars.python_parser import PythonIncrementalParser
+from parsers.incremental_parser import IncrementalParser
+from parsers.python_parser import PythonIncrementalParser
 from common import run_tests
-from grammars import create_parser
+from parsers import create_parser
 
 
 def test_tiny():
-    inc_parser = IncrementalParser('syncode/grammars/tiny_grammar.lark', parser='lr')
+    inc_parser = create_parser('syncode/parsers/grammars/tiny_grammar.lark', parser='lr')
     partial_code = "ccdd"
     out = inc_parser.base_parser.parse(partial_code)
     print(out)
 
 def test_calc():
     # 17 states become 31 from LALR(1) to LR(1)
-    inc_parser = IncrementalParser('syncode/grammars/calc_grammar.lark', parser='lr')
+    inc_parser = create_parser('syncode/parsers/grammars/calc_grammar.lark', parser='lr')
     partial_code = "113 + 235 + 1111"
     out = inc_parser.base_parser.parse(partial_code)
     inc_parser.get_acceptable_next_terminals(partial_code)
@@ -32,10 +32,10 @@ def test_time():
     Time taken for parsing with LALR(1): 1.5615639686584473
     """
     time1 = time.time()
-    inc_lr_parser = PythonIncrementalParser(parser='lr')
+    inc_lr_parser = create_parser('python', parser='lr')
     time2 = time.time()
     print("Time taken for building LR(1):", time2 - time1)
-    inc_lalr_parser = PythonIncrementalParser(parser='lalr')
+    inc_lalr_parser = create_parser('python', parser='lalr')
     time3 = time.time()
     print("Time taken for building LALR(1):", time3 - time2)
     
@@ -65,8 +65,8 @@ def test_time():
     print("Time taken for parsing with LR(1):", time5 - time4)
 
 def test_correct():
-    inc_lr_parser = PythonIncrementalParser(parser='lr')
-    inc_lalr_parser = PythonIncrementalParser(parser='lalr')
+    inc_lr_parser = create_parser('python', parser='lr')
+    inc_lalr_parser = create_parser('python', parser='lalr')
 
     prompt = 'from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n\t""" Check if in given list of numbers, are any two numbers closer to each other than\n\tgiven threshold.\n\t>>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n\tFalse\n\t>>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n\tTrue\n'
 
