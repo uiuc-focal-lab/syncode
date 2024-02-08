@@ -6,7 +6,7 @@ import regex
 import common
 from larkm import Token
 from larkm.indenter import Indenter
-from incremental_parser import IncrementalParser
+from parsers.incremental_parser import IncrementalParser
 from parse_result import IndentationConstraint, ParseResult, RemainderState
 from typing import Optional
 
@@ -14,9 +14,8 @@ class PythonIncrementalParser(IncrementalParser):
     """
     This class implements an incremental parser for Python code.
     """
-    def __init__(self, base_parser, logger:Optional[common.Logger]=None, partial_code=None, **kwargs):
-        indenter = PythonIndenter()
-        super().__init__(base_parser, logger=logger, indenter=indenter, **kwargs)
+    def __init__(self, base_parser, indenter, logger:Optional[common.Logger]=None, partial_code=None,**kwargs):
+        super().__init__(base_parser, logger=logger, **kwargs)
 
         if partial_code is not None: # extract indentation type from partial code
             indenter.tab_len = self._get_indentation(partial_code)  # NOTE: tab_len is useful when \t and spaces are used for indentation in same code
@@ -122,7 +121,7 @@ class PythonIncrementalParser(IncrementalParser):
             self.cur_ac_terminals = self.next_ac_terminals
             self.next_ac_terminals = set()
 
-        return ParseResult.from_accept_terminals(self.cur_ac_terminals, self.next_ac_terminals, current_term_str, remainder_state, next_ac_indents=next_ac_indents, final_terminal=final_terminal, ignore_terminals=self.base_parser.ignore_tokens)
+        return ParseResult.from_accept_terminals(self.cur_ac_terminals, self.next_ac_terminals, current_term_str, remainder_state, next_ac_indents=next_ac_indents, final_terminal=final_terminal, ignore_terminals=self.base_parser.lexer_conf.ignore)
 
     
 

@@ -1,7 +1,6 @@
 import time
-from typing import Optional
 import larkm as lark
-from incremental_parser import IncrementalParser
+from parsers.incremental_parser import IncrementalParser
 from parse_result import ParseResult, RemainderState
 
 
