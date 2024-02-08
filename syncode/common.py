@@ -68,13 +68,14 @@ class Logger:
             log_time_file = out_dir + 'logs/' + 'time_' + prefix
             log_eval_file = out_dir + 'logs/' + 'eval_' + prefix
             os.makedirs(out_dir + 'logs/', exist_ok=True)
-
-        self.log_file = log_file
-        self.file = open(log_file, 'w')
-        self.log_time_file = log_time_file
-        self.time_file = open(log_time_file, 'w')
-        self.log_eval_file = log_eval_file
-        self.eval_file = open(log_eval_file, 'w')
+        
+        if self.log_level >= 1:
+            self.log_file = log_file
+            self.file = open(log_file, 'w')
+            self.log_time_file = log_time_file
+            self.time_file = open(log_time_file, 'w')
+            self.log_eval_file = log_eval_file
+            self.eval_file = open(log_eval_file, 'w')
 
     def log(self, msg):
         if self.log_level >= 1:

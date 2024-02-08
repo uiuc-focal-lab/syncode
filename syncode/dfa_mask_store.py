@@ -320,7 +320,7 @@ class DFAMaskStore:
         Loads the dfa for the given language and tokenizer. If the dfa is not cached, it is created and cached. 
         '''
         tokenizer_name = type(tokenizer).__name__
-        dfa_dir = 'results/' + tokenizer_name + '/'
+        dfa_dir = common.SYNCODE_CACHE + 'mask_stores/' + tokenizer_name + '/'
         dfa_path = dfa_dir + grammar + '_dfa.pkl'
         start_time = time.time()
         
