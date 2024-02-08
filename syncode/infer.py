@@ -63,7 +63,9 @@ class Syncode:
         # Check inputs
         assert mode in ["original", "grammar_mask"]
         assert dataset in ["mbxp", "humaneval", "mathqa-x", "input"]
-        assert len(kwargs) == 0, f"Invalid arguments: {kwargs}"
+        gen_kwargs = {'max_length', 'max_new_tokens', 'min_length', 'min_new_tokens', 'early_stopping', 'do_sample', 'num_beams', 'use_cache', 'temperature', 'top_k', 'top_p', 'num_return_sequences', 'pad_token_id', 'eos_token_id'}
+        invalid_kwargs = kwargs.keys() - gen_kwargs
+        assert invalid_kwargs == set(), f"Invalid arguments {invalid_kwargs}"
 
         # Set attributes
         self.mode = mode
@@ -105,6 +107,14 @@ class Syncode:
                 )
             logit_processors = LogitsProcessorList([self.grammar_decoder])
 
+        kwargs['max_new_tokens'] = kwargs.get('max_new_tokens', 200)
+        kwargs['do_sample'] = kwargs.get('do_sample', True)
+        kwargs['use_cache'] = kwargs.get('use_cache', True)
+        kwargs['temperature'] = kwargs.get('temperature', 0.2)
+        kwargs['top_p'] = kwargs.get('top_p', 0.95)
+        kwargs['eos_token_id'] = kwargs.get('eos_token_id', tokenizer.eos_token_id)
+        kwargs['pad_token_id'] = kwargs.get('pad_token_id', tokenizer.eos_token_id) # model has no pad token
+
         self.model = HuggingFaceModel(
             model, 
             self.logger, 
@@ -112,8 +122,8 @@ class Syncode:
             device=device, 
             logit_processors=logit_processors, 
             mode=self.mode, 
-            max_new_tokens=200,
             grammar=self.grammar,
+            **kwargs
             )
 
     def infer(self, task_id=None):
