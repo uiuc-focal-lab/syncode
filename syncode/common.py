@@ -113,7 +113,10 @@ class Logger:
             self.file.flush()
 
     def close(self):
-        self.file.close()
+        if self.log_level >= 1:
+            self.file.close()
+            self.time_file.close()
+        self.eval_file.close()
 
 class EmptyLogger(Logger):
     """
