@@ -11,7 +11,7 @@ from tqdm import tqdm
 from evaluation import check_coorectness
 
 def compile_and_run(model, mode="original", quantize=True, gpu=1, num_samples=1, grammar="python", dataset="input", few_shot=False, num_examples=-1, parse_prompt=True, dev_mode=False, log_level=1, new_mask_store=False, parser="lalr", task_id=None, **kwargs):
-    sc = Syncode(model, mode=mode, quantize=quantize, gpu=gpu, num_samples=num_samples, grammar=grammar, dataset=dataset, few_shot=few_shot, num_examples=num_examples, parse_prompt=parse_prompt, dev_mode=dev_mode, log_level=log_level, new_mask_store=new_mask_store, parser=parser, **kwargs)
+    sc = Syncode(model, mode=mode, quantize=quantize, gpu=gpu, num_samples=num_samples, grammar=grammar, dataset=dataset, few_shot=few_shot, num_examples=num_examples, parse_prompt=parse_prompt, dev_mode=dev_mode, log_level=log_level, new_mask_store=new_mask_store, parser=parser, task_id=task_id, **kwargs)
 
     sc.infer(task_id=task_id)
 
@@ -77,6 +77,7 @@ class Syncode:
         self.num_examples = num_examples
         dataset_dirmap = {"mbxp": "mbxp", "humaneval": "multi-humaneval", "mathqa-x": "mathqa-x"}
         self.dataset = dataset_dirmap[dataset]
+        self.parser = parser
 
         # Load model
         device = f"cuda:{self.gpu}"
@@ -85,7 +86,7 @@ class Syncode:
         
         # Setup output directory
         out_dir, self.out_path = self.get_output_path()
-        self.logger = common.Logger(self.num_samples, mode, parser, out_dir, log_level=log_level)
+        self.logger = common.Logger(self.num_samples, mode, parser, out_dir, log_level=log_level, task_id=task_id)
         
         # Initialize logit processors
         logit_processors = None
@@ -156,13 +157,29 @@ class Syncode:
             for task_id in problems:
                 self.run_eval_for_task(num_samples_per_task, format_tabs, problems, samples, pbar, task_id)
             write_jsonl(out_path, samples)
-            self.logger.log_time(f"Averge time taken for each task: {(time.time() - time1) / (len(problems)):.2f}s")
+            avg_time = (time.time() - time1) / len(problems)
+            self.logger.log_time(f"Averge time taken for each task: {avg_time:.2f}s")
             functional_result = check_coorectness(out_path, logger=self.logger)
             self.logger.log(f"Functional result: {functional_result}")
+
+            # Also log these results in a separate file
+            self.write_results(out_path, avg_time, functional_result)
         else: # Debugging a specific task
             debug_task_id = list(problems.keys())[debug_task_id]
             self.run_eval_for_task(num_samples_per_task, format_tabs, problems, samples, pbar, debug_task_id)
 
+    def write_results(self, out_path, avg_time, functional_result):
+        """
+        Write results to a separate file
+        """
+        file_path = "results/syncode_results.txt"
+        os.makedirs("results", exist_ok=True)
+        with open(file_path, "a") as f:
+            f.write(f"{self.model_name} | {self.grammar} | {self.dataset} | {self.parser} | {self.num_samples} | {self.mode}\n")
+            f.write(f"Functional result: {functional_result}\n")
+            f.write(f"Output path: {out_path}\n")
+            f.write(f"Averge time taken for each task: {avg_time:.2f}s\n")
+            f.write("\n")
 
     def run_eval_for_task(self, num_samples_per_task, format_tabs, problems, samples, pbar, task_id):
         """

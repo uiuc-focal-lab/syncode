@@ -164,6 +164,10 @@ class IncrementalParser:
 
         # Compute current terminal string
         remainder_state, current_term_str, final_terminal = self._get_remainder(partial_code)
+
+        if remainder_state == RemainderState.INCOMPLETE:
+            self.cur_ac_terminals = self.next_ac_terminals
+            self.next_ac_terminals = set()
         
         return ParseResult.from_accept_terminals(self.cur_ac_terminals, self.next_ac_terminals, current_term_str, remainder_state, final_terminal=final_terminal, ignore_terminals=self.parser.ignore_tokens)
 

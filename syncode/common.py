@@ -53,13 +53,20 @@ class Logger:
     """
     Logger class for logging the output of the model
     """
-    def __init__(self, num_samples_per_task, mode, parser, out_dir, log_level=1):
+    def __init__(self, num_samples_per_task, mode, parser, out_dir, task_id=None, log_level=1):
         self.log_level = log_level
-        prefix = f"mode_{mode}_samples_{num_samples_per_task}_parser_{parser}_eval.log"
-        log_file = out_dir + 'logs/' + prefix
-        log_time_file = out_dir + 'logs/' + 'time_' + prefix
-        log_eval_file = out_dir + 'logs/' + 'eval_' + prefix
-        os.makedirs(out_dir + 'logs/', exist_ok=True)
+        if task_id is not None:
+            prefix = f"task_{task_id}_mode_{mode}_samples_{num_samples_per_task}_parser_{parser}_eval.log"
+            log_file = out_dir + 'logs/tasks/' + prefix
+            log_time_file = out_dir + 'logs/tasks/' + 'time_' + prefix
+            log_eval_file = out_dir + 'logs/tasks/' + 'eval_' + prefix
+            os.makedirs(out_dir + 'logs/tasks/', exist_ok=True)
+        else:
+            prefix = f"mode_{mode}_samples_{num_samples_per_task}_parser_{parser}_eval.log"
+            log_file = out_dir + 'logs/' + prefix
+            log_time_file = out_dir + 'logs/' + 'time_' + prefix
+            log_eval_file = out_dir + 'logs/' + 'eval_' + prefix
+            os.makedirs(out_dir + 'logs/', exist_ok=True)
 
         self.log_file = log_file
         self.file = open(log_file, 'w')
