@@ -28,9 +28,11 @@ def create_parser(grammar, parser='lalr', **kwargs):
                 raise ValueError(f'grammar input file {grammar} does not exist!')            
     
         if grammar_filename is not None:
-            if os.path.exists(grammar):
+            if os.path.exists(grammar_filename):
                     with open(grammar_filename, 'r') as file:
                         grammar_def = file.read()
+            else:
+                raise ValueError(f'grammar file {grammar_filename} does not exist!')
         else: # Grammar can also be specified as a string in EBNF form
             grammar_def = grammar
 

@@ -158,7 +158,7 @@ class IncrementalParser:
             self.cur_ac_terminals = self.next_ac_terminals
             self.next_ac_terminals = set()
         
-        return ParseResult.from_accept_terminals(self.cur_ac_terminals, self.next_ac_terminals, current_term_str, remainder_state, final_terminal=final_terminal, ignore_terminals=self.base_parser.ignore_tokens)
+        return ParseResult.from_accept_terminals(self.cur_ac_terminals, self.next_ac_terminals, current_term_str, remainder_state, final_terminal=final_terminal, ignore_terminals=self.base_parser.lexer_conf.ignore)
 
     def _get_remainder(self, code):
         final_terminal = None

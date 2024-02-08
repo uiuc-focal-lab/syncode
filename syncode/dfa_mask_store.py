@@ -8,7 +8,7 @@ import interegular
 import torch
 import regex
 import common
-from grammars import create_parser
+from parsers import create_parser
 from larkm.lexer import TerminalDef
 from parse_result import IndentationConstraint, RemainderState, ParseResult
 

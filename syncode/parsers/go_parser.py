@@ -8,7 +8,6 @@ class GoIncrementalParser(IncrementalParser):
     """
     This class implements an incremental parser for Go code.
     """
-
     def __init__(self, base_parser, **kwargs):
         super().__init__(base_parser, **kwargs)
 
@@ -62,5 +61,5 @@ class GoIncrementalParser(IncrementalParser):
             self.cur_ac_terminals = self.next_ac_terminals
             self.next_ac_terminals = set()
             
-        return ParseResult.from_accept_terminals(self.cur_ac_terminals, self.next_ac_terminals, current_term_str, remainder_state, final_terminal=final_terminal, ignore_terminals=self.base_parser.ignore_tokens)
+        return ParseResult.from_accept_terminals(self.cur_ac_terminals, self.next_ac_terminals, current_term_str, remainder_state, final_terminal=final_terminal, ignore_terminals=self.base_parser.lexer_conf.ignore)
     

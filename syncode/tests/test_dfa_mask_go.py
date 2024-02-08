@@ -2,16 +2,15 @@ import sys, os
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../')
 import time
 import common
-from incremental_parser import ParseResult
+from parsers.incremental_parser import ParseResult
 from parse_result import RemainderState
-from transformers import AutoTokenizer
-from dfa_mask_store import load_dfa_mask_store
+from dfa_mask_store import DFAMaskStore
 
 model = 'Salesforce/codegen-350M-multi'
 # model = 'WizardLM/WizardCoder-1B-V1.0'
 # model = 'Llama-7b'
 tokenizer = common.load_tokenizer(model)
-dfa_mask = load_dfa_mask_store(grammar='go', tokenizer=tokenizer, use_cache=True, logger=common.EmptyLogger())
+dfa_mask = DFAMaskStore.load_dfa_mask_store(grammar='go', tokenizer=tokenizer, use_cache=True, logger=common.EmptyLogger())
 
 def test_dfa_mask():
     query_start_time = time.time()

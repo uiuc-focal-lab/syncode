@@ -123,8 +123,6 @@ class PythonIncrementalParser(IncrementalParser):
 
         return ParseResult.from_accept_terminals(self.cur_ac_terminals, self.next_ac_terminals, current_term_str, remainder_state, next_ac_indents=next_ac_indents, final_terminal=final_terminal, ignore_terminals=self.base_parser.lexer_conf.ignore)
 
-    
-
     def _update_indent_levels(self, indent_level, indent):
         # if self.cur_pos != len(lexer_tokens): # Store previous indentation levels except the last one
         if indent > indent_level[-1]:
