@@ -7,7 +7,14 @@ from larkm.lark import Lark
 
 def create_parser(grammar, parser='lalr', **kwargs):   
         """ 
-        Creates an incremental parser for the given grammar.
+        Creates an incremental parser for the given grammar. The parser is cached for future use.
+        Args:
+            grammar (str): The name of the grammar to use. There are 3 possible ways to specify the grammar:
+            1) Name of the grammar available in syncode/parsers/grammars. Can be 'python', 'go', 'tiny', 'calc' etc.
+            2) Full path to the grammar file. In this case, the grammar file should be in Lark format.
+            3) The grammar itself in Lark/EBNF form.
+
+            parser (str, optional): The type of parser to use. Can be 'lalr' or 'lr'. Defaults to 'lalr'.        
         """
         indenter = None
         parser_cache_dir = common.SYNCODE_CACHE + 'parsers/'
