@@ -26,19 +26,15 @@ class LanguageModel:
 
 
 class HuggingFaceModel(LanguageModel):
-    def __init__(self, model, logger: common.Logger, prompt_template: str = '', api_key: str = None,
-                 temperature: float = 0.0, top_p: float = 1.0, best_of: int = 1, max_new_tokens: int = 400, 
+    def __init__(self, model, logger: common.Logger, prompt_template: str = '', api_key: str = None, best_of: int = 1, 
                  before_prediction_hook=lambda: None, tokenizer:LlamaTokenizer=None, device='cuda', logit_processors=None, 
-                 mode: str ='original', grammar: str = 'python') -> None:
+                 mode: str ='original', grammar: str = 'python', **kwargs) -> None:
         super().__init__()
 
         self.prompt_template = prompt_template
         self.model = model
         self.logger = logger
         self.tokenizer = tokenizer
-        self.temperature = temperature
-        self.top_p = top_p
-        self.max_new_tokens = max_new_tokens
         self.device = device
         self.best_of = best_of
         self._before_prediction_hook = before_prediction_hook
@@ -46,6 +42,7 @@ class HuggingFaceModel(LanguageModel):
         self.mode = mode
         self.grammar = grammar
         self.vocab = common.get_vocab_from_tokenizer(self.tokenizer)
+        self.gen_kwargs = kwargs
 
     def get_grammar_decoder(self):
         if self.logit_processors is not None and len(self.logit_processors) > 0:
@@ -68,14 +65,8 @@ class HuggingFaceModel(LanguageModel):
 
         generated_ids = self.model.generate(
             **inputs,
-            use_cache=True,
-            max_new_tokens=self.max_new_tokens,
-            temperature=0.2,
-            top_p=0.95,
-            do_sample=True,
-            eos_token_id=self.tokenizer.eos_token_id,
-            pad_token_id=self.tokenizer.eos_token_id,  # model has no pad token
-            logits_processor=self.logit_processors
+            logits_processor=self.logit_processors,
+            **self.gen_kwargs
         )
         grammar_decoder = self.get_grammar_decoder()
         batch_completions = []
