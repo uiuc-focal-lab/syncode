@@ -74,8 +74,8 @@ class Logger:
             self.file = open(log_file, 'w')
             self.log_time_file = log_time_file
             self.time_file = open(log_time_file, 'w')
-            self.log_eval_file = log_eval_file
-            self.eval_file = open(log_eval_file, 'w')
+        self.log_eval_file = log_eval_file
+        self.eval_file = open(log_eval_file, 'w')
 
     def log(self, msg):
         if self.log_level >= 1:
