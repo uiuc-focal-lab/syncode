@@ -14,8 +14,6 @@ class IncrementalParser:
     This is the base class for all incremental parsers.
     """
     def __init__(self, base_parser, logger: Optional[common.Logger]=None) -> None:
-        self.cur_ac_terminals: set = set()
-        self.next_ac_terminals: set = set()
         self.cur_pos = 0 # Current cursor position in the lexer tokens list
         self.lexer_pos = 0 # Current lexer position in the code
         self.dedent_queue: list = []
@@ -32,12 +30,13 @@ class IncrementalParser:
         self.cur_pos_to_parser_state: dict[int, Tuple[Any, set, set, Optional[list], list]] = {} # parser_state, cur_ac_terminals, next_ac_terminals, indent_levels (optional), dedent_queue
         self.time_accepts = 0 # Profiling
 
+        self.cur_ac_terminals: set = set()
+        self.next_ac_terminals: set = self._accepts(self.interactive)
+
     def reset(self):
         """
         Resets the parser to the initial state.
         """
-        self.cur_ac_terminals = set()
-        self.next_ac_terminals = set()
         self.cur_pos = 0
         self.lexer_pos = 0
         self.dedent_queue = []
@@ -46,6 +45,8 @@ class IncrementalParser:
         self.cur_pos_to_parser_state = {}
         self.time_accepts = 0
         self.interactive = self.base_parser.parse_interactive('')
+        self.cur_ac_terminals = set()
+        self.next_ac_terminals = self._accepts(self.interactive)
     
     def _store_parser_state(self, pos: int, parser_state, accepts: set, indent_levels: Optional[list] = None):  
         time_start = time.time() 
