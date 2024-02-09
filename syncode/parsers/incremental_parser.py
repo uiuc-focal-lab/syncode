@@ -121,11 +121,12 @@ class IncrementalParser:
         # Stores the sequence of tokens that the parser has seen in the order  
         interactive = self.interactive
         lexer_tokens: list[Token] = self._lex_code(partial_code)
+        self.next_ac_terminals = self._accepts(interactive)
 
         # Restore the previous state of the parser
         if len(self.prev_lexer_tokens) > 0:
             self._restore_recent_parser_state(lexer_tokens)
-        
+
         self.prev_lexer_tokens = lexer_tokens  # Set the previous lexer tokens
 
         # Parse the tokens

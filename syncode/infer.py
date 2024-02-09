@@ -78,7 +78,7 @@ class Syncode:
         self.few_shot = few_shot
         self.num_examples = num_examples
         dataset_dirmap = {"mbxp": "mbxp", "humaneval": "multi-humaneval", "mathqa-x": "mathqa-x"}
-        self.dataset = dataset_dirmap[dataset]
+        self.dataset = dataset_dirmap[dataset] if dataset != "input" else "input"
         self.parser = parser
 
         # Load model
@@ -218,13 +218,12 @@ class Syncode:
 
     def user_input(self):
         """
-        Run user input on the model
-        Args:
-            hf_model (HuggingFaceModel): HuggingFaceModel object.
-            logger (common.Logger): Logger object.
-            grammar_decoder (GrammarDecoder): GrammarDecoder object.
+        Run user input on the model with grammar mask
         """
         while True:
+            if self.grammar_decoder is not None:
+                self.grammar_decoder.reset()
+
             prompt = input("Enter prompt: ")
             if prompt == "exit":
                 break

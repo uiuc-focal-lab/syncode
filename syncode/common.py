@@ -4,7 +4,6 @@ from transformers import (
     LlamaForCausalLM,
     AutoTokenizer,
     AutoModelForCausalLM,
-    LogitsProcessorList
 )
 import torch
 
