@@ -126,7 +126,7 @@ class Syncode:
             **kwargs
             )
 
-    def infer(self, task_id=None):
+    def infer(self, prompt = None, task_id=None):
         if self.dataset != "input": 
             self.run_code_eval(
                 self.num_samples,
@@ -135,7 +135,7 @@ class Syncode:
                 debug_task_id=task_id
                 )
         else:
-            self.user_input()
+            return self.user_input(prompt)
         self.logger.close()
 
 
@@ -216,20 +216,25 @@ class Syncode:
         pbar.update(num_samples_per_task)
     
 
-    def user_input(self):
+    def user_input(self, prompt):
         """
         Run user input on the model with grammar mask
         """
-        while True:
-            if self.grammar_decoder is not None:
-                self.grammar_decoder.reset()
+        if prompt:
+            return self.model.generate_batch_completion_grammar(prompt, self.num_samples)
+        
+        else:
+            while True:
+                if self.grammar_decoder is not None:
+                    self.grammar_decoder.reset()
 
-            prompt = input("Enter prompt: ")
-            if prompt == "exit":
-                break
-            batch_completions = self.model.generate_batch_completion_grammar(prompt, 1)
-            for i, completion in enumerate(batch_completions):
-                print(completion)
+                prompt = input('Enter prompt: ')
+                prompt = prompt.replace('\\n', '\n').replace('\\"', '\"').replace('\\t', '\t').replace("\\'", "\'").replace('\\b', '\b').replace('\\r', '\r')
+                if prompt == "exit":
+                    break
+                batch_completions = self.model.generate_batch_completion_grammar(prompt, self.num_samples)
+                for i, completion in enumerate(batch_completions):
+                    print(completion)
 
 if __name__ == "__main__":
     fire.Fire(compile_and_run)
