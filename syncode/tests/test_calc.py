@@ -11,6 +11,8 @@ def test_parser():
     r = inc_parser.get_acceptable_next_terminals(partial_code)
     assert r.remainder == '17'
     assert AcceptSequence(['NUMBER', 'PLUS']) in r.accept_sequences
+    assert AcceptSequence(['NUMBER', 'STAR']) in r.accept_sequences
+    assert AcceptSequence(['LPAR']) in r.accept_sequences
 
 def test_parser2():
     inc_parser = create_parser('calc')

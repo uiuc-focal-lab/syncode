@@ -26,9 +26,20 @@ class LanguageModel:
 
 
 class HuggingFaceModel(LanguageModel):
-    def __init__(self, model, logger: common.Logger, prompt_template: str = '', api_key: str = None, best_of: int = 1, 
-                 before_prediction_hook=lambda: None, tokenizer:LlamaTokenizer=None, device='cuda', logit_processors=None, 
-                 mode: str ='original', grammar: str = 'python', **kwargs) -> None:
+    def __init__(
+            self, 
+            model, 
+            logger: common.Logger, 
+            tokenizer=None, 
+            prompt_template: str = '', 
+            api_key: str = None, 
+            best_of: int = 1, 
+            before_prediction_hook=lambda: None, 
+            device='cuda', 
+            logit_processors=None, 
+            mode: str ='original', 
+            grammar: str = 'python', 
+            **kwargs) -> None:
         super().__init__()
 
         self.prompt_template = prompt_template
@@ -48,9 +59,6 @@ class HuggingFaceModel(LanguageModel):
         if self.logit_processors is not None and len(self.logit_processors) > 0:
             return self.logit_processors[0]
         return None
-
-    def generate_batch_completion(self, prompt, batch_size, mode='original') -> list[str]:
-        return self.generate_batch_completion_grammar(prompt, batch_size)
 
     @torch.inference_mode()
     def generate_batch_completion_grammar(self, prompt, batch_size) -> list[str]:

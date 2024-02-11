@@ -6,7 +6,7 @@ from transformers import LogitsProcessorList
 import os
 from grammar_decoder import GrammarDecoder
 from typing import Optional, Literal
-from mxeval.data import write_jsonl, read_problems, get_data, get_examples
+from mxeval.data import write_jsonl, get_data, get_examples
 from tqdm import tqdm
 from evaluation import check_coorectness
 
@@ -204,7 +204,7 @@ class Syncode:
         else:
             prompt = problems[task_id]["prompt"]
 
-        batch_completions = self.model.generate_batch_completion(prompt, num_samples_per_task)
+        batch_completions = self.model.generate_batch_completion_grammar(prompt, num_samples_per_task)
 
         for _, completion in enumerate(batch_completions):
             result = dict(
@@ -227,7 +227,7 @@ class Syncode:
             prompt = input("Enter prompt: ")
             if prompt == "exit":
                 break
-            batch_completions = self.model.generate_batch_completion(prompt, 1)
+            batch_completions = self.model.generate_batch_completion_grammar(prompt, 1)
             for i, completion in enumerate(batch_completions):
                 print(completion)
 
