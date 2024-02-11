@@ -229,7 +229,7 @@ class Syncode:
                     self.grammar_decoder.reset()
 
                 prompt = input('Enter prompt: ')
-                prompt = prompt.replace('\\n', '\n').replace('\\"', '\"').replace('\\t', '\t').replace("\\'", "\'").replace('\\b', '\b').replace('\\r', '\r')
+                prompt = prompt.replace('\\n', '\n').replace('\\"', '\"').replace('\\t', '\t').replace("\\'", "\'").replace('\\b', '\b').replace('\\r', '\r') if self.grammar == 'python' else prompt
                 if prompt == "exit":
                     break
                 batch_completions = self.model.generate_batch_completion_grammar(prompt, self.num_samples)
