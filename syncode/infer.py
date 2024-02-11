@@ -11,7 +11,7 @@ from tqdm import tqdm
 from evaluation import check_coorectness
 
 def compile_and_run(model, mode="original", quantize=True, gpu=1, num_samples=1, grammar="python", dataset="input", few_shot=False, num_examples=-1, parse_prompt=True, dev_mode=False, log_level=1, new_mask_store=False, parser="lalr", task_id=None, **kwargs):
-    sc = Syncode(model, mode=mode, quantize=quantize, gpu=gpu, num_samples=num_samples, grammar=grammar, dataset=dataset, few_shot=few_shot, num_examples=num_examples, parse_prompt=parse_prompt, dev_mode=dev_mode, log_level=log_level, new_mask_store=new_mask_store, parser=parser, task_id=task_id, **kwargs)
+    sc = Syncode(model, mode=mode, quantize=quantize, gpu=gpu, num_samples=num_samples, grammar=grammar, dataset=dataset, few_shot=few_shot, num_fs_examples=num_examples, parse_prompt=parse_prompt, dev_mode=dev_mode, log_level=log_level, new_mask_store=new_mask_store, parser=parser, task_id=task_id, **kwargs)
 
     sc.infer(task_id=task_id)
 
@@ -28,7 +28,7 @@ class Syncode:
         dataset (str, optional): Dataset. Defaults to "humaneval".
         new_mask_store (bool, optional): Use new DFA mask store. Defaults to False.
         few_shot (bool, optional): Run few shoting prompting. Defaults to False.
-        num_examples (int, optional): Number of examples for few shot prompting. Defaults to -1.
+        num_fs_examples (int, optional): Number of examples for few shot prompting. Defaults to -1.
         parse_prompt (bool, optional): Parse prompt. Defaults to True.
         dev_mode (bool, optional): Development mode. Defaults to False.
         log_level (int, optional): Log level. Defaults to 2. 0 for no logs, 1 for minimal logs, 2 for all logs including time.
@@ -51,7 +51,7 @@ class Syncode:
         grammar: str = "python",
         dataset: Literal["mbxp", "humaneval", "mathqa-x", "input"] = "input",
         few_shot: bool = False,
-        num_examples: int = -1,
+        num_fs_examples: int = -1,
         parse_prompt: bool = True,
         dev_mode: bool = False,
         log_level: int = 1,
@@ -76,7 +76,7 @@ class Syncode:
         self.grammar = grammar
         self.new_mask_store = new_mask_store
         self.few_shot = few_shot
-        self.num_examples = num_examples
+        self.num_fs_examples = num_fs_examples
         dataset_dirmap = {"mbxp": "mbxp", "humaneval": "multi-humaneval", "mathqa-x": "mathqa-x"}
         self.dataset = dataset_dirmap[dataset] if dataset != "input" else "input"
         self.parser = parser
@@ -155,7 +155,7 @@ class Syncode:
         Run evaluation on the model
         """
         if self.few_shot:
-            problems = {problem['task_id'] : problem for problem in get_examples(self.dataset, self.grammar, self.num_examples)}
+            problems = {problem['task_id'] : problem for problem in get_examples(self.dataset, self.grammar, self.num_fs_examples)}
         else:
             problems = get_data(self.dataset, self.grammar)
 

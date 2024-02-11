@@ -85,9 +85,9 @@ class HuggingFaceModel(LanguageModel):
 
             # Post-processing to filter out using stop word (e.g. "\n\n")
             if self.grammar == "python":
-                completion = self.completion_for_python(i, batch_size, input_ids_cutoff, generated_ids, grammar_decoder, raw_completion)
+                completion = self.postproces_completion_python(i, batch_size, input_ids_cutoff, generated_ids, grammar_decoder, raw_completion)
             elif self.grammar == "go": 
-                completion = self.completion_for_go(i, batch_size, raw_completion, generated_ids, grammar_decoder, input_ids_cutoff)
+                completion = self.postproces_completion_go(i, batch_size, raw_completion, generated_ids, grammar_decoder, input_ids_cutoff)
             else: # TODO: handle the case for other grammars
                 completion = raw_completion
 
@@ -101,7 +101,7 @@ class HuggingFaceModel(LanguageModel):
 
         return batch_completions
 
-    def completion_for_python(self, i, batch_size, input_ids_cutoff, generated_ids, grammar_decoder, raw_completion):
+    def postproces_completion_python(self, i, batch_size, input_ids_cutoff, generated_ids, grammar_decoder, raw_completion):
         stop_word = "\n\n"
         if stop_word in raw_completion or self.tokenizer.eos_token_id == generated_ids[i][-1] or grammar_decoder is None:
             completion = filter_code(fix_indents(raw_completion))
@@ -111,7 +111,7 @@ class HuggingFaceModel(LanguageModel):
             completion = self.compute_backup_completion(grammar_decoder, function_incomplete, i, input_ids_cutoff, generated_ids)
         return completion
 
-    def completion_for_go(self, i, batch_size, raw_completion, generated_ids, grammar_decoder, input_ids_cutoff):
+    def postproces_completion_go(self, i, batch_size, raw_completion, generated_ids, grammar_decoder, input_ids_cutoff):
         stop_word = "\n\n\n"
         if self.mode == "original" or stop_word in raw_completion or self.tokenizer.eos_token_id == generated_ids[i][-1]: 
             # only filter with stop-word for original mode

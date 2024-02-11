@@ -72,7 +72,7 @@ python3 syncode/infer.py
   
 - `few_shot` (bool, optional): Run few-shot prompting. Defaults to False.
   
-- `num_examples` (int, optional): Number of examples for few shot prompting. Defaults to -1.
+- `num_fs_examples` (int, optional): Number of examples for few shot prompting. Defaults to -1.
   
 - `parse_prompt` (bool, optional): If False we parse (only output) instead of (prompt+output). Defaults to True. 
   
