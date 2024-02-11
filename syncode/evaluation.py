@@ -2,13 +2,11 @@ from collections import defaultdict, Counter
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import sys, os, time 
 import traceback
-from typing import List, Dict
+from typing import List, Dict, Optional
 import fire
 import numpy as np
 import tqdm
-from typing import Optional, Dict
-import multiprocessing
-import subprocess
+import multiprocessing, subprocess
 import re
 import common
 from mxeval.data import read_problems, stream_jsonl, write_jsonl, get_metadata

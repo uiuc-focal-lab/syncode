@@ -80,7 +80,7 @@ class HuggingFaceModel(LanguageModel):
         batch_completions = []
 
         for i in range(batch_size):
-            raw_completion = self.tokenizer.decode(generated_ids[i][input_ids_cutoff-1:len(generated_ids[i])], skip_special_tokens=True)[1:]                                       
+            raw_completion = self.tokenizer.decode(generated_ids[i][input_ids_cutoff:len(generated_ids[i])], skip_special_tokens=True)                                       
             self.logger.log_code("Raw completion", raw_completion)
 
             # Post-processing to filter out using stop word (e.g. "\n\n")
