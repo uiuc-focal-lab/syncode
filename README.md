@@ -106,5 +106,13 @@ WizardLM models: "WizardLM/WizardCoder-1B-V1.0"
 </p>
 </details>
 
+
+<details><summary> Which parser should I use? </summary>
+<p>
+  
+For parser selection, we offer the choice between LR(1) and LALR(1) parsers, specified by setting the parser argument to either 'lr' or 'lalr', respectively. We recommend utilizing the LR(1) parser due to its faster inference time. While constructing an LR(1) parser may require a slightly longer initial setup, we cache the parser for subsequent uses, mitigating this overhead.
+</p>
+</details>
+
 [test-img]: https://github.com/shubhamugare/llm-cfg/actions/workflows/run_tests.yml/badge.svg
 [tests]: https://github.com/shubhamugare/llm-cfg/actions/workflows/run_tests.yml
