@@ -45,7 +45,7 @@ class Syncode:
         model: str,
         mode: Literal["original", "grammar_mask"] = "original",
         quantize: bool = True,
-        device: int = 1,
+        device: str = "cuda",
         num_samples: int = 1,
         grammar: str = "python",
         dataset: Literal["mbxp", "humaneval", "mathqa-x", "input"] = "input",
@@ -81,7 +81,6 @@ class Syncode:
         self.parser = parser
 
         # Load model
-        device = f"cuda:{self.device}" if self.device != 'cpu' else self.device
         model = common.load_model(self.model_name, device)
         tokenizer = common.load_tokenizer(self.model_name)
         

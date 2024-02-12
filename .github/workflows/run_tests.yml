@@ -18,6 +18,10 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
+    - name: Install mxeval
+      run: |
+        git clone https://github.com/amazon-science/mxeval.git
+        pip install -e mxeval
     - name: Run Tests
       run: |
         python syncode/tests/test_grammar_python.py
