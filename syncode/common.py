@@ -33,7 +33,9 @@ def get_vocab_from_tokenizer(tokenizer):
 
 def load_model(model_name, device):
         llama_models = ["Llama-7b", "Llama-13b", "CodeLlama-7b", "CodeLlama-7b-Python"]
-        if model_name not in llama_models:
+        if model_name == 'test':
+            model = AutoModelForCausalLM.from_pretrained('bigcode/tiny_starcoder_py').to(device)
+        elif model_name not in llama_models:
             model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.bfloat16, cache_dir=HF_CACHE, token=HF_ACCESS_TOKEN, trust_remote_code=True).eval().to(device)
         elif model_name in llama_models:
             model_location = "/share/models/hugging_face/" + model_name
@@ -42,7 +44,9 @@ def load_model(model_name, device):
 
 def load_tokenizer(model_name):
         llama_models = ["Llama-7b", "Llama-13b", "CodeLlama-7b", "CodeLlama-7b-Python"]
-        if model_name not in llama_models:
+        if model_name == 'test':
+            tokenizer = AutoTokenizer.from_pretrained('bigcode/tiny_starcoder_py')
+        elif model_name not in llama_models:
             tokenizer = AutoTokenizer.from_pretrained(model_name, cache_dir=HF_CACHE, token=HF_ACCESS_TOKEN, trust_remote_code=True)
         elif model_name in llama_models:
             model_location = "/share/models/hugging_face/" + model_name
@@ -55,6 +59,7 @@ class Logger:
     """
     def __init__(self, num_samples_per_task, mode, parser, out_dir, task_id=None, log_level=1):
         self.log_level = log_level
+        self.is_closed = False
         if task_id is not None:
             prefix = f"task_{task_id}_mode_{mode}_samples_{num_samples_per_task}_parser_{parser}_eval.log"
             log_file = out_dir + 'logs/tasks/' + prefix
@@ -116,6 +121,13 @@ class Logger:
             self.file.close()
             self.time_file.close()
         self.eval_file.close()
+        self.is_closed = True
+    
+    def open(self):
+        if self.log_level >= 1:
+            self.file = open(self.log_file, 'w')
+            self.time_file = open(self.log_time_file, 'w')
+        self.eval_file = open(self.log_eval_file, 'w')
 
 class EmptyLogger(Logger):
     """

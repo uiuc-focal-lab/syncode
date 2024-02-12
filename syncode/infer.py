@@ -10,9 +10,8 @@ from mxeval.data import write_jsonl, get_data, get_examples
 from tqdm import tqdm
 from evaluation import check_coorectness
 
-def compile_and_run(model, mode="original", quantize=True, gpu=1, num_samples=1, grammar="python", dataset="input", few_shot=False, num_examples=-1, parse_prompt=True, dev_mode=False, log_level=1, new_mask_store=False, parser="lalr", task_id=None, **kwargs):
-    sc = Syncode(model, mode=mode, quantize=quantize, gpu=gpu, num_samples=num_samples, grammar=grammar, dataset=dataset, few_shot=few_shot, num_examples=num_examples, parse_prompt=parse_prompt, dev_mode=dev_mode, log_level=log_level, new_mask_store=new_mask_store, parser=parser, task_id=task_id, **kwargs)
-
+def compile_and_run(model, mode="original", quantize=True, device=1, num_samples=1,  grammar="python", dataset="input", few_shot=False, num_examples=-1, parse_prompt=True, dev_mode=False, log_level=1, new_mask_store=False, parser="lalr", task_id=None, **kwargs):
+    sc = Syncode(model, mode=mode, quantize=quantize, device=device, num_samples=num_samples, grammar=grammar, dataset=dataset, few_shot=few_shot, num_examples=num_examples, parse_prompt=parse_prompt, dev_mode=dev_mode, log_level=log_level, new_mask_store=new_mask_store, parser=parser, task_id=task_id, **kwargs)
     sc.infer(task_id=task_id)
 
 class Syncode:
@@ -46,7 +45,7 @@ class Syncode:
         model: str,
         mode: Literal["original", "grammar_mask"] = "original",
         quantize: bool = True,
-        gpu: int = 1,
+        device: int = 1,
         num_samples: int = 1,
         grammar: str = "python",
         dataset: Literal["mbxp", "humaneval", "mathqa-x", "input"] = "input",
@@ -71,7 +70,7 @@ class Syncode:
         self.mode = mode
         self.model_name = model
         self.quantize = quantize
-        self.gpu = gpu
+        self.device = device
         self.num_samples = num_samples
         self.grammar = grammar
         self.new_mask_store = new_mask_store
@@ -82,7 +81,7 @@ class Syncode:
         self.parser = parser
 
         # Load model
-        device = f"cuda:{self.gpu}"
+        device = f"cuda:{self.device}" if self.device != 'cpu' else self.device
         model = common.load_model(self.model_name, device)
         tokenizer = common.load_tokenizer(self.model_name)
         
@@ -127,8 +126,10 @@ class Syncode:
             )
 
     def infer(self, prompt = None, task_id=None):
+        if self.logger.is_closed:
+            self.logger.open()
         if self.dataset != "input": 
-            self.run_code_eval(
+            output = self.run_code_eval(
                 self.num_samples,
                 self.out_path,
                 format_tabs=True,
@@ -137,7 +138,7 @@ class Syncode:
         else:
             return self.user_input(prompt)
         self.logger.close()
-
+        return output
 
     def get_output_path(self):
         out_dir = f"results/{self.model_name}/{self.grammar}/{self.dataset}/"
@@ -160,12 +161,12 @@ class Syncode:
             problems = get_data(self.dataset, self.grammar)
 
         samples = []
+        outputs = []
         pbar = tqdm(total=len(problems) * num_samples_per_task)
-
         if debug_task_id is None:
             time1 = time.time()
             for task_id in problems:
-                self.run_eval_for_task(num_samples_per_task, format_tabs, problems, samples, pbar, task_id)
+                outputs.append(self.run_eval_for_task(num_samples_per_task, format_tabs, problems, samples, pbar, task_id))
             write_jsonl(out_path, samples)
             avg_time = (time.time() - time1) / len(problems)
             self.logger.log_time(f"Averge time taken for each task: {avg_time:.2f}s")
@@ -176,7 +177,8 @@ class Syncode:
             self.write_results(out_path, avg_time, functional_result)
         else: # Debugging a specific task
             debug_task_id = list(problems.keys())[debug_task_id]
-            self.run_eval_for_task(num_samples_per_task, format_tabs, problems, samples, pbar, debug_task_id)
+            return self.run_eval_for_task(num_samples_per_task, format_tabs, problems, samples, pbar, debug_task_id)
+        return outputs
 
     def write_results(self, out_path, avg_time, functional_result):
         """
@@ -214,6 +216,7 @@ class Syncode:
                 )
             samples += [result]
         pbar.update(num_samples_per_task)
+        return batch_completions
     
 
     def user_input(self, prompt):
@@ -234,7 +237,7 @@ class Syncode:
                     break
                 batch_completions = self.model.generate_batch_completion_grammar(prompt, self.num_samples)
                 for i, completion in enumerate(batch_completions):
-                    print(completion)
+                    print(prompt + completion)
 
 if __name__ == "__main__":
     fire.Fire(compile_and_run)

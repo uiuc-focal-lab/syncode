@@ -11,6 +11,7 @@ import common
 from parsers import create_parser
 from larkm.lexer import TerminalDef
 from parse_result import IndentationConstraint, RemainderState, ParseResult
+import hashlib
 
 class DFAState:
     """
@@ -321,7 +322,8 @@ class DFAMaskStore:
         '''
         tokenizer_name = type(tokenizer).__name__
         dfa_dir = common.SYNCODE_CACHE + 'mask_stores/' + tokenizer_name + '/'
-        dfa_path = dfa_dir + grammar + '_dfa.pkl'
+        grammar_hash = int(hashlib.sha256(grammar.encode('utf-8')).hexdigest(), 16)
+        dfa_path = f'{dfa_dir}{grammar_hash}_dfa_mask.pkl'
         start_time = time.time()
         
         if use_cache and os.path.exists(dfa_path):
