@@ -72,7 +72,7 @@ python3 syncode/infer.py
   
 - `few_shot` (bool, optional): Run few-shot prompting. Defaults to False.
   
-- `num_examples` (int, optional): Number of examples for few shot prompting. Defaults to -1.
+- `num_fs_examples` (int, optional): Number of examples for few shot prompting. Defaults to -1.
   
 - `parse_prompt` (bool, optional): If False we parse (only output) instead of (prompt+output). Defaults to True. 
   
@@ -103,6 +103,14 @@ CodeGen models: "Salesforce/codegen-350M-multi", "Salesforce/codegen2-1b"
 Bigcode models: "bigcode/starcoderbase-1b", "bigcode/santacoder" (1.1b WIP)
 WizardLM models: "WizardLM/WizardCoder-1B-V1.0"
 ```
+</p>
+</details>
+
+
+<details><summary> Which parser should I use? </summary>
+<p>
+  
+For parser selection, we offer the choice between LR(1) and LALR(1) parsers, specified by setting the parser argument to either 'lr' or 'lalr', respectively. We recommend utilizing the LR(1) parser due to its faster inference time. While constructing an LR(1) parser may require a slightly longer initial setup, we cache the parser for subsequent uses, mitigating this overhead.
 </p>
 </details>
 
