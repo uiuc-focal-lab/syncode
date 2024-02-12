@@ -25,4 +25,5 @@ jobs:
         python syncode/tests/test_calc.py
         python syncode/tests/test_lr_parser.py
         python syncode/tests/test_language_model.py
+        python syncode/tests/test_syncode.py
         python syncode/tests/test_dfa_mask_python.py --independent
