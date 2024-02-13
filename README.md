@@ -30,6 +30,14 @@ Check out and install mxeval:
 git clone https://github.com/amazon-science/mxeval.git
 pip install -e mxeval
 ```
+
+Set the directories for cache by exporting the following environment variables. Add the following lines to your .bashrc or .zshrc file:
+```
+export HF_CACHE="path_to_hf_cache"
+export SYNCODE_CACHE="path_to_syncode_cache"
+```
+If these environment variables are not set, the tool will use the default cache directories.
+
 </p>
 </details>
 
