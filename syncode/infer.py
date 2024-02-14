@@ -10,8 +10,8 @@ from mxeval.data import write_jsonl, get_data, get_examples
 from tqdm import tqdm
 from evaluation import check_coorectness
 
-def compile_and_run(model, mode="original", quantize=True, gpu=1, num_samples=1, grammar="python", dataset="input", few_shot=False, num_examples=-1, parse_prompt=True, dev_mode=False, log_level=1, new_mask_store=False, parser="lalr", task_id=None, **kwargs):
-    sc = Syncode(model, mode=mode, quantize=quantize, gpu=gpu, num_samples=num_samples, grammar=grammar, dataset=dataset, few_shot=few_shot, num_fs_examples=num_examples, parse_prompt=parse_prompt, dev_mode=dev_mode, log_level=log_level, new_mask_store=new_mask_store, parser=parser, task_id=task_id, **kwargs)
+def compile_and_run(model, mode="original", quantize=True, device="cuda", num_samples=1, grammar="python", dataset="input", few_shot=False, num_examples=-1, parse_prompt=True, dev_mode=False, log_level=1, new_mask_store=False, parser="lalr", task_id=None, **kwargs):
+    sc = Syncode(model, mode=mode, quantize=quantize, device=device, num_samples=num_samples, grammar=grammar, dataset=dataset, few_shot=few_shot, num_fs_examples=num_examples, parse_prompt=parse_prompt, dev_mode=dev_mode, log_level=log_level, new_mask_store=new_mask_store, parser=parser, task_id=task_id, **kwargs)
     sc.infer(task_id=task_id)
 
 class Syncode:
@@ -20,7 +20,7 @@ class Syncode:
         mode (str, optional): Mode for inference. Defaults to "original".
         model (str): Model id for huggingface model hub or model name if stored locally.
         quantize (bool, optional): Quantize model. Defaults to True.
-        gpu (int, optional): GPU number. Defaults to 1.
+        device (str, optional): Device to use. Defaults to "cuda".
         num_samples (int, optional): Number of samples. Defaults to 1.
         grammar (str, optional): Language. Defaults to "input". "input" is used for user input. 
             other options currently supported are "python", "go", "calc"

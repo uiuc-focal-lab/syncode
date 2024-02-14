@@ -51,7 +51,7 @@ python3 syncode/infer.py
     --mode [original, grammar_mask]
     --model [model_name]
     --quantize [True, False]
-    --gpu [0, 1, 2, 3]
+    --device ["cpu", "cuda", "cuda:1" etc.]
     --num_samples [num_samples]
     --dataset [mbxp, humaneval, mathqa-x, input]
     --new_mask_store [True, False]
@@ -70,7 +70,7 @@ python3 syncode/infer.py
   
 - `quantize` (bool, optional): Quantize model. Defaults to True.
   
-- `gpu` (int, optional): GPU number. Defaults to 1.
+- `device` (str, optional): Device to run the model on. Defaults to "cuda". 
   
 - `num_samples` (int, optional): Number of samples. Defaults to 1.
   
