@@ -175,8 +175,8 @@ def test_go_parser15():
     inc_parser.reset()
     partial_code =  'package main\n\nimport (\n\t"encoding/json"\n\t"reflect"\n)\nfunc numerical_letter_grade (grades []interface{}) []string {\n\tletter_grades := make([]string, len(grades))\n\tfor i, grade := range grades {\n\t\tswitch grade.('
     res = inc_parser.get_acceptable_next_terminals(partial_code)
-    # assert 'TYPE' in res.next_accept_terminals
     assert AcceptSequence(['LPAR', 'TYPE']) in res.accept_sequences
+    assert AcceptSequence(['LPAR', '__IGNORE_0']) in res.accept_sequences
 
 def test_go_parser16():
     inc_parser.reset()
@@ -213,5 +213,5 @@ def test_go_incremental_parser2():
 
 tests = [test_go_parser, test_go_parser2, test_go_parser3, test_go_parser4, test_go_parser5, test_go_parser6, test_go_parser8, test_go_parser9, test_go_parser10, test_go_parser11, test_go_parser12, test_go_parser13, test_go_parser14, test_go_parser15, test_go_parser16, test_lexer, test_interactive_parser, test_go_incremental_parser, test_go_incremental_parser2]
 # tests = [test_tree_printer]
-# tests = [test_go_parser6]
+# tests = [test_go_parser15]
 run_tests(tests)

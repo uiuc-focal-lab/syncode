@@ -1,6 +1,6 @@
 import copy
 from enum import Enum
-from typing import Optional
+from typing import Iterable, Optional
 
 class AcceptSequence(list):
     """
@@ -23,6 +23,9 @@ class AcceptSequence(list):
 
     def __len__(self):
         return len(self.accept_terminals)
+    
+    def __add__(self, other):
+        return AcceptSequence(self.accept_terminals + other.accept_terminals)
 
 class RemainderState(Enum):
     """
@@ -58,10 +61,14 @@ class ParseResult:
                 if t == final_terminal:
                     for t2 in next_accept_terminals:
                         accept_sequences.add(AcceptSequence([final_terminal, t2]))
+                    if ignore_terminals is not None:
+                        for t2 in ignore_terminals:
+                            accept_sequences.add(AcceptSequence([final_terminal, t2]))
                 else:
                     accept_sequences.add(AcceptSequence([t]))
         
         if ignore_terminals is not None: # Does this cause imprecision?
+            # Add the sequences that only contain ignore_terminals    
             accept_sequences = accept_sequences.union({AcceptSequence([t]) for t in ignore_terminals})
 
         next_ac_indents: IndentationConstraint = next_ac_indents

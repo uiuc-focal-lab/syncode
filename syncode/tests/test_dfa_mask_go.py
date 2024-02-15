@@ -3,12 +3,13 @@ sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../')
 import time
 import common
 from parsers.incremental_parser import ParseResult
-from parse_result import RemainderState
+from parse_result import AcceptSequence, RemainderState
 from dfa_mask_store import DFAMaskStore
 
-model = 'Salesforce/codegen-350M-multi'
+# model = 'Salesforce/codegen-350M-multi'
 # model = 'WizardLM/WizardCoder-1B-V1.0'
-# model = 'Llama-7b'
+model = 'Llama-7b'
+model = 'deepseek-ai/deepseek-coder-6.7b-instruct'
 tokenizer = common.load_tokenizer(model)
 dfa_mask = DFAMaskStore.load_dfa_mask_store(grammar='go', tokenizer=tokenizer, use_cache=True, logger=common.EmptyLogger())
 
@@ -45,6 +46,11 @@ def test_dfa_mask5():
     print([t for t in l if t.startswith("'") or t.startswith(" '") or t.startswith("  '")])
     assert " '" not in dfa_mask.get_overapprox_tokens_mask(r, get_list=True)
 
+def test_dfa_mask6():
+    r = ParseResult({AcceptSequence(['LBRACE', '__IGNORE_0'])}, '{', RemainderState.MAYBE_COMPLETE)
+    print(dfa_mask.get_overapprox_tokens_mask(r, get_list=True))
+    assert "\t" in dfa_mask.get_overapprox_tokens_mask(r, get_list=True)
+
 tests = [test_dfa_mask, test_dfa_mask2, test_dfa_mask3, test_dfa_mask4, test_dfa_mask5]
-# tests = [test_dfa_mask5]
+tests = [test_dfa_mask6]
 common.run_tests(tests)
