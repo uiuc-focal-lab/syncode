@@ -182,14 +182,7 @@ def test_go_parser16():
     inc_parser.reset()
     partial_code = 'package main\n\nimport (\n\t"encoding/json"\n\t"reflect"\n)\nfunc hex_key (num interface{}) int {\n\tvar hex_digits = []string{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F"}\n\tvar hex_count int\n\tvar hex_primes []int\n\tvar hex_prime_count int\n\tvar hex_prime_count_map = make(map[int]int)\n\n\t// Convert hexadecimal number to int\n\thex_num, ok := num.(string'
     res = inc_parser.get_acceptable_next_terminals(partial_code)
-    assert AcceptSequence(['NAME', 'RPAR']) in res.accept_sequences
-
-
-def test_go_parser17():
-    inc_parser.reset()
-    partial_code = 'package main\n\nimport (\n\t"sort"\n\t"encoding/json"\n\t"reflect"\n)\n// You\'re an expert Golang programmer\n// \n// In this Kata, you have to sort an array of non-negative integers according to\n// number of ones in their binary representation in ascending order.\n// For similar number of ones, sort based on decimal value.\n// \n// It must be implemented like this:\n// >>> sort_array([1, 5, 2, 3, 4]) == [1, 2, 3, 4, 5]\n// >>> sort_array([-2, -3, -4, -5, -6]) == [-6, -5, -4, -3, -2]\n// >>> sort_array([1, 0, 2, 3, 4]) [0, 1, 2, 3, 4]\n// \nfunc sort_array (arr []int) []int {\n\t// Convert array to string\n\tstr := make([]string, len(arr))\n\tfor i, v := range arr {\n\t\tstr[i] = strconv.Itoa(v)\n\t}\n\n\t// Sort string based on number of ones\n\tsort.Strings(str)\n\n\t// Convert sorted string back to array\n\tvar result []int\n\tfor _, s := range str {\n\t\tresult = append(result, strconv.Atoi(s))\n\t}\n\n\treturn result\n}\n\nfunc main() {\n\t// Test cases\n\tfmt.Println(sort_array([]int{1, 5, 2, 3, 4})) // [1, 2, 3, 4, 5]\n\tfmt.Println(sort_array([-2'
-    res = inc_parser.get_acceptable_next_terminals(partial_code)
-    print(res)    
+    assert AcceptSequence(['NAME', 'RPAR']) in res.accept_sequences  
 
 def test_go_incremental_parser():
     inc_parser.reset()
@@ -213,5 +206,5 @@ def test_go_incremental_parser2():
 
 tests = [test_go_parser, test_go_parser2, test_go_parser3, test_go_parser4, test_go_parser5, test_go_parser6, test_go_parser8, test_go_parser9, test_go_parser10, test_go_parser11, test_go_parser12, test_go_parser13, test_go_parser14, test_go_parser15, test_go_parser16, test_lexer, test_interactive_parser, test_go_incremental_parser, test_go_incremental_parser2]
 # tests = [test_tree_printer]
-# tests = [test_go_parser15]
+# tests = [test_go_parser17]
 run_tests(tests)

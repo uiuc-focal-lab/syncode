@@ -133,6 +133,7 @@ class IncrementalParser:
         # Parse the tokens
         parsing_start_time = time.time()
         self.time_accepts = 0
+        incomplete = False
         
         try:
             while self.cur_pos < len(lexer_tokens):
@@ -148,13 +149,14 @@ class IncrementalParser:
                     self._accepts(interactive))
 
         except lark.exceptions.UnexpectedToken as e:
+            incomplete = True
             self._handle_parsing_error(lexer_tokens, token)
 
         self.logger.log_time(f'Time taken for parsing:{time.time() - parsing_start_time}')
         self.logger.log_time(f'Time taken for computing accepts:{self.time_accepts}')
 
         # Compute current terminal string
-        remainder_state, current_term_str, final_terminal = self._get_remainder(partial_code)
+        remainder_state, current_term_str, final_terminal = self._get_remainder(partial_code, incomplete)
 
         if remainder_state == RemainderState.INCOMPLETE:
             self.cur_ac_terminals = self.next_ac_terminals
@@ -162,9 +164,9 @@ class IncrementalParser:
         
         return ParseResult.from_accept_terminals(self.cur_ac_terminals, self.next_ac_terminals, current_term_str, remainder_state, final_terminal=final_terminal, ignore_terminals=self.base_parser.lexer_conf.ignore)
 
-    def _get_remainder(self, code):
+    def _get_remainder(self, code, incomplete=False):
         final_terminal = None
-        if self.lexer_pos < len(code):
+        if self.lexer_pos < len(code) or incomplete:
             remainder_state = RemainderState.INCOMPLETE
             current_term_str = code[self.lexer_pos:]
             current_term_str = current_term_str.lstrip(' ') # Remove space from the beginning
@@ -193,6 +195,6 @@ class IncrementalParser:
         if token != lexer_tokens[-1]:
             self.logger.log_error(f'Error in parsing the token: {token} which is not the last token in the lexer_tokens: {lexer_tokens}')
         else:
-                # If it is the final token that gave the error, then it is okay
+            # If it is the final token that gave the error, then it is okay
             self.cur_ac_terminals = self.next_ac_terminals
             self.next_ac_terminals = set()

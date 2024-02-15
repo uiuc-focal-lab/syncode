@@ -325,7 +325,6 @@ class DFAMaskStore:
         grammar_hash = int(hashlib.sha256(grammar.encode('utf-8')).hexdigest(), 16)
         dfa_path = f'{dfa_dir}{grammar_hash}_dfa_mask.pkl'
         start_time = time.time()
-        
         if use_cache and os.path.exists(dfa_path):
             try:
                 mask_store = pickle.load(open(dfa_path, 'rb'))

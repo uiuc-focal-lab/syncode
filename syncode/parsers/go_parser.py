@@ -28,7 +28,8 @@ class GoIncrementalParser(IncrementalParser):
         # Parse the tokens
         parsing_start_time = time.time()
         self.time_accepts = 0
-
+        incomplete = False
+        
         try:
             while self.cur_pos < len(lexer_tokens):
                 token = lexer_tokens[self.cur_pos]
@@ -49,6 +50,7 @@ class GoIncrementalParser(IncrementalParser):
                     )
         except lark.exceptions.UnexpectedToken as e:
             self._handle_parsing_error(lexer_tokens, token)
+            incomplete = True
         
         self.logger.log_time(f'Time taken for parsing:{time.time() - parsing_start_time}')
         self.logger.log_time(f'Time taken for computing accepts:{self.time_accepts}')

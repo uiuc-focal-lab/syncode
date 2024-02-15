@@ -133,7 +133,7 @@ comm_case: "case" (send_stmt | recv_stmt) | "default"
 
 recv_stmt: (expression_list "=" | identifier_list ":=")? expression
 
-for_stmt: "for" for_clause block
+for_stmt: "for" [for_clause] block
 
 for_clause: simple_stmt (eos expression eos simple_stmt)? | range_clause
 

@@ -77,9 +77,8 @@ class ParseResult:
             assert len(next_accept_terminals) == 0
         return ParseResult(accept_sequences, remainder, remainder_state, next_ac_indents)
 
-
     def __repr__(self):
-        return 'remainder : {}, remainder_state: {}, accept_sequences: {}, next_ac_indents: {}'.format(self.remainder, self.remainder_state, self.accept_sequences, self.next_ac_indents)
+        return 'remainder : {}, remainder_state: {}, accept_sequences: {}, next_ac_indents: {}'.format(repr(self.remainder), self.remainder_state, self.accept_sequences, self.next_ac_indents)
     
     def __eq__(self, other):
         return self.remainder == other.remainder and self.remainder_state == other.remainder_state and self.cur_accept_terminals == other.cur_accept_terminals and self.next_accept_terminals == other.next_accept_terminals and self.next_ac_indents == other.next_ac_indents

@@ -45,5 +45,11 @@ def test_dfa_mask5():
     r = ParseResult({AcceptSequence(['LBRACE', '__IGNORE_0'])}, '{', RemainderState.MAYBE_COMPLETE)
     assert "\t" in dfa_mask.get_overapprox_tokens_mask(r, get_list=True)
 
-tests = [test_dfa_mask, test_dfa_mask2, test_dfa_mask3, test_dfa_mask4, test_dfa_mask5]
+def test_dfa_mask6():
+    # TODO: imprecision
+    r = ParseResult({AcceptSequence(['NAME'])}, 'for', RemainderState.MAYBE_COMPLETE)
+    assert " {" in dfa_mask.get_overapprox_tokens_mask(r, get_list=True)
+
+
+tests = [test_dfa_mask, test_dfa_mask2, test_dfa_mask3, test_dfa_mask4, test_dfa_mask5, test_dfa_mask6] 
 common.run_tests(tests)
