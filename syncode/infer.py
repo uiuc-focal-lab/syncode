@@ -106,7 +106,7 @@ class Syncode:
             logit_processors = LogitsProcessorList([self.grammar_decoder])
 
         kwargs['max_new_tokens'] = kwargs.get('max_new_tokens', 200)
-        kwargs['do_sample'] = kwargs.get('do_sample', True)
+        kwargs['do_sample'] = kwargs.get('do_sample', False)
         kwargs['use_cache'] = kwargs.get('use_cache', True)
         kwargs['temperature'] = kwargs.get('temperature', 0.2)
         kwargs['top_p'] = kwargs.get('top_p', 0.95)
