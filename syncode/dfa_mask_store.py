@@ -310,7 +310,7 @@ class DFAMaskStore:
             except: # If we cannot load the file, we will create the dfa from scratch
                 pass
     
-        print(f"Creating DFA mask store for {tokenizer_name} and {grammar}, may take more than 10 minutes.", flush=True)
+        print(f"Creating DFA mask store for {tokenizer_name} and {grammar}, may take more than 10 minutes. Storing at {os.path.abspath(dfa_path)} .", flush=True)
         vocab = common.get_vocab_from_tokenizer(tokenizer)
         logger.log_time(f"Time taken for loading vocab: {time.time() - start_time:.2f}s")
 
