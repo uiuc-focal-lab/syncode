@@ -36,7 +36,7 @@ def test1():
     model = TestModel()
     tokenizer = TestTokenizer()
     logger = common.EmptyLogger()
-    lm = HuggingFaceModel(model, logger, tokenizer, grammar=Grammar('calc'), mode='original', max_new_tokens=15, device='cpu')
+    lm = HuggingFaceModel(model, Grammar('calc'), logger, tokenizer, mode='original', max_new_tokens=15, device='cpu')
     prompt = "113 + 235 + 17"
     output = lm.generate_batch_completion_grammar(prompt, 1)
     assert len(output[0]) == 15
