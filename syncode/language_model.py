@@ -1,6 +1,6 @@
 import time
+from parsers.grammars.grammar import Grammar
 from utils.generation import filter_code, fix_indents
-from transformers import LlamaTokenizer
 import common
 import torch
 
@@ -29,6 +29,7 @@ class HuggingFaceModel(LanguageModel):
     def __init__(
             self, 
             model, 
+            grammar: Grammar,
             logger: common.Logger, 
             tokenizer=None, 
             prompt_template: str = '', 
@@ -38,7 +39,6 @@ class HuggingFaceModel(LanguageModel):
             device='cuda', 
             logit_processors=None, 
             mode: str ='original', 
-            grammar: str = 'python', 
             **kwargs) -> None:
         super().__init__()
 

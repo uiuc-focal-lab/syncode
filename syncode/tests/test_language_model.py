@@ -5,6 +5,7 @@ from transformers import BatchEncoding
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../')
 import common
 from language_model import HuggingFaceModel
+from parsers.grammars.grammar import Grammar
 
 
 class TestModel:
@@ -35,7 +36,7 @@ def test1():
     model = TestModel()
     tokenizer = TestTokenizer()
     logger = common.EmptyLogger()
-    lm = HuggingFaceModel(model, logger, tokenizer, mode='original', grammar='calc', max_new_tokens=15, device='cpu')
+    lm = HuggingFaceModel(model, logger, tokenizer, grammar=Grammar('calc'), mode='original', max_new_tokens=15, device='cpu')
     prompt = "113 + 235 + 17"
     output = lm.generate_batch_completion_grammar(prompt, 1)
     assert len(output[0]) == 15

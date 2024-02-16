@@ -6,6 +6,7 @@ from parsers.incremental_parser import ParseResult
 from parse_result import AcceptSequence, IndentationConstraint, RemainderState
 from dfa_mask_store import DFAMaskStore
 from parsers import create_parser
+from parsers.grammars.grammar import Grammar
 
 
 def test_dfa_mask():        
@@ -139,7 +140,7 @@ def test_indetantaion():
 
 def test_simplications():
     import regex
-    simplifications = DFAMaskStore.python_simplifications
+    simplifications = Grammar('python').simplifications()
     
     # COMMENT 
     reg = simplifications['COMMENT']
@@ -184,6 +185,7 @@ if __name__ == '__main__':
     # This is just for quick testing while debugging
     # run_ind, run_codegen, run_llama, run_wizard = False, True, False, False
     run_ind, run_codegen, run_llama, run_wizard = True, True, True, True
+    python_grammar = Grammar('python')
 
     # Independent tests
     if run_ind:
@@ -197,7 +199,7 @@ if __name__ == '__main__':
     if run_llama:
         model = 'Llama-7b'
         tokenizer = common.load_tokenizer(model)
-        dfa_mask = DFAMaskStore.load_dfa_mask_store(grammar='python', tokenizer=tokenizer, use_cache=True, logger=common.EmptyLogger())
+        dfa_mask = DFAMaskStore.load_dfa_mask_store(grammar=python_grammar, tokenizer=tokenizer, use_cache=True, logger=common.EmptyLogger())
         tests_llama = [test_dfa_mask, test_dfa_mask2, test_dfa_mask3, test_dfa_mask4, test_dfa_mask5, test_dfa_mask6, test_dfa_mask7, test_dfa_mask8, test_dfa_mask9, test_dfa_mask13, test_indent, test_dfa_mask_with_indent]
         common.run_tests(tests_llama)
 
@@ -205,7 +207,7 @@ if __name__ == '__main__':
     if run_codegen:
         model = 'Salesforce/codegen-350M-multi'
         tokenizer = common.load_tokenizer(model)
-        dfa_mask = DFAMaskStore.load_dfa_mask_store(grammar='python', tokenizer=tokenizer, use_cache=True, logger=common.EmptyLogger())
+        dfa_mask = DFAMaskStore.load_dfa_mask_store(grammar=python_grammar, tokenizer=tokenizer, use_cache=True, logger=common.EmptyLogger())
         tests_codegen = [test_dfa_mask10, test_dfa_mask11, test_dfa_mask12]
         # tests_codegen = [test_dfa_mask12]
         common.run_tests(tests_codegen)
@@ -213,6 +215,6 @@ if __name__ == '__main__':
     if run_wizard:
         model = 'WizardLM/WizardCoder-1B-V1.0'
         tokenizer = common.load_tokenizer(model)
-        dfa_mask = DFAMaskStore.load_dfa_mask_store(grammar='python', tokenizer=tokenizer, use_cache=True, logger=common.EmptyLogger())
+        dfa_mask = DFAMaskStore.load_dfa_mask_store(grammar=python_grammar, tokenizer=tokenizer, use_cache=True, logger=common.EmptyLogger())
         tests_codegen = [test_dfa_mask10, test_dfa_mask11]
         common.run_tests(tests_codegen)

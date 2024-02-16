@@ -4,47 +4,23 @@ from parsers.python_parser import PythonIncrementalParser, PythonIndenter
 from parsers.go_parser import GoIncrementalParser
 import common
 from larkm.lark import Lark
+from parsers.grammars.grammar import Grammar
 
-def create_parser(grammar, parser='lalr', **kwargs):   
+def create_parser(grammar: Grammar, parser='lalr', **kwargs):   
         """ 
         Creates an incremental parser for the given grammar. The parser is cached for future use.
-        Args:
-            grammar (str): The name of the grammar to use. There are 3 possible ways to specify the grammar:
-            1) Name of the grammar available in syncode/parsers/grammars. Can be 'python', 'go', 'tiny', 'calc' etc.
-            2) Full path to the grammar file. In this case, the grammar file should be in Lark format.
-            3) The grammar itself in Lark/EBNF form.
-
-            parser (str, optional): The type of parser to use. Can be 'lalr' or 'lr'. Defaults to 'lalr'.        
+        parser (str, optional): The type of parser to use. Can be 'lalr' or 'lr'. Defaults to 'lalr'.        
         """
         indenter = None
         parser_cache_dir = common.SYNCODE_CACHE + 'parsers/'
         cache_filename = parser_cache_dir + f'{grammar}_{parser}_parser.pkl'
         os.makedirs(os.path.dirname(parser_cache_dir), exist_ok=True)
-        grammar_filename = None
 
-        if grammar == 'python':
+        if grammar.name == 'python':
             indenter = PythonIndenter()
-            grammar_filename =  f'syncode/parsers/grammars/{grammar}_grammar.lark'
-        elif grammar in ['go', 'tiny', 'calc']:
-            grammar_filename = f'syncode/parsers/grammars/{grammar}_grammar.lark'
-        elif grammar.endswith('.lark'): 
-            if os.path.exists(grammar):
-                # In this case we assume that the user provides the full path to the grammar file
-                grammar_filename = grammar
-            else:
-                raise ValueError(f'grammar input file {grammar} does not exist!')            
-    
-        if grammar_filename is not None:
-            if os.path.exists(grammar_filename):
-                    with open(grammar_filename, 'r') as file:
-                        grammar_def = file.read()
-            else:
-                raise ValueError(f'grammar file {grammar_filename} does not exist!')
-        else: # Grammar can also be specified as a string in EBNF form
-            grammar_def = grammar
 
         base_parser = Lark( # This is the standard Lark parser
-                        grammar_def,
+                        grammar.ebnf,
                         parser=parser,
                         lexer="basic",
                         start="start",
@@ -53,9 +29,9 @@ def create_parser(grammar, parser='lalr', **kwargs):
                         cache = cache_filename
                     )
 
-        if grammar == 'python':
+        if grammar.name == 'python':
             return PythonIncrementalParser(base_parser, indenter, **kwargs)
-        elif grammar == 'go':
+        elif grammar.name == 'go':
             return GoIncrementalParser(base_parser, **kwargs)
 
         return incremental_parser.IncrementalParser(base_parser, **kwargs)

@@ -9,6 +9,7 @@ from typing import Optional, Literal
 from mxeval.data import write_jsonl, get_data, get_examples
 from tqdm import tqdm
 from evaluation import check_coorectness
+from parsers.grammars.grammar import Grammar
 
 def compile_and_run(model, mode="original", quantize=True, device="cuda", num_samples=1, grammar="python", dataset="input", few_shot=False, num_examples=-1, parse_prompt=True, dev_mode=False, log_level=1, new_mask_store=False, parser="lalr", task_id=None, **kwargs):
     sc = Syncode(model, mode=mode, quantize=quantize, device=device, num_samples=num_samples, grammar=grammar, dataset=dataset, few_shot=few_shot, num_fs_examples=num_examples, parse_prompt=parse_prompt, dev_mode=dev_mode, log_level=log_level, new_mask_store=new_mask_store, parser=parser, task_id=task_id, **kwargs)
@@ -72,7 +73,7 @@ class Syncode:
         self.quantize = quantize
         self.device = device
         self.num_samples = num_samples
-        self.grammar = grammar
+        self.grammar = Grammar(grammar)
         self.new_mask_store = new_mask_store
         self.few_shot = few_shot
         self.num_fs_examples = num_fs_examples
@@ -115,12 +116,12 @@ class Syncode:
 
         self.model = HuggingFaceModel(
             model, 
-            self.logger, 
+            grammar=self.grammar,
+            logger=self.logger, 
             tokenizer=tokenizer, 
             device=device, 
             logit_processors=logit_processors, 
             mode=self.mode, 
-            grammar=self.grammar,
             **kwargs
             )
 
@@ -156,9 +157,9 @@ class Syncode:
         Run evaluation on the model
         """
         if self.few_shot:
-            problems = {problem['task_id'] : problem for problem in get_examples(self.dataset, self.grammar, self.num_fs_examples)}
+            problems = {problem['task_id'] : problem for problem in get_examples(self.dataset, self.grammar.name, self.num_fs_examples)}
         else:
-            problems = get_data(self.dataset, self.grammar)
+            problems = get_data(self.dataset, self.grammar.name)
 
         samples = []
         outputs = []
@@ -232,7 +233,7 @@ class Syncode:
                     self.grammar_decoder.reset()
 
                 prompt = input('Enter prompt: ')
-                prompt = prompt.replace('\\n', '\n').replace('\\"', '\"').replace('\\t', '\t').replace("\\'", "\'").replace('\\b', '\b').replace('\\r', '\r') if self.grammar == 'python' else prompt
+                prompt = prompt.replace('\\n', '\n').replace('\\"', '\"').replace('\\t', '\t').replace("\\'", "\'").replace('\\b', '\b').replace('\\r', '\r') if self.grammar.name == 'python' else prompt
                 if prompt == "exit":
                     break
                 batch_completions = self.model.generate_batch_completion_grammar(prompt, self.num_samples)

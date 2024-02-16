@@ -1,11 +1,13 @@
 import sys, os
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../')
-from parsers.go_parser import GoIncrementalParser
 from common import run_tests
 from parse_result import AcceptSequence, RemainderState
 from parsers import create_parser
+from parsers.grammars.grammar import Grammar
 
-inc_parser = create_parser('go')
+go_grammar = Grammar('go')
+inc_parser = create_parser(go_grammar)
+
 def test_tree_printer():
     '''
     NOTE: The EOS ignoring is handled seperately in Go incremental parser. Just calling the standard lark parser for printing the tree will not ignore EOS.

@@ -4,11 +4,9 @@ import torch
 from transformers import BatchEncoding
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../')
 import common
-from language_model import HuggingFaceModel
 from infer import Syncode
-from mxeval.data import write_jsonl, get_data, get_examples
+from mxeval.data import get_data
 from evaluation import check_correctness_python, check_correctness_go
-
 #TODO: make this run faster
 
 

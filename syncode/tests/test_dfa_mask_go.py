@@ -5,13 +5,14 @@ import common
 from parsers.incremental_parser import ParseResult
 from parse_result import AcceptSequence, RemainderState
 from dfa_mask_store import DFAMaskStore
+from parsers.grammars.grammar import Grammar
 
 # model = 'Salesforce/codegen-350M-multi'
 # model = 'WizardLM/WizardCoder-1B-V1.0'
 model = 'Llama-7b'
 model = 'deepseek-ai/deepseek-coder-6.7b-instruct'
 tokenizer = common.load_tokenizer(model)
-dfa_mask = DFAMaskStore.load_dfa_mask_store(grammar='go', tokenizer=tokenizer, use_cache=True, logger=common.EmptyLogger())
+dfa_mask = DFAMaskStore.load_dfa_mask_store(grammar=Grammar('go'), tokenizer=tokenizer, use_cache=True, logger=common.EmptyLogger())
 
 def test_dfa_mask():
     query_start_time = time.time()

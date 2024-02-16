@@ -6,6 +6,7 @@ from transformers import LogitsProcessor, PreTrainedTokenizer
 from parsers.incremental_parser import IncrementalParser, ParseResult
 from parsers import create_parser
 from dfa_mask_store import DFAMaskStore
+from parsers.grammars.grammar import Grammar
 
 
 class GrammarDecoder(LogitsProcessor):
@@ -21,7 +22,7 @@ class GrammarDecoder(LogitsProcessor):
         dev_mode (bool, optional): Whether to run in development mode. Defaults to False.
     """
     def __init__(self, 
-        grammar: str, 
+        grammar: Grammar, 
         tokenizer: PreTrainedTokenizer, 
         logger: common.Logger, 
         use_cache=True,

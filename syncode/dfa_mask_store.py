@@ -12,6 +12,7 @@ from parsers import create_parser
 from larkm.lexer import TerminalDef
 from parse_result import IndentationConstraint, RemainderState, ParseResult
 import hashlib
+from parsers.grammars.grammar import Grammar
 
 class DFAState:
     """
@@ -121,22 +122,6 @@ class DFAs:
         
         # if we never reach a final state and reach a dead state at some point
         return (False, None)
-    
-
-class Simplification:
-    """
-    The Simplification class presents a mapping from the original regex to the simplified regex for certain terminals. 
-    There are two reasons for doing this. In some cases, the original regex is complex and requires large DFAs. Computing the overapproximate tokens for such DFAs is expensive. The other reason is that the interegular library does not support some regex features such as lookaheads. Thus, we use the simplified regex to compute the overapproximate tokens.
-
-    # NOTE: We are not changing the actual regex of the terminals while parsing. We are only using the simplified regex for computing the overapproximate tokens maintaining the soundness.
-    """
-    def __init__(self, original_regex, simplified_regex):
-        self.original_regex = original_regex
-        self.simplified_regex = simplified_regex
-
-    def match_original(self, s):
-        return regex.match(self.original_regex, s) is not None
-
 
 class LookupTable:
     """
@@ -307,22 +292,14 @@ class DFAMaskStore:
         # NOTE: This should be called at the end of the constructor
         self._lookup_table.convert_lookups_from_list_to_mask()  # convert to boolean tensor mask. This is useful for fast union operations
 
-    # Simplifications for python
-    python_simplifications = {
-                    'COMMENT': '(?i:(?s:(#.*|\'\'\'.*?\'\'\'|""".*?""")))', 
-                    '_NL': '(?s:(?i:\n(.*)))', 
-                    'LONG_STRING': '(?i:(?s:(\'\'\'.*?\'\'\'|""".*?""")))', 
-                    'STRING': '(?s:(?i:[ubf]?r?(".*?"|\'.*?\')))'
-                    }
-
     @staticmethod
-    def load_dfa_mask_store(grammar: str, tokenizer, inc_parser=None, use_cache=True, logger=None):
+    def load_dfa_mask_store(grammar: Grammar, tokenizer, inc_parser=None, use_cache=True, logger=None):
         '''
         Loads the dfa for the given language and tokenizer. If the dfa is not cached, it is created and cached. 
         '''
         tokenizer_name = type(tokenizer).__name__
         dfa_dir = common.SYNCODE_CACHE + 'mask_stores/' + tokenizer_name + '/'
-        grammar_hash = int(hashlib.sha256(grammar.encode('utf-8')).hexdigest(), 16)
+        grammar_hash = grammar.hash()
         dfa_path = f'{dfa_dir}{grammar_hash}_dfa_mask.pkl'
         start_time = time.time()
         if use_cache and os.path.exists(dfa_path):
@@ -341,11 +318,7 @@ class DFAMaskStore:
             inc_parser = create_parser(grammar, logger=logger)
         logger.log_time(f"Time taken for loading parser: {time.time() - start_time:.2f}s")
 
-        simplifications = {}
-        if grammar == 'python':
-            # These simplifications should overapproximate the actual tokens for the terminals to be sound
-            simplifications = DFAMaskStore.python_simplifications
-        
+        simplifications = grammar.simplifications()
         os.makedirs(dfa_dir, exist_ok=True)
         mask_store = DFAMaskStore(inc_parser.base_parser.terminals, vocab, simplifications=simplifications, special_token_ids=[tokenizer.eos_token_id])
         logger.log_time(f"Time taken for creating dfa: {time.time() - start_time:.2f}s")
