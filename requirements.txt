@@ -3,7 +3,7 @@ cmake==3.27.2
 filelock==3.12.3
 fire==0.5.0
 fsspec==2023.9.0
-huggingface-hub==0.16.4
+huggingface-hub==0.19.4
 human-eval==1.0.3
 idna==3.4
 interegular==0.3.2
