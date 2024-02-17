@@ -34,7 +34,7 @@ sentencepiece==0.1.99
 six==1.16.0
 sympy==1.12
 termcolor==2.3.0
-tokenizers==0.16.0
+tokenizers==0.15.0
 torch==2.0.1
 tqdm==4.66.1
 transformers
