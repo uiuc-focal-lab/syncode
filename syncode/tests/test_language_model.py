@@ -1,11 +1,11 @@
 import sys, os
 from typing import Dict
 import torch
-from transformersm import BatchEncoding
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../')
 import common
 from language_model import HuggingFaceModel
 from parsers.grammars.grammar import Grammar
+from transformersm import BatchEncoding
 
 
 class TestModel:
