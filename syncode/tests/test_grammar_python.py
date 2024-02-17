@@ -3,7 +3,7 @@ sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../')
 from parsers.python_parser import PythonIncrementalParser
 from parsers import create_parser
 from common import run_tests
-from transformers import (
+from transformersm import (
     LlamaTokenizer,
 )
 from parse_result import AcceptSequence, RemainderState

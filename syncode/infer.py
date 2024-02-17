@@ -2,7 +2,7 @@ import time
 import common
 import fire
 from language_model import HuggingFaceModel
-from transformers import LogitsProcessorList
+from transformersm import LogitsProcessorList
 import os
 from grammar_decoder import GrammarDecoder
 from typing import Optional, Literal

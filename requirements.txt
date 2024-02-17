@@ -29,7 +29,7 @@ packaging==23.1
 PyYAML==6.0.1
 regex==2023.8.8
 requests==2.31.0
-safetensors==0.3.3
+safetensors==0.4.1
 sentencepiece==0.1.99
 six==1.16.0
 sympy==1.12
@@ -37,7 +37,6 @@ termcolor==2.3.0
 tokenizers==0.13.3
 torch==2.0.1
 tqdm==4.66.1
-transformers
 triton==2.0.0
 typing_extensions==4.7.1
 urllib3==2.0.4

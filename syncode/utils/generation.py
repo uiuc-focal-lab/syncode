@@ -1,9 +1,8 @@
-from transformers import (
+from transformersm import (
     PreTrainedModel,
     PreTrainedTokenizer,
 )
 import typing
-import common
 
 BatchGenerator = typing.Callable[
     [PreTrainedModel, PreTrainedTokenizer, str, int], list[str]
