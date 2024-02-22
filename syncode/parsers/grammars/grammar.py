@@ -11,6 +11,7 @@ class Grammar:
     def __init__(self, name):
         self.name = name
         self.ebnf = None
+        grammar_filename = None
         
         if name in ['python', 'go', 'tiny', 'calc']:
             grammar_filename = f'syncode/parsers/grammars/{name}_grammar.lark'
