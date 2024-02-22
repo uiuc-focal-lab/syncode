@@ -39,11 +39,12 @@ class ParseResult:
     """ 
     Stores the result of parsing. 
     """
-    def __init__(self, accept_sequences, remainder, remainder_state: RemainderState, next_ac_indents=None):
+    def __init__(self, accept_sequences, remainder, remainder_state: RemainderState, next_ac_indents=None, function_end=False):
         self.remainder = remainder
         self.remainder_state = remainder_state
         self.accept_sequences = accept_sequences
         self.next_ac_indents: Optional[IndentationConstraint] = next_ac_indents
+        self.function_end = function_end
         
     @staticmethod
     def from_accept_terminals(cur_accept_terminals, next_accept_terminals, remainder, remainder_state: RemainderState, next_ac_indents=None, final_terminal=None, ignore_terminals=None) -> 'ParseResult':
@@ -75,7 +76,8 @@ class ParseResult:
 
         if remainder_state == RemainderState.INCOMPLETE: # If the terminal is not complete, then next_accept_terminals should be None
             assert len(next_accept_terminals) == 0
-        return ParseResult(accept_sequences, remainder, remainder_state, next_ac_indents)
+        function_end = True if '$END' in next_accept_terminals else False
+        return ParseResult(accept_sequences, remainder, remainder_state, next_ac_indents, function_end=function_end)
 
     def __repr__(self):
         return 'remainder : {}, remainder_state: {}, accept_sequences: {}, next_ac_indents: {}'.format(repr(self.remainder), self.remainder_state, self.accept_sequences, self.next_ac_indents)

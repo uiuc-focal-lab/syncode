@@ -112,12 +112,13 @@ class HuggingFaceModel(LanguageModel):
         return completion
 
     def postproces_completion_go(self, i, batch_size, raw_completion, generated_ids, grammar_decoder, input_ids_cutoff):
-        stop_word = "\n\n"
-        if self.mode == "original" or stop_word in raw_completion or self.tokenizer.eos_token_id == generated_ids[i][-1]: 
+        extra_stop_word = "\n\n"
+        
+        if self.mode == "original": 
             # only filter with stop-word for original mode
-            completion = filter_code(raw_completion)
+            completion = filter_code(raw_completion, extra_stop_word=extra_stop_word)
         else:
-            # Use when the stop word does not exist in the completion and grammar_decoder is used
+            # When the grammar_decoder is used
             function_incomplete = [False for _ in range(batch_size)]
             self.logger.log(f"Function incomplete!")
             completion = self.compute_backup_completion(grammar_decoder, function_incomplete, i, input_ids_cutoff, generated_ids)

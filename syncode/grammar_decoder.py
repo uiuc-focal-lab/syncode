@@ -141,11 +141,11 @@ class GrammarDecoder(LogitsProcessor):
         This a simple heuristic to cut off the generated output at the end of the function. 
         TODO: Put this under a flag to enable/disable this heuristic.
         """
+        if r.function_end and self.function_end[i] == None: # If the function end is not None, then the last valid state is the function end
+            self.function_end[i] = len(input_ids[i])-1
+
         for accept_seq in r.accept_sequences:
-            if accept_seq[0] == '$EOC' and self.function_end[i]==None:
-                self.function_end[i] = len(input_ids[i])
-            
-            # 'EOF' is special terminal since $END does not work with pythong
+            # 'EOF' is special terminal since $END does not work with python
             if accept_seq[0] == '$END' or accept_seq[0] == 'EOF':
                 self.last_valid_state[i] = len(input_ids[i])-1
 
