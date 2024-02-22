@@ -14,11 +14,11 @@ def test_syntax_mask_humaneval_python():
 
     # test grammar_mask does not cause functional generated code to fail
     for i in [7, 12, 28]:
-        assert check_correctness_python(problems[i], sg_mask.infer(task_id= i)[0], 10.0)['result'] == 'passed'
+        assert check_correctness_python(problems[i], sg_mask.infer(task_id= i)[0], 10.0)['result'] == 'passed', f"SynCode Causes Functional Generated Code to Fail for HumanEval/{i}"
     
     # test grammar_mask eliminates syntax errors in generated code
     for i in [25, 64, 81, 84, 105, 107]:
-        assert 'Syntax' not in check_correctness_python(problems[i], sg_mask.infer(task_id=i)[0], 10.0)['error_type']
+        assert 'Syntax' not in check_correctness_python(problems[i], sg_mask.infer(task_id=i)[0], 10.0)['error_type'], f"Generated Code for HumanEval/{i} has a Syntax Error"
 
 def test_custom_grammar_string():
     grammar = """
@@ -42,7 +42,7 @@ def test_custom_grammar_string():
     # assert sg_mask.infer("1 + 1 = ")[0][0] == '2'
     # assert sg_mask.infer("4 * 0 = ")[0][0] == '0'
     output = sg_mask.infer('7 * ')
-    assert re.match(r'^[\d()+\-*\/]+$', output)
+    assert re.match(r'^[\d()+\-*\/]+$', output), f"{output} is syntactically incorrect"
 
 tests = [test_syntax_mask_humaneval_python, test_custom_grammar_string]
 common.run_tests(tests)
