@@ -30,6 +30,7 @@ class Grammar:
                 raise ValueError(f'grammar file {grammar_filename} does not exist!')
         else: # Grammar can also be specified as a string in EBNF form
             self.ebnf = name
+            self.name = 'custom'
 
     def __str__(self):
         return self.name 

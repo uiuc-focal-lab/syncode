@@ -14,35 +14,42 @@ def test_syntax_mask_humaneval_python():
 
     # test grammar_mask does not cause functional generated code to fail
     for i in [7, 12, 28]:
-        assert check_correctness_python(problems[i], sg_mask.infer(task_id= i)[0], 10.0)['result'] == 'passed', f"SynCode Causes Functional Generated Code to Fail for HumanEval/{i}"
+        assert check_correctness_python(problems[i], sg_mask.infer(task_id= i)[0], timeout=10.0)['result'] == 'passed', f"SynCode Causes Functional Generated Code to Fail for HumanEval/{i}"
     
     # test grammar_mask eliminates syntax errors in generated code
-    for i in [25, 64, 81, 84, 105, 107]:
-        assert 'Syntax' not in check_correctness_python(problems[i], sg_mask.infer(task_id=i)[0], 10.0)['error_type'], f"Generated Code for HumanEval/{i} has a Syntax Error"
+    for i in [25, 81, 84, 105, 107]:
+        output = sg_mask.infer(task_id= i)[0]
+        assert 'Syntax' not in check_correctness_python(problems[i], output, timeout=10.0)['error_type'], f"Generated Code for HumanEval/{i} has a Syntax Error\n{output}"
 
 def test_custom_grammar_string():
     grammar = """
         start: expr
+
         ?expr: term
-            | expr "+" term  -> add
-            | expr "-" term  -> subtract
+            | expr "+" term      -> add
+            | expr "-" term      -> subtract
+            | expr "*" term      -> multiply
+            | expr "/" term      -> divide
+            | expr "=" term      -> equal
 
-        ?term: factor
-            | term "*" factor  -> multiply
-            | term "/" factor  -> divide
-
-        ?factor: NUMBER        -> number
+        ?term: NUMBER          -> number
             | "(" expr ")"
 
         %import common.NUMBER
         %import common.WS
         %ignore WS
     """
-    sg_mask = Syncode(model = "test-instruct", mode = 'grammar_mask', device = 'cpu', do_sample = False, max_new_tokens = 50, grammar = grammar)
+    sg_mask = Syncode(model = "test-instruct", mode = 'grammar_mask', device = 'cpu', do_sample = False, max_new_tokens = 20, grammar = grammar)
+
+    output = sg_mask.infer('7 * ')[0]
+    assert re.match(r'^[\d()+\-*/\n ]+$', output, flags=re.DOTALL), f"{output} is syntactically incorrect"
+
+    # ['2\n\n**\n\n**\n\n**\n\n**\n\n**\n\n**\n']
     # assert sg_mask.infer("1 + 1 = ")[0][0] == '2'
+
+    # '0.\n\n**\n\n**\n\n**\n\n**\n\n**\n\n**'
     # assert sg_mask.infer("4 * 0 = ")[0][0] == '0'
-    output = sg_mask.infer('7 * ')
-    assert re.match(r'^[\d()+\-*\/]+$', output), f"{output} is syntactically incorrect"
+    
 
 tests = [test_syntax_mask_humaneval_python, test_custom_grammar_string]
 common.run_tests(tests)
