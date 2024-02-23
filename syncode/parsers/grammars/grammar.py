@@ -11,6 +11,7 @@ class Grammar:
     def __init__(self, name):
         self.name = name
         self.ebnf = None
+        grammar_filename = None
         
         if name in ['python', 'go', 'tiny', 'calc']:
             grammar_filename = f'syncode/parsers/grammars/{name}_grammar.lark'
@@ -29,6 +30,7 @@ class Grammar:
                 raise ValueError(f'grammar file {grammar_filename} does not exist!')
         else: # Grammar can also be specified as a string in EBNF form
             self.ebnf = name
+            self.name = 'custom'
 
     def __str__(self):
         return self.name 

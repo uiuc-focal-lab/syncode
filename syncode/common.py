@@ -34,6 +34,8 @@ def load_model(model_name, device):
         llama_models = ["Llama-7b", "Llama-13b", "CodeLlama-7b", "CodeLlama-7b-Python"]
         if model_name == 'test':
             model = AutoModelForCausalLM.from_pretrained('bigcode/tiny_starcoder_py').to(device)
+        elif model_name == 'test-instruct':
+            model = AutoModelForCausalLM.from_pretrained("rahuldshetty/tiny-starcoder-instruct")
         elif model_name not in llama_models:
             model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.bfloat16, cache_dir=HF_CACHE, token=HF_ACCESS_TOKEN, trust_remote_code=True).eval().to(device)
         elif model_name in llama_models:
@@ -45,6 +47,8 @@ def load_tokenizer(model_name):
         llama_models = ["Llama-7b", "Llama-13b", "CodeLlama-7b", "CodeLlama-7b-Python"]
         if model_name == 'test':
             tokenizer = AutoTokenizer.from_pretrained('bigcode/tiny_starcoder_py')
+        elif model_name == 'test-instruct':
+            tokenizer = AutoTokenizer.from_pretrained("rahuldshetty/tiny-starcoder-instruct")
         elif model_name not in llama_models:
             tokenizer = AutoTokenizer.from_pretrained(model_name, cache_dir=HF_CACHE, token=HF_ACCESS_TOKEN, trust_remote_code=True)
         elif model_name in llama_models:
