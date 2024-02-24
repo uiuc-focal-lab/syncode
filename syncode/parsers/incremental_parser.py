@@ -172,12 +172,16 @@ class IncrementalParser:
             current_term_str = current_term_str.lstrip(' ') # Remove space from the beginning
             if current_term_str == '':
                 remainder_state = RemainderState.COMPLETE
-        else:
+        elif len(self.parser_token_seq) > 0:
             # Although this is a complete terminal, it may happen that this may be just prefix of some other terminal
             # e.g., 'de' may seem like a variable name that is complete, but it may be just a prefix of 'def'
             current_term_str = self.parser_token_seq[-1].value
             remainder_state = RemainderState.MAYBE_COMPLETE
             final_terminal = self.parser_token_seq[-1].type
+        else:
+            # When the code is empty
+            remainder_state = RemainderState.COMPLETE
+            current_term_str = ''
         return remainder_state, current_term_str, final_terminal
     
     def _accepts(self, interactive_parser: InteractiveParser) -> set:
