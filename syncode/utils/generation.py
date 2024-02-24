@@ -3,9 +3,9 @@ from transformers import (
     PreTrainedTokenizer,
 )
 import typing
-
+from typing import Iterable
 BatchGenerator = typing.Callable[
-    [PreTrainedModel, PreTrainedTokenizer, str, int], list[str]
+    [PreTrainedModel, PreTrainedTokenizer, str, int], Iterable[str]
 ]
 
 # reference: https://github.com/declare-lab/instruct-eval/blob/main/human_eval/main.py#L35
@@ -19,7 +19,7 @@ def fix_indents(text: str) -> str:
     return text.replace("\t", "    ")
 
 
-def split_batch(samples: list[str], size=4):
+def split_batch(samples: Iterable[str], size=4):
     mini_batches = []
 
     for i in range(0, len(samples), size):

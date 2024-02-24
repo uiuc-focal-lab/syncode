@@ -3,19 +3,20 @@ from syncode.parsers.grammars import Grammar
 from syncode.utils.generation import filter_code, fix_indents
 import syncode.common as common
 import torch
+from typing import Iterable, Tuple
 
 class LanguageModel:
-    def vocabulary(self) -> list[str]:
+    def vocabulary(self) -> Iterable[str]:
         raise NotImplementedError()
 
-    def predict_tokens(self, prefix: str, n: int) -> list[int]:
+    def predict_tokens(self, prefix: str, n: int) -> Iterable[int]:
         raise NotImplementedError()
 
-    def predict_token(self, prefix: str, valid_tokens: list[int], top_k: int = 1) -> tuple[list[int], list[float]]:
+    def predict_token(self, prefix: str, valid_tokens: Iterable[int], top_k: int = 1) -> Tuple[Iterable[int], Iterable[float]]:
         'Given prefix (prompt + already generated code), predicts next token'
         raise NotImplementedError()
 
-    def tokenize(self, s: str) -> list[int]:
+    def tokenize(self, s: str) -> Iterable[int]:
         raise NotImplementedError()
 
     def get_token(self, i: int) -> str:
@@ -61,7 +62,7 @@ class HuggingFaceModel(LanguageModel):
         return None
 
     @torch.inference_mode()
-    def generate_batch_completion_grammar(self, prompt, batch_size) -> list[str]:
+    def generate_batch_completion_grammar(self, prompt, batch_size) -> Iterable[str]:
         '''
         Generates batch_size completions for the given prompt. 
         '''
@@ -146,13 +147,13 @@ class HuggingFaceModel(LanguageModel):
         skip_special_tokens=True)[1:]  
         return backup_completion
     
-    def tokenize(self, s: str) -> 'list[int]':
+    def tokenize(self, s: str) -> 'Iterable[int]':
         return self.tokenizer.encode(s, add_special_tokens=False)
 
-    def vocabulary(self) -> list[str]:
+    def vocabulary(self) -> Iterable[str]:
         return self.vocab
 
-    def predict_token(self, prefix: str, valid_tokens: list[int], top_k: int = 1) -> tuple[list[int], list[float]]:
+    def predict_token(self, prefix: str, valid_tokens: Iterable[int], top_k: int = 1) -> Tuple[Iterable[int], Iterable[float]]:
         input_ids = self.tokenizer.encode(prefix, return_tensors="pt", add_special_tokens=False)
         input_ids = input_ids.to(self.device)
         with torch.no_grad():
