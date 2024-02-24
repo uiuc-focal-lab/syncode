@@ -40,7 +40,16 @@ def test_custom_grammar_string():
         %ignore " "  
     """
     model_name = "microsoft/phi-2"
-    sg_mask = Syncode(model = model_name, mode='grammar_mask', device='cpu', do_sample=False, max_new_tokens=20, grammar=grammar, parse_prompt=False, dev_mode=True)
+    
+    sg_mask = Syncode(
+        model = model_name, 
+        mode='grammar_mask', 
+        device='cpu', 
+        do_sample=False, 
+        max_new_tokens=20, 
+        grammar=grammar, 
+        chat_mode=True, 
+        dev_mode=True)
 
     output = sg_mask.infer("What is 2+2?")
     assert output == '2+2=4 '
