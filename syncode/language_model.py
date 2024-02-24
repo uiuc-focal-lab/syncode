@@ -1,7 +1,7 @@
 import time
-from parsers.grammars.grammar import Grammar
-from utils.generation import filter_code, fix_indents
-import common
+from syncode.parsers.grammars import Grammar
+from syncode.utils.generation import filter_code, fix_indents
+import syncode.common as common
 import torch
 
 class LanguageModel:

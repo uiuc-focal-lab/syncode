@@ -3,7 +3,6 @@ from transformers import (
     PreTrainedTokenizer,
 )
 import typing
-import common
 
 BatchGenerator = typing.Callable[
     [PreTrainedModel, PreTrainedTokenizer, str, int], list[str]

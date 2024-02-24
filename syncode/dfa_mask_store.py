@@ -1,18 +1,15 @@
 from collections import defaultdict
-import copy
-import os
-import pickle
-import time
-from typing import Any, Optional, Tuple
+import copy, os, pickle, time
 import interegular
 import torch
 import regex
-import common
-from parsers import create_parser
-from larkm.lexer import TerminalDef
-from parse_result import IndentationConstraint, RemainderState, ParseResult
-import hashlib
-from parsers.grammars.grammar import Grammar
+import syncode.common as common
+from syncode.parsers import create_parser
+from syncode.larkm.lexer import TerminalDef
+from syncode.parse_result import IndentationConstraint, RemainderState, ParseResult
+from syncode.parsers.grammars.grammar import Grammar
+from typing import Any, Optional, Tuple
+
 
 class DFAState:
     """

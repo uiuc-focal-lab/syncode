@@ -1,9 +1,9 @@
 import sys, os
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../')
-import common
-from infer import Syncode
+import syncode.common as common
+from syncode.infer import Syncode
 from mxeval.data import get_data
-from evaluation import check_correctness_python
+from syncode.evaluation import check_correctness_python
 import re
 #TODO: make this run faster
 

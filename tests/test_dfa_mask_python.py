@@ -1,12 +1,12 @@
 import sys, os
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../')
 import time
-import common
-from parsers.incremental_parser import ParseResult
-from parse_result import AcceptSequence, IndentationConstraint, RemainderState
-from dfa_mask_store import DFAMaskStore
-from parsers import create_parser
-from parsers.grammars.grammar import Grammar
+import syncode.common as common
+from syncode.parsers.incremental_parser import ParseResult
+from syncode.parse_result import AcceptSequence, IndentationConstraint, RemainderState
+from syncode.dfa_mask_store import DFAMaskStore
+from syncode.parsers import create_parser
+from syncode.parsers.grammars import Grammar
 
 
 def test_dfa_mask():        

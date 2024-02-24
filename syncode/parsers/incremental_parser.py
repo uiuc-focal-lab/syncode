@@ -1,13 +1,10 @@
-import copy
-import time
-import common
-import larkm as lark
-from larkm.parsers.lalr_interactive_parser import InteractiveParser
-from parse_result import ParseResult, RemainderState
-from larkm.lexer import Token
-from larkm import Lark
+import copy, time
+import syncode.common as common
+import syncode.larkm as lark
+from syncode.larkm.parsers.lalr_interactive_parser import InteractiveParser
+from syncode.parse_result import ParseResult, RemainderState
+from syncode.larkm.lexer import Token
 from typing import Optional, Any, Tuple
-import os
 
 class IncrementalParser:    
     """

@@ -4,8 +4,8 @@ from typing import Iterator, List
 from copy import copy
 import warnings
 
-from larkm.exceptions import UnexpectedToken
-from larkm.lexer import Token, LexerThread
+from syncode.larkm.exceptions import UnexpectedToken
+from syncode.larkm.lexer import Token, LexerThread
 
 ###{standalone
 

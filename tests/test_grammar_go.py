@@ -1,9 +1,9 @@
 import sys, os
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../')
-from common import run_tests
-from parse_result import AcceptSequence, RemainderState
-from parsers import create_parser
-from parsers.grammars.grammar import Grammar
+from syncode.common import run_tests
+from syncode.parse_result import AcceptSequence, RemainderState
+from syncode.parsers import create_parser
+from syncode.parsers.grammars import Grammar
 
 go_grammar = Grammar('go')
 inc_parser = create_parser(go_grammar)
