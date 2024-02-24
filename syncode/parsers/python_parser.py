@@ -6,7 +6,7 @@ from syncode.larkm import Token
 from syncode.larkm.indenter import Indenter
 from syncode.parsers.incremental_parser import IncrementalParser
 from syncode.parse_result import IndentationConstraint, ParseResult, RemainderState
-from typing import Optional
+from typing import Optional, Iterable
 
 class PythonIncrementalParser(IncrementalParser):
     """
@@ -129,9 +129,9 @@ class PythonIncrementalParser(IncrementalParser):
             while indent < indent_level[-1]:
                 indent_level.pop()
 
-    def _lex_code(self, code: str) -> list[Token]:
+    def _lex_code(self, code: str) -> Iterable[Token]:
         # Collect Lexer tokens
-        lexer_tokens: list[Token] = []
+        lexer_tokens: Iterable[Token] = []
         interactive = self.base_parser.parse_interactive(code)
         lexer_state = interactive.lexer_thread.state
         indenter: PythonIndenter = self.base_parser.lexer_conf.postlex
