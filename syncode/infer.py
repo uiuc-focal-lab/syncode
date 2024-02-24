@@ -224,6 +224,8 @@ class Syncode:
         Run user input on the model with grammar mask
         """
         if prompt:
+            if self.grammar_decoder is not None: # TODO: Remove this check
+                    self.grammar_decoder.reset()
             return self.model.generate_chat_completion_grammar(prompt)
             # return self.model.generate_batch_completion_grammar(prompt, self.num_samples)
         

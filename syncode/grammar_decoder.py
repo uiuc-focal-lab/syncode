@@ -116,7 +116,7 @@ class GrammarDecoder(LogitsProcessor):
                         # Pad accept_mask with 0 values. Since scores[i] may be longer than tokenizer vocab size, we need to pad accept_mask with 0 values
                         accept_mask = torch.cat((accept_mask, torch.zeros(len(scores[idx]) - len(accept_mask), dtype=torch.bool)))
                         
-                    # scores[idx] = scores[idx].masked_fill(~accept_mask.to(scores.device), -float("inf"))
+                    scores[idx] = scores[idx].masked_fill(~accept_mask.to(scores.device), -float("inf"))
                 else: # Otherwise, report the error and mask no tokens
                     self.logger.log('No acceptable tokens for the current partial code!')
                     self._log_current_status(partial_code, r)
