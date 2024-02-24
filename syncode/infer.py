@@ -224,7 +224,8 @@ class Syncode:
         Run user input on the model with grammar mask
         """
         if prompt:
-            return self.model.generate_batch_completion_grammar(prompt, self.num_samples)
+            return self.model.generate_chat_completion_grammar(prompt)
+            # return self.model.generate_batch_completion_grammar(prompt, self.num_samples)
         
         else:
             while True:
