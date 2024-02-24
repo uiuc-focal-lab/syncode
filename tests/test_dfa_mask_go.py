@@ -1,11 +1,11 @@
 import sys, os
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../')
 import time
-import common
-from parsers.incremental_parser import ParseResult
-from parse_result import AcceptSequence, RemainderState
-from dfa_mask_store import DFAMaskStore
-from parsers.grammars.grammar import Grammar
+import syncode.common as common
+from syncode.parsers.incremental_parser import ParseResult
+from syncode.parse_result import AcceptSequence, RemainderState
+from syncode.dfa_mask_store import DFAMaskStore
+from syncode.parsers.grammars import Grammar
 
 # model = 'Salesforce/codegen-350M-multi'
 # model = 'WizardLM/WizardCoder-1B-V1.0'

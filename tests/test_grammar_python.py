@@ -1,13 +1,12 @@
 import sys, os
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../')
-from parsers.python_parser import PythonIncrementalParser
-from parsers import create_parser
-from common import run_tests
+from syncode.parsers import create_parser
+from syncode.common import run_tests
 from transformers import (
     LlamaTokenizer,
 )
-from parse_result import AcceptSequence, RemainderState
-from parsers.grammars.grammar import Grammar
+from syncode.parse_result import AcceptSequence, RemainderState
+from syncode.parsers.grammars import Grammar
 
 python_grammar = Grammar('python')
 inc_parser = create_parser(python_grammar)

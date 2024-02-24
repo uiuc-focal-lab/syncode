@@ -1,13 +1,11 @@
-import copy
-import time
+import copy, time, regex
 from typing import Iterator
-import larkm as lark
-import regex
-import common
-from larkm import Token
-from larkm.indenter import Indenter
-from parsers.incremental_parser import IncrementalParser
-from parse_result import IndentationConstraint, ParseResult, RemainderState
+import syncode.larkm as lark
+import syncode.common as common
+from syncode.larkm import Token
+from syncode.larkm.indenter import Indenter
+from syncode.parsers.incremental_parser import IncrementalParser
+from syncode.parse_result import IndentationConstraint, ParseResult, RemainderState
 from typing import Optional
 
 class PythonIncrementalParser(IncrementalParser):
