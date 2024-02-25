@@ -102,6 +102,38 @@ class HuggingFaceModel(LanguageModel):
 
         return batch_completions
 
+    @torch.inference_mode()
+    def generate_chat_completion_grammar(self, prompt) -> str:
+        '''
+        Generates chat completion for the given prompt. 
+        '''
+        assert 'apply_chat_template' in dir(self.tokenizer), "Tokenizer does not support chat completion"
+
+        message = [{"role": "user", "content": prompt}]
+        inputs = self.tokenizer.apply_chat_template(
+            message, 
+            add_generation_prompt=True, 
+            return_tensors="pt"
+            ).to(self.model.device)
+        
+        input_ids_cutoff = inputs.size(dim=1)
+
+        # input_ids_cutoff = inputs.input_ids.size(dim=1)
+        start_time = time.time()
+
+        generated_ids = self.model.generate(
+            inputs,
+            logits_processor=self.logit_processors,
+            **self.gen_kwargs
+        )
+        completion = self.tokenizer.decode(
+            generated_ids[0][input_ids_cutoff:len(generated_ids[0])], 
+            skip_special_tokens=True)
+
+        self.logger.log_code("Raw completion", completion)
+        return completion
+
+
     def postproces_completion_python(self, i, batch_size, input_ids_cutoff, generated_ids, grammar_decoder, raw_completion):
         stop_word = "\n\n"
         if stop_word in raw_completion or self.tokenizer.eos_token_id == generated_ids[i][-1] or grammar_decoder is None:

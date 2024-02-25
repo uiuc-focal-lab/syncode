@@ -7,7 +7,6 @@ from syncode.evaluation import check_correctness_python
 import re
 #TODO: make this run faster
 
-
 def test_syntax_mask_humaneval_python():
     sg_mask = Syncode(model = "test", mode = 'grammar_mask', device = 'cpu', do_sample = False, max_new_tokens = 200, dataset = 'humaneval')
     problems = list(get_data('multi-humaneval', 'python').values())
@@ -24,32 +23,22 @@ def test_syntax_mask_humaneval_python():
 def test_custom_grammar_string():
     grammar = """
         start: expr
-
         ?expr: term
             | expr "+" term      -> add
             | expr "-" term      -> subtract
             | expr "*" term      -> multiply
             | expr "/" term      -> divide
             | expr "=" term      -> equal
-
         ?term: NUMBER          -> number
             | "(" expr ")"
-
         %import common.NUMBER
         %import common.WS
         %ignore WS
     """
-    sg_mask = Syncode(model = "test-instruct", mode = 'grammar_mask', device = 'cpu', do_sample = False, max_new_tokens = 20, grammar = grammar)
+    sg_mask = Syncode(model="test-instruct", mode ='grammar_mask', device ='cpu', do_sample = False, max_new_tokens=20, grammar=grammar)
 
     output = sg_mask.infer('7 * ')[0]
     assert re.match(r'^[\d()+\-*/\n ]+$', output, flags=re.DOTALL), f"{output} is syntactically incorrect"
-
-    # ['2\n\n**\n\n**\n\n**\n\n**\n\n**\n\n**\n']
-    # assert sg_mask.infer("1 + 1 = ")[0][0] == '2'
-
-    # '0.\n\n**\n\n**\n\n**\n\n**\n\n**\n\n**'
-    # assert sg_mask.infer("4 * 0 = ")[0][0] == '0'
-    
 
 tests = [test_syntax_mask_humaneval_python, test_custom_grammar_string]
 common.run_tests(tests)

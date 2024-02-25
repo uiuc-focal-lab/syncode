@@ -11,7 +11,7 @@ from syncode.evaluation import check_coorectness
 from syncode.parsers.grammars import Grammar
 
 def compile_and_run(model, mode="original", quantize=True, device="cuda", num_samples=1, grammar="python", dataset="input", few_shot=False, num_examples=-1, parse_prompt=True, dev_mode=False, log_level=1, new_mask_store=False, parser="lalr", task_id=None, **kwargs):
-    sc = Syncode(model, mode=mode, quantize=quantize, device=device, num_samples=num_samples, grammar=grammar, dataset=dataset, few_shot=few_shot, num_fs_examples=num_examples, parse_prompt=parse_prompt, dev_mode=dev_mode, log_level=log_level, new_mask_store=new_mask_store, parser=parser, task_id=task_id, **kwargs)
+    sc = Syncode(model, mode=mode, quantize=quantize, device=device, num_samples=num_samples, grammar=grammar, dataset=dataset, few_shot=few_shot, num_fs_examples=num_examples, chat_mode=parse_prompt, dev_mode=dev_mode, log_level=log_level, new_mask_store=new_mask_store, parser=parser, task_id=task_id, **kwargs)
     sc.infer(task_id=task_id)
 
 class Syncode:
@@ -28,7 +28,7 @@ class Syncode:
         new_mask_store (bool, optional): Use new DFA mask store. Defaults to False.
         few_shot (bool, optional): Run few shoting prompting. Defaults to False.
         num_fs_examples (int, optional): Number of examples for few shot prompting. Defaults to -1.
-        parse_prompt (bool, optional): Parse prompt. Defaults to True.
+        chat_mode (bool, optional): Parse only the (output) and not (prompt+output) in chat mode. Defaults to False.
         dev_mode (bool, optional): Development mode. Defaults to False.
         log_level (int, optional): Log level. Defaults to 2. 0 for no logs, 1 for minimal logs, 2 for all logs including time.
         parser (str, optional): Parser to use. Defaults to "lalr".
@@ -51,7 +51,7 @@ class Syncode:
         dataset: Literal["mbxp", "humaneval", "mathqa-x", "input"] = "input",
         few_shot: bool = False,
         num_fs_examples: int = -1,
-        parse_prompt: bool = True,
+        chat_mode: bool = False,
         dev_mode: bool = False,
         log_level: int = 1,
         new_mask_store: bool = False,
@@ -79,6 +79,7 @@ class Syncode:
         dataset_dirmap = {"mbxp": "mbxp", "humaneval": "multi-humaneval", "mathqa-x": "mathqa-x"}
         self.dataset = dataset_dirmap[dataset] if dataset != "input" else "input"
         self.parser = parser
+        self.chat_mode = chat_mode
 
         # Load model
         model = common.load_model(self.model_name, device)
@@ -98,7 +99,7 @@ class Syncode:
                 tokenizer=tokenizer, 
                 logger=self.logger, 
                 use_cache=(not self.new_mask_store), 
-                parse_prompt=parse_prompt,
+                chat_mode=chat_mode,
                 num_samples=self.num_samples, 
                 dev_mode=dev_mode,
                 parser=parser
@@ -224,7 +225,12 @@ class Syncode:
         Run user input on the model with grammar mask
         """
         if prompt:
-            return self.model.generate_batch_completion_grammar(prompt, self.num_samples)
+            if self.grammar_decoder is not None: # TODO: Remove this check
+                    self.grammar_decoder.reset()
+            if self.chat_mode:
+                return self.model.generate_chat_completion_grammar(prompt)
+            else:
+                return self.model.generate_batch_completion_grammar(prompt, self.num_samples)
         
         else:
             while True:
