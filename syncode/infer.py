@@ -79,6 +79,7 @@ class Syncode:
         dataset_dirmap = {"mbxp": "mbxp", "humaneval": "multi-humaneval", "mathqa-x": "mathqa-x"}
         self.dataset = dataset_dirmap[dataset] if dataset != "input" else "input"
         self.parser = parser
+        self.chat_mode = chat_mode
 
         # Load model
         model = common.load_model(self.model_name, device)

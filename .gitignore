@@ -6,3 +6,4 @@ syncode/core/__pycache__
 .vscode/
 tmp*
 cache/
+.ipynb_checkpoints/

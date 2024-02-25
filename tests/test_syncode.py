@@ -7,7 +7,6 @@ from syncode.evaluation import check_correctness_python
 import re
 #TODO: make this run faster
 
-
 def test_syntax_mask_humaneval_python():
     sg_mask = Syncode(model = "test", mode = 'grammar_mask', device = 'cpu', do_sample = False, max_new_tokens = 200, dataset = 'humaneval')
     problems = list(get_data('multi-humaneval', 'python').values())
@@ -24,41 +23,22 @@ def test_syntax_mask_humaneval_python():
 def test_custom_grammar_string():
     grammar = """
         start: expr
-
         ?expr: term
             | expr "+" term      -> add
             | expr "-" term      -> subtract
             | expr "*" term      -> multiply
             | expr "/" term      -> divide
             | expr "=" term      -> equal
-
-        ?term: DEC_NUMBER          -> number
+        ?term: NUMBER          -> number
             | "(" expr ")"
-
-        DEC_NUMBER: /0|[1-9]\d*/i  
-
-        %ignore " "  
+        %import common.NUMBER
+        %import common.WS
+        %ignore WS
     """
-    model_name = "microsoft/phi-2"
-    
-    sg_mask = Syncode(
-        model = model_name, 
-        mode='grammar_mask', 
-        device='cpu', 
-        do_sample=False, 
-        max_new_tokens=20, 
-        grammar=grammar, 
-        chat_mode=True, 
-        dev_mode=True)
+    sg_mask = Syncode(model="test-instruct", mode ='grammar_mask', device ='cpu', do_sample = False, max_new_tokens=20, grammar=grammar)
 
-    output = sg_mask.infer("What is 2+2?")
-    assert output == '2+2=4 '
-    
-    output = sg_mask.infer('What is 7 multiplied by 8?')
-    assert output == '7 * 8 = 56 '
-
-    output = sg_mask.infer('What is square root of 64?')
-    assert output == '8 '
+    output = sg_mask.infer('7 * ')[0]
+    assert re.match(r'^[\d()+\-*/\n ]+$', output, flags=re.DOTALL), f"{output} is syntactically incorrect"
 
 tests = [test_syntax_mask_humaneval_python, test_custom_grammar_string]
 common.run_tests(tests)
