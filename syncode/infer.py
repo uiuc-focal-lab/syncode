@@ -106,13 +106,8 @@ class Syncode:
                 )
             logit_processors = LogitsProcessorList([self.grammar_decoder])
 
-        kwargs['max_new_tokens'] = kwargs.get('max_new_tokens', 200)
-        kwargs['do_sample'] = kwargs.get('do_sample', False)
-        kwargs['use_cache'] = kwargs.get('use_cache', True)
-        kwargs['temperature'] = kwargs.get('temperature', 0.2)
-        kwargs['top_p'] = kwargs.get('top_p', 0.95)
-        kwargs['eos_token_id'] = kwargs.get('eos_token_id', tokenizer.eos_token_id)
-        kwargs['pad_token_id'] = kwargs.get('pad_token_id', tokenizer.eos_token_id) # model has no pad token
+        # Set LLM generation args e.g. max_new_tokens, do_sample, etc.
+        self.set_generation_args(kwargs, tokenizer)
 
         self.model = HuggingFaceModel(
             model, 
@@ -180,6 +175,17 @@ class Syncode:
             debug_task_id = list(problems.keys())[debug_task_id]
             return self.run_eval_for_task(num_samples_per_task, format_tabs, problems, samples, pbar, debug_task_id)
         return outputs
+    
+    def set_generation_args(self, kwargs, tokenizer):
+        kwargs['max_new_tokens'] = kwargs.get('max_new_tokens', 200)
+        kwargs['do_sample'] = kwargs.get('do_sample', False)
+        kwargs['use_cache'] = kwargs.get('use_cache', True)
+        if kwargs['do_sample']:
+            kwargs['temperature'] = kwargs.get('temperature', 0.2)
+            kwargs['top_k'] = kwargs.get('top_k', 10)
+            kwargs['top_p'] = kwargs.get('top_p', 0.95)
+        kwargs['eos_token_id'] = kwargs.get('eos_token_id', tokenizer.eos_token_id)
+        kwargs['pad_token_id'] = kwargs.get('pad_token_id', tokenizer.eos_token_id) # model has no pad token
 
     def write_results(self, out_path, avg_time, functional_result):
         """
