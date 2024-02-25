@@ -20,7 +20,8 @@ setuptools.setup(
     install_requires=requirements,
     classifiers=[
         "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: Apache Software License",
+        "Intended Audience :: Science/Research",	
+        "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
 )
