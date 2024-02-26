@@ -88,6 +88,32 @@ In Python, inference is performed using the __infer()__ method in the __SynCode_
 
 If both `prompt` and `task_id` are not specified, __infer()__ reads user input via `stdin`. 
 
+The following example shows a usage of SynCode provided a custom grammar:
+
+``` python
+from syncode import Syncode
+
+# Pass in a grammar as a string of rules in EBNF format
+grammar = """ start: month day 
+
+              month: "January" | "February" | "March" | "April" | "May" | "June" | "July" | "August" | "September" | "October" | "November" | "December"
+              
+              day: /[1-9]/ | /[1-2][0-9]/ | /3[0-1]/             
+"""
+
+# Load the Syncode augmented model
+syn_llm = Syncode(model="microsoft/phi-2", mode='grammar_mask', grammar=grammar, chat_mode=True)
+
+inp = "When is the christmas day?"
+
+output = syn_llm.infer(inp)
+
+print(f"Syncode augmented LLM output:\n{output}")
+# Syncode augmented LLM output:
+# December 25 
+```
+Check more examples of using Python, Go, and other grammars in the Jupyter notebooks 
+
 ### SynCode Arguments
 <details>
   <summary>Click to Expand on the List of Arguments for SynCode</summary>
@@ -176,7 +202,7 @@ from syncode import Syncode
 model_name = "WizardLM/WizardCoder-1B-V1.0"
 
 # Load the Syncode augmented model
-syn_llm = Syncode(model = model_name, mode='grammar_mask', grammar='python')
+syn_llm = Syncode(model=model_name, mode='grammar_mask', grammar='python')
 partial_code = "def is_prime(n):\n    '''Return if prime'''\n  "
 
 #generate a completion to the input partial code
@@ -203,7 +229,7 @@ from syncode import Syncode
 model_name = "microsoft/phi-2"
 
 # Load the unconstrained original model
-llm = Syncode(model = model_name, mode='original', max_new_tokens=20, chat_mode=True)
+llm = Syncode(model=model_name, mode='original', max_new_tokens=20, chat_mode=True)
 
 inp = "When is the christmas day?"
 
@@ -218,7 +244,7 @@ As shown above, the LLM generates a correct response but not in the format we wa
 ``` python
 from syncode import Syncode
 
-# pass in a grammar as a string of rules in EBNF format
+# Pass in a grammar as a string of rules in EBNF format
 grammar = """ start: month day 
               
               day: /[1-9]/ | /[1-2][0-9]/ | /3[0-1]/
@@ -229,7 +255,7 @@ grammar = """ start: month day
 model_name = "microsoft/phi-2"
 
 # Load the Syncode augmented model
-syn_llm = Syncode(model = model_name, mode='grammar_mask', grammar=grammar, chat_mode=True)
+syn_llm = Syncode(model=model_name, mode='grammar_mask', grammar=grammar, chat_mode=True)
 
 inp = "When is the christmas day?"
 
