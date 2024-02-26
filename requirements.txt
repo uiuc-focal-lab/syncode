@@ -4,3 +4,4 @@ regex==2023.8.8
 torch==2.0.1
 tqdm
 transformers
+mxeval @ git+https://github.com/shubhamugare/mxeval.git
