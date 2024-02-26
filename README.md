@@ -150,6 +150,34 @@ Check more examples of using Python, Go, and other grammars in <a href="#-exampl
   
 </details>
 
+### Running with CLI
+<details>
+  <summary>Running SynCode via CLI</summary>
+Clone this repository:
+```
+git clone https://github.com/uiuc-focal-lab/syncode.git
+```
+
+To run the tool with CLI, use the following command:
+```
+python3 syncode/infer.py
+    --mode [original, grammar_mask]
+    --model [model_name]
+    --quantize [True, False]
+    --device ["cpu", "cuda", "cuda:1" etc.]
+    --num_samples [num_samples]
+    --dataset [mbxp, humaneval, mathqa-x, input]
+    --few_shot [True, False]
+    --num_fs_examples [num_fs_examples]
+    --chat_mode [True, False]
+    --dev_mode [True, False]
+    --log_level [0, 1, 2]
+    --new_mask_store [True, False]
+    --parser ["lr", "lalr"]
+    --task_id [task_id]
+```
+<details>
+
 ### Environment Variables
 Optionally, you can set the directories for cache by exporting the following environment variables. Add the following lines to your .bashrc or .zshrc file:
 ```
@@ -261,32 +289,6 @@ print(f"Syncode augmented LLM output:\n{output}")
 # Syncode augmented LLM output:
 # December 25 
 ```
-### Running with CLI
-Clone this repository:
-```
-git clone https://github.com/uiuc-focal-lab/syncode.git
-```
-
-To run the tool with CLI, use the following command:
-```
-python3 syncode/infer.py
-    --mode [original, grammar_mask]
-    --model [model_name]
-    --quantize [True, False]
-    --device ["cpu", "cuda", "cuda:1" etc.]
-    --num_samples [num_samples]
-    --dataset [mbxp, humaneval, mathqa-x, input]
-    --few_shot [True, False]
-    --num_fs_examples [num_fs_examples]
-    --chat_mode [True, False]
-    --dev_mode [True, False]
-    --log_level [0, 1, 2]
-    --new_mask_store [True, False]
-    --parser ["lr", "lalr"]
-    --task_id [task_id]
-```
-
-
 &nbsp;
 
 ## 🤔 FAQs
