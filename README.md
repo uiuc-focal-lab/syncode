@@ -176,7 +176,7 @@ python3 syncode/infer.py
     --parser ["lr", "lalr"]
     --task_id [task_id]
 ```
-<details>
+</details>
 
 ### Environment Variables
 Optionally, you can set the directories for cache by exporting the following environment variables. Add the following lines to your .bashrc or .zshrc file:
