@@ -14,8 +14,8 @@
     | 📚&nbsp;<a href="#-features">Features</a>
     | 📖&nbsp;<a href="#-more-about-syncode">More About SynCode</a>
     | 🚀&nbsp;<a href="#-quick-start">Quick Start</a>
-    | 👀&nbsp;<a href="#-examples">Example Usage</a>
-    | 🤔&nbsp;<a href="#-faq">FAQ</a>
+    | 👀&nbsp;<a href="#-example-usage">Example Usage</a>
+    | 🤔&nbsp;<a href="#-faq">FAQs</a>
 </p>
 
 > [!WARNING]  
