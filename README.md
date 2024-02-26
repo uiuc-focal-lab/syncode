@@ -5,9 +5,7 @@
   <img width="400" alt="syncode" src="https://github.com/shubhamugare/syncode/assets/14147610/99c30a9d-b5f5-49ab-9295-33738fde1de2" />
 </p>
 
-[![Test Status][test-img]][tests]
-
-# SynCode: grammar augmented LLM generation
+# SynCode: grammar augmented LLM generation [![Test Status][test-img]][tests]
 
 <p align="left">
     ℹ️&nbsp;<a href="#-about">About</a>
@@ -28,7 +26,7 @@
 
 ### How Does **SynCode** Compare to Other Constrained Decoders?
 
-| Tool        | Regex*     | CFG*       | Pre-Computed* | GPL* |
+| Tool        | Regex     | CFG*       | Pre-Computed* | GPL* |
 |-------------|-----------|-----------|:-------------:|------|
 | LMQL        | ✅        | ❌        |       ❌       | ❌   |
 | GUIDANCE    | ✅        | ✅        |       ❌       | ❌   |
@@ -39,7 +37,6 @@
 | GCD         | ✅        | ✅        |       ❌       | ❌   |
 | **SynCode** | **✅**    | **✅**    |   **✅**       | **✅** |
 ---
-**Regex***: Guide generation with regular expressions 
 
 **CFG***: Guide generation with a Context Free Grammar (CFG)
 
@@ -123,45 +120,6 @@ export HF_CACHE="path_to_hf_cache"
 export SYNCODE_CACHE="path_to_syncode_cache"
 ```
 If these environment variables are not set, the tool will use the default cache directories.
-
-### SynCode Arguments
-<details>
-  <summary>Click to Expand on the List of Arguments for SynCode</summary>
-  
-- `mode` (str, optional): Mode for inference. Defaults to "original". "grammar_mask" is the mode that enables our tool.
-  
-- `model` (str): Model ID for Hugging Face model hub or model name if stored locally.
-  
-- `quantize` (bool, optional): Quantize model. Defaults to True.
-  
-- `device` (str, optional): Device to run the model on. Defaults to "cuda". 
-
-- `grammar` (str, optional): Grammar in EBNF form (string or file path) or language for constrained generation. Defaults to "python". 
-  
-- `num_samples` (int, optional): Number of samples. Defaults to 1.
-  
-- `dataset` (str, optional): Dataset. Defaults to "input". "input" indicates that the user can provide input via CLI or by passing in a prompt as a string. 
-   
-- `few_shot` (bool, optional): Run few-shot prompting. Defaults to False.
-  
-- `num_fs_examples` (int, optional): Number of examples for few shot prompting. Defaults to -1.
-  
-- `chat_mode` (bool, optional): True if using a Chat/Instruct LLM. False otherwise. Defaults to False. 
-  
-- `dev_mode` (bool, optional): Development mode where we do not fail silently with parser errors. Defaults to False.
-  
-- `log_level` (int, optional): 0 for no logs, 1 for minimal logs, 2 for all logs including time. Defaults to 2.
-
-- `new_mask_store` (bool, optional): Forces to use a new mask store otherwise use a cached mask store if available. Defaults to False.
-
-- `parser` (str, optional): Choose between LR(1) and LALR(1) parsing. Defaults to 'lalr'.
-
-- `task_id` (int, optional): Problem task id for selecting a problem from a Dataset.
-
-- `kwargs`(void, optional): Currently supported `kwargs` are `max_length`, `max_new_tokens`, `min_length`, `min_new_tokens`, `early_stopping`, `do_sample`, `num_beams`, `use_cache`, `temperature`, `top_k`, `top_p`, `num_return_sequences`, `pad_token_id`, and `eos_token_id`. Refer to the [HuggingFace Text Generation Documentation](https://huggingface.co/docs/transformers/en/main_classes/text_generation) for more information.
-
-  
-</details>
 
 
 ## 👀 Example Usage
@@ -268,6 +226,45 @@ print(f"Syncode augmented LLM output:\n{output}")
 # Syncode augmented LLM output:
 # December 25 
 ```
+
+### SynCode Arguments
+<details>
+  <summary>Click to Expand on the List of Arguments for SynCode</summary>
+  
+- `mode` (str, optional): Mode for inference. Defaults to "original". "grammar_mask" is the mode that enables our tool.
+  
+- `model` (str): Model ID for Hugging Face model hub or model name if stored locally.
+  
+- `quantize` (bool, optional): Quantize model. Defaults to True.
+  
+- `device` (str, optional): Device to run the model on. Defaults to "cuda". 
+
+- `grammar` (str, optional): Grammar in EBNF form (string or file path) or language for constrained generation. Defaults to "python". 
+  
+- `num_samples` (int, optional): Number of samples. Defaults to 1.
+  
+- `dataset` (str, optional): Dataset. Defaults to "input". "input" indicates that the user can provide input via CLI or by passing in a prompt as a string. 
+   
+- `few_shot` (bool, optional): Run few-shot prompting. Defaults to False.
+  
+- `num_fs_examples` (int, optional): Number of examples for few shot prompting. Defaults to -1.
+  
+- `chat_mode` (bool, optional): True if using a Chat/Instruct LLM. False otherwise. Defaults to False. 
+  
+- `dev_mode` (bool, optional): Development mode where we do not fail silently with parser errors. Defaults to False.
+  
+- `log_level` (int, optional): 0 for no logs, 1 for minimal logs, 2 for all logs including time. Defaults to 2.
+
+- `new_mask_store` (bool, optional): Forces to use a new mask store otherwise use a cached mask store if available. Defaults to False.
+
+- `parser` (str, optional): Choose between LR(1) and LALR(1) parsing. Defaults to 'lalr'.
+
+- `task_id` (int, optional): Problem task id for selecting a problem from a Dataset.
+
+- `kwargs`(void, optional): Currently supported `kwargs` are `max_length`, `max_new_tokens`, `min_length`, `min_new_tokens`, `early_stopping`, `do_sample`, `num_beams`, `use_cache`, `temperature`, `top_k`, `top_p`, `num_return_sequences`, `pad_token_id`, and `eos_token_id`. Refer to the [HuggingFace Text Generation Documentation](https://huggingface.co/docs/transformers/en/main_classes/text_generation) for more information.
+
+  
+</details>
 
 
 &nbsp;
