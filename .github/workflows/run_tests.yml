@@ -33,5 +33,7 @@ jobs:
           path: /home/runner/work/syncode/syncode/cache/mask_stores/
           key: files-${{ hashFiles('syncode/parsers/grammars/python_grammar.lark', 'syncode/dfa_mask_store.py') }}
     - name: Run Tests
+      env:
+        PYTHONPATH: ${{ github.workspace }} /syncode
       run: |
           python -m unittest discover -s tests
