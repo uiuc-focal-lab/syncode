@@ -67,9 +67,6 @@
 
 The backbone of SynCode is the offline construction of a DFA mask store, a lookup table derived from regular expressions representing the terminals of the language grammar. The DFA mask store facilitates efficient traversal of DFA states, enabling the retrieval of masks mapped to each state and accept sequence. In the SynCode workflow, the LLM takes partial code _C<sub>k</sub>_ and generates a distribution for the next token _t<sub>k+1</sub>_. The incremental parser processes _C<sub>k</sub>_ to generate accept sequences _A_, the sequences of terminals that can follow partial code called accept sequences. Simultaneously, the incremental parser computes a remainder _r_ from the partial code, representing the suffix that may change its terminal type in subsequent generations. SynCode walks over the DFA using the remainder and uses the mask store to compute the mask specific to each accept sequence. By unifying masks for each accept sequence SynCode gets the set of syntactically valid tokens. The LLM iteratively generates a token _t<sub>k+1</sub>_ using the distribution and the mask, appending it to _C<sub>k</sub>_ to create the updated code _C<sub>k+1</sub>_. The process continues until the LLM returns the final code _C<sub>n</sub>_ based on the defined stop condition.
 
-
-### How Well Does **SynCode** Work?
-
 ## 🚀 Quick Start
 ### Python Installation and Usage Instructions
 Simply install SynCode via PyPi using the following command:
