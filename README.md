@@ -74,7 +74,7 @@ The backbone of SynCode is the offline construction of a DFA mask store, a looku
 ### How Well Does **SynCode** Work?
 
 ## 🚀 Quick Start
-### Python Installation Instructions
+### Python Installation and Usage Instructions
 Simply install SynCode via PyPi using the following command:
 ``` bash
 pip install git+https://github.com/uiuc-focal-lab/syncode.git
@@ -83,8 +83,15 @@ Then, in your Python program,
 ``` python
 from syncode import Syncode
 ```
+Refer to <a href="###-syncode-arguments">SynCode Arguments</a> for the full list of arguments to initialize the __SynCode__ class. 
+In Python, inference is performed using the __infer()__ method in the __SynCode__ class. __infer()__ has the following arguments:
+- `prompt` (str, optional): Prompt to the Language Model. Defaults to None.
+  
+- `task_id` (int, optional): Problem task id for selecting a problem from a Dataset. Defaults to None.
 
-### Installing and Running with CLI
+If both `prompt` and `task_id` are not specified, __infer()__ reads user input via `stdin`. 
+
+### Running with CLI
 Clone this repository:
 ```
 git clone https://github.com/uiuc-focal-lab/syncode.git
@@ -117,9 +124,9 @@ export SYNCODE_CACHE="path_to_syncode_cache"
 ```
 If these environment variables are not set, the tool will use the default cache directories.
 
-### Inference Options
+### SynCode Arguments
 <details>
-  <summary>Click to Expand on the List of Inference Options that SynCode supports</summary>
+  <summary>Click to Expand on the List of Arguments for SynCode</summary>
   
 - `mode` (str, optional): Mode for inference. Defaults to "original". "grammar_mask" is the mode that enables our tool.
   
