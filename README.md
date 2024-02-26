@@ -47,15 +47,15 @@
 
 
 ## 📚 Features
-| Feature                                                                                                              | **SynCode**               |
+| Feature                                                                                                                            |
 |----------------------------------------------------------------------------------------------------------------------|-----------------------|
-| 🔥 Fast grammar-guided generation (as little as 10% generation overhead with Python and Go!)                        | &#x2705;             |
-| 🤖 Seamlessly work with any HuggingFace Language Model, including Code, Chat, and Instruct models                  | &#x2705;             |
-| 🖍️ Pass in any CFG in the EBNF format (even large grammars for programming languages like Python and Go!)           | &#x2705;             |
-| 📝 Built-in CFGs for Python, Go, Calculator, and more!                                                              | &#x2705;             |
-| 🎲 Sample with any existing decoding strategy (eg. greedy, beam search, nucleus sampling)                           | &#x2705;             |
-| 💯 Support for execution-based evaluation of generated code with HumanEval and MBXP datasets                         | &#x2705;             |
-| 💬 Support for generating chat completions                                                                           | &#x2705;             |
+| 🔥 Fast grammar-guided generation (as little as 10% generation overhead with Python and Go!)                                    |
+| 🤖 Seamlessly work with any HuggingFace Language Model, including Code, Chat, and Instruct models                               |
+| 🖍️ Pass in any CFG in the EBNF format (even large grammars for programming languages like Python and Go!)                        |
+| 📝 Built-in CFGs for Python, Go, Calculator, and more!                                                                           |
+| 🎲 Sample with any existing decoding strategy (eg. greedy, beam search, nucleus sampling)                                       |
+| 💯 Support for execution-based evaluation of generated code with HumanEval and MBXP datasets                                     |
+| 💬 Support for generating chat completions                                                                                       |
 
 
 
