@@ -1,1 +1,1 @@
-import syncode.infer
+from syncode.infer import Syncode
