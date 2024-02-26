@@ -153,6 +153,7 @@ Check more examples of using Python, Go, and other grammars in <a href="#-exampl
 ### Running with CLI
 <details>
   <summary>Running SynCode via CLI</summary>
+
 Clone this repository:
 ```
 git clone https://github.com/uiuc-focal-lab/syncode.git
@@ -188,7 +189,7 @@ If these environment variables are not set, the tool will use the default cache 
 
 
 ## 👀 Example Usage
-Check out our [notebooks directory](./notebooks/) which contains various interactive examples that showcase different use cases of **SynCode**! The grammars for some common programming languages are defined in the [grammars directory](./syncode/grammars/). We also allow users to define a grammar using a simple EBNF syntax adapted from Lark. Users can pass in a string of rules or a path to a .lark file. 
+Check out our [notebooks directory](./notebooks/) which contains various interactive examples that showcase different use cases of **SynCode**! The grammars for some common programming languages are defined in the [grammars directory](./syncode/parsers/grammars/). We also allow users to define a grammar using a simple EBNF syntax adapted from Lark. Users can pass in a string of rules or a path to a .lark file. 
 
 ### 🐍 Generate Indentation-Error-Free Python Code 
 
