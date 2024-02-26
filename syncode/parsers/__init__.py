@@ -13,7 +13,7 @@ def create_parser(grammar: Grammar, parser='lalr', **kwargs):
         """
         indenter = None
         parser_cache_dir = common.SYNCODE_CACHE + 'parsers/'
-        cache_filename = parser_cache_dir + f'{grammar}_{parser}_parser.pkl'
+        cache_filename = parser_cache_dir + f'{grammar}_{parser}_{grammar.hash()}_parser.pkl'
         os.makedirs(os.path.dirname(parser_cache_dir), exist_ok=True)
 
         if grammar.name == 'python':
