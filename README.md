@@ -88,30 +88,44 @@ In Python, inference is performed using the __infer()__ method in the __SynCode_
 
 If both `prompt` and `task_id` are not specified, __infer()__ reads user input via `stdin`. 
 
-### Running with CLI
-Clone this repository:
-```
-git clone https://github.com/uiuc-focal-lab/syncode.git
-```
+### SynCode Arguments
+<details>
+  <summary>Click to Expand on the List of Arguments for SynCode</summary>
+  
+- `mode` (str, optional): Mode for inference. Defaults to "original". "grammar_mask" is the mode that enables our tool.
+  
+- `model` (str): Model ID for Hugging Face model hub or model name if stored locally.
+  
+- `quantize` (bool, optional): Quantize model. Defaults to True.
+  
+- `device` (str, optional): Device to run the model on. Defaults to "cuda". 
 
-To run the tool with CLI, use the following command:
-```
-python3 syncode/infer.py
-    --mode [original, grammar_mask]
-    --model [model_name]
-    --quantize [True, False]
-    --device ["cpu", "cuda", "cuda:1" etc.]
-    --num_samples [num_samples]
-    --dataset [mbxp, humaneval, mathqa-x, input]
-    --few_shot [True, False]
-    --num_fs_examples [num_fs_examples]
-    --chat_mode [True, False]
-    --dev_mode [True, False]
-    --log_level [0, 1, 2]
-    --new_mask_store [True, False]
-    --parser ["lr", "lalr"]
-    --task_id [task_id]
-```
+- `grammar` (str, optional): Grammar in EBNF form (string or file path) or language for constrained generation. Defaults to "python". 
+  
+- `num_samples` (int, optional): Number of samples. Defaults to 1.
+  
+- `dataset` (str, optional): Dataset. Defaults to "input". "input" indicates that the user can provide input via CLI or by passing in a prompt as a string. 
+   
+- `few_shot` (bool, optional): Run few-shot prompting. Defaults to False.
+  
+- `num_fs_examples` (int, optional): Number of examples for few shot prompting. Defaults to -1.
+  
+- `chat_mode` (bool, optional): True if using a Chat/Instruct LLM. False otherwise. Defaults to False. 
+  
+- `dev_mode` (bool, optional): Development mode where we do not fail silently with parser errors. Defaults to False.
+  
+- `log_level` (int, optional): 0 for no logs, 1 for minimal logs, 2 for all logs including time. Defaults to 2.
+
+- `new_mask_store` (bool, optional): Forces to use a new mask store otherwise use a cached mask store if available. Defaults to False.
+
+- `parser` (str, optional): Choose between LR(1) and LALR(1) parsing. Defaults to 'lalr'.
+
+- `task_id` (int, optional): Problem task id for selecting a problem from a Dataset.
+
+- `kwargs`(void, optional): Currently supported `kwargs` are `max_length`, `max_new_tokens`, `min_length`, `min_new_tokens`, `early_stopping`, `do_sample`, `num_beams`, `use_cache`, `temperature`, `top_k`, `top_p`, `num_return_sequences`, `pad_token_id`, and `eos_token_id`. Refer to the [HuggingFace Text Generation Documentation](https://huggingface.co/docs/transformers/en/main_classes/text_generation) for more information.
+
+  
+</details>
 
 ### Environment Variables
 Optionally, you can set the directories for cache by exporting the following environment variables. Add the following lines to your .bashrc or .zshrc file:
@@ -226,45 +240,30 @@ print(f"Syncode augmented LLM output:\n{output}")
 # Syncode augmented LLM output:
 # December 25 
 ```
+### Running with CLI
+Clone this repository:
+```
+git clone https://github.com/uiuc-focal-lab/syncode.git
+```
 
-### SynCode Arguments
-<details>
-  <summary>Click to Expand on the List of Arguments for SynCode</summary>
-  
-- `mode` (str, optional): Mode for inference. Defaults to "original". "grammar_mask" is the mode that enables our tool.
-  
-- `model` (str): Model ID for Hugging Face model hub or model name if stored locally.
-  
-- `quantize` (bool, optional): Quantize model. Defaults to True.
-  
-- `device` (str, optional): Device to run the model on. Defaults to "cuda". 
-
-- `grammar` (str, optional): Grammar in EBNF form (string or file path) or language for constrained generation. Defaults to "python". 
-  
-- `num_samples` (int, optional): Number of samples. Defaults to 1.
-  
-- `dataset` (str, optional): Dataset. Defaults to "input". "input" indicates that the user can provide input via CLI or by passing in a prompt as a string. 
-   
-- `few_shot` (bool, optional): Run few-shot prompting. Defaults to False.
-  
-- `num_fs_examples` (int, optional): Number of examples for few shot prompting. Defaults to -1.
-  
-- `chat_mode` (bool, optional): True if using a Chat/Instruct LLM. False otherwise. Defaults to False. 
-  
-- `dev_mode` (bool, optional): Development mode where we do not fail silently with parser errors. Defaults to False.
-  
-- `log_level` (int, optional): 0 for no logs, 1 for minimal logs, 2 for all logs including time. Defaults to 2.
-
-- `new_mask_store` (bool, optional): Forces to use a new mask store otherwise use a cached mask store if available. Defaults to False.
-
-- `parser` (str, optional): Choose between LR(1) and LALR(1) parsing. Defaults to 'lalr'.
-
-- `task_id` (int, optional): Problem task id for selecting a problem from a Dataset.
-
-- `kwargs`(void, optional): Currently supported `kwargs` are `max_length`, `max_new_tokens`, `min_length`, `min_new_tokens`, `early_stopping`, `do_sample`, `num_beams`, `use_cache`, `temperature`, `top_k`, `top_p`, `num_return_sequences`, `pad_token_id`, and `eos_token_id`. Refer to the [HuggingFace Text Generation Documentation](https://huggingface.co/docs/transformers/en/main_classes/text_generation) for more information.
-
-  
-</details>
+To run the tool with CLI, use the following command:
+```
+python3 syncode/infer.py
+    --mode [original, grammar_mask]
+    --model [model_name]
+    --quantize [True, False]
+    --device ["cpu", "cuda", "cuda:1" etc.]
+    --num_samples [num_samples]
+    --dataset [mbxp, humaneval, mathqa-x, input]
+    --few_shot [True, False]
+    --num_fs_examples [num_fs_examples]
+    --chat_mode [True, False]
+    --dev_mode [True, False]
+    --log_level [0, 1, 2]
+    --new_mask_store [True, False]
+    --parser ["lr", "lalr"]
+    --task_id [task_id]
+```
 
 
 &nbsp;
