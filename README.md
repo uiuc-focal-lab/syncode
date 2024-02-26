@@ -43,9 +43,9 @@
 
 **CFG***: Guide generation with a Context Free Grammar (CFG)
 
-**Pre-Computed*** Precompute masks over the vocabulary to significantly improve generation speed
+**Pre-Computed***: Precompute masks over the vocabulary to significantly improve generation speed
 
-**GPL*** Support general-purpose programming languages, which involve non-context-free fragments, such as  indentation in Python and end-of-scope markers in Golang.
+**GPL***: Support general-purpose programming languages, which involve non-context-free fragments, such as  indentation in Python and end-of-scope markers in Golang.
 
 
 
