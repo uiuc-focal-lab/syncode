@@ -112,7 +112,7 @@ print(f"Syncode augmented LLM output:\n{output}")
 # Syncode augmented LLM output:
 # December 25 
 ```
-Check more examples of using Python, Go, and other grammars in the Jupyter notebooks 
+Check more examples of using Python, Go, and other grammars in <a href="#-example-usage">Example Usage</a>
 
 ### SynCode Arguments
 <details>
