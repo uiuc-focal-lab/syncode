@@ -194,8 +194,6 @@ exec(constrained_output)
 # Correct Code :)
 ```
 
-### 🏄 Generate Syntax-Error-Free Go Code 
-
 ### 👤 Custom Grammar Input 
 Syncode allows user to define a grammar using a simple EBNF syntax adapted from Lark. One can also simply feed the grammar rules directly as a string of rules as shown below. In our example, we want our model to only respond in the format `month day`. Without constrained decoding, the Language Model may not generate output that follows this syntax. Consider the code snippet below. 
 
