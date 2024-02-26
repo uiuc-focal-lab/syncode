@@ -3,10 +3,10 @@ import sys
 import os
 import time
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../')
-from parsers.incremental_parser import IncrementalParser
-from parsers.python_parser import PythonIncrementalParser
-from parsers import create_parser
-from parsers.grammars.grammar import Grammar
+from syncode.parsers.incremental_parser import IncrementalParser
+from syncode.parsers.python_parser import PythonIncrementalParser
+from syncode.parsers import create_parser
+from syncode.parsers.grammars.grammar import Grammar
 
 class ParserTests(unittest.TestCase):
     @classmethod

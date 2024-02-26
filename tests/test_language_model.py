@@ -3,9 +3,9 @@ from typing import Dict
 import torch
 from transformers import BatchEncoding
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../')
-import common
-from language_model import HuggingFaceModel
-from parsers.grammars.grammar import Grammar
+import syncode.common as common
+from syncode.language_model import HuggingFaceModel
+from syncode.parsers.grammars.grammar import Grammar
 import unittest
 
 

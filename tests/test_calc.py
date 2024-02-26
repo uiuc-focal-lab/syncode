@@ -5,9 +5,9 @@ import sys
 # Adjusting the path so the modules can be imported correctly
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../')
 
-from parsers import create_parser
-from parse_result import AcceptSequence
-from parsers.grammars.grammar import Grammar
+from syncode.parsers import create_parser
+from syncode.parse_result import AcceptSequence
+from syncode.parsers.grammars.grammar import Grammar
 
 class TestParser(unittest.TestCase):
     def test_parser(self):

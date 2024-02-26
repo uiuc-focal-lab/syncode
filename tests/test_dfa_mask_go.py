@@ -3,11 +3,11 @@ import os
 import time
 import unittest
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../')
-import common
-from parsers.incremental_parser import ParseResult
-from parse_result import AcceptSequence, RemainderState
-from dfa_mask_store import DFAMaskStore
-from parsers.grammars.grammar import Grammar
+import syncode.common as common
+from syncode.parsers.incremental_parser import ParseResult
+from syncode.parse_result import AcceptSequence, RemainderState
+from syncode.dfa_mask_store import DFAMaskStore
+from syncode.parsers.grammars.grammar import Grammar
 
 # Initialize these outside the test class if they're shared across tests
 model = 'deepseek-ai/deepseek-coder-6.7b-instruct'

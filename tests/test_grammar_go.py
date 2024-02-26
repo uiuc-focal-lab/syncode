@@ -2,9 +2,9 @@ import unittest
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../')
-from parsers import create_parser
-from parsers.grammars.grammar import Grammar
-from parse_result import AcceptSequence, RemainderState
+from syncode.parsers import create_parser
+from syncode.parsers.grammars.grammar import Grammar
+from syncode.parse_result import AcceptSequence, RemainderState
 
 go_grammar = Grammar('go')
 inc_parser = create_parser(go_grammar)
