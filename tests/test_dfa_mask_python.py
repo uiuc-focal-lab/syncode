@@ -212,9 +212,6 @@ import argparse
 import unittest
 
 if __name__ == '__main__':
-    # argparser = argparse.ArgumentParser(description='Run tests for DFAMaskStore object')
-    # argparser.add_argument('--independent', action='store_true', help='Run only independent tests')
-    # args = argparser.parse_args()
 
     run_ind, run_codegen, run_llama, run_wizard = True, True, True, True
 
@@ -229,69 +226,6 @@ if __name__ == '__main__':
     if run_wizard:
         suite = unittest.TestLoader().loadTestsFromTestCase(TestDFAMaskWizard)
         unittest.TextTestRunner().run(suite)
-    # unittest.main()
 
-
-
-
-# import argparse
-
-# from unittest import TestLoader, TextTestRunner, TestSuite
-
-# if __name__ == '__main__':
-#     """
-#         Run all tests by default. In case we only want to run DFAMaskStore object independent tests (as in CI), we can run with the flag --independent
-#     """
-#     # argparser = argparse.ArgumentParser(description='Run tests for DFAMaskStore object')
-#     # argparser.add_argument('--independent', action='store_true', help='Run only independent tests')
-#     # args = argparser.parse_args()
-
-#     # This is just for quick testing while debugging
-#     # run_ind, run_codegen, run_llama, run_wizard = False, True, False, False
-#     run_ind, run_codegen, run_llama, run_wizard = True, True, True, True
-#     python_grammar = Grammar('python')
-
-#     # Run tests for Codegen model
-#     runner = unittest.TextTestRunner()
-
-#     if run_ind:
-#         test_ind = ['test_simplications']
-#         suite = load_tests_for_model(TestDFAMask, test_ind)
-#         runner.run(suite)
-
-#     if args.independent:
-#         exit(0)
-
-#     # Run tests for Llama model
-#     if run_llama:
-#         # model = 'Llama-7b'
-#         # tokenizer = common.load_tokenizer(model)
-#         # dfa_mask = DFAMaskStore.load_dfa_mask_store(grammar=python_grammar, tokenizer=tokenizer, use_cache=True, logger=common.EmptyLogger())
-#         # tests_llama = ['test_dfa_mask', 'test_dfa_mask2', 'test_dfa_mask3', 'test_dfa_mask4', 'test_dfa_mask5', 'test_dfa_mask6', 'test_dfa_mask7', 'test_dfa_mask8', 'test_dfa_mask9', 'test_dfa_mask13', 'test_indent', 'test_dfa_mask_with_indent']
-        
-#         suite.addTests(loadTestsFromTestCase(TestDFAMaskCodegen))
-#         suit = load_tests_for_model(TestDFAMask, tests_llama)
-#         runner.run(suite)
-
-#     if run_codegen:
-#         # print("Running tests for Codegen model")
-#         model = 'Salesforce/codegen-350M-multi'
-#         TestDFAMask.configure_model(model)
-#         # tokenizer = common.load_tokenizer(model)
-#         # dfa_mask = DFAMaskStore.load_dfa_mask_store(grammar=python_grammar, tokenizer=tokenizer, use_cache=True, logger=common.EmptyLogger())
-#         codegen_tests = ['test_dfa_mask10', 'test_dfa_mask11', 'test_dfa_mask12']
-#         suite = load_tests_for_model(TestDFAMask, codegen_tests)
-#         runner.run(suite)
-
-#     if run_wizard:
-#         # print("Running tests for Wizard Coder model")
-#         # TestDFAMask.configure_model()
-#         model = 'WizardLM/WizardCoder-1B-V1.0'
-#         TestDFAMask.configure_model(model)
-#         # tokenizer = common.load_tokenizer(model)
-#         # dfa_mask = DFAMaskStore.load_dfa_mask_store(grammar=python_grammar, tokenizer=tokenizer, use_cache=True, logger=common.EmptyLogger())
-#         wizard_tests = ['test_dfa_mask10', 'test_dfa_mask11']
-#         suite = load_tests_for_model(TestDFAMask, wizard_tests)
-#         runner.run(suite)
 
 

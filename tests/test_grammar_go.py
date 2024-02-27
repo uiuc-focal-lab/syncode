@@ -10,10 +10,6 @@ go_grammar = Grammar('go')
 inc_parser = create_parser(go_grammar)
 
 class TestGoParser(unittest.TestCase):
-    @classmethod
-    # def setUpClass(cls):
-    #     go_grammar = Grammar('go')
-    #     cls.inc_parser = create_parser(go_grammar)
 
     @unittest.skip("Skipping the correctness comparison test.")
     def test_tree_printer(self):

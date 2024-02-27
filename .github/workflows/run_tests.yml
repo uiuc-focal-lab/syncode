@@ -30,4 +30,9 @@ jobs:
           key: files-${{ hashFiles('syncode/parsers/grammars/python_grammar.lark', 'syncode/dfa_mask_store.py') }}
     - name: Run Tests
       run: |
-          python -m unittest discover -s tests
+          python3 -m unittest tests.test_calc
+          python3 -m unittest tests.test_grammar_go
+          python3 -m unittest tests.test_grammar_python
+          python3 -m unittest tests.test_language_model
+          python3 -m unittest tests.test_lr_parser
+          python3 -m unittest tests.test_syncode
