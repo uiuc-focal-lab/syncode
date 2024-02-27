@@ -1,10 +1,10 @@
 import os
-from parsers import incremental_parser
-from parsers.python_parser import PythonIncrementalParser, PythonIndenter
-from parsers.go_parser import GoIncrementalParser
-import common
-from larkm.lark import Lark
-from parsers.grammars.grammar import Grammar
+from syncode.parsers import incremental_parser
+from syncode.parsers.python_parser import PythonIncrementalParser, PythonIndenter
+from syncode.parsers.go_parser import GoIncrementalParser
+import syncode.common as common
+from syncode.larkm.lark import Lark
+from syncode.parsers.grammars.grammar import Grammar
 
 def create_parser(grammar: Grammar, parser='lalr', **kwargs):   
         """ 
@@ -13,7 +13,7 @@ def create_parser(grammar: Grammar, parser='lalr', **kwargs):
         """
         indenter = None
         parser_cache_dir = common.SYNCODE_CACHE + 'parsers/'
-        cache_filename = parser_cache_dir + f'{grammar}_{parser}_parser.pkl'
+        cache_filename = parser_cache_dir + f'{grammar}_{parser}_{grammar.hash()}_parser.pkl'
         os.makedirs(os.path.dirname(parser_cache_dir), exist_ok=True)
 
         if grammar.name == 'python':

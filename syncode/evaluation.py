@@ -1,14 +1,11 @@
 from collections import defaultdict, Counter
 from concurrent.futures import ThreadPoolExecutor, as_completed
-import sys, os, time 
+import os, time, re, tqdm, fire 
 import traceback
 from typing import List, Dict, Optional
-import fire
 import numpy as np
-import tqdm
 import multiprocessing, subprocess
-import re
-import common
+import syncode.common as common
 from mxeval.data import read_problems, stream_jsonl, write_jsonl, get_metadata
 from mxeval.execution import swallow_io, time_limit, TimeoutException, create_tempdir, reliability_guard, setup_base_path
 from mxeval.evaluation import estimate_pass_at_k

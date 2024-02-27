@@ -1,21 +1,22 @@
 import time
-from parsers.grammars.grammar import Grammar
-from utils.generation import filter_code, fix_indents
-import common
+from syncode.parsers.grammars import Grammar
+from syncode.utils.generation import filter_code, fix_indents
+import syncode.common as common
 import torch
+from typing import Iterable, Tuple
 
 class LanguageModel:
-    def vocabulary(self) -> list[str]:
+    def vocabulary(self) -> Iterable[str]:
         raise NotImplementedError()
 
-    def predict_tokens(self, prefix: str, n: int) -> list[int]:
+    def predict_tokens(self, prefix: str, n: int) -> Iterable[int]:
         raise NotImplementedError()
 
-    def predict_token(self, prefix: str, valid_tokens: list[int], top_k: int = 1) -> tuple[list[int], list[float]]:
+    def predict_token(self, prefix: str, valid_tokens: Iterable[int], top_k: int = 1) -> Tuple[Iterable[int], Iterable[float]]:
         'Given prefix (prompt + already generated code), predicts next token'
         raise NotImplementedError()
 
-    def tokenize(self, s: str) -> list[int]:
+    def tokenize(self, s: str) -> Iterable[int]:
         raise NotImplementedError()
 
     def get_token(self, i: int) -> str:
@@ -61,7 +62,7 @@ class HuggingFaceModel(LanguageModel):
         return None
 
     @torch.inference_mode()
-    def generate_batch_completion_grammar(self, prompt, batch_size) -> list[str]:
+    def generate_batch_completion_grammar(self, prompt, batch_size) -> Iterable[str]:
         '''
         Generates batch_size completions for the given prompt. 
         '''
@@ -100,6 +101,38 @@ class HuggingFaceModel(LanguageModel):
         self.logger.log(f"Completion: {batch_completions}")
 
         return batch_completions
+
+    @torch.inference_mode()
+    def generate_chat_completion_grammar(self, prompt) -> str:
+        '''
+        Generates chat completion for the given prompt. 
+        '''
+        assert 'apply_chat_template' in dir(self.tokenizer), "Tokenizer does not support chat completion"
+
+        message = [{"role": "user", "content": prompt}]
+        inputs = self.tokenizer.apply_chat_template(
+            message, 
+            add_generation_prompt=True, 
+            return_tensors="pt"
+            ).to(self.model.device)
+        
+        input_ids_cutoff = inputs.size(dim=1)
+
+        # input_ids_cutoff = inputs.input_ids.size(dim=1)
+        start_time = time.time()
+
+        generated_ids = self.model.generate(
+            inputs,
+            logits_processor=self.logit_processors,
+            **self.gen_kwargs
+        )
+        completion = self.tokenizer.decode(
+            generated_ids[0][input_ids_cutoff:len(generated_ids[0])], 
+            skip_special_tokens=True)
+
+        self.logger.log_code("Raw completion", completion)
+        return completion
+
 
     def postproces_completion_python(self, i, batch_size, input_ids_cutoff, generated_ids, grammar_decoder, raw_completion):
         stop_word = "\n\n"
@@ -146,13 +179,13 @@ class HuggingFaceModel(LanguageModel):
         skip_special_tokens=True)[1:]  
         return backup_completion
     
-    def tokenize(self, s: str) -> 'list[int]':
+    def tokenize(self, s: str) -> 'Iterable[int]':
         return self.tokenizer.encode(s, add_special_tokens=False)
 
-    def vocabulary(self) -> list[str]:
+    def vocabulary(self) -> Iterable[str]:
         return self.vocab
 
-    def predict_token(self, prefix: str, valid_tokens: list[int], top_k: int = 1) -> tuple[list[int], list[float]]:
+    def predict_token(self, prefix: str, valid_tokens: Iterable[int], top_k: int = 1) -> Tuple[Iterable[int], Iterable[float]]:
         input_ids = self.tokenizer.encode(prefix, return_tensors="pt", add_special_tokens=False)
         input_ids = input_ids.to(self.device)
         with torch.no_grad():

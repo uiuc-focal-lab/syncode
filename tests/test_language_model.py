@@ -6,7 +6,10 @@ sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../')
 import syncode.common as common
 from syncode.language_model import HuggingFaceModel
 from syncode.parsers.grammars.grammar import Grammar
+<<<<<<< HEAD:tests/test_language_model.py
 import unittest
+=======
+>>>>>>> 9613274d5f77cadb24a73921143d13d0c38459f1:syncode/tests/test_language_model.py
 
 
 class TestModel:

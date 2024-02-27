@@ -10,7 +10,7 @@ from ..common import ParserConf, ParserCallbacks
 
 from .lalr_analysis import LALR_Analyzer, IntParseTable, ParseTableBase, LR_Analyzer
 from .lalr_interactive_parser import InteractiveParser
-from larkm.exceptions import UnexpectedCharacters, UnexpectedInput, UnexpectedToken
+from syncode.larkm.exceptions import UnexpectedCharacters, UnexpectedInput, UnexpectedToken
 from .lalr_parser_state import ParserState, ParseConf
 
 ###{standalone

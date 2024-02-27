@@ -1,12 +1,11 @@
-import copy
 from enum import Enum
-from typing import Iterable, Optional
+from typing import Tuple, Optional
 
 class AcceptSequence(list):
     """
     Stores the sequence of terminals that are accepted by the parser.
     """
-    def __init__(self, accept_terminals: list[str]):
+    def __init__(self, accept_terminals: Tuple[str]):
         self.accept_terminals = accept_terminals
     
     def __getitem__(self, id):

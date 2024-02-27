@@ -1,13 +1,10 @@
-import copy
-import time
-import common
-import larkm as lark
-from larkm.parsers.lalr_interactive_parser import InteractiveParser
-from parse_result import ParseResult, RemainderState
-from larkm.lexer import Token
-from larkm import Lark
-from typing import Optional, Any, Tuple
-import os
+import copy, time
+import syncode.common as common
+import syncode.larkm as lark
+from syncode.larkm.parsers.lalr_interactive_parser import InteractiveParser
+from syncode.parse_result import ParseResult, RemainderState
+from syncode.larkm.lexer import Token
+from typing import Optional, Any, Tuple, Iterable
 
 class IncrementalParser:    
     """
@@ -74,12 +71,12 @@ class IncrementalParser:
 
         self.logger.log_time(f'Time taken for restoring parser state:{time.time() - time_start}')
 
-    def _lex_code(self, code) -> list[Token]:
+    def _lex_code(self, code) -> Iterable[Token]:
         """
         Lexes the given code and returns the list of tokens.
         """
         # Collect Lexer tokens
-        lexer_tokens: list[Token] = []
+        lexer_tokens: Iterable[Token] = []
         interactive = self.base_parser.parse_interactive(code)
         lexing_start_time = time.time()
         lexer_state = interactive.lexer_thread.state

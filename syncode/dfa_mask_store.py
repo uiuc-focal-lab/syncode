@@ -1,18 +1,15 @@
 from collections import defaultdict
-import copy
-import os
-import pickle
-import time
-from typing import Any, Optional, Tuple
+import copy, os, pickle, time
 import interegular
 import torch
 import regex
-import common
-from parsers import create_parser
-from larkm.lexer import TerminalDef
-from parse_result import IndentationConstraint, RemainderState, ParseResult
-import hashlib
-from parsers.grammars.grammar import Grammar
+import syncode.common as common
+from syncode.parsers import create_parser
+from syncode.larkm.lexer import TerminalDef
+from syncode.parse_result import IndentationConstraint, RemainderState, ParseResult
+from syncode.parsers.grammars.grammar import Grammar
+from typing import Any, Optional, Tuple, Iterable, Dict
+
 
 class DFAState:
     """
@@ -36,10 +33,10 @@ class DFAs:
     """
     Stores the DFAs for each terminal and provides the method to consume the input string and get the DFA state.
     """
-    def __init__(self, terminals: list[TerminalDef], simplifications: dict[str, str] = {}):
-        self._terminals_to_dfa: dict[str, interegular.FSM] = {}
+    def __init__(self, terminals: Iterable[TerminalDef], simplifications: Dict[str, str] = {}):
+        self._terminals_to_dfa: Dict[str, interegular.FSM] = {}
         self.anything_else = interegular.fsm.anything_else # This is special character used for the 
-        self._simplifications: dict[str, str] = simplifications
+        self._simplifications: Dict[str, str] = simplifications
 
         for terminal in terminals:
             if terminal.name in simplifications:
@@ -55,7 +52,7 @@ class DFAs:
     def initial(self, terminal: str):
         return DFAState(terminal, self._terminals_to_dfa[terminal].initial)
 
-    def compute_dfa_states(self, input_str: str) -> list[DFAState]:
+    def compute_dfa_states(self, input_str: str) -> Iterable[DFAState]:
         """
         consume input_str and get the list of pairs of (terminal, dfa_state). This denotes our current DFA state
         """
@@ -127,11 +124,11 @@ class LookupTable:
     """
     Stores the overapproximate tokens
     """
-    def __init__(self, vocab: list[str], special_token_ids: list[int], indentation=False):
+    def __init__(self, vocab: Iterable[str], special_token_ids: Iterable[int], indentation=False):
         self._dfa_state_and_next_terminal_to_tokens: defaultdict = defaultdict(list)
-        self._incomplete_case_lookup: dict[DFAState, Any] = {}
+        self._incomplete_case_lookup: Dict[DFAState, Any] = {}
         self._complete_case_lookup: dict = {}
-        self._vocab: list[str] = vocab
+        self._vocab: Iterable[str] = vocab
         self._default_mask = self._get_default_mask(special_token_ids)
         self.indentation = indentation
 
@@ -255,7 +252,7 @@ class LookupTable:
             return self._get_tokens_list(out_mask) 
         return out_mask
 
-    def _get_tokens_list(self, token_mask) -> list[str]:
+    def _get_tokens_list(self, token_mask) -> Iterable[str]:
         return [self._vocab[idx.item()] for idx in torch.where(token_mask == True)[0]]
     
 
@@ -272,8 +269,8 @@ class DFAMaskStore:
     3. MAYBE_COMPLETE: In this case the remainder matches a type of terminal. It may happen that we add to the same matched part of the remainder. In that case, there are two possibilities. i) the matched terminal type does not change and thus we can use the next terminal set computed by assuming that. ii) the matched terminal type changes and then we do not know the next terminal set. Thus, we need to compute all tokens such that consuming the token leads to a live state for the current terminal DFA or again it reaches a final state for the current terminal DFA at some point.
     """
     def __init__(self, 
-                 terminals: list[TerminalDef], 
-                 vocab: list[str], 
+                 terminals: Iterable[TerminalDef], 
+                 vocab: Iterable[str], 
                  simplifications: dict = {}, 
                  special_token_ids: list = [], 
                  indentation: bool = True
@@ -333,7 +330,7 @@ class DFAMaskStore:
             mask[token_id] = True
         return mask
 
-    def _store_overapproximate_tokens(self, terminals: list[str], vocab: list[str]):
+    def _store_overapproximate_tokens(self, terminals: Iterable[str], vocab: Iterable[str]):
         """
         Stores the overapproximate tokens for each dfa state and next terminals
         """
@@ -375,7 +372,7 @@ class DFAMaskStore:
             return self._get_default_mask()
         return tokens
 
-    def _lookup_next_tokens(self, dfa_states: list[DFAState], r: ParseResult) -> torch.Tensor:
+    def _lookup_next_tokens(self, dfa_states: Iterable[DFAState], r: ParseResult) -> torch.Tensor:
         overapprox_token_ids = self._get_default_mask()
 
         # Case when the final string may be incomplete
@@ -429,5 +426,5 @@ class DFAMaskStore:
         tokens_mask[indices] = 1
         return tokens_mask
 
-    def _get_tokens_list(self, token_mask) -> list[str]:
+    def _get_tokens_list(self, token_mask) -> Iterable[str]:
         return [self._vocab[idx.item()] for idx in torch.where(token_mask == True)[0]]
