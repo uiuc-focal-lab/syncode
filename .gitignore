@@ -7,4 +7,3 @@ syncode/core/__pycache__
 tmp*
 cache/
 .ipynb_checkpoints/
-syncode/runtime_eval.py
