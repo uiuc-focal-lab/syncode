@@ -181,12 +181,13 @@ class Syncode:
         kwargs['max_new_tokens'] = kwargs.get('max_new_tokens', 200)
         kwargs['do_sample'] = kwargs.get('do_sample', False)
         kwargs['use_cache'] = kwargs.get('use_cache', True)
-        if kwargs['do_sample']:
-            kwargs['temperature'] = kwargs.get('temperature', 0.2)
-            kwargs['top_k'] = kwargs.get('top_k', 10)
-            kwargs['top_p'] = kwargs.get('top_p', 0.95)
         kwargs['eos_token_id'] = kwargs.get('eos_token_id', tokenizer.eos_token_id)
         kwargs['pad_token_id'] = kwargs.get('pad_token_id', tokenizer.eos_token_id) # model has no pad token
+        if kwargs['do_sample'] or self.num_samples > 1: # If sampling, set temperature, top_k, top_p
+            kwargs['temperature'] = kwargs.get('temperature', 0.2)
+            kwargs['top_k'] = kwargs.get('top_k', self.num_samples)
+            kwargs['top_p'] = kwargs.get('top_p', 0.95)
+            print(f"Generation args: {kwargs}")
 
     def write_results(self, out_path, avg_time, functional_result):
         """
