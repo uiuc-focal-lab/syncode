@@ -1,6 +1,7 @@
+import os, time, re, tqdm, fire, sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from collections import defaultdict, Counter
 from concurrent.futures import ThreadPoolExecutor, as_completed
-import os, time, re, tqdm, fire 
 import traceback
 from typing import List, Dict, Optional
 import numpy as np

@@ -1,4 +1,5 @@
-import time, os
+import time, os, sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import fire
 import syncode.common as common
 from syncode.language_model import HuggingFaceModel
@@ -10,8 +11,8 @@ from tqdm import tqdm
 from syncode.evaluation import check_coorectness
 from syncode.parsers.grammars import Grammar
 
-def compile_and_run(model, mode="original", quantize=True, device="cuda", num_samples=1, grammar="python", dataset="input", few_shot=False, num_examples=-1, parse_prompt=True, dev_mode=False, log_level=1, new_mask_store=False, parser="lalr", task_id=None, **kwargs):
-    sc = Syncode(model, mode=mode, quantize=quantize, device=device, num_samples=num_samples, grammar=grammar, dataset=dataset, few_shot=few_shot, num_fs_examples=num_examples, chat_mode=parse_prompt, dev_mode=dev_mode, log_level=log_level, new_mask_store=new_mask_store, parser=parser, task_id=task_id, **kwargs)
+def compile_and_run(model, mode="original", quantize=True, device="cuda", num_samples=1, grammar="python", dataset="input", few_shot=False, num_examples=-1, chat_mode=False, dev_mode=False, log_level=1, new_mask_store=False, parser="lalr", task_id=None, **kwargs):
+    sc = Syncode(model, mode=mode, quantize=quantize, device=device, num_samples=num_samples, grammar=grammar, dataset=dataset, few_shot=few_shot, num_fs_examples=num_examples, chat_mode=chat_mode, dev_mode=dev_mode, log_level=log_level, new_mask_store=new_mask_store, parser=parser, task_id=task_id, **kwargs)
     sc.infer(task_id=task_id)
 
 class Syncode:
