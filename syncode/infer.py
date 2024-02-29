@@ -1,4 +1,5 @@
-import time, os
+import time, os, sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import fire
 import syncode.common as common
 from syncode.language_model import HuggingFaceModel
@@ -10,8 +11,8 @@ from tqdm import tqdm
 from syncode.evaluation import check_coorectness
 from syncode.parsers.grammars import Grammar
 
-def compile_and_run(model, mode="original", quantize=True, device="cuda", num_samples=1, grammar="python", dataset="input", few_shot=False, num_examples=-1, parse_prompt=True, dev_mode=False, log_level=1, new_mask_store=False, parser="lalr", task_id=None, **kwargs):
-    sc = Syncode(model, mode=mode, quantize=quantize, device=device, num_samples=num_samples, grammar=grammar, dataset=dataset, few_shot=few_shot, num_fs_examples=num_examples, chat_mode=parse_prompt, dev_mode=dev_mode, log_level=log_level, new_mask_store=new_mask_store, parser=parser, task_id=task_id, **kwargs)
+def compile_and_run(model, mode="original", quantize=True, device="cuda", num_samples=1, grammar="python", dataset="input", few_shot=False, num_examples=-1, chat_mode=False, dev_mode=False, log_level=1, new_mask_store=False, parser="lalr", task_id=None, **kwargs):
+    sc = Syncode(model, mode=mode, quantize=quantize, device=device, num_samples=num_samples, grammar=grammar, dataset=dataset, few_shot=few_shot, num_fs_examples=num_examples, chat_mode=chat_mode, dev_mode=dev_mode, log_level=log_level, new_mask_store=new_mask_store, parser=parser, task_id=task_id, **kwargs)
     sc.infer(task_id=task_id)
 
 class Syncode:
@@ -180,12 +181,13 @@ class Syncode:
         kwargs['max_new_tokens'] = kwargs.get('max_new_tokens', 200)
         kwargs['do_sample'] = kwargs.get('do_sample', False)
         kwargs['use_cache'] = kwargs.get('use_cache', True)
-        if kwargs['do_sample']:
-            kwargs['temperature'] = kwargs.get('temperature', 0.2)
-            kwargs['top_k'] = kwargs.get('top_k', 10)
-            kwargs['top_p'] = kwargs.get('top_p', 0.95)
         kwargs['eos_token_id'] = kwargs.get('eos_token_id', tokenizer.eos_token_id)
         kwargs['pad_token_id'] = kwargs.get('pad_token_id', tokenizer.eos_token_id) # model has no pad token
+        if kwargs['do_sample'] or self.num_samples > 1: # If sampling, set temperature, top_k, top_p
+            kwargs['temperature'] = kwargs.get('temperature', 0.2)
+            kwargs['top_k'] = kwargs.get('top_k', self.num_samples)
+            kwargs['top_p'] = kwargs.get('top_p', 0.95)
+            print(f"Generation args: {kwargs}")
 
     def write_results(self, out_path, avg_time, functional_result):
         """
