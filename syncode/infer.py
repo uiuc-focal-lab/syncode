@@ -125,7 +125,7 @@ class Syncode:
             **kwargs
             )
 
-    def infer(self, prompt = None, task_id=None):
+    def infer(self, prompt=None, task_id=None):
         if self.logger.is_closed:
             self.logger.open()
 
@@ -267,7 +267,7 @@ class Syncode:
         pbar = tqdm(total=len(problems) * self.num_samples)
         time1 = time.time()
 
-        for task_id, problem in enumerate(self.dataset):
+        for task_id, problem in enumerate(problems):
             if self.grammar_decoder is not None:
                 self.grammar_decoder.reset()
 
