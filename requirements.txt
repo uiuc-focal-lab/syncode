@@ -5,3 +5,4 @@ torch==2.0.1
 tqdm
 transformers
 mxeval @ git+https://github.com/shubhamugare/mxeval.git
+datasets

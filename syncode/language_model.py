@@ -98,8 +98,8 @@ class HuggingFaceModel(LanguageModel):
         if grammar_decoder is not None:
             self.logger.log_time(f"Time taken for generation: {time.time() - start_time:.2f}s")
             self.logger.log(f"Token generation speed: {grammar_decoder.token_cnt / (time.time() - start_time):.2f} tokens/s")
+        
         self.logger.log(f"Completion: {batch_completions}")
-
         return batch_completions
 
     @torch.inference_mode()

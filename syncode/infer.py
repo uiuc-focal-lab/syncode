@@ -10,6 +10,8 @@ from mxeval.data import write_jsonl, get_data, get_examples
 from tqdm import tqdm
 from syncode.evaluation import check_coorectness
 from syncode.parsers.grammars import Grammar
+from syncode.dataset import Dataset
+
 
 def compile_and_run(model, mode="original", quantize=True, device="cuda", num_samples=1, grammar="python", dataset="input", few_shot=False, num_examples=-1, chat_mode=False, dev_mode=False, log_level=1, new_mask_store=False, parser="lalr", task_id=None, **kwargs):
     sc = Syncode(model, mode=mode, quantize=quantize, device=device, num_samples=num_samples, grammar=grammar, dataset=dataset, few_shot=few_shot, num_fs_examples=num_examples, chat_mode=chat_mode, dev_mode=dev_mode, log_level=log_level, new_mask_store=new_mask_store, parser=parser, task_id=task_id, **kwargs)
@@ -62,7 +64,6 @@ class Syncode:
     ):  
         # Check inputs
         assert mode in ["original", "grammar_mask"]
-        assert dataset in ["mbxp", "humaneval", "mathqa-x", "input"]
         gen_kwargs = {'max_length', 'max_new_tokens', 'min_length', 'min_new_tokens', 'early_stopping', 'do_sample', 'num_beams', 'use_cache', 'temperature', 'top_k', 'top_p', 'num_return_sequences', 'pad_token_id', 'eos_token_id'}
         invalid_kwargs = kwargs.keys() - gen_kwargs
         assert invalid_kwargs == set(), f"Invalid arguments {invalid_kwargs}"
@@ -73,14 +74,17 @@ class Syncode:
         self.quantize = quantize
         self.device = device
         self.num_samples = num_samples
-        self.grammar = Grammar(grammar)
         self.new_mask_store = new_mask_store
         self.few_shot = few_shot
         self.num_fs_examples = num_fs_examples
-        dataset_dirmap = {"mbxp": "mbxp", "humaneval": "multi-humaneval", "mathqa-x": "mathqa-x"}
-        self.dataset = dataset_dirmap[dataset] if dataset != "input" else "input"
         self.parser = parser
         self.chat_mode = chat_mode
+
+        # Set the grammar
+        self.grammar = Grammar(grammar)
+
+        # Load the dataset
+        self.dataset = Dataset(dataset, language=grammar, few_shot=few_shot, num_fs_examples=num_fs_examples)
 
         # Load model
         model = common.load_model(self.model_name, device)
@@ -121,19 +125,23 @@ class Syncode:
             **kwargs
             )
 
-    def infer(self, prompt = None, task_id=None):
+    def infer(self, prompt=None, task_id=None):
         if self.logger.is_closed:
             self.logger.open()
 
-        if self.dataset != "input": 
+        if self.dataset.type == "code": 
             output = self.run_code_eval(
                 self.num_samples,
                 self.out_path,
                 format_tabs=True,
                 debug_task_id=task_id
                 )
+        elif self.dataset.type == "math":
+            output = self.run_math_eval()
+        elif self.dataset.type == "input":
+            output = self.user_input(prompt)
         else:
-            return self.user_input(prompt)
+            raise ValueError(f"Dataset type {self.dataset.type} not supported")
         self.logger.close()
         return output
 
@@ -152,10 +160,7 @@ class Syncode:
         """
         Run evaluation on the model
         """
-        if self.few_shot:
-            problems = {problem['task_id'] : problem for problem in get_examples(self.dataset, self.grammar.name, self.num_fs_examples)}
-        else:
-            problems = get_data(self.dataset, self.grammar.name)
+        problems = self.dataset.problems
 
         samples = []
         outputs = []
@@ -253,6 +258,42 @@ class Syncode:
                 for i, completion in enumerate(batch_completions):
                     print(prompt + completion)
 
+    def run_math_eval(self):
+        """
+        run evaluation on math question-answer dataset 
+        """
+        problems = self.dataset.problems
+        samples = []
+        pbar = tqdm(total=len(problems) * self.num_samples)
+        time1 = time.time()
+
+        for task_id, problem in enumerate(problems):
+            if self.grammar_decoder is not None:
+                self.grammar_decoder.reset()
+
+            batch_completions = self.model.generate_batch_completion_grammar(
+                problem['question'], 
+                self.num_samples
+                )
+
+            for _, completion in enumerate(batch_completions):
+                result = dict(
+                    task_id=task_id,
+                    completion=completion
+                )
+                samples += [result]
+            pbar.update(self.num_samples)
+        out_path = self.out_path
+        write_jsonl(out_path, samples)
+        avg_time = (time.time() - time1) / len(problems)
+        self.logger.log_time(f"Averge time taken for each task: {avg_time:.2f}s")
+        functional_result = check_coorectness(out_path, logger=self.logger)
+        self.logger.log(f"Functional result: {functional_result}")
+
+        # Also log these results in a separate file
+        self.write_results(out_path, avg_time, functional_result)
+        self.logger.close()
+        return samples
 
 if __name__ == "__main__":
     fire.Fire(compile_and_run)
