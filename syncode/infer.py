@@ -305,9 +305,6 @@ class MathEval:
         syncode.logger.log_time(f"Averge time taken for each task: {avg_time:.2f}s")
         syncode.logger.log(f"Result: {pass_at_k}")
         print(f"Result: {pass_at_k}")
-
-        # Also log these results in a separate file
-        syncode.write_results(syncode.out_path, avg_time, pass_at_k)
         syncode.logger.close()
         return samples
 
