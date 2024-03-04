@@ -9,13 +9,13 @@ class Dataset:
     - type: code, math, input or other
     - problems: list of dicts, each dict contains the problem and its metadata
     """
-    def __init__(self, dataset, language=None, few_shot=False, num_fs_examples=None):
+    def __init__(self, dataset, language=None, num_few_shot=0):
         dataset_dirmap = {"mbxp": "mbxp", "humaneval": "multi-humaneval", "mathqa-x": "mathqa-x"}
         if dataset in dataset_dirmap:
             self.dataset_name = dataset_dirmap[dataset]
             self.type = "code"
-            if few_shot:
-                self.problems = {problem['task_id'] : problem for problem in get_examples(self.dataset_name, language, num_fs_examples)}
+            if num_few_shot > 0:
+                self.problems = {problem['task_id'] : problem for problem in get_examples(self.dataset_name, language, num_few_shot)}
             else:
                 self.problems = get_data(self.dataset_name, language)
         elif dataset == "input":
@@ -24,7 +24,16 @@ class Dataset:
         elif dataset == "gsm8k":
             self.dataset_name = "gsm8k"
             self.type = "math"
-            self.problems = load_dataset(dataset, name="main", split="test")
+            problems = load_dataset(dataset, name="main", split="test")
+            if num_few_shot > 0:
+                examples = ""
+                for problem in list(problems)[:num_few_shot]:
+                    examples += 'Question:' + problem['question'] + "\n" + 'Answer:' + problem['answer'] + "\n\n"
+                self.problems = []
+                for problem in problems: # Add examples to each prompt
+                    self.problems.append({**problem, 'question': examples + problem['question']})
+            else:
+                self.problems = problems
         else:
             # Use for other HF datasets
             self.type = "other"
@@ -33,3 +42,10 @@ class Dataset:
     
     def __repr__(self) -> str:
         return self.dataset_name
+    
+    def post_process_answer(self, answer: str) -> str:
+        if self.type == "math":
+            answer = answer.lstrip("\n")
+            answer = answer.split("\n\n")[0]
+            return answer
+        return answer

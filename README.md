@@ -129,10 +129,8 @@ Check more examples of using Python, Go, and other grammars in <a href="#-exampl
   
 - `dataset` (str, optional): Dataset. Defaults to "input". "input" indicates that the user can provide input via CLI or by passing in a prompt as a string. 
    
-- `few_shot` (bool, optional): Run few-shot prompting. Defaults to False.
-  
-- `num_fs_examples` (int, optional): Number of examples for few shot prompting. Defaults to -1.
-  
+- `num_few_shot` (int, optional): Number of examples for few shot prompting. Defaults to 0.
+    
 - `chat_mode` (bool, optional): True if using a Chat/Instruct LLM. False otherwise. Defaults to False. 
   
 - `dev_mode` (bool, optional): Development mode where we do not fail silently with parser errors. Defaults to False.
