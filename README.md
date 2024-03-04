@@ -53,10 +53,6 @@
 | 🖍️ Pass in any CFG in the EBNF format (even large grammars for programming languages like Python and Go!)            |
 | 📝 Built-in CFGs for Python, Go, Calculator, and more!                                                              |
 | 🎲 Sample with any existing decoding strategy (eg. greedy, beam search, nucleus sampling)                           |
-| 💯 Support for execution-based evaluation of generated code with HumanEval and MBXP datasets                         |
-| 💬 Support for generating chat completions                                                                           |
-
-
 
 
 ## 📖 More About **SynCode**
