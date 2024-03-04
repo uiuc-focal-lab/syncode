@@ -77,21 +77,7 @@ def evaluate_functional_correctness(
 
     # common code for all languages
     # Calculate pass@k.
-    total, correct = [], []
-    for result in results.values():
-        result.sort()
-        passed = [r[1]["passed"] for r in result]
-        total.append(len(passed))
-        correct.append(sum(passed))
-    total = np.array(total)
-    correct = np.array(correct)
-
-    ks = k
-    pass_at_k = {
-        f"pass@{k}": estimate_pass_at_k(total, correct, k).mean()
-        for k in ks
-        if (total >= k).all()
-    }
+    pass_at_k = compute_pass_at_k(results, k)
 
     # Finally, save the results in one file:
     def combine_results():
@@ -108,6 +94,32 @@ def evaluate_functional_correctness(
     logger.log_eval(f"Writing results to {out_file}...")
     write_jsonl(out_file, tqdm.tqdm(combine_results(), total=n_samples))
 
+    return pass_at_k
+
+
+def compute_pass_at_k(
+    results: Dict[str, List],
+    k: List[int] = [1, 10, 100],
+    ):
+    """
+    Computes pass@k for the given results.
+    result maps task_id to a list of (completion_id, result) tuples for each sample.
+    """
+    total, correct = [], []
+    for result in results.values():
+        result.sort()
+        passed = [r[1]["passed"] for r in result]
+        total.append(len(passed))
+        correct.append(sum(passed))
+    total = np.array(total)
+    correct = np.array(correct)
+
+    ks = k
+    pass_at_k = {
+        f"pass@{k}": estimate_pass_at_k(total, correct, k).mean()
+        for k in ks
+        if (total >= k).all()
+    }
     return pass_at_k
 
 

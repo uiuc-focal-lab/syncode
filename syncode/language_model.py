@@ -85,9 +85,9 @@ class HuggingFaceModel(LanguageModel):
             self.logger.log_code("Raw completion", raw_completion)
 
             # Post-processing to filter out using stop word (e.g. "\n\n")
-            if self.grammar.name == "python":
+            if self.grammar != None and self.grammar.name == "python":
                 completion = self.postproces_completion_python(i, batch_size, input_ids_cutoff, generated_ids, grammar_decoder, raw_completion)
-            elif self.grammar.name == "go": 
+            elif self.grammar != None and self.grammar.name == "go": 
                 completion = self.postproces_completion_go(i, batch_size, raw_completion, generated_ids, grammar_decoder, input_ids_cutoff)
             else: # TODO: handle the case for other grammars
                 completion = raw_completion
