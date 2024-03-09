@@ -130,6 +130,8 @@ class Syncode:
             output = CodeEval.run_code_eval(self, self.num_samples, self.out_path, format_tabs=True, debug_task_id=task_id)
         elif self.dataset.type == "math":
             output = MathEval.run_math_eval(self, debug_task_id=task_id)
+        elif self.dataset.type == "sql":
+            output = SQLEval.run_eval(self)
         elif self.dataset.type == "input":
             output = self.user_input(prompt)
         else:
@@ -307,6 +309,43 @@ class MathEval:
         print(f"Result: {pass_at_k}")
         syncode.logger.close()
         return samples
+
+class SQLEval:
+    """
+    Run evaluation on SQL dataset
+    """
+    @staticmethod
+    def run_eval(syncode):
+        problems = syncode.dataset.problems[:100]
+        samples = []
+        pbar = tqdm(total=len(problems) * syncode.num_samples)
+        results = {}
+        assert syncode.num_samples == 1, "SQL evaluation only supports num_samples=1"
+        predict_file = common.RESULTS_DIR + "sql_pred.txt"
+
+        with open(predict_file, 'w') as f:
+            for task_id, problem in enumerate(problems):
+                if syncode.grammar_decoder is not None:
+                    syncode.grammar_decoder.reset()
+                results[task_id] = []
+                batch_completions = syncode.model.generate_batch_completion_grammar(
+                    problem['prompt'],
+                    syncode.num_samples
+                    )
+                raw_completion = batch_completions[0]
+                completion = syncode.dataset.post_process_answer(raw_completion)
+                f.write(completion + '\n')
+                pbar.update(syncode.num_samples)
+        pbar.close()
+        write_jsonl(syncode.out_path, samples)
+
+        # Run evaluation script
+        from syncode.utils.sql_spider_eval.evaluation import evaluate
+        gold_file = "syncode/utils/sql_spider_eval/evaluation_examples/gold_example.txt"
+        tables = "syncode/utils/sql_spider_eval/evaluation_examples/examples/tables.json"
+        databses = "syncode/utils/sql_spider_eval/databases"
+        scores, entries = evaluate(predict_file, gold_file, databses, etype="all", table=tables)
+        print(f"Scores: {scores}")
 
 if __name__ == "__main__":
     fire.Fire(compile_and_run)
