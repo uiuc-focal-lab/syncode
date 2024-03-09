@@ -78,7 +78,7 @@ class Syncode:
         self.chat_mode = chat_mode
 
         # Set the grammar
-        self.grammar = Grammar(grammar) if grammar else None
+        self.grammar = Grammar(grammar) if self.mode == 'grammar_mask' else None
 
         # Load the dataset
         self.dataset = Dataset(dataset, language=grammar, num_few_shot=num_few_shot)
@@ -321,7 +321,10 @@ class SQLEval:
         pbar = tqdm(total=len(problems) * syncode.num_samples)
         results = {}
         assert syncode.num_samples == 1, "SQL evaluation only supports num_samples=1"
-        predict_file = common.RESULTS_DIR + "sql_pred.txt"
+        predict_file = common.RESULTS_DIR + f"sql_pred_{syncode.mode}.txt"
+
+        if syncode.grammar_decoder is not None:
+            syncode.grammar_decoder.chat_mode = True # Do not parse input+output
 
         with open(predict_file, 'w') as f:
             for task_id, problem in enumerate(problems):
