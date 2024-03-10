@@ -165,7 +165,7 @@ subquery_in: expression_math "IN"i subquery
 not_in_expr: expression_math "NOT"i "IN"i "(" [expression_math ","]* expression_math ")"
 ?literal: boolean -> bool
        | number_expr -> number
-       | /'([^']|\s)+'|''/ -> string
+       | /'([^'])+'|''/ -> string
        | timestamp_expression -> timestamp_expression
 boolean: "true"i -> true
        | "false"i -> false
