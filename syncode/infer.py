@@ -347,8 +347,8 @@ class SQLEval:
         gold_file = "syncode/utils/sql_spider_eval/evaluation_examples/gold_example.txt"
         tables = "syncode/utils/sql_spider_eval/evaluation_examples/examples/tables.json"
         databses = "syncode/utils/sql_spider_eval/databases"
-        scores, entries = evaluate(predict_file, gold_file, databses, etype="all", table=tables)
-        print(f"Scores: {scores}")
+        scores, error_types = evaluate(predict_file, gold_file, databses, etype="all", table=tables)
+        print(f"Scores: {scores['all']}\n Error types: {error_types}")
 
 if __name__ == "__main__":
     fire.Fire(compile_and_run)

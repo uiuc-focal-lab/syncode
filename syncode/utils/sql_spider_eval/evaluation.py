@@ -20,6 +20,7 @@
 ################################
 
 from __future__ import print_function
+from collections import defaultdict
 import os, sys
 import json
 import sqlite3
@@ -500,6 +501,8 @@ def evaluate(predict, gold, db_dir, etype, table):
             scores[level]['partial'][type_] = {'acc': 0., 'rec': 0., 'f1': 0.,'acc_count':0,'rec_count':0}
 
     eval_err_num = 0
+    error_types = defaultdict(int)
+
     for p, g in zip(plist, glist):
         p_str = p[0]
         g_str, db = g
@@ -510,6 +513,8 @@ def evaluate(predict, gold, db_dir, etype, table):
         hardness = evaluator.eval_hardness(g_sql)
         scores[hardness]['count'] += 1
         scores['all']['count'] += 1
+        validity = eval_syntax(db, p_str)
+        error_types[validity] += 1
 
         try:
             p_sql = get_sql(schema, p_str)
@@ -610,8 +615,22 @@ def evaluate(predict, gold, db_dir, etype, table):
                         2.0 * scores[level]['partial'][type_]['acc'] * scores[level]['partial'][type_]['rec'] / (
                         scores[level]['partial'][type_]['rec'] + scores[level]['partial'][type_]['acc'])
 
-    # print_scores(scores, etype)
-    return scores, entries
+    return scores, error_types
+
+def eval_syntax(db, p_str):
+    """
+    Evaluate syntax errors
+    """
+    conn = sqlite3.connect(db)
+    cursor = conn.cursor()
+    try:
+        cursor.execute(p_str)
+    except Exception as e:
+        if "syntax error" in str(e) or "incomplete input" in str(e):
+            return 'Syntax Error'
+        else:
+            return 'Other Error'
+    return 'Valid'
 
 
 def eval_exec_match(db, p_str, g_str, pred, gold):
