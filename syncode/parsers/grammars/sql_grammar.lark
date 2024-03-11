@@ -178,7 +178,7 @@ STAR: "*"
 window_definition:
 timestamp_expression: "NOW"i "(" ")" -> datetime_now
                     | "TODAY"i "(" ")" -> date_today
-                    | "TIMESTAMP"i "(" "'" date "'" "," "'" time "'" ")" -> custom_timestamp
+              //       | "TIMESTAMP"i "(" "'" date "'" "," "'" time "'" ")" -> custom_timestamp
 
 date: YEAR "-" MONTH "-" DAY
 YEAR: /[0-9]{4}/
