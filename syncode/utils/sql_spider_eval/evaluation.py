@@ -26,6 +26,7 @@ import json
 import sqlite3
 import traceback
 import argparse
+from typing import Optional, Tuple
 sys.path.append(os.path.join(os.path.dirname(__file__), '.'))
 from process_sql import tokenize, get_schema, get_tables_with_alias, Schema, get_sql
 
@@ -476,7 +477,7 @@ def print_scores(scores, etype):
             print("{:20} {:<20.3f} {:<20.3f} {:<20.3f} {:<20.3f} {:<20.3f}".format(type_, *this_scores))
 
 
-def evaluate(predict, gold, db_dir, etype, table):
+def evaluate(predict, gold, db_dir, etype, table, result_jsonl=None):
     kmaps = build_foreign_key_map_from_json(table)
 
     with open(gold) as f:
@@ -502,6 +503,7 @@ def evaluate(predict, gold, db_dir, etype, table):
 
     eval_err_num = 0
     error_types = defaultdict(int)
+    i = 0
 
     for p, g in zip(plist, glist):
         p_str = p[0]
@@ -513,8 +515,12 @@ def evaluate(predict, gold, db_dir, etype, table):
         hardness = evaluator.eval_hardness(g_sql)
         scores[hardness]['count'] += 1
         scores['all']['count'] += 1
-        validity = eval_syntax(db, p_str)
+        validity, err = eval_syntax(db, p_str)
         error_types[validity] += 1
+
+        if result_jsonl is not None:
+            result_jsonl[i]['validity'] = validity
+            result_jsonl[i]['error'] = err
 
         try:
             p_sql = get_sql(schema, p_str)
@@ -552,6 +558,8 @@ def evaluate(predict, gold, db_dir, etype, table):
 
         if etype in ["all", "exec"]:
             exec_score = eval_exec_match(db, p_str, g_str, p_sql, g_sql)
+            if result_jsonl is not None:
+                result_jsonl[i]['exec'] = exec_score
             if exec_score:
                 scores[hardness]['exec'] += 1.0
                 scores['all']['exec'] += 1.0
@@ -588,6 +596,7 @@ def evaluate(predict, gold, db_dir, etype, table):
                 'exact': exact_score,
                 'partial': partial_scores
             })
+        i += 1
 
     for level in levels:
         if scores[level]['count'] == 0:
@@ -617,7 +626,7 @@ def evaluate(predict, gold, db_dir, etype, table):
 
     return scores, error_types
 
-def eval_syntax(db, p_str):
+def eval_syntax(db, p_str) -> Tuple[str, Optional[str]]:
     """
     Evaluate syntax errors
     """
@@ -626,11 +635,11 @@ def eval_syntax(db, p_str):
     try:
         cursor.execute(p_str)
     except Exception as e:
-        if "syntax error" in str(e) or "incomplete input" in str(e):
-            return 'Syntax Error'
+        if "syntax error" in str(e) or "incomplete input" in str(e) or "parser stack overflow" in str(e):
+            return 'Syntax Error', str(e)
         else:
-            return 'Other Error'
-    return 'Valid'
+            return 'Other Error', str(e)
+    return 'Valid', None
 
 
 def eval_exec_match(db, p_str, g_str, pred, gold):

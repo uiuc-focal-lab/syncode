@@ -321,7 +321,7 @@ class SQLEval:
         pbar = tqdm(total=len(problems) * syncode.num_samples)
         results = {}
         assert syncode.num_samples == 1, "SQL evaluation only supports num_samples=1"
-        predict_file = common.RESULTS_DIR + f"sql_pred_{syncode.mode}.txt"
+        predict_file = syncode.out_path
 
         if syncode.grammar_decoder is not None:
             syncode.grammar_decoder.chat_mode = True # Do not parse input+output
@@ -337,18 +337,23 @@ class SQLEval:
                     )
                 raw_completion = batch_completions[0]
                 completion = syncode.dataset.post_process_answer(raw_completion)
+                res = dict(
+                    task_id=task_id,
+                    completion=completion,
+                )
+                samples += [res]
                 f.write(completion + '\n')
                 pbar.update(syncode.num_samples)
         pbar.close()
-        write_jsonl(syncode.out_path, samples)
 
         # Run evaluation script
         from syncode.utils.sql_spider_eval.evaluation import evaluate
         gold_file = "syncode/utils/sql_spider_eval/evaluation_examples/gold_example.txt"
         tables = "syncode/utils/sql_spider_eval/evaluation_examples/examples/tables.json"
         databses = "syncode/utils/sql_spider_eval/databases"
-        scores, error_types = evaluate(predict_file, gold_file, databses, etype="all", table=tables)
+        scores, error_types = evaluate(predict_file, gold_file, databses, etype="all", table=tables, result_jsonl=samples)
         print(f"Scores: {scores['all']}\n Error types: {error_types}")
+        write_jsonl(syncode.out_path, samples)
 
 if __name__ == "__main__":
     fire.Fire(compile_and_run)
