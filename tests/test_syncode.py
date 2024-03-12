@@ -6,7 +6,7 @@ sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../')
 import syncode.common as common
 from syncode.infer import Syncode
 from mxeval.data import get_data
-from syncode.evaluation import check_correctness_python
+from syncode.evaluation.mxeval_evaluation import check_correctness_python
 
 class TestSyncode(unittest.TestCase):
     @classmethod

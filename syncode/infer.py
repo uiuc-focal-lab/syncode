@@ -1,4 +1,4 @@
-import time, os, sys
+import os, sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import fire
 import syncode.common as common
@@ -6,11 +6,11 @@ from syncode.language_model import HuggingFaceModel
 from transformers import LogitsProcessorList
 from syncode.grammar_decoder import GrammarDecoder
 from typing import Optional, Literal
-from mxeval.data import write_jsonl
-from tqdm import tqdm
-from syncode.evaluation import check_coorectness, compute_pass_at_k
 from syncode.parsers.grammars import Grammar
 from syncode.dataset import Dataset
+from syncode.evaluation.code_eval import CodeEval
+from syncode.evaluation.math_eval import MathEval
+from syncode.evaluation.sql_eval import SQLEval
 
 
 def compile_and_run(model, mode="original", quantize=True, device="cuda", num_samples=1, grammar=None, dataset="input", num_few_shot=0, chat_mode=False, dev_mode=False, log_level=1, new_mask_store=False, parser="lalr", task_id=None, **kwargs):
@@ -186,179 +186,6 @@ class Syncode:
                 batch_completions = self.model.generate_batch_completion_grammar(prompt, self.num_samples)
                 for i, completion in enumerate(batch_completions):
                     print(prompt + completion)
-
-class CodeEval:
-    """
-    Run evaluation for the code generation model
-    """
-    @staticmethod
-    def run_code_eval(
-        syncode, 
-        num_samples_per_task: int,
-        out_path: str,
-        format_tabs: bool = False,
-        debug_task_id: Optional[int] = None
-        ):
-        problems = syncode.dataset.problems
-
-        samples = []
-        outputs = []
-        pbar = tqdm(total=len(problems) * num_samples_per_task)
-        if debug_task_id is None:
-            time1 = time.time()
-            for task_id in problems:
-                outputs.append(CodeEval.run_eval_for_task(syncode, num_samples_per_task, format_tabs, problems, samples, pbar, task_id))
-            write_jsonl(out_path, samples)
-            avg_time = (time.time() - time1) / len(problems)
-            syncode.logger.log_time(f"Averge time taken for each task: {avg_time:.2f}s")
-            functional_result = check_coorectness(out_path, logger=syncode.logger)
-            syncode.logger.log(f"Functional result: {functional_result}")
-
-            # Also log these results in a separate file
-            CodeEval.write_results(syncode, out_path, avg_time, functional_result)
-        else: # Debugging a specific task
-            debug_task_id = list(problems.keys())[debug_task_id]
-            return CodeEval.run_eval_for_task(syncode, num_samples_per_task, format_tabs, problems, samples, pbar, debug_task_id)
-        return outputs
-
-    def run_eval_for_task(syncode, num_samples_per_task, format_tabs, problems, samples, pbar, task_id):
-        """
-        run evaluation for a specific task
-        """
-        syncode.logger.log(f"Running eval for task {task_id}")
-        if syncode.grammar_decoder is not None:
-            syncode.grammar_decoder.reset()
-
-        if format_tabs:
-            prompt = problems[task_id]["prompt"].replace("    ", "\t")
-        else:
-            prompt = problems[task_id]["prompt"]
-
-        batch_completions = syncode.model.generate_batch_completion_grammar(prompt, num_samples_per_task)
-
-        for _, completion in enumerate(batch_completions):
-            result = dict(
-                    task_id=task_id,
-                    language=problems[task_id]["language"],
-                    completion=completion
-                )
-            samples += [result]
-        pbar.update(num_samples_per_task)
-        return batch_completions
-
-    def write_results(self, out_path, avg_time, functional_result):
-        """
-        Write results to a separate file
-        """
-        file_path = "results/syncode_results.txt"
-        os.makedirs("results", exist_ok=True)
-        with open(file_path, "a") as f:
-            f.write(f"{self.model_name} | {self.grammar} | {self.dataset} | {self.parser} | {self.num_samples} | {self.mode}\n")
-            f.write(f"Functional result: {functional_result}\n")
-            f.write(f"Output path: {out_path}\n")
-            f.write(f"Averge time taken for each task: {avg_time:.2f}s\n")
-            f.write("\n")
-
-
-class MathEval:
-    """
-    Run evaluation on math question-answer dataset 
-    """
-    @staticmethod
-    def run_math_eval(syncode, debug_task_id=None):
-        problems = syncode.dataset.problems
-        if debug_task_id is not None:
-            problems = [problems[debug_task_id]]
-        samples = []
-        pbar = tqdm(total=len(problems) * syncode.num_samples)
-        time1 = time.time()
-        results = {} # result maps task_id to a list of (completion_id, result) tuples for each sample
-
-        for task_id, problem in enumerate(problems):
-            if syncode.grammar_decoder is not None:
-                syncode.grammar_decoder.reset()
-            results[task_id] = []
-            batch_completions = syncode.model.generate_batch_completion_grammar(
-                problem['question'], 
-                syncode.num_samples
-                )
-            for completion_id, raw_completion in enumerate(batch_completions):
-                completion = syncode.dataset.post_process_answer(raw_completion)
-                syncode.logger.log(f"\n\nProblem: {problem}\nCompletion: {completion}\n")
-                true_answer = float(problem['answer'].split('#')[-1].replace(',', ''))
-                llm_answer = None
-                try:
-                    ans = completion.split('\n\n')[0]
-                    ans.replace(',', '')
-                    llm_answer = float(ans.split('#')[-1])
-                except:
-                    pass
-                syncode.logger.log(f"True answer: {true_answer},\nLLM answer: {llm_answer}")
-                passed = (true_answer == llm_answer)
-                res = dict(
-                    task_id=task_id,
-                    completion=completion,
-                    passed=passed,
-                )
-                samples += [res]
-                results[task_id].append((completion_id, res))          
-            pbar.update(syncode.num_samples)
-
-        write_jsonl(syncode.out_path, samples)
-        pass_at_k = compute_pass_at_k(results)
-
-        # Log result and time
-        avg_time = (time.time() - time1) / len(problems)
-        syncode.logger.log_time(f"Averge time taken for each task: {avg_time:.2f}s")
-        syncode.logger.log(f"Result: {pass_at_k}")
-        print(f"Result: {pass_at_k}")
-        syncode.logger.close()
-        return samples
-
-class SQLEval:
-    """
-    Run evaluation on SQL dataset
-    """
-    @staticmethod
-    def run_eval(syncode):
-        problems = syncode.dataset.problems[:100]
-        samples = []
-        pbar = tqdm(total=len(problems) * syncode.num_samples)
-        results = {}
-        assert syncode.num_samples == 1, "SQL evaluation only supports num_samples=1"
-        predict_file = syncode.out_path
-
-        if syncode.grammar_decoder is not None:
-            syncode.grammar_decoder.chat_mode = True # Do not parse input+output
-
-        with open(predict_file, 'w') as f:
-            for task_id, problem in enumerate(problems):
-                if syncode.grammar_decoder is not None:
-                    syncode.grammar_decoder.reset()
-                results[task_id] = []
-                batch_completions = syncode.model.generate_batch_completion_grammar(
-                    problem['prompt'],
-                    syncode.num_samples
-                    )
-                raw_completion = batch_completions[0]
-                completion = syncode.dataset.post_process_answer(raw_completion)
-                res = dict(
-                    task_id=task_id,
-                    completion=completion,
-                )
-                samples += [res]
-                f.write(completion + '\n')
-                pbar.update(syncode.num_samples)
-        pbar.close()
-
-        # Run evaluation script
-        from syncode.utils.sql_spider_eval.evaluation import evaluate
-        gold_file = "syncode/utils/sql_spider_eval/evaluation_examples/gold_example.txt"
-        tables = "syncode/utils/sql_spider_eval/evaluation_examples/examples/tables.json"
-        databses = "syncode/utils/sql_spider_eval/databases"
-        scores, error_types = evaluate(predict_file, gold_file, databses, etype="all", table=tables, result_jsonl=samples)
-        print(f"Scores: {scores['all']}\n Error types: {error_types}")
-        write_jsonl(syncode.out_path, samples)
 
 if __name__ == "__main__":
     fire.Fire(compile_and_run)
