@@ -31,7 +31,7 @@ import "fmt"
 func main() {{
   var x int = 10
   var y int ='''
-        out = inc_parser._lex_code(partial_code)
+        out, _ = inc_parser._lex_code(partial_code)
         self.assertEqual(out[-1].type, 'EQUAL')
 
     def test_interactive_parser(self):
@@ -111,6 +111,7 @@ func main() {{
         inc_parser.reset()
         partial_code = 'package main\n\nimport (\n\t"encoding/json"\n\t"reflect"\n)\n// You\'re an expert Golang programmer\n// Insert a number \'delimeter\' between every two consecutive elements of input list `numbers\'\n// >>> intersperse([], 4)\n// []\n// >>> intersperse([1, 2, 3], 4)\n// [1, 4, 2, 4, 3]\n// \nfunc intersperse (numbers []int, delimeter int) []int {\n\tvar (  i, j int\n\t\tk int\n\t\tl []int\n\t)\n\tfor i = 0; i < len(numbers); i++ {\n\t\tfor j = i + 1; j < len(numbers); j++ {\n\t\t\tk = numbers[i] + delimeter + numbers[j]\n\t\t\tl = append(l, k)\n\t\t}\n\t}\n\treturn l\n}\n\nfunc main() {\n\t// Get the JSON string from the URL\n\tvar (  url string\n\t\tjsonData string\n\t\terr error\n\t)\n\turl = "http://localhost:8080/api/v1/json/get_data"\n\tjsonData, err '
         res = inc_parser.get_acceptable_next_terminals(partial_code)
+        print(res)
         self.assertIn(AcceptSequence(['EQUAL']), res.accept_sequences)
 
     def test_go_parser7(self):
@@ -179,5 +180,10 @@ func main() {{
         res = inc_parser.get_acceptable_next_terminals(partial_code)
         self.assertIn(AcceptSequence(['NAME', 'RPAR']), res.accept_sequences)
 
-
-
+    def test_go_parser17(self):
+        inc_parser.reset()
+        partial_code = 'pack'
+        res = inc_parser.get_acceptable_next_terminals(partial_code)
+        assert res.remainder == 'pack'
+        self.assertIn(AcceptSequence(['PACKAGE']), res.accept_sequences)
+        assert res.remainder_state == RemainderState.INCOMPLETE

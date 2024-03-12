@@ -1,5 +1,5 @@
 from datasets import load_dataset
-from mxeval.data import write_jsonl, get_data, get_examples
+from mxeval.data import get_data, get_examples
 
 class Dataset:
     """
@@ -34,6 +34,16 @@ class Dataset:
                     self.problems.append({**problem, 'question': examples + problem['question']})
             else:
                 self.problems = problems
+        
+        # Add text-to-sql dataset
+        elif dataset == "spider":
+            self.dataset_name = "spider"
+            self.type = "sql"
+            ds = load_dataset("richardr1126/spider-context-validation", split="validation")
+            self.problems = []
+            for problem in ds:
+                prompt = f"db_id: {problem['db_id']}\ndb_info: {problem['db_info']}\nquestion: {problem['question']}\nSQL:"
+                self.problems.append({**problem, 'prompt': prompt})
         else:
             # Use for other HF datasets
             self.type = "other"
@@ -47,5 +57,11 @@ class Dataset:
         if self.type == "math":
             answer = answer.lstrip("\n")
             answer = answer.split("\n\n")[0]
+            return answer
+        elif self.type == "sql":
+            answer = answer.lstrip("\n")
+            answer = answer.split("\n\n")[0]
+            # remove \n from the answer
+            answer = answer.replace("\n", " ")
             return answer
         return answer

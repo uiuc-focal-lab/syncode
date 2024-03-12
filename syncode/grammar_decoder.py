@@ -17,7 +17,7 @@ class GrammarDecoder(LogitsProcessor):
         tokenizer (PreTrainedTokenizer): The tokenizer to use for decoding.
         logger (common.Logger): The logger to use for logging.
         use_cache (bool, optional): Whether to use the cache. Defaults to True.
-        chat_mode (bool, optional): Whether to parse the prompt. Defaults to False.
+        parse_output_only (bool, optional): Whether to parse the prompt. Defaults to False.
         dev_mode (bool, optional): Whether to run in development mode. Defaults to False.
     """
     def __init__(self, 
@@ -25,7 +25,7 @@ class GrammarDecoder(LogitsProcessor):
         tokenizer: PreTrainedTokenizer, 
         logger: common.Logger, 
         use_cache=True,
-        chat_mode=False, 
+        parse_output_only=False, 
         num_samples=1,
         dev_mode=False,
         parser='lalr',
@@ -45,7 +45,7 @@ class GrammarDecoder(LogitsProcessor):
         self.function_end: list = []
 
         # We use this when only the LLM output is parsed and not (input+output)
-        self.chat_mode = chat_mode
+        self.parse_output_only = parse_output_only
         self.start_from = None         
 
         # Load dfa mask store
@@ -85,7 +85,7 @@ class GrammarDecoder(LogitsProcessor):
         time1 = time.time() 
         # start_from is used for choosing where the parsing should start
         if self.start_from == None:
-            if self.chat_mode:
+            if self.parse_output_only:
                 self.start_from = len(input_ids[0])
             else:
                 self.start_from = 0
