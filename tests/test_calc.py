@@ -9,7 +9,7 @@ from syncode.parsers import create_parser
 from syncode.parse_result import AcceptSequence
 from syncode.parsers.grammars.grammar import Grammar
 
-class TestParser(unittest.TestCase):
+class TestCalcParser(unittest.TestCase):
     def test_parser(self):
         inc_parser = create_parser(Grammar('calc'))
         partial_code = "113 + 235 + 17"

@@ -18,7 +18,7 @@ class GoIncrementalParser(IncrementalParser):
         """
         # Stores the sequence of tokens that the parser has seen in the order  
         interactive = self.interactive
-        lexer_tokens: list[lark.Token] = self._lex_code(partial_code)
+        lexer_tokens, lexing_incomplete = self._lex_code(partial_code)
 
         # Restore the previous state of the parser
         self._restore_recent_parser_state(lexer_tokens)
@@ -28,7 +28,7 @@ class GoIncrementalParser(IncrementalParser):
         # Parse the tokens
         parsing_start_time = time.time()
         self.time_accepts = 0
-        incomplete = False
+        parse_incomplete = False
         
         try:
             while self.cur_pos < len(lexer_tokens):
@@ -50,18 +50,16 @@ class GoIncrementalParser(IncrementalParser):
                     )
         except lark.exceptions.UnexpectedToken as e:
             self._handle_parsing_error(lexer_tokens, token)
-            incomplete = True
+            parse_incomplete = True
         
         self.logger.log_time(f'Time taken for parsing:{time.time() - parsing_start_time}')
         self.logger.log_time(f'Time taken for computing accepts:{self.time_accepts}')
-        self.next_ac_terminals.add('EOS')
         
         # Compute current terminal string
-        remainder_state, current_term_str, final_terminal = self._get_remainder(partial_code)
+        remainder_state, current_term_str, final_terminal = self._get_remainder(partial_code, parse_incomplete=parse_incomplete)
+        
+        if remainder_state != RemainderState.INCOMPLETE:
+            self.next_ac_terminals.add('EOS')
 
-        if remainder_state == RemainderState.INCOMPLETE:
-            self.cur_ac_terminals = self.next_ac_terminals
-            self.next_ac_terminals = set()
-            
         return ParseResult.from_accept_terminals(self.cur_ac_terminals, self.next_ac_terminals, current_term_str, remainder_state, final_terminal=final_terminal, ignore_terminals=self.base_parser.lexer_conf.ignore)
     

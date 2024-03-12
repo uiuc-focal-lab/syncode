@@ -53,6 +53,7 @@ class Syncode:
         dataset: Literal["mbxp", "humaneval", "mathqa-x", "input"] = "input",
         num_few_shot: int = 0,
         chat_mode: bool = False,
+        parse_output_only: bool = False,
         dev_mode: bool = False,
         log_level: int = 1,
         new_mask_store: bool = False,
@@ -76,9 +77,13 @@ class Syncode:
         self.num_few_shot = num_few_shot
         self.parser = parser
         self.chat_mode = chat_mode
+        if self.chat_mode:
+            self.parse_output_only = True
+        else:
+            self.parse_output_only = parse_output_only
 
         # Set the grammar
-        self.grammar = Grammar(grammar) if grammar else None
+        self.grammar = Grammar(grammar) if self.mode == 'grammar_mask' else None
 
         # Load the dataset
         self.dataset = Dataset(dataset, language=grammar, num_few_shot=num_few_shot)
@@ -101,7 +106,7 @@ class Syncode:
                 tokenizer=tokenizer, 
                 logger=self.logger, 
                 use_cache=(not self.new_mask_store), 
-                chat_mode=chat_mode,
+                parse_output_only=self.parse_output_only,
                 num_samples=self.num_samples, 
                 dev_mode=dev_mode,
                 parser=parser
@@ -130,6 +135,8 @@ class Syncode:
             output = CodeEval.run_code_eval(self, self.num_samples, self.out_path, format_tabs=True, debug_task_id=task_id)
         elif self.dataset.type == "math":
             output = MathEval.run_math_eval(self, debug_task_id=task_id)
+        elif self.dataset.type == "sql":
+            output = SQLEval.run_eval(self)
         elif self.dataset.type == "input":
             output = self.user_input(prompt)
         else:
@@ -307,6 +314,51 @@ class MathEval:
         print(f"Result: {pass_at_k}")
         syncode.logger.close()
         return samples
+
+class SQLEval:
+    """
+    Run evaluation on SQL dataset
+    """
+    @staticmethod
+    def run_eval(syncode):
+        problems = syncode.dataset.problems[:100]
+        samples = []
+        pbar = tqdm(total=len(problems) * syncode.num_samples)
+        results = {}
+        assert syncode.num_samples == 1, "SQL evaluation only supports num_samples=1"
+        predict_file = syncode.out_path
+
+        if syncode.grammar_decoder is not None:
+            syncode.grammar_decoder.chat_mode = True # Do not parse input+output
+
+        with open(predict_file, 'w') as f:
+            for task_id, problem in enumerate(problems):
+                if syncode.grammar_decoder is not None:
+                    syncode.grammar_decoder.reset()
+                results[task_id] = []
+                batch_completions = syncode.model.generate_batch_completion_grammar(
+                    problem['prompt'],
+                    syncode.num_samples
+                    )
+                raw_completion = batch_completions[0]
+                completion = syncode.dataset.post_process_answer(raw_completion)
+                res = dict(
+                    task_id=task_id,
+                    completion=completion,
+                )
+                samples += [res]
+                f.write(completion + '\n')
+                pbar.update(syncode.num_samples)
+        pbar.close()
+
+        # Run evaluation script
+        from syncode.utils.sql_spider_eval.evaluation import evaluate
+        gold_file = "syncode/utils/sql_spider_eval/evaluation_examples/gold_example.txt"
+        tables = "syncode/utils/sql_spider_eval/evaluation_examples/examples/tables.json"
+        databses = "syncode/utils/sql_spider_eval/databases"
+        scores, error_types = evaluate(predict_file, gold_file, databses, etype="all", table=tables, result_jsonl=samples)
+        print(f"Scores: {scores['all']}\n Error types: {error_types}")
+        write_jsonl(syncode.out_path, samples)
 
 if __name__ == "__main__":
     fire.Fire(compile_and_run)

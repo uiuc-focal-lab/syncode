@@ -51,12 +51,8 @@
 | 🔥 Fast grammar-guided generation (as little as 10% generation overhead with Python and Go!)                        |
 | 🤖 Seamlessly work with any HuggingFace Language Model, including Code, Chat, and Instruct models                   |
 | 🖍️ Pass in any CFG in the EBNF format (even large grammars for programming languages like Python and Go!)            |
-| 📝 Built-in CFGs for Python, Go, Calculator, and more!                                                              |
+| 📝 Built-in CFGs for **Python, Go, SQL, Calculator**, and more!                                                              |
 | 🎲 Sample with any existing decoding strategy (eg. greedy, beam search, nucleus sampling)                           |
-| 💯 Support for execution-based evaluation of generated code with HumanEval and MBXP datasets                         |
-| 💬 Support for generating chat completions                                                                           |
-
-
 
 
 ## 📖 More About **SynCode**
@@ -123,7 +119,7 @@ Check more examples of using Python, Go, and other grammars in <a href="#-exampl
   
 - `device` (str, optional): Device to run the model on. Defaults to "cuda". 
 
-- `grammar` (str, optional): Grammar in EBNF form (string or file path) or language for constrained generation. Defaults to "python". 
+- `grammar` (str, optional): Grammar in EBNF form (string or file path) or language for constrained generation. Defaults to None. You can use one of the ["python", "go", "sql", "calc"] or pass in a custom grammar in EBNF format.
   
 - `num_samples` (int, optional): Number of samples. Defaults to 1.
   

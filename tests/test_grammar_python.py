@@ -13,7 +13,7 @@ from syncode.parsers.grammars.grammar import Grammar
 python_grammar = Grammar('python')
 inc_parser = create_parser(python_grammar)
 
-class TestParser(unittest.TestCase):
+class TestPythonParser(unittest.TestCase):
     @unittest.skip("Skipping the correctness comparison test.")
     def test_vocab_terminals(self):
         tokenizer = LlamaTokenizer.from_pretrained("/share/models/llama_model/hf/7B")
@@ -309,7 +309,14 @@ def cat():
         r = inc_parser.get_acceptable_next_terminals(partial_code)
         assert AcceptSequence(['COMMENT']) in r.accept_sequences
 
-
+    def test_parser24(self):
+        inc_parser.reset()
+        partial_code = "def make_palindrome(string: str):\n\tfor i i"
+        r = inc_parser.get_acceptable_next_terminals(partial_code)
+        assert r.remainder == 'i'
+        assert AcceptSequence(['IN']) in r.accept_sequences
+        # TODO: FIX THIS TEST. 
+        # assert r.remainder_state == RemainderState.INCOMPLETE
 
 if __name__ == "__main__":
     unittest.main()
