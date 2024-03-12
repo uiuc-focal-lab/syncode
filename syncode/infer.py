@@ -53,6 +53,7 @@ class Syncode:
         dataset: Literal["mbxp", "humaneval", "mathqa-x", "input"] = "input",
         num_few_shot: int = 0,
         chat_mode: bool = False,
+        parse_output_only: bool = False,
         dev_mode: bool = False,
         log_level: int = 1,
         new_mask_store: bool = False,
@@ -76,6 +77,10 @@ class Syncode:
         self.num_few_shot = num_few_shot
         self.parser = parser
         self.chat_mode = chat_mode
+        if self.chat_mode:
+            self.parse_output_only = True
+        else:
+            self.parse_output_only = parse_output_only
 
         # Set the grammar
         self.grammar = Grammar(grammar) if self.mode == 'grammar_mask' else None
@@ -101,7 +106,7 @@ class Syncode:
                 tokenizer=tokenizer, 
                 logger=self.logger, 
                 use_cache=(not self.new_mask_store), 
-                chat_mode=chat_mode,
+                parse_output_only=self.parse_output_only,
                 num_samples=self.num_samples, 
                 dev_mode=dev_mode,
                 parser=parser
