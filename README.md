@@ -320,3 +320,20 @@ For parser selection, we offer the choice between LR(1) and LALR(1) parsers, spe
 
 [test-img]: https://github.com/shubhamugare/llm-cfg/actions/workflows/run_tests.yml/badge.svg
 [tests]: https://github.com/shubhamugare/llm-cfg/actions/workflows/run_tests.yml
+
+## Citation
+
+```
+@misc{ugare2024improving,
+      title={Improving LLM Code Generation with Grammar Augmentation}, 
+      author={Shubham Ugare and Tarun Suresh and Hangoo Kang and Sasa Misailovic and Gagandeep Singh},
+      year={2024},
+      eprint={2403.01632},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG}
+}
+```
+
+## Contact
+For questions, please contact [Shubham Ugare](mailto:shubhamdugare@gmail.com).
+
