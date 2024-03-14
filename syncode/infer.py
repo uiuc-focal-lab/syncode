@@ -11,6 +11,7 @@ from syncode.evaluation.code_eval import CodeEval
 from syncode.evaluation.math_eval import MathEval
 from syncode.evaluation.sql_eval import SQLEval
 from syncode.evaluation.json_eval import JSONEval
+from syncode.evaluation.fol_eval import FOLEval
 
 
 def compile_and_run(model, mode="grammar_mask", quantize=True, device="cuda", num_samples=1, grammar=None, dataset="input", num_few_shot=0, chat_mode=False, dev_mode=False, log_level=1, new_mask_store=False, parser="lalr", task_id=None, json_eval_type='schema', **kwargs):
@@ -143,6 +144,8 @@ class Syncode:
             output = MathEval.run_math_eval(self, debug_task_id=task_id)
         elif self.dataset.type == "sql":
             output = SQLEval.run_eval(self)
+        elif self.dataset.type == "fol":
+            output = FOLEval.run_eval(self)
         elif self.dataset.type == "input":
             output = self.user_input(prompt, stop_words=stop_words)
         elif self.dataset.type == "json":

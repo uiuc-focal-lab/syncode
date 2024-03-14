@@ -51,6 +51,15 @@ class Dataset:
             self.problems = []
             for problem in ds:
                 self.problems.append({**problem, 'prompt': problem['prompt'], 'ground_truth': problem['completion'], 'schema': problem['schema']})
+        elif dataset == "folio":
+            self.dataset_name = "folio"
+            self.type = "fol"
+            ds = load_dataset("tasksource/folio", split="validation")
+            self.problems = []
+            for problem in ds:
+                context = problem['premises']
+                question = f"Based on the above information, is the following statement true, false, or uncertain? {problem['conclusion']}"
+                self.problems.append({**problem, 'context': context, 'question': question})
         else:
             # Use for other HF datasets
             self.type = "other"
