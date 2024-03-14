@@ -78,13 +78,14 @@ Question:
 class FOLEval:
     @staticmethod
     def run_eval(syncode, debug_task_id=None):
-        problems = syncode.dataset.problems
+        problems = syncode.dataset.problems[:100]
         if debug_task_id is not None:
             problems = [problems[debug_task_id]]
         pbar = tqdm(total=len(problems) * syncode.num_samples)
         results = {}
         samples = []
-        
+        count_pass = 0
+
         for task_id, problem in enumerate(problems):
             if syncode.grammar_decoder is not None:
                 syncode.grammar_decoder.reset()
@@ -95,16 +96,14 @@ class FOLEval:
                 syncode.num_samples
                 )[0]
             logic_program = completion.split('------')[0]
-            
+            answer = None
+
             try:
                 program = FOL_Prover9_Program(logic_program)
                 answer, error_message = program.execute_program()
             except Exception as e:
                 print(e)
-                answer = random.choice(['A', 'B', 'C'])
-                error_message = str(e)
 
-            rand_ans = False
             if answer is None:
                 answer = random.choice(['A', 'B', 'C'])
                 rand_ans = True
@@ -114,15 +113,18 @@ class FOLEval:
 
             res = dict(
                 task_id=task_id,
-                completion=completion,
                 passed=(answer == ground_truth),
                 random=(rand_ans),
+                logic_program=logic_program,
+                answer=answer,
             )
+            count_pass += (answer == ground_truth)
             samples += [res]
             pbar.update(syncode.num_samples)
 
         write_jsonl(syncode.out_path, samples)
-  
+        print(f"Pass rate: {count_pass}/{len(problems)}")
+        pbar.close()
 
     @staticmethod
     def _prompt_folio(test_data):
