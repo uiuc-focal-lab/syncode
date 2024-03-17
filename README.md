@@ -51,12 +51,8 @@
 | 🔥 Fast grammar-guided generation (as little as 10% generation overhead with Python and Go!)                        |
 | 🤖 Seamlessly work with any HuggingFace Language Model, including Code, Chat, and Instruct models                   |
 | 🖍️ Pass in any CFG in the EBNF format (even large grammars for programming languages like Python and Go!)            |
-| 📝 Built-in CFGs for Python, Go, Calculator, and more!                                                              |
+| 📝 Built-in CFGs for **Python, Go, SQL, Calculator**, and more!                                                              |
 | 🎲 Sample with any existing decoding strategy (eg. greedy, beam search, nucleus sampling)                           |
-| 💯 Support for execution-based evaluation of generated code with HumanEval and MBXP datasets                         |
-| 💬 Support for generating chat completions                                                                           |
-
-
 
 
 ## 📖 More About **SynCode**
@@ -123,16 +119,14 @@ Check more examples of using Python, Go, and other grammars in <a href="#-exampl
   
 - `device` (str, optional): Device to run the model on. Defaults to "cuda". 
 
-- `grammar` (str, optional): Grammar in EBNF form (string or file path) or language for constrained generation. Defaults to "python". 
+- `grammar` (str, optional): Grammar in EBNF form (string or file path) or language for constrained generation. Defaults to None. You can use one of the ["python", "go", "sql", "calc"] or pass in a custom grammar in EBNF format.
   
 - `num_samples` (int, optional): Number of samples. Defaults to 1.
   
 - `dataset` (str, optional): Dataset. Defaults to "input". "input" indicates that the user can provide input via CLI or by passing in a prompt as a string. 
    
-- `few_shot` (bool, optional): Run few-shot prompting. Defaults to False.
-  
-- `num_fs_examples` (int, optional): Number of examples for few shot prompting. Defaults to -1.
-  
+- `num_few_shot` (int, optional): Number of examples for few shot prompting. Defaults to 0.
+    
 - `chat_mode` (bool, optional): True if using a Chat/Instruct LLM. False otherwise. Defaults to False. 
   
 - `dev_mode` (bool, optional): Development mode where we do not fail silently with parser errors. Defaults to False.
@@ -326,3 +320,20 @@ For parser selection, we offer the choice between LR(1) and LALR(1) parsers, spe
 
 [test-img]: https://github.com/shubhamugare/llm-cfg/actions/workflows/run_tests.yml/badge.svg
 [tests]: https://github.com/shubhamugare/llm-cfg/actions/workflows/run_tests.yml
+
+## Citation
+
+```
+@misc{ugare2024improving,
+      title={Improving LLM Code Generation with Grammar Augmentation}, 
+      author={Shubham Ugare and Tarun Suresh and Hangoo Kang and Sasa Misailovic and Gagandeep Singh},
+      year={2024},
+      eprint={2403.01632},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG}
+}
+```
+
+## Contact
+For questions, please contact [Shubham Ugare](mailto:shubhamdugare@gmail.com).
+

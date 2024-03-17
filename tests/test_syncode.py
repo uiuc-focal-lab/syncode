@@ -6,13 +6,13 @@ sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../')
 import syncode.common as common
 from syncode.infer import Syncode
 from mxeval.data import get_data
-from syncode.evaluation import check_correctness_python
+from syncode.evaluation.mxeval_evaluation import check_correctness_python
 
 class TestSyncode(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # Assuming Syncode and get_data are set up correctly in your environment
-        cls.sg_mask = Syncode(model="test", mode='grammar_mask', device='cpu', do_sample=False, max_new_tokens=200, dataset='humaneval')
+        cls.sg_mask = Syncode(model="test", mode='grammar_mask', device='cpu', do_sample=False, max_new_tokens=200, dataset='humaneval', grammar='python')
         cls.problems = list(get_data('multi-humaneval', 'python').values())
         
         cls.sg_mask_instruct = Syncode(model="test-instruct", mode='grammar_mask', device='cpu', do_sample=False, max_new_tokens=20, grammar=cls.custom_grammar())

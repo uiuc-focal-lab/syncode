@@ -1,4 +1,4 @@
-import time, os, sys
+import os, sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import fire
 import syncode.common as common
@@ -6,13 +6,15 @@ from syncode.language_model import HuggingFaceModel
 from transformers import LogitsProcessorList
 from syncode.grammar_decoder import GrammarDecoder
 from typing import Optional, Literal
-from mxeval.data import write_jsonl, get_data, get_examples
-from tqdm import tqdm
-from syncode.evaluation import check_coorectness
 from syncode.parsers.grammars import Grammar
+from syncode.dataset import Dataset
+from syncode.evaluation.code_eval import CodeEval
+from syncode.evaluation.math_eval import MathEval
+from syncode.evaluation.sql_eval import SQLEval
 
-def compile_and_run(model, mode="original", quantize=True, device="cuda", num_samples=1, grammar="python", dataset="input", few_shot=False, num_examples=-1, chat_mode=False, dev_mode=False, log_level=1, new_mask_store=False, parser="lalr", task_id=None, **kwargs):
-    sc = Syncode(model, mode=mode, quantize=quantize, device=device, num_samples=num_samples, grammar=grammar, dataset=dataset, few_shot=few_shot, num_fs_examples=num_examples, chat_mode=chat_mode, dev_mode=dev_mode, log_level=log_level, new_mask_store=new_mask_store, parser=parser, task_id=task_id, **kwargs)
+
+def compile_and_run(model, mode="original", quantize=True, device="cuda", num_samples=1, grammar=None, dataset="input", num_few_shot=0, chat_mode=False, dev_mode=False, log_level=1, new_mask_store=False, parser="lalr", task_id=None, **kwargs):
+    sc = Syncode(model, mode=mode, quantize=quantize, device=device, num_samples=num_samples, grammar=grammar, dataset=dataset, num_few_shot=num_few_shot, chat_mode=chat_mode, dev_mode=dev_mode, log_level=log_level, new_mask_store=new_mask_store, parser=parser, task_id=task_id, **kwargs)
     sc.infer(task_id=task_id)
 
 class Syncode:
@@ -27,8 +29,7 @@ class Syncode:
             other options currently supported are "python", "go", "calc"
         dataset (str, optional): Dataset. Defaults to "humaneval".
         new_mask_store (bool, optional): Use new DFA mask store. Defaults to False.
-        few_shot (bool, optional): Run few shoting prompting. Defaults to False.
-        num_fs_examples (int, optional): Number of examples for few shot prompting. Defaults to -1.
+        num_few_shot (int, optional): Number of examples for few shot prompting. Defaults to 0.
         chat_mode (bool, optional): Parse only the (output) and not (prompt+output) in chat mode. Defaults to False.
         dev_mode (bool, optional): Development mode. Defaults to False.
         log_level (int, optional): Log level. Defaults to 2. 0 for no logs, 1 for minimal logs, 2 for all logs including time.
@@ -48,11 +49,11 @@ class Syncode:
         quantize: bool = True,
         device: str = "cuda",
         num_samples: int = 1,
-        grammar: str = "python",
+        grammar: Optional[str] = None,
         dataset: Literal["mbxp", "humaneval", "mathqa-x", "input"] = "input",
-        few_shot: bool = False,
-        num_fs_examples: int = -1,
+        num_few_shot: int = 0,
         chat_mode: bool = False,
+        parse_output_only: bool = False,
         dev_mode: bool = False,
         log_level: int = 1,
         new_mask_store: bool = False,
@@ -62,7 +63,6 @@ class Syncode:
     ):  
         # Check inputs
         assert mode in ["original", "grammar_mask"]
-        assert dataset in ["mbxp", "humaneval", "mathqa-x", "input"]
         gen_kwargs = {'max_length', 'max_new_tokens', 'min_length', 'min_new_tokens', 'early_stopping', 'do_sample', 'num_beams', 'use_cache', 'temperature', 'top_k', 'top_p', 'num_return_sequences', 'pad_token_id', 'eos_token_id'}
         invalid_kwargs = kwargs.keys() - gen_kwargs
         assert invalid_kwargs == set(), f"Invalid arguments {invalid_kwargs}"
@@ -73,14 +73,20 @@ class Syncode:
         self.quantize = quantize
         self.device = device
         self.num_samples = num_samples
-        self.grammar = Grammar(grammar)
         self.new_mask_store = new_mask_store
-        self.few_shot = few_shot
-        self.num_fs_examples = num_fs_examples
-        dataset_dirmap = {"mbxp": "mbxp", "humaneval": "multi-humaneval", "mathqa-x": "mathqa-x"}
-        self.dataset = dataset_dirmap[dataset] if dataset != "input" else "input"
+        self.num_few_shot = num_few_shot
         self.parser = parser
         self.chat_mode = chat_mode
+        if self.chat_mode:
+            self.parse_output_only = True
+        else:
+            self.parse_output_only = parse_output_only
+
+        # Set the grammar
+        self.grammar = Grammar(grammar) if self.mode == 'grammar_mask' else None
+
+        # Load the dataset
+        self.dataset = Dataset(dataset, language=grammar, num_few_shot=num_few_shot)
 
         # Load model
         model = common.load_model(self.model_name, device)
@@ -100,7 +106,7 @@ class Syncode:
                 tokenizer=tokenizer, 
                 logger=self.logger, 
                 use_cache=(not self.new_mask_store), 
-                chat_mode=chat_mode,
+                parse_output_only=self.parse_output_only,
                 num_samples=self.num_samples, 
                 dev_mode=dev_mode,
                 parser=parser
@@ -121,19 +127,20 @@ class Syncode:
             **kwargs
             )
 
-    def infer(self, prompt = None, task_id=None):
+    def infer(self, prompt=None, task_id=None):
         if self.logger.is_closed:
             self.logger.open()
 
-        if self.dataset != "input": 
-            output = self.run_code_eval(
-                self.num_samples,
-                self.out_path,
-                format_tabs=True,
-                debug_task_id=task_id
-                )
+        if self.dataset.type == "code": 
+            output = CodeEval.run_code_eval(self, self.num_samples, self.out_path, format_tabs=True, debug_task_id=task_id)
+        elif self.dataset.type == "math":
+            output = MathEval.run_math_eval(self, debug_task_id=task_id)
+        elif self.dataset.type == "sql":
+            output = SQLEval.run_eval(self)
+        elif self.dataset.type == "input":
+            output = self.user_input(prompt)
         else:
-            return self.user_input(prompt)
+            raise ValueError(f"Dataset type {self.dataset.type} not supported")
         self.logger.close()
         return output
 
@@ -142,40 +149,6 @@ class Syncode:
         out_path = out_dir + 'samples_' + str(self.num_samples) + '_mode_' + str(self.mode) + "_eval.jsonl"
         os.makedirs(out_dir, exist_ok=True)
         return out_dir,out_path
-
-    def run_code_eval(self, 
-        num_samples_per_task: int,
-        out_path: str,
-        format_tabs: bool = False,
-        debug_task_id: Optional[int] = None
-        ):
-        """
-        Run evaluation on the model
-        """
-        if self.few_shot:
-            problems = {problem['task_id'] : problem for problem in get_examples(self.dataset, self.grammar.name, self.num_fs_examples)}
-        else:
-            problems = get_data(self.dataset, self.grammar.name)
-
-        samples = []
-        outputs = []
-        pbar = tqdm(total=len(problems) * num_samples_per_task)
-        if debug_task_id is None:
-            time1 = time.time()
-            for task_id in problems:
-                outputs.append(self.run_eval_for_task(num_samples_per_task, format_tabs, problems, samples, pbar, task_id))
-            write_jsonl(out_path, samples)
-            avg_time = (time.time() - time1) / len(problems)
-            self.logger.log_time(f"Averge time taken for each task: {avg_time:.2f}s")
-            functional_result = check_coorectness(out_path, logger=self.logger)
-            self.logger.log(f"Functional result: {functional_result}")
-
-            # Also log these results in a separate file
-            self.write_results(out_path, avg_time, functional_result)
-        else: # Debugging a specific task
-            debug_task_id = list(problems.keys())[debug_task_id]
-            return self.run_eval_for_task(num_samples_per_task, format_tabs, problems, samples, pbar, debug_task_id)
-        return outputs
     
     def set_generation_args(self, kwargs, tokenizer):
         kwargs['max_new_tokens'] = kwargs.get('max_new_tokens', 200)
@@ -188,45 +161,6 @@ class Syncode:
             kwargs['top_k'] = kwargs.get('top_k', self.num_samples)
             kwargs['top_p'] = kwargs.get('top_p', 0.95)
             print(f"Generation args: {kwargs}")
-
-    def write_results(self, out_path, avg_time, functional_result):
-        """
-        Write results to a separate file
-        """
-        file_path = "results/syncode_results.txt"
-        os.makedirs("results", exist_ok=True)
-        with open(file_path, "a") as f:
-            f.write(f"{self.model_name} | {self.grammar} | {self.dataset} | {self.parser} | {self.num_samples} | {self.mode}\n")
-            f.write(f"Functional result: {functional_result}\n")
-            f.write(f"Output path: {out_path}\n")
-            f.write(f"Averge time taken for each task: {avg_time:.2f}s\n")
-            f.write("\n")
-
-    def run_eval_for_task(self, num_samples_per_task, format_tabs, problems, samples, pbar, task_id):
-        """
-        run evaluation for a specific task
-        """
-        self.logger.log(f"Running eval for task {task_id}")
-        if self.grammar_decoder is not None:
-            self.grammar_decoder.reset()
-
-        if format_tabs:
-            prompt = problems[task_id]["prompt"].replace("    ", "\t")
-        else:
-            prompt = problems[task_id]["prompt"]
-
-        batch_completions = self.model.generate_batch_completion_grammar(prompt, num_samples_per_task)
-
-        for _, completion in enumerate(batch_completions):
-            result = dict(
-                    task_id=task_id,
-                    language=problems[task_id]["language"],
-                    completion=completion
-                )
-            samples += [result]
-        pbar.update(num_samples_per_task)
-        return batch_completions
-    
 
     def user_input(self, prompt):
         """
@@ -252,7 +186,6 @@ class Syncode:
                 batch_completions = self.model.generate_batch_completion_grammar(prompt, self.num_samples)
                 for i, completion in enumerate(batch_completions):
                     print(prompt + completion)
-
 
 if __name__ == "__main__":
     fire.Fire(compile_and_run)

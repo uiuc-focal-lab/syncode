@@ -71,7 +71,7 @@ class IncrementalParser:
 
         self.logger.log_time(f'Time taken for restoring parser state:{time.time() - time_start}')
 
-    def _lex_code(self, code) -> Iterable[Token]:
+    def _lex_code(self, code) -> Tuple[Iterable[Token], bool]:
         """
         Lexes the given code and returns the list of tokens.
         """
@@ -80,7 +80,7 @@ class IncrementalParser:
         interactive = self.base_parser.parse_interactive(code)
         lexing_start_time = time.time()
         lexer_state = interactive.lexer_thread.state
-
+        lexing_incomplete = False
         try:
             while lexer_state.line_ctr.char_pos < len(lexer_state.text):
                 blexer = interactive.lexer_thread.lexer
@@ -88,12 +88,12 @@ class IncrementalParser:
                 self.lexer_pos = lexer_state.line_ctr.char_pos
                 lexer_tokens.append(token)
         except lark.exceptions.UnexpectedCharacters as e:
-            pass
+            lexing_incomplete = True
         except EOFError as e:
             pass
         # self.lexer_pos = lexer_state.line_ctr.char_pos  # Any reason why this was here?
         self.logger.log_time(f'Time taken for lexing:{time.time() - lexing_start_time}')
-        return lexer_tokens
+        return lexer_tokens, lexing_incomplete
     
     def _restore_recent_parser_state(self, lexer_tokens):
         """
@@ -118,7 +118,7 @@ class IncrementalParser:
         """
         # Stores the sequence of tokens that the parser has seen in the order  
         interactive = self.interactive
-        lexer_tokens: list[Token] = self._lex_code(partial_code)
+        lexer_tokens, lexing_incomplete = self._lex_code(partial_code)
         self.next_ac_terminals = self._accepts(interactive)
 
         # Restore the previous state of the parser
@@ -130,7 +130,7 @@ class IncrementalParser:
         # Parse the tokens
         parsing_start_time = time.time()
         self.time_accepts = 0
-        incomplete = False
+        parse_incomplete = False
         
         try:
             while self.cur_pos < len(lexer_tokens):
@@ -146,35 +146,42 @@ class IncrementalParser:
                     self._accepts(interactive))
 
         except lark.exceptions.UnexpectedToken as e:
-            incomplete = True
+            parse_incomplete = True
             self._handle_parsing_error(lexer_tokens, token)
 
         self.logger.log_time(f'Time taken for parsing:{time.time() - parsing_start_time}')
         self.logger.log_time(f'Time taken for computing accepts:{self.time_accepts}')
 
         # Compute current terminal string
-        remainder_state, current_term_str, final_terminal = self._get_remainder(partial_code, incomplete)
-
-        if remainder_state == RemainderState.INCOMPLETE:
-            self.cur_ac_terminals = self.next_ac_terminals
-            self.next_ac_terminals = set()
+        remainder_state, current_term_str, final_terminal = self._get_remainder(partial_code, lexing_incomplete=lexing_incomplete, parse_incomplete=parse_incomplete)            
         
         return ParseResult.from_accept_terminals(self.cur_ac_terminals, self.next_ac_terminals, current_term_str, remainder_state, final_terminal=final_terminal, ignore_terminals=self.base_parser.lexer_conf.ignore)
 
-    def _get_remainder(self, code, incomplete=False):
+    def _get_remainder(self, code, lexing_incomplete=False, parse_incomplete=False):
         final_terminal = None
-        if self.lexer_pos < len(code) or incomplete:
-            remainder_state = RemainderState.INCOMPLETE
+        if lexing_incomplete: # Lexing is incomplete
             current_term_str = code[self.lexer_pos:]
             current_term_str = current_term_str.lstrip(' ') # Remove space from the beginning
             if current_term_str == '':
                 remainder_state = RemainderState.COMPLETE
-        elif len(self.parser_token_seq) > 0:
-            # Although this is a complete terminal, it may happen that this may be just prefix of some other terminal
-            # e.g., 'de' may seem like a variable name that is complete, but it may be just a prefix of 'def'
+            else: 
+                remainder_state = RemainderState.INCOMPLETE
+                self.cur_ac_terminals = self.next_ac_terminals
+                self.next_ac_terminals = set()
+        elif parse_incomplete: # Parsing is incomplete
+            remainder_state = RemainderState.INCOMPLETE
             current_term_str = self.parser_token_seq[-1].value
-            remainder_state = RemainderState.MAYBE_COMPLETE
             final_terminal = self.parser_token_seq[-1].type
+        elif len(self.parser_token_seq) > 0:
+            if self.lexer_pos < len(code): # In this case the final lexical tokens are ignored by the parser
+                remainder_state = RemainderState.COMPLETE
+                current_term_str = ''
+            else:
+                # Although this is a complete terminal, it may happen that this may be just prefix of some other terminal
+                # e.g., 'de' may seem like a variable name that is complete, but it may be just a prefix of 'def'
+                current_term_str = self.parser_token_seq[-1].value
+                remainder_state = RemainderState.MAYBE_COMPLETE
+                final_terminal = self.parser_token_seq[-1].type
         else:
             # When the code is empty
             remainder_state = RemainderState.COMPLETE

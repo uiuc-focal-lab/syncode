@@ -32,6 +32,7 @@ jobs:
       run: |
           python3 -m unittest tests.test_calc
           python3 -m unittest tests.test_grammar_go
+          python3 -m unittest tests.test_grammar_sql
           python3 -m unittest tests.test_grammar_python
           python3 -m unittest tests.test_language_model
           python3 -m unittest tests.test_lr_parser
