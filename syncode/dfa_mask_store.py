@@ -4,7 +4,8 @@ import interegular
 import torch
 import regex
 import syncode.common as common
-from syncode.parsers import create_parser
+from tqdm import tqdm
+from syncode.parsers import create_base_parser
 from syncode.larkm.lexer import TerminalDef
 from syncode.parse_result import IndentationConstraint, RemainderState, ParseResult
 from syncode.parsers.grammars.grammar import Grammar
@@ -290,7 +291,7 @@ class DFAMaskStore:
         self._lookup_table.convert_lookups_from_list_to_mask()  # convert to boolean tensor mask. This is useful for fast union operations
 
     @staticmethod
-    def load_dfa_mask_store(grammar: Grammar, tokenizer, inc_parser=None, use_cache=True, logger=None):
+    def load_dfa_mask_store(grammar: Grammar, tokenizer, use_cache=True, logger=None):
         '''
         Loads the dfa for the given language and tokenizer. If the dfa is not cached, it is created and cached. 
         '''
@@ -311,13 +312,13 @@ class DFAMaskStore:
         vocab = common.get_vocab_from_tokenizer(tokenizer)
         logger.log_time(f"Time taken for loading vocab: {time.time() - start_time:.2f}s")
 
-        if inc_parser is None:
-            inc_parser = create_parser(grammar, logger=logger)
+        terminals = create_base_parser(grammar).terminals
         logger.log_time(f"Time taken for loading parser: {time.time() - start_time:.2f}s")
 
         simplifications = grammar.simplifications()
         os.makedirs(dfa_dir, exist_ok=True)
-        mask_store = DFAMaskStore(inc_parser.base_parser.terminals, vocab, simplifications=simplifications, special_token_ids=[tokenizer.eos_token_id])
+
+        mask_store = DFAMaskStore(terminals, vocab, simplifications=simplifications, special_token_ids=[tokenizer.eos_token_id])
         logger.log_time(f"Time taken for creating dfa: {time.time() - start_time:.2f}s")
 
         pickle.dump(mask_store, open(dfa_path, 'wb'))
@@ -334,36 +335,40 @@ class DFAMaskStore:
         """
         Stores the overapproximate tokens for each dfa state and next terminals
         """
-        for dfa_state in self._dfas.states():
-                for token_idx, token in enumerate(vocab):
-                    remainder = token.replace('\t', '    ')
-                    is_valid, remainder = self._dfas.consume_prefix(dfa_state, remainder)
-                    if is_valid:
-                        if remainder is None or remainder == '':
-                            # We reached a live state for the current terminal, thus we add the token in all overapproximate sets of next terminals
-                            for next_terminal in terminals:
+        all_dfa_states = self._dfas.states()
+        pbar = tqdm(total=len(all_dfa_states))
+        for dfa_state in all_dfa_states:
+            for token_idx, token in enumerate(vocab):
+                remainder = token.replace('\t', '    ')
+                is_valid, remainder = self._dfas.consume_prefix(dfa_state, remainder)
+                if is_valid:
+                    if remainder is None or remainder == '':
+                        # We reached a live state for the current terminal, thus we add the token in all overapproximate sets of next terminals
+                        for next_terminal in terminals:
+                            self._lookup_table.dfa_state_and_next_terminal_to_tokens_add(dfa_state, next_terminal, token_idx)
+                    else:
+                        if remainder.startswith(' '): # ignore left space
+                            remainder = remainder[1:]
+
+                        # We reached the final state while consuming the token, thus we conusme the remainder with all next terminals
+                        for next_terminal in terminals:
+                            initial_state = self._dfas.initial(next_terminal)
+                            is_valid, _ = self._dfas.consume_prefix(initial_state, remainder)
+                            if is_valid: 
+                                # We reached a live state for the next terminal, thus we add the 
+                                # token in the  overapproximate sets of next terminals
                                 self._lookup_table.dfa_state_and_next_terminal_to_tokens_add(dfa_state, next_terminal, token_idx)
-                        else:
-                            if remainder.startswith(' '): # ignore left space
-                                remainder = remainder[1:]
 
-                            # We reached the final state while consuming the token, thus we conusme the remainder with all next terminals
-                            for next_terminal in terminals:
-                                initial_state = self._dfas.initial(next_terminal)
-                                is_valid, _ = self._dfas.consume_prefix(initial_state, remainder)
-                                if is_valid: 
-                                    # We reached a live state for the next terminal, thus we add the 
-                                    # token in the  overapproximate sets of next terminals
-                                    self._lookup_table.dfa_state_and_next_terminal_to_tokens_add(dfa_state, next_terminal, token_idx)
+                # For COMPLETE case:
+                remainder = token
+                if remainder.startswith(' '): # ignore left space
+                    remainder = remainder[1:]
 
-                    # For COMPLETE case:
-                    remainder = token
-                    if remainder.startswith(' '): # ignore left space
-                        remainder = remainder[1:]
-
-                    is_valid, remainder = self._dfas.consume_prefix(dfa_state, remainder)
-                    if is_valid:
-                        self._lookup_table.complete_case_add(dfa_state, token_idx)
+                is_valid, remainder = self._dfas.consume_prefix(dfa_state, remainder)
+                if is_valid:
+                    self._lookup_table.complete_case_add(dfa_state, token_idx)
+            
+            pbar.update(1)
         
     def _lookup_next_tokens_for_dfa_state(self, dfa_state: DFAState, next_terminal) -> torch.Tensor:
         tokens = self._lookup_table.dfa_state_and_next_terminal_to_tokens(dfa_state, next_terminal)

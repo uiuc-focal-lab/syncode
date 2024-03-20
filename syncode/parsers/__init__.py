@@ -19,7 +19,16 @@ def create_parser(grammar: Grammar, parser='lalr', **kwargs):
         if grammar.name == 'python':
             indenter = PythonIndenter()
 
-        base_parser = Lark( # This is the standard Lark parser
+        base_parser = create_base_parser(grammar, parser, indenter, cache_filename)
+
+        if grammar.name == 'python':
+            return PythonIncrementalParser(base_parser, indenter, **kwargs)
+        elif grammar.name == 'go':
+            return GoIncrementalParser(base_parser, **kwargs)
+        return incremental_parser.IncrementalParser(base_parser, **kwargs)
+
+def create_base_parser(grammar, parser='lalr', indenter=None, cache_filename=None):
+    base_parser = Lark( # This is the standard Lark parser
                         grammar.ebnf,
                         parser=parser,
                         lexer="basic",
@@ -28,9 +37,5 @@ def create_parser(grammar: Grammar, parser='lalr', **kwargs):
                         propagate_positions=True,
                         cache = cache_filename
                     )
-
-        if grammar.name == 'python':
-            return PythonIncrementalParser(base_parser, indenter, **kwargs)
-        elif grammar.name == 'go':
-            return GoIncrementalParser(base_parser, **kwargs)
-        return incremental_parser.IncrementalParser(base_parser, **kwargs)
+                
+    return base_parser
