@@ -138,7 +138,7 @@ def validate_json_completion(syncode, samples, results):
     validation_results = []
     for sample in samples:
         json_object = sample["completion"]
-        ground_truth_json = json.loads(sample["schema"])
+        ground_truth_json = json.loads(sample["ground_truth"])
         valid = False
         value_flag = False
         try:
