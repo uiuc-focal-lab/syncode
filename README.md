@@ -51,7 +51,7 @@
 | 🔥 Fast grammar-guided generation (as little as 10% generation overhead with Python and Go!)                        |
 | 🤖 Seamlessly work with any HuggingFace Language Model, including Code, Chat, and Instruct models                   |
 | 🖍️ Pass in any CFG in the EBNF format (even large grammars for programming languages like Python and Go!)            |
-| 📝 Built-in CFGs for **Python, Go, SQL, Calculator**, and more!                                                              |
+| 📝 Built-in CFGs for **Python, Go, SQL, Math, JSON**, and more!                                                              |
 | 🎲 Sample with any existing decoding strategy (eg. greedy, beam search, nucleus sampling)                           |
 
 
