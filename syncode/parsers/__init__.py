@@ -33,5 +33,4 @@ def create_parser(grammar: Grammar, parser='lalr', **kwargs):
             return PythonIncrementalParser(base_parser, indenter, **kwargs)
         elif grammar.name == 'go':
             return GoIncrementalParser(base_parser, **kwargs)
-
         return incremental_parser.IncrementalParser(base_parser, **kwargs)

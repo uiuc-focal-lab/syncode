@@ -11,10 +11,11 @@ from syncode.dataset import Dataset
 from syncode.evaluation.code_eval import CodeEval
 from syncode.evaluation.math_eval import MathEval
 from syncode.evaluation.sql_eval import SQLEval
+from syncode.evaluation.json_eval import JSONEval
 
 
-def compile_and_run(model, mode="original", quantize=True, device="cuda", num_samples=1, grammar=None, dataset="input", num_few_shot=0, chat_mode=False, dev_mode=False, log_level=1, new_mask_store=False, parser="lalr", task_id=None, **kwargs):
-    sc = Syncode(model, mode=mode, quantize=quantize, device=device, num_samples=num_samples, grammar=grammar, dataset=dataset, num_few_shot=num_few_shot, chat_mode=chat_mode, dev_mode=dev_mode, log_level=log_level, new_mask_store=new_mask_store, parser=parser, task_id=task_id, **kwargs)
+def compile_and_run(model, mode="original", quantize=True, device="cuda", num_samples=1, grammar=None, dataset="input", num_few_shot=0, chat_mode=False, dev_mode=False, log_level=1, new_mask_store=False, parser="lalr", task_id=None, json_eval_type = 'schema', **kwargs):
+    sc = Syncode(model, mode=mode, quantize=quantize, device=device, num_samples=num_samples, grammar=grammar, dataset=dataset, num_few_shot=num_few_shot, chat_mode=chat_mode, dev_mode=dev_mode, log_level=log_level, new_mask_store=new_mask_store, parser=parser, task_id=task_id, json_eval_type= json_eval_type, **kwargs)
     sc.infer(task_id=task_id)
 
 class Syncode:
@@ -50,7 +51,7 @@ class Syncode:
         device: str = "cuda",
         num_samples: int = 1,
         grammar: Optional[str] = None,
-        dataset: Literal["mbxp", "humaneval", "mathqa-x", "input"] = "input",
+        dataset: Literal["mbxp", "humaneval", "mathqa-x", "input", "gsm8k", "spider", "json_eval"] = "input",
         num_few_shot: int = 0,
         chat_mode: bool = False,
         parse_output_only: bool = False,
@@ -59,6 +60,7 @@ class Syncode:
         new_mask_store: bool = False,
         parser: Literal["lr", "lalr"] = "lalr",
         task_id: Optional[int] = None,
+        json_eval_type: Literal["schema", "exact_match"] = "schema",
         **kwargs
     ):  
         # Check inputs
@@ -77,6 +79,7 @@ class Syncode:
         self.num_few_shot = num_few_shot
         self.parser = parser
         self.chat_mode = chat_mode
+        self.json_eval_type = json_eval_type
         if self.chat_mode:
             self.parse_output_only = True
         else:
@@ -139,6 +142,8 @@ class Syncode:
             output = SQLEval.run_eval(self)
         elif self.dataset.type == "input":
             output = self.user_input(prompt)
+        elif self.dataset.type == "json":
+            output = JSONEval.run_json_eval(self, debug_task_id=task_id, eval_type = self.json_eval_type)
         else:
             raise ValueError(f"Dataset type {self.dataset.type} not supported")
         self.logger.close()

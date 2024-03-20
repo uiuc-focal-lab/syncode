@@ -14,7 +14,7 @@ class Grammar:
         grammar_filename = None
         
         assert name is not None, 'Grammar name not provided in grammar mode!'
-        if name in ['python', 'go', 'sql', 'tiny', 'calc']:
+        if name in ['python', 'go', 'sql', 'tiny', 'calc', 'json']:
             grammar_filename = f'syncode/parsers/grammars/{name}_grammar.lark'
         elif name.endswith('.lark'): 
             if os.path.exists(name):

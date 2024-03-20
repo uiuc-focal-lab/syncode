@@ -6,3 +6,4 @@ tqdm
 transformers
 mxeval @ git+https://github.com/shubhamugare/mxeval.git
 datasets
+jsonschema

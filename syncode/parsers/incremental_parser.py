@@ -89,9 +89,11 @@ class IncrementalParser:
                 lexer_tokens.append(token)
         except lark.exceptions.UnexpectedCharacters as e:
             lexing_incomplete = True
+            # We update the lexer position to the current position since the lexer has stopped at this position
+            self.lexer_pos = lexer_state.line_ctr.char_pos
         except EOFError as e:
             pass
-        # self.lexer_pos = lexer_state.line_ctr.char_pos  # Any reason why this was here?
+    
         self.logger.log_time(f'Time taken for lexing:{time.time() - lexing_start_time}')
         return lexer_tokens, lexing_incomplete
     
