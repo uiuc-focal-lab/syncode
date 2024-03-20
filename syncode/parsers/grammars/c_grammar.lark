@@ -1,5 +1,7 @@
 // Modified from https://github.com/ggerganov/llama.cpp/blob/master/grammars/c.gbnf
 
+// ATTENTION: This grammar is WIP and does not cover most C syntax!
+
 start: declaration*
 
 declaration: data_type NAME "(" parameter? ")" "{" statement* "}"
