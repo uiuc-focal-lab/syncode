@@ -10,7 +10,7 @@ class IncrementalParser:
     """
     This is the base class for all incremental parsers.
     """
-    def __init__(self, base_parser, logger: Optional[common.Logger]=None, update_lexer_pos = False) -> None:
+    def __init__(self, base_parser, logger: Optional[common.Logger]=None) -> None:
         self.cur_pos = 0 # Current cursor position in the lexer tokens list
         self.lexer_pos = 0 # Current lexer position in the code
         self.dedent_queue: list = []
@@ -29,7 +29,6 @@ class IncrementalParser:
 
         self.cur_ac_terminals: set = set()
         self.next_ac_terminals: set = self._accepts(self.interactive)
-        self.update_lexer_pos = update_lexer_pos
 
     def reset(self):
         """
@@ -90,10 +89,11 @@ class IncrementalParser:
                 lexer_tokens.append(token)
         except lark.exceptions.UnexpectedCharacters as e:
             lexing_incomplete = True
+            # We update the lexer position to the current position since the lexer has stopped at this position
+            self.lexer_pos = lexer_state.line_ctr.char_pos
         except EOFError as e:
             pass
-        if self.update_lexer_pos:
-            self.lexer_pos = lexer_state.line_ctr.char_pos  # Any reason why this was here?
+    
         self.logger.log_time(f'Time taken for lexing:{time.time() - lexing_start_time}')
         return lexer_tokens, lexing_incomplete
     
