@@ -288,7 +288,7 @@ When guided with the JSON grammar with SynCode, the model is able to generate a 
 from syncode import Syncode
 
 # Load the Syncode augmented model
-syn_llm = Syncode(model = "microsoft/phi-2", mode='grammar_mask', grammar='json', parse_output_only=True, max_new_tokens=50)
+syn_llm = Syncode(model="microsoft/phi-2", grammar='json', parse_output_only=True, max_new_tokens=50)
 
 prompt = "Please return a json object to represent country India with name, capital and population?"
 output = syn_llm.infer(prompt)[0]
