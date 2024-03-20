@@ -83,7 +83,7 @@ If both `prompt` and `task_id` are not specified, __infer()__ reads user input v
 
 The following example shows the benefit of SynCode:
 
-In the example below, the unconstrained original Phi-2 model fails to generate a valid JSON object and instead generates code.
+In the example below, the unconstrained original Phi-2 model fails to generate a valid JSON object and instead generates Python code.
 ``` python
 from syncode import Syncode
 
@@ -259,7 +259,48 @@ print(constrained_output)
 exec(constrained_output)
 # Correct Code :)
 ```
+### 🔤 JSON Mode Generation
+In the example below, the unconstrained original Phi-2 model fails to generate a valid JSON object and instead generates Python code.
+``` python
+from syncode import Syncode
 
+# Load the unconstrained original model
+llm = Syncode(model = "microsoft/phi-2", mode='original', max_new_tokens=50)
+
+prompt = "Please return a json object to represent country India with name, capital and population?"
+output = llm.infer(prompt)[0]
+print(f"LLM output:\n{output}\n")
+
+# LLM output:
+#
+# A:
+#
+# You can use the following code:
+# import json
+#
+# def get_country_info(country_name):
+#    country_info = {
+#        'name': country_name,
+#        'capital':
+```
+When guided with the JSON grammar with SynCode, the model is able to generate a syntactically valid JSON object. 
+``` python
+from syncode import Syncode
+
+# Load the Syncode augmented model
+syn_llm = Syncode(model = "microsoft/phi-2", mode='grammar_mask', grammar='json', parse_output_only=True, max_new_tokens=50)
+
+prompt = "Please return a json object to represent country India with name, capital and population?"
+output = syn_llm.infer(prompt)[0]
+print(f"SynCode output:\n{output}")
+
+# SynCode output:
+# {
+#     "name": "India",
+#     "capital": "New Delhi",
+#     "population": "1,366,417,754"
+# }
+```
 ### 👤 Custom Grammar Input 
 Syncode allows user to define a grammar using a simple EBNF syntax adapted from Lark. One can also simply feed the grammar rules directly as a string of rules as shown below. In our example, we want our model to only respond in the format `month day`. Without constrained decoding, the Language Model may not generate output that follows this syntax. Consider the code snippet below. 
 
