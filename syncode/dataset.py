@@ -44,6 +44,13 @@ class Dataset:
             for problem in ds:
                 prompt = f"db_id: {problem['db_id']}\ndb_info: {problem['db_info']}\nquestion: {problem['question']}\nSQL:"
                 self.problems.append({**problem, 'prompt': prompt})
+        elif dataset == "json_eval":
+            self.dataset_name = "json_eval"
+            self.type = "json"
+            ds = load_dataset("NousResearch/json-mode-eval", split = "train")
+            self.problems = []
+            for problem in ds:
+                self.problems.append({**problem, 'prompt': problem['prompt'], 'ground_truth': problem['completion'], 'schema': problem['schema']})
         else:
             # Use for other HF datasets
             self.type = "other"
