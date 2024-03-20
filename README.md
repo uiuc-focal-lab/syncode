@@ -26,16 +26,16 @@
 
 ### How Does **SynCode** Compare to Other Constrained Decoders?
 
-| Tool        | Regex     | CFG*       | Pre-Computed* | GPL* |
-|-------------|-----------|-----------|:-------------:|------|
-| LMQL        | ✅        | ❌        |       ❌       | ❌   |
-| GUIDANCE    | ✅        | ✅        |       ❌       | ❌   |
-| OUTLINES    | ✅        | ✅        |       ✅       | ❌   |
-| PICARD      | ✅        | ✅        |       ❌       | ❌   |
-| SYNCHROMESH | ✅        | ✅        |       ❌       | ❌   |
-| LLAMA.CPP   | ✅        | ✅        |       ❌       | ❌   |
-| GCD         | ✅        | ✅        |       ❌       | ❌   |
-| **SynCode** | **✅**    | **✅**    |   **✅**       | **✅** |
+| Tool                                                      | Regex     | CFG*       | Pre-Computed* | GPL* |
+|----------------------------------------------------       |-----------|-----------|:-------------:|------|
+| [`LMQL`](https://github.com/eth-sri/lmql)                 | ✅        | ❌        |       ❌       | ❌   |
+| [`GUIDANCE`](https://github.com/guidance-ai/guidance)     | ✅        | ✅        |       ❌       | ❌   |
+| [`OUTLINES`](https://github.com/outlines-dev/outlines)    | ✅        | ✅        |       ✅       | ❌   |
+| [`PICARD`](https://github.com/ServiceNow/picard)          | ✅        | ✅        |       ❌       | ❌   |
+| [`SYNCHROMESH`](https://arxiv.org/abs/2201.11227)         | ✅        | ✅        |       ❌       | ❌   |
+| [`LLAMA.CPP`](https://github.com/ggerganov/llama.cpp)     | ✅        | ✅        |       ❌       | ❌   |
+| [`GCD`](https://arxiv.org/abs/2305.13971)                 | ✅        | ✅        |       ❌       | ❌   |
+| **SynCode**                                               | **✅**    | **✅**    |   **✅**       | **✅** |
 ---
 
 **CFG***: Guide generation with a Context Free Grammar (CFG)
