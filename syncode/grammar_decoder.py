@@ -53,7 +53,7 @@ class GrammarDecoder(LogitsProcessor):
                                     grammar=self.grammar, 
                                     tokenizer=self.tokenizer, 
                                     use_cache=use_cache, 
-                                    logger=self.logger
+                                    logger=self.logger,
                                     )
 
         # Create parsers
