@@ -81,30 +81,50 @@ In Python, inference is performed using the __infer()__ method in the __SynCode_
 
 If both `prompt` and `task_id` are not specified, __infer()__ reads user input via `stdin`. 
 
-The following example shows a usage of SynCode provided a custom grammar:
+The following example shows the benefit of SynCode:
 
+In the example below, the unconstrained original Phi-2 model fails to generate a valid JSON object and instead generates code.
 ``` python
 from syncode import Syncode
 
-# Pass in a grammar as a string of rules in EBNF format
-grammar = """ start: month day 
+# Load the unconstrained original model
+llm = Syncode(model = "microsoft/phi-2", mode='original', max_new_tokens=50)
 
-              month: "January" | "February" | "March" | "April" | "May" | "June" | "July" | "August" | "September" | "October" | "November" | "December"
-              
-              day: /[1-9]/ | /[1-2][0-9]/ | /3[0-1]/             
-"""
+prompt = "Please return a json object to represent country India with name, capital and population?"
+output = llm.infer(prompt)[0]
+print(f"LLM output:\n{output}\n")
+
+# LLM output:
+#
+# A:
+#
+# You can use the following code:
+# import json
+#
+# def get_country_info(country_name):
+#    country_info = {
+#        'name': country_name,
+#        'capital':
+```
+When guided with the JSON grammar with SynCode, the model is able to generate a syntactically valid JSON object. 
+``` python
+from syncode import Syncode
 
 # Load the Syncode augmented model
-syn_llm = Syncode(model="microsoft/phi-2", mode='grammar_mask', grammar=grammar, chat_mode=True)
+syn_llm = Syncode(model = "microsoft/phi-2", mode='grammar_mask', grammar='json', parse_output_only=True, max_new_tokens=50)
 
-inp = "When is the christmas day?"
+prompt = "Please return a json object to represent country India with name, capital and population?"
+output = syn_llm.infer(prompt)[0]
+print(f"SynCode output:\n{output}")
 
-output = syn_llm.infer(inp)
-
-print(f"Syncode augmented LLM output:\n{output}")
-# Syncode augmented LLM output:
-# December 25 
+# SynCode output:
+# {
+#     "name": "India",
+#     "capital": "New Delhi",
+#     "population": "1,366,417,754"
+# }
 ```
+
 Check more examples of using Python, Go, and other grammars in <a href="#-example-usage">Example Usage</a>
 
 ### SynCode Arguments
