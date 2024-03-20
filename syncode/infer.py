@@ -14,14 +14,14 @@ from syncode.evaluation.sql_eval import SQLEval
 from syncode.evaluation.json_eval import JSONEval
 
 
-def compile_and_run(model, mode="original", quantize=True, device="cuda", num_samples=1, grammar=None, dataset="input", num_few_shot=0, chat_mode=False, dev_mode=False, log_level=1, new_mask_store=False, parser="lalr", task_id=None, json_eval_type = 'schema', **kwargs):
+def compile_and_run(model, mode="grammar_mask", quantize=True, device="cuda", num_samples=1, grammar=None, dataset="input", num_few_shot=0, chat_mode=False, dev_mode=False, log_level=1, new_mask_store=False, parser="lalr", task_id=None, json_eval_type = 'schema', **kwargs):
     sc = Syncode(model, mode=mode, quantize=quantize, device=device, num_samples=num_samples, grammar=grammar, dataset=dataset, num_few_shot=num_few_shot, chat_mode=chat_mode, dev_mode=dev_mode, log_level=log_level, new_mask_store=new_mask_store, parser=parser, task_id=task_id, json_eval_type= json_eval_type, **kwargs)
     sc.infer(task_id=task_id)
 
 class Syncode:
     """Syncode class for running inference on a model
     Args:
-        mode (str, optional): Mode for inference. Defaults to "original".
+        mode (str, optional): Mode for inference. Defaults to "grammar_mask".
         model (str): Model id for huggingface model hub or model name if stored locally.
         quantize (bool, optional): Quantize model. Defaults to True.
         device (str, optional): Device to use. Defaults to "cuda".
@@ -46,7 +46,7 @@ class Syncode:
     def __init__(
         self, 
         model: str,
-        mode: Literal["original", "grammar_mask"] = "original",
+        mode: Literal["original", "grammar_mask"] = "grammar_mask",
         quantize: bool = True,
         device: str = "cuda",
         num_samples: int = 1,

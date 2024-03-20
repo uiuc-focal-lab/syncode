@@ -131,11 +131,11 @@ Check more examples of using Python, Go, and other grammars in <a href="#-exampl
 <details>
   <summary>Click to Expand on the List of Arguments for SynCode</summary>
   
-- `mode` (str, optional): Mode for inference. Defaults to "original". "grammar_mask" is the mode that enables our tool.
+- `mode` (str, optional): Mode for inference. "grammar_mask" is the mode that enables our tool. "original" is the mode for the original LLM. Defaults to "grammar_mask". 
   
 - `model` (str): Model ID for Hugging Face model hub or model name if stored locally.
   
-- `quantize` (bool, optional): Quantize model. Defaults to True.
+- `quantize` (bool, optional): Quantize the model. Defaults to True.
   
 - `device` (str, optional): Device to run the model on. Defaults to "cuda". 
 
