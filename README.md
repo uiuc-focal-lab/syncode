@@ -139,7 +139,7 @@ Check more examples of using Python, Go, and other grammars in <a href="#-exampl
   
 - `device` (str, optional): Device to run the model on. Defaults to "cuda". 
 
-- `grammar` (str, optional): Grammar in EBNF form (string or file path) or language for constrained generation. Defaults to None. You can use one of the ["python", "go", "sql", "calc"] or pass in a custom grammar in EBNF format.
+- `grammar` (str, optional): Grammar in EBNF form (string or file path) or language for constrained generation. Defaults to None. You can use one of the `python`, `go`, `sql`, `json`, `calc` or pass in a custom grammar in EBNF format.
   
 - `num_samples` (int, optional): Number of samples. Defaults to 1.
   
