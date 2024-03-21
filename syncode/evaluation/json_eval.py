@@ -1,4 +1,3 @@
-import os
 import time
 from tqdm import tqdm
 from typing import Optional
@@ -20,6 +19,10 @@ class JSONEval:
         eval_type = 'schema'
         ):
         problems = syncode.dataset.problems
+        if syncode.grammar_decoder is not None:
+            # For this evaluation, we only parse the output (and not the input+output)
+            syncode.grammar_decoder.parse_output_only = True
+
         if debug_task_id is not None:
             problems = [problems[debug_task_id]]
 
