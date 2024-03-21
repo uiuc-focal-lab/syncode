@@ -45,9 +45,10 @@ class CodeEval:
         run evaluation for a specific task
         """
         syncode.logger.log(f"Running eval for task {task_id}")
-        if syncode.grammar_decoder is not None:
-            syncode.grammar_decoder.reset()
-
+        # if syncode.grammar_decoder is not None:
+        #     syncode.grammar_decoder.reset()
+        if syncode.mode == "grammar_mask":
+            syncode.model.reset()
         if format_tabs:
             prompt = problems[task_id]["prompt"].replace("    ", "\t")
         else:

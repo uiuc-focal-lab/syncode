@@ -1,4 +1,4 @@
-from transformers import (
+from syncode.transformersm import (
     PreTrainedModel,
     PreTrainedTokenizer,
 )

@@ -1,7 +1,7 @@
 import time
 import torch
 import syncode.common as common
-from transformers import LogitsProcessor, PreTrainedTokenizer
+from transformersm import LogitsProcessor, PreTrainedTokenizer
 from syncode.parsers.incremental_parser import IncrementalParser, ParseResult
 from syncode.parsers import create_parser
 from syncode.dfa_mask_store import DFAMaskStore

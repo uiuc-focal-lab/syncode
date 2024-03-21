@@ -21,11 +21,11 @@ import warnings
 
 import torch
 
-from transformers import LlamaConfig, LlamaForCausalLM, LlamaTokenizer
+from syncode.transformersm import LlamaConfig, LlamaForCausalLM, LlamaTokenizer
 
 
 try:
-    from transformers import LlamaTokenizerFast
+    from syncode.transformersm import LlamaTokenizerFast
 except ImportError as e:
     warnings.warn(e)
     warnings.warn(

@@ -1,5 +1,5 @@
 import os
-from transformers import (
+from syncode.transformersm import (
     LlamaTokenizer,
     LlamaForCausalLM,
     AutoTokenizer,

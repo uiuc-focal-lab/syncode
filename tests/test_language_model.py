@@ -1,7 +1,7 @@
 import sys, os
 from typing import Dict
 import torch
-from transformers import BatchEncoding
+from syncode.transformersm import BatchEncoding
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../')
 import syncode.common as common
 from syncode.language_model import HuggingFaceModel
@@ -38,7 +38,7 @@ class TestHuggingFaceModel(unittest.TestCase):
         model = TestModel()
         tokenizer = TestTokenizer()
         logger = common.EmptyLogger()
-        lm = HuggingFaceModel(model, Grammar('calc'), logger, tokenizer, mode='original', max_new_tokens=15, device='cpu')
+        lm = HuggingFaceModel(model, Grammar('calc'), logger, tokenizer = tokenizer, mode='original', max_new_tokens=15, device='cpu')
         prompt = "113 + 235 + 17"
         output = lm.generate_batch_completion_grammar(prompt, 1)
         self.assertEqual(len(output[0]), 15, "The output length does not match the expected value.")

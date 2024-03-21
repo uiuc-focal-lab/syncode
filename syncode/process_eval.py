@@ -1,7 +1,6 @@
 from human_eval.data import read_problems, write_jsonl, stream_jsonl
 import glob
 from tqdm import tqdm
-from transformers import PreTrainedTokenizer
 import argparse
 
 parser = argparse.ArgumentParser()

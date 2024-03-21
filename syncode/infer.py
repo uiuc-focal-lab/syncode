@@ -3,14 +3,15 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import fire
 import syncode.common as common
 from syncode.language_model import HuggingFaceModel
-from transformers import LogitsProcessorList
-from syncode.grammar_decoder import GrammarDecoder
+# from transformersm import LogitsProcessorList
+# from syncode.grammar_decoder import GrammarDecoder
 from typing import Optional, Literal
 from syncode.parsers.grammars import Grammar
 from syncode.dataset import Dataset
 from syncode.evaluation.code_eval import CodeEval
 from syncode.evaluation.math_eval import MathEval
 from syncode.evaluation.sql_eval import SQLEval
+from syncode.dfa_mask_store import DFAMaskStore
 
 
 def compile_and_run(model, mode="original", quantize=True, device="cuda", num_samples=1, grammar=None, dataset="input", num_few_shot=0, chat_mode=False, dev_mode=False, log_level=1, new_mask_store=False, parser="lalr", task_id=None, **kwargs):
@@ -98,23 +99,43 @@ class Syncode:
         
         # Initialize logit processors
         logit_processors = None
-        self.grammar_decoder = None
+        # self.grammar_decoder = None
+        self.use_cache = (not self.new_mask_store)
         
-        if self.mode == 'grammar_mask':
-            self.grammar_decoder = GrammarDecoder(
-                self.grammar, 
-                tokenizer=tokenizer, 
-                logger=self.logger, 
-                use_cache=(not self.new_mask_store), 
-                parse_output_only=self.parse_output_only,
-                num_samples=self.num_samples, 
-                dev_mode=dev_mode,
-                parser=parser
-                )
-            logit_processors = LogitsProcessorList([self.grammar_decoder])
+        # if self.mode == 'grammar_mask':
+        #     self.grammar_decoder = GrammarDecoder(
+        #         self.grammar, 
+        #         tokenizer=tokenizer, 
+        #         logger=self.logger, 
+        #         use_cache=(not self.new_mask_store), 
+        #         parse_output_only=self.parse_output_only,
+        #         num_samples=self.num_samples, 
+        #         dev_mode=dev_mode,
+        #         parser=parser
+        #         )
+        #     logit_processors = LogitsProcessorList([self.grammar_decoder])
 
         # Set LLM generation args e.g. max_new_tokens, do_sample, etc.
         self.set_generation_args(kwargs, tokenizer)
+
+        # self.model = HuggingFaceModel(
+        #     model, 
+        #     grammar=self.grammar,
+        #     logger=self.logger, 
+        #     tokenizer=tokenizer, 
+        #     device=device, 
+        #     logit_processors=logit_processors, 
+        #     mode=self.mode, 
+        #     **kwargs
+        #     )
+
+        self.dfa_mask_store = DFAMaskStore.load_dfa_mask_store(
+                                    grammar=self.grammar, 
+                                    tokenizer=tokenizer, 
+                                    use_cache=self.use_cache,
+                                    logger=self.logger 
+                                    # logger=self.logger
+                                    )
 
         self.model = HuggingFaceModel(
             model, 
@@ -122,8 +143,12 @@ class Syncode:
             logger=self.logger, 
             tokenizer=tokenizer, 
             device=device, 
-            logit_processors=logit_processors, 
-            mode=self.mode, 
+            mode=self.mode,
+            parser=parser,
+            num_samples=self.num_samples,
+            chat_mode=chat_mode,
+            dfa_mask_store=self.dfa_mask_store,
+            # use_cache=self.use_cache,
             **kwargs
             )
 
@@ -151,7 +176,7 @@ class Syncode:
         return out_dir,out_path
     
     def set_generation_args(self, kwargs, tokenizer):
-        kwargs['max_new_tokens'] = kwargs.get('max_new_tokens', 200)
+        kwargs['max_new_tokens'] = kwargs.get('max_new_tokens', 50)
         kwargs['do_sample'] = kwargs.get('do_sample', False)
         kwargs['use_cache'] = kwargs.get('use_cache', True)
         kwargs['eos_token_id'] = kwargs.get('eos_token_id', tokenizer.eos_token_id)
@@ -167,8 +192,10 @@ class Syncode:
         Run user input on the model with grammar mask
         """
         if prompt:
-            if self.grammar_decoder is not None: # TODO: Remove this check
-                    self.grammar_decoder.reset()
+            # if self.grammar_decoder is not None: # TODO: Remove this check
+            #         self.grammar_decoder.reset()
+            if self.mode == 'grammar_mask':
+                self.model.reset()
             if self.chat_mode:
                 return self.model.generate_chat_completion_grammar(prompt)
             else:
@@ -176,8 +203,8 @@ class Syncode:
         
         else:
             while True:
-                if self.grammar_decoder is not None:
-                    self.grammar_decoder.reset()
+                if self.mode == "grammar_mask":
+                    self.model.reset()
 
                 prompt = input('Enter prompt: ')
                 prompt = prompt.replace('\\n', '\n').replace('\\"', '\"').replace('\\t', '\t').replace("\\'", "\'").replace('\\b', '\b').replace('\\r', '\r') if self.grammar.name == 'python' else prompt
