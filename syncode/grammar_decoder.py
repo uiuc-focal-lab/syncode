@@ -95,43 +95,44 @@ class GrammarDecoder(LogitsProcessor):
         self.token_cnt += self.batch_size
         greedy_grammar_token = None
         for idx, partial_code in enumerate(partial_codes):
-            try:
-                time2 = time.time()
-                self.partial_codes_trace.append(partial_code)
+            time2 = time.time()
+            self.partial_codes_trace.append(partial_code)
 
-                # returns the names of the Terminals that are currently accepted.
+            ## Parsing
+            try: # returns the names of the Terminals that are currently accepted.
                 r = self.inc_parsers[idx].get_acceptable_next_terminals(partial_code)
-                self.logger.log_time(f"Time taken for compilation: {time.time() - time2:.3f}s")
-
-                self.update_valid_state(input_ids, idx, r)
-            
-                accept_mask = self.dfa_mask_store.get_overapprox_tokens_mask(r, logger=self.logger)
-
-                if self.debug:
-                    self._log_current_status(partial_code, r)
-                greedy_token = self.tokenizer.decode(scores[idx].argmax(dim=-1)) # For debugging, do not move this line
-
-                if torch.sum(accept_mask) != 0: # If there are acceptable tokens for the current partial code 
-                    if len(scores[idx]) != len(accept_mask):
-                        # Pad accept_mask with 0 values. Since scores[i] may be longer than tokenizer vocab size, we need to pad accept_mask with 0 values
-                        accept_mask = torch.cat((accept_mask, torch.zeros(len(scores[idx]) - len(accept_mask), dtype=torch.bool)))
-                        
-                    scores[idx] = scores[idx].masked_fill(~accept_mask.to(scores.device), -float("inf"))
-                else: # Otherwise, report the error and mask no tokens
-                    self.logger.log('No acceptable tokens for the current partial code!')
-                    self._log_current_status(partial_code, r)
-
-                self.logger.log_time(f"Time taken for masking: {time.time() - time2:.3f}s")
-                
-                # For debugging - remove later
-                greedy_grammar_token = self.tokenizer.decode(scores[idx].argmax(dim=-1))
-                if greedy_token != greedy_grammar_token:
-                    self._log_greedy_difference(greedy_grammar_token, partial_code, r, greedy_token)
             except Exception as e:
                 if self.dev_mode == True:
                     raise e
                 self.logger.log(f"Exception while parsing:\n {e}")
                 # print(f"Exception while parsing! Fix this!\n {e}")
+                continue  # Skip altering the scores for this batch
+
+            self.logger.log_time(f"Time taken for compilation: {time.time() - time2:.3f}s")
+            self.update_valid_state(input_ids, idx, r)
+        
+            accept_mask = self.dfa_mask_store.get_overapprox_tokens_mask(r, logger=self.logger)
+
+            if self.debug:
+                self._log_current_status(partial_code, r)
+            greedy_token = self.tokenizer.decode(scores[idx].argmax(dim=-1)) # For debugging, do not move this line
+
+            if torch.sum(accept_mask) != 0: # If there are acceptable tokens for the current partial code 
+                if len(scores[idx]) != len(accept_mask):
+                    # Pad accept_mask with 0 values. Since scores[i] may be longer than tokenizer vocab size, we need to pad accept_mask with 0 values
+                    accept_mask = torch.cat((accept_mask, torch.zeros(len(scores[idx]) - len(accept_mask), dtype=torch.bool)))
+                    
+                scores[idx] = scores[idx].masked_fill(~accept_mask.to(scores.device), -float("inf"))
+            else: # Otherwise, report the error and mask no tokens
+                self.logger.log('No acceptable tokens for the current partial code!')
+                self._log_current_status(partial_code, r)
+
+            self.logger.log_time(f"Time taken for masking: {time.time() - time2:.3f}s")
+            
+            # For debugging - remove later
+            greedy_grammar_token = self.tokenizer.decode(scores[idx].argmax(dim=-1))
+            if greedy_token != greedy_grammar_token:
+                self._log_greedy_difference(greedy_grammar_token, partial_code, r, greedy_token)
 
         self.logger.log_time(f"Time taken for decoding: {time.time() - time1:.3f}s")
         return scores

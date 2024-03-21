@@ -298,7 +298,10 @@ class DFAMaskStore:
         tokenizer_name = type(tokenizer).__name__
         dfa_dir = common.SYNCODE_CACHE + 'mask_stores/' + tokenizer_name + '/'
         grammar_hash = grammar.hash()
-        dfa_path = f'{dfa_dir}{grammar_hash}_dfa_mask.pkl'
+
+        # TODO: Hasing using the tokenizer vocab size, this may be problmatic if we have two fine-tuned models with same tokenizer, same vocab size but different vocab
+        dfa_path = f'{dfa_dir}dfa_mask_{grammar_hash}_{tokenizer.vocab_size}.pkl'
+        
         start_time = time.time()
         if use_cache and os.path.exists(dfa_path):
             try:
@@ -308,7 +311,7 @@ class DFAMaskStore:
             except: # If we cannot load the file, we will create the dfa from scratch
                 pass
     
-        print(f"Creating DFA mask store for {tokenizer_name} and {grammar}, may take more than 10 minutes. Storing at {os.path.abspath(dfa_path)} .", flush=True)
+        print(f"Creating DFA mask store for {tokenizer_name} and {grammar}, may take more than 10 minutes. Caching at {os.path.abspath(dfa_path)}.", flush=True)
         vocab = common.get_vocab_from_tokenizer(tokenizer)
         logger.log_time(f"Time taken for loading vocab: {time.time() - start_time:.2f}s")
 

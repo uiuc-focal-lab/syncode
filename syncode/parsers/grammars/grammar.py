@@ -37,7 +37,7 @@ class Grammar:
         return self.name 
     
     def hash(self) -> int:
-        return int(hashlib.sha256(self.ebnf.encode('utf-8')).hexdigest(), 16)
+        return str(int(hashlib.sha256(self.ebnf.encode('utf-8')).hexdigest(), 16))[:10]
     
     def simplifications(self):
         """
