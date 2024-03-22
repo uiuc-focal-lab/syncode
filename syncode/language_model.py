@@ -87,12 +87,13 @@ class HuggingFaceModel(LanguageModel):
             # Post-processing to filter out using stop word (e.g. "\n\n")
             if self.grammar != None and self.grammar.name == "python":
                 completion = self.postproces_completion_python(i, batch_size, input_ids_cutoff, generated_ids, grammar_decoder, raw_completion)
+                self.logger.log_code("Filtered sample", completion)
             elif self.grammar != None and self.grammar.name == "go": 
                 completion = self.postproces_completion_go(i, batch_size, raw_completion, generated_ids, grammar_decoder, input_ids_cutoff)
+                self.logger.log_code("Filtered sample", completion)
             else: # TODO: handle the case for other grammars
                 completion = raw_completion
 
-            self.logger.log_code("Filtered sample", completion)
             batch_completions.append(completion)
 
         if grammar_decoder is not None:
