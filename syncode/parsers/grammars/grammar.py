@@ -12,10 +12,9 @@ class Grammar:
         self.name = name
         self.ebnf = None
         grammar_filename = None
-        
         assert name is not None, 'Grammar name not provided in grammar mode!'
         if name in ['python', 'go', 'sql', 'tiny', 'calc', 'json', 'c']:
-            grammar_filename = f'syncode/parsers/grammars/{name}_grammar.lark'
+            grammar_filename = f'{os.path.dirname(__file__)}/{name}_grammar.lark'
         elif name.endswith('.lark'): 
             if os.path.exists(name):
                 # In this case we assume that the user provides the full path to the grammar file
