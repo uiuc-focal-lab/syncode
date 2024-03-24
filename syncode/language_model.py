@@ -1,9 +1,12 @@
 import time
+from syncode.grammar_decoder import GrammarDecoder
 from syncode.parsers.grammars import Grammar
 from syncode.utils.generation import filter_code, fix_indents
 import syncode.common as common
 import torch
-from typing import Iterable, Tuple
+from typing import Callable, Iterable, Tuple
+from transformers.generation.utils import GenerationMode
+from transformers.generation.configuration_utils import GenerationConfig
 
 class LanguageModel:
     def vocabulary(self) -> Iterable[str]:
@@ -29,7 +32,7 @@ class LanguageModel:
 class HuggingFaceModel(LanguageModel):
     def __init__(
             self, 
-            model, 
+            model: Callable, 
             grammar: Grammar,
             logger: common.Logger, 
             tokenizer=None, 
@@ -54,7 +57,7 @@ class HuggingFaceModel(LanguageModel):
         self.mode = mode
         self.grammar = grammar
         self.vocab = common.get_vocab_from_tokenizer(self.tokenizer)
-        self.gen_kwargs = kwargs
+        self.gen_args = kwargs
 
     def get_grammar_decoder(self):
         if self.logit_processors is not None and len(self.logit_processors) > 0:
@@ -69,15 +72,19 @@ class HuggingFaceModel(LanguageModel):
         input_batch = [prompt for _ in range(batch_size)]
         inputs = self.tokenizer(input_batch, return_tensors="pt").to(self.model.device)
         input_ids_cutoff = inputs.input_ids.size(dim=1)
+        grammar_decoder = self.get_grammar_decoder()
 
         start_time = time.time()
+        gen_config = GenerationConfig.from_model_config(self.model.config)
+        gen_config.update(**self.gen_args)
 
-        generated_ids = self.model.generate(
-            **inputs,
-            logits_processor=self.logit_processors,
-            **self.gen_kwargs
-        )
-        grammar_decoder = self.get_grammar_decoder()
+        gen_mode = self.model._get_generation_mode(gen_config, None)
+
+        if (gen_mode == GenerationMode.SAMPLE or gen_mode == GenerationMode.GREEDY_SEARCH) and batch_size == 1: # Use our own implementation for greedy search and sampling
+            generated_ids = self._generate(inputs, gen_config, gen_mode, grammar_decoder=grammar_decoder)
+        else:
+            # Use generate from transformers library for other modes
+            generated_ids = self.model.generate(**inputs, logits_processor=self.logit_processors, **self.gen_args)
         batch_completions = []
 
         for i in range(batch_size):
@@ -104,6 +111,58 @@ class HuggingFaceModel(LanguageModel):
         return batch_completions
 
     @torch.inference_mode()
+    def _generate(
+        self, 
+        inputs:dict, 
+        gen_config:GenerationConfig, 
+        gen_mode:GenerationMode, 
+        grammar_decoder:GrammarDecoder=None
+        ):
+        """
+        We support greedy search and sampling for batch size 1 otherwise we use the generate function from transformers library.
+        """
+        token_ids, attention_mask, past_key_values = inputs['input_ids'], inputs['attention_mask'], None
+        logit_warper = self.model._get_logits_warper(gen_config)
+        max_tokens = self.gen_args['max_new_tokens']+token_ids.size(1)
+
+        while True:
+            try:
+                if past_key_values: # Get the last token if kv is cached for all previous tokens
+                    input_ids = token_ids[..., -1].unsqueeze(-1) 
+                else:
+                    input_ids = token_ids
+
+                outputs = self.model(
+                    input_ids, 
+                    attention_mask=attention_mask, 
+                    past_key_values=past_key_values
+                    )                
+            except IndexError as e:  
+                raise ValueError(f"The input length exceeds the context length of the model. {e}")
+
+            next_token_scores, past_key_values = outputs.logits[:, -1, :], outputs.past_key_values
+            if grammar_decoder is not None:
+                next_token_scores = grammar_decoder(token_ids, next_token_scores)
+
+            if gen_mode == GenerationMode.GREEDY_SEARCH:
+                next_tokens = torch.argmax(next_token_scores, dim=-1)
+            elif gen_mode == GenerationMode.SAMPLE:
+                next_token_scores = logit_warper(token_ids, next_token_scores)
+                probs = torch.nn.functional.softmax(next_token_scores, dim=-1)
+                next_tokens = torch.multinomial(probs, num_samples=1).squeeze(1)
+            
+            token_ids =torch.cat([token_ids, next_tokens[:, None]], dim=-1)
+
+            if next_tokens == self.tokenizer.eos_token_id or token_ids.size(1) >= max_tokens:
+                break
+            
+            # Update attention mask
+            attention_mask = torch.cat([attention_mask, torch.ones((attention_mask.size(0), 1), dtype=attention_mask.dtype).to(self.device)], dim=-1)
+            
+        return token_ids
+
+
+    @torch.inference_mode()
     def generate_chat_completion_grammar(self, prompt) -> str:
         '''
         Generates chat completion for the given prompt. 
@@ -125,7 +184,7 @@ class HuggingFaceModel(LanguageModel):
         generated_ids = self.model.generate(
             inputs,
             logits_processor=self.logit_processors,
-            **self.gen_kwargs
+            **self.gen_args
         )
         completion = self.tokenizer.decode(
             generated_ids[0][input_ids_cutoff:len(generated_ids[0])], 
