@@ -39,7 +39,7 @@ class GoIncrementalParser(IncrementalParser):
                     if 'EOS' not in self.next_ac_terminals:
                         continue
 
-                self.parser_token_seq.append(token) # parser_token_seq holds all tokens
+                self.parsed_lexer_tokens.append(token) # parser_token_seq holds all tokens
                 interactive.feed_token(token)
                 
                 # Store the current state of the parser

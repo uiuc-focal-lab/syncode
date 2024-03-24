@@ -3,7 +3,6 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import fire
 import syncode.common as common
 from syncode.language_model import HuggingFaceModel
-from transformers import LogitsProcessorList
 from syncode.grammar_decoder import GrammarDecoder
 from typing import Optional, Literal
 from syncode.parsers.grammars import Grammar
@@ -100,7 +99,6 @@ class Syncode:
         self.logger = common.Logger(self.num_samples, mode, parser, out_dir, log_level=log_level, task_id=task_id)
         
         # Initialize logit processors
-        logit_processors = None
         self.grammar_decoder = None
         
         if self.mode == 'grammar_mask':
@@ -114,7 +112,6 @@ class Syncode:
                 dev_mode=dev_mode,
                 parser=parser
                 )
-            logit_processors = LogitsProcessorList([self.grammar_decoder])
 
         # Set LLM generation args e.g. max_new_tokens, do_sample, etc.
         self.set_generation_args(kwargs, tokenizer)
@@ -125,7 +122,7 @@ class Syncode:
             logger=self.logger, 
             tokenizer=tokenizer, 
             device=device, 
-            logit_processors=logit_processors, 
+            grammar_decoder=self.grammar_decoder, 
             mode=self.mode, 
             **kwargs
             )
@@ -167,13 +164,13 @@ class Syncode:
             kwargs['top_p'] = kwargs.get('top_p', 0.95)
             print(f"Generation args: {kwargs}")
 
-    def user_input(self, prompt):
+    def user_input(self, prompt:str):
         """
         Run user input on the model with grammar mask
         """
         if prompt:
             if self.grammar_decoder is not None: # TODO: Remove this check
-                    self.grammar_decoder.reset()
+                    self.grammar_decoder.reset(prompt)
             if self.chat_mode:
                 return self.model.generate_chat_completion_grammar(prompt)
             else:
@@ -181,13 +178,11 @@ class Syncode:
         
         else:
             while True:
-                if self.grammar_decoder is not None:
-                    self.grammar_decoder.reset()
-
                 prompt = input('Enter prompt: ')
                 prompt = prompt.replace('\\n', '\n').replace('\\"', '\"').replace('\\t', '\t').replace("\\'", "\'").replace('\\b', '\b').replace('\\r', '\r') if self.grammar.name == 'python' else prompt
                 if prompt == "exit":
                     break
+
                 batch_completions = self.model.generate_batch_completion_grammar(prompt, self.num_samples)
                 for i, completion in enumerate(batch_completions):
                     print(prompt + completion)

@@ -20,8 +20,6 @@ class SQLEval:
 
         with open(predict_file, 'w') as f:
             for task_id, problem in enumerate(problems):
-                if syncode.grammar_decoder is not None:
-                    syncode.grammar_decoder.reset()
                 results[task_id] = []
                 batch_completions = syncode.model.generate_batch_completion_grammar(
                     problem['prompt'],

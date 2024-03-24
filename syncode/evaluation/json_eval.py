@@ -63,9 +63,6 @@ class JSONEval:
         """
         run evaluation for a specific task
         """
-        if syncode.grammar_decoder is not None:
-            syncode.grammar_decoder.reset()
-
         prompt = syncode.model.tokenizer.apply_chat_template(problem["prompt"], tokenize = False)
         prompt = f"{prompt}\nJSON:\n"
 

@@ -59,7 +59,7 @@ class PythonIncrementalParser(IncrementalParser):
                     self.dedent_queue.append(token)
                     continue
                 else:
-                    self.parser_token_seq.append(token) # parser_token_seq holds all tokens except _INDENT and _DEDENT
+                    self.parsed_lexer_tokens.append(token) # parser_token_seq holds all tokens except _INDENT and _DEDENT
 
                     while not len(self.dedent_queue)==0: # Shoot all the dedent tokens that are in the queue
                         self.indent_level.pop()
@@ -93,14 +93,14 @@ class PythonIncrementalParser(IncrementalParser):
         else:
             # Although this is a complete terminal, it may happen that this may be just prefix of some other terminal
             # e.g., 'de' may seem like a variable name that is complete, but it may be just a prefix of 'def'
-            current_term_str = self.parser_token_seq[-1].value
+            current_term_str = self.parsed_lexer_tokens[-1].value
             remainder_state = RemainderState.MAYBE_COMPLETE
-            final_terminal = self.parser_token_seq[-1].type
+            final_terminal = self.parsed_lexer_tokens[-1].type
 
         next_ac_indents = None
         if remainder_state == RemainderState.MAYBE_COMPLETE or remainder_state == RemainderState.COMPLETE:
-            if self.parser_token_seq[-1].type == '_NL':
-                last_indent_str = self.parser_token_seq[-1].value.split('\n')[-1]
+            if self.parsed_lexer_tokens[-1].type == '_NL':
+                last_indent_str = self.parsed_lexer_tokens[-1].value.split('\n')[-1]
                 last_indent = last_indent_str.count(' ') + last_indent_str.count('\t') * self.tab_len
                 next_ac_indents = [indent-last_indent for indent in self.indent_level if indent >= last_indent]
 

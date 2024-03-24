@@ -18,10 +18,11 @@ class TestModel(GenerationMixin):
         self.device = 'cpu'
         self.config = PretrainedConfig()
     
-    def __call__(self, input_ids: torch.Tensor, attention_mask: torch.Tensor, kv_cache=None) -> CausalLMOutputWithPast:
+    def __call__(self, input_ids: torch.Tensor, attention_mask:torch.Tensor=None, past_key_values=None) -> CausalLMOutputWithPast:
         output_logits = torch.randn(1, 1, 20)
         return CausalLMOutputWithPast(
-            logits=output_logits
+            logits=output_logits,
+            past_key_values=None,
             )
     
     def generate(self, input_ids: torch.Tensor, max_new_tokens=10, **kwargs):
@@ -70,6 +71,5 @@ class TestHuggingFaceModel(unittest.TestCase):
         lm = HuggingFaceModel(model, Grammar('calc'), logger, tokenizer, mode='original', max_new_tokens=15, device='cpu')
         prompt = "113 + 235 + 17"
         output = lm.generate_batch_completion_grammar(prompt, 2)
-        print(output)
         self.assertEqual(len(output[0]), 15, "The output length does not match the expected value.")
         self.assertEqual(len(output[1]), 15, "The output length does not match the expected value.")

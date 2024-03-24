@@ -22,62 +22,62 @@ class TestDFAMaskLlama(unittest.TestCase):
     def test_dfa_mask(self):        
         query_start_time = time.time()
         r = ParseResult({AcceptSequence(['DEC_NUMBER', 'PLUS'])}, '1', RemainderState.MAYBE_COMPLETE)
-        self.dfa_mask.get_overapprox_tokens_mask(r)  # Assuming dfa_mask is accessible
+        self.dfa_mask.get_accept_mask(r)  # Assuming dfa_mask is accessible
         time_taken_for_mask_query = time.time() - query_start_time
 
         query_start_time = time.time()
         r = ParseResult({AcceptSequence(['DEC_NUMBER', 'PLUS'])}, '1', RemainderState.MAYBE_COMPLETE)
-        self.dfa_mask.get_overapprox_tokens_mask(r, get_list=True)
+        self.dfa_mask.get_accept_mask(r, get_list=True)
         time_taken_for_list_query = time.time() - query_start_time
 
-        ac_list = self.dfa_mask.get_overapprox_tokens_mask(r, get_list=True)
+        ac_list = self.dfa_mask.get_accept_mask(r, get_list=True)
         self.assertTrue(all(t in ac_list for t in [' +', ' +=', ' ++']))
 
     def test_dfa_mask2(self):
         r = ParseResult({AcceptSequence(['NAME'])}, '\n"""comment"""\n', RemainderState.MAYBE_COMPLETE)
-        self.assertGreater(len(self.dfa_mask.get_overapprox_tokens_mask(r, get_list=True)), 0)
+        self.assertGreater(len(self.dfa_mask.get_accept_mask(r, get_list=True)), 0)
 
     def test_dfa_mask3(self):
         r = ParseResult({AcceptSequence(['STRING', 'FOR'])}, '"Return only negative numbers in the list.  Note that this is not the same as the negative of the list. ', RemainderState.MAYBE_COMPLETE)
-        self.assertGreater(len(self.dfa_mask.get_overapprox_tokens_mask(r, get_list=True)), 0)
+        self.assertGreater(len(self.dfa_mask.get_accept_mask(r, get_list=True)), 0)
 
     def test_dfa_mask4(self):
         r = ParseResult({AcceptSequence(['NAME', 'LPAR'])}, 'upper', RemainderState.MAYBE_COMPLETE)
-        ac_list = self.dfa_mask.get_overapprox_tokens_mask(r, get_list=True)
+        ac_list = self.dfa_mask.get_accept_mask(r, get_list=True)
         self.assertTrue(all([t in ac_list for t in ['()', '(']]))
 
     def test_dfa_mask5(self):
         s = '\n\t""" Check if in given list of numbers, are any two numbers closer to each other than\n\tgiven threshold.\n\t>>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n\tFalse\n\t>>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n\tTrue\n\t"""\n'
         r = ParseResult({AcceptSequence(['_NL', 'NAME'])}, s, RemainderState.MAYBE_COMPLETE)
-        ac_list = self.dfa_mask.get_overapprox_tokens_mask(r, get_list=True)
+        ac_list = self.dfa_mask.get_accept_mask(r, get_list=True)
         self.assertTrue(all([t in ac_list for t in ['\t', '\n', '""', '#', "''", "'", '"']]))
 
     def test_dfa_mask6(self):
         r = ParseResult({AcceptSequence(['DEC_NUMBER', 'COLON'])}, '2', RemainderState.MAYBE_COMPLETE)
-        ac_list = self.dfa_mask.get_overapprox_tokens_mask(r, get_list=True)
+        ac_list = self.dfa_mask.get_accept_mask(r, get_list=True)
         self.assertFalse(any([t in ac_list for t in ['+', '#', '-', '*']]))
 
     def test_dfa_mask7(self):
         r = ParseResult({AcceptSequence(['LPAR'])}, '', RemainderState.COMPLETE)
-        ac_list = self.dfa_mask.get_overapprox_tokens_mask(r, get_list=True)
+        ac_list = self.dfa_mask.get_accept_mask(r, get_list=True)
         self.assertEqual(len([ac for ac in ac_list if 'num' in ac]), 0)
         self.assertGreater(len([ac for ac in ac_list if '(' in ac]), 0)
 
     def test_dfa_mask8(self):
         r = ParseResult({AcceptSequence(['NAME', 'LPAR'])}, 'print', RemainderState.MAYBE_COMPLETE)
-        ac_list = self.dfa_mask.get_overapprox_tokens_mask(r, get_list=True)
+        ac_list = self.dfa_mask.get_accept_mask(r, get_list=True)
         self.assertNotIn(' num', ac_list)
         self.assertIn('num', ac_list)
         self.assertIn('()', ac_list)
 
     def test_dfa_mask9(self):
         r = ParseResult({AcceptSequence(['_NL'])}, '', RemainderState.COMPLETE)
-        ac_list = self.dfa_mask.get_overapprox_tokens_mask(r, get_list=True)
+        ac_list = self.dfa_mask.get_accept_mask(r, get_list=True)
         self.assertIn('</s>', ac_list)  # special token should always be in the list
 
     def test_dfa_mask13(self):
         r = ParseResult({AcceptSequence(['NAME']), AcceptSequence(['RETURN', 'NAME'])}, 'return', RemainderState.MAYBE_COMPLETE, next_ac_indents=None)
-        ac_list = self.dfa_mask.get_overapprox_tokens_mask(r, get_list=True)
+        ac_list = self.dfa_mask.get_accept_mask(r, get_list=True)
         self.assertIn("ing", ac_list)
         self.assertIn(" x", ac_list)
 
@@ -104,27 +104,27 @@ class TestDFAMaskLlama(unittest.TestCase):
 
     def test_dfa_mask_with_indent(self):
         r = ParseResult({AcceptSequence(['NAME'])}, 'int', RemainderState.COMPLETE, IndentationConstraint(accept_indents=[0]))
-        ac_list = self.dfa_mask.get_overapprox_tokens_mask(r, get_list=True)
+        ac_list = self.dfa_mask.get_accept_mask(r, get_list=True)
         self.assertIn('int', ac_list)
 
         r = ParseResult({AcceptSequence(['IF'])}, '', RemainderState.COMPLETE, IndentationConstraint(accept_indents=[1]))
-        ac_list = self.dfa_mask.get_overapprox_tokens_mask(r, get_list=True)
+        ac_list = self.dfa_mask.get_accept_mask(r, get_list=True)
         self.assertIn(' if', ac_list)
 
         r = ParseResult({AcceptSequence(['NAME'])}, 'int', RemainderState.COMPLETE, IndentationConstraint(greater_than_indent_val=0))
-        ac_list = self.dfa_mask.get_overapprox_tokens_mask(r, get_list=True)
+        ac_list = self.dfa_mask.get_accept_mask(r, get_list=True)
         self.assertIn(' int', ac_list)
 
         r = ParseResult({AcceptSequence(['NAME'])}, '', RemainderState.COMPLETE, IndentationConstraint(greater_than_indent_val=1))
-        ac_list = self.dfa_mask.get_overapprox_tokens_mask(r, get_list=True)
+        ac_list = self.dfa_mask.get_accept_mask(r, get_list=True)
         self.assertNotIn(' int', ac_list)
 
         r = ParseResult({AcceptSequence(['IF'])}, '', RemainderState.COMPLETE, IndentationConstraint(accept_indents=[0]))
-        ac_list = self.dfa_mask.get_overapprox_tokens_mask(r, get_list=True)
+        ac_list = self.dfa_mask.get_accept_mask(r, get_list=True)
         self.assertIn('if', ac_list)
         
         r = ParseResult({AcceptSequence(['_NL', 'RETURN'])}, '\n\t\t', RemainderState.MAYBE_COMPLETE, IndentationConstraint(greater_than_indent_val=-1))
-        ac_list = self.dfa_mask.get_overapprox_tokens_mask(r, get_list=True)
+        ac_list = self.dfa_mask.get_accept_mask(r, get_list=True)
         self.assertIn('return', ac_list)
 
 
@@ -178,16 +178,16 @@ class TestDFAMaskCodegen(unittest.TestCase):
     dfa_mask = DFAMaskStore.load_dfa_mask_store(grammar=Grammar('python'), tokenizer=tokenizer, use_cache=True, logger=common.EmptyLogger())
 
     def test_dfa_mask10(self):
-        ac_list = self.dfa_mask.get_overapprox_tokens_mask(ParseResult({AcceptSequence(['STRING'])}, "'", RemainderState.INCOMPLETE, next_ac_indents=None), get_list=True)
+        ac_list = self.dfa_mask.get_accept_mask(ParseResult({AcceptSequence(['STRING'])}, "'", RemainderState.INCOMPLETE, next_ac_indents=None), get_list=True)
         self.assertIn(" '.", ac_list)
 
     def test_dfa_mask11(self):
-        ac_list = self.dfa_mask.get_overapprox_tokens_mask(ParseResult({AcceptSequence(['STRING'])}, "'", RemainderState.INCOMPLETE, next_ac_indents=None), get_list=True)
+        ac_list = self.dfa_mask.get_accept_mask(ParseResult({AcceptSequence(['STRING'])}, "'", RemainderState.INCOMPLETE, next_ac_indents=None), get_list=True)
         self.assertIn(" '.", ac_list)
 
     def test_dfa_mask12(self):
         r = ParseResult({AcceptSequence(['_NL', 'IF'])}, '\n\t\t', RemainderState.MAYBE_COMPLETE, next_ac_indents=None)
-        ac_list = self.dfa_mask.get_overapprox_tokens_mask(r, get_list=True)
+        ac_list = self.dfa_mask.get_accept_mask(r, get_list=True)
         self.assertIn("if", ac_list)
 
 
@@ -200,11 +200,11 @@ class TestDFAMaskWizard(unittest.TestCase):
     dfa_mask = DFAMaskStore.load_dfa_mask_store(grammar=Grammar('python'), tokenizer=tokenizer, use_cache=True, logger=common.EmptyLogger())
 
     def test_dfa_mask10(self):
-        ac_list = self.dfa_mask.get_overapprox_tokens_mask(ParseResult({AcceptSequence(['STRING'])}, "'", RemainderState.INCOMPLETE, next_ac_indents=None), get_list=True)
+        ac_list = self.dfa_mask.get_accept_mask(ParseResult({AcceptSequence(['STRING'])}, "'", RemainderState.INCOMPLETE, next_ac_indents=None), get_list=True)
         self.assertIn(" '.", ac_list)
 
     def test_dfa_mask11(self):
-        ac_list = self.dfa_mask.get_overapprox_tokens_mask(ParseResult({AcceptSequence(['STRING'])}, "'", RemainderState.INCOMPLETE, next_ac_indents=None), get_list=True)
+        ac_list = self.dfa_mask.get_accept_mask(ParseResult({AcceptSequence(['STRING'])}, "'", RemainderState.INCOMPLETE, next_ac_indents=None), get_list=True)
         self.assertIn(" '.", ac_list)
 
 
