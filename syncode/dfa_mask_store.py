@@ -55,7 +55,9 @@ class DFAs:
 
     def compute_dfa_states(self, input_str: str) -> Iterable[DFAState]:
         """
-        consume input_str and get the list of pairs of (terminal, dfa_state). This denotes our current DFA state
+        consume input_str and get the list of pairs of (terminal, dfa_state). This denotes our current DFA state.
+
+        NOTE: The returned DFA state is always a live state
         """
         dfa_states = []
         for (terminal, dfa) in self._terminals_to_dfa.items():
@@ -64,7 +66,7 @@ class DFAs:
                 dfa_states.append(DFAState(terminal, state_id)) 
         return dfa_states
 
-    def _consume_input(self, dfa: interegular.FSM, input_str: str) -> int:
+    def _consume_input(self, dfa: interegular.FSM, input_str: str) -> Optional[int]:
         """
         Conumses the input string and returns the final state if it is live, otherwise returns None
         """
@@ -405,12 +407,31 @@ class DFAMaskStore:
                                 raise ValueError(f"Invalid accept sequence: {accept_sequence}")
         return overapprox_token_ids
 
-    def get_overapprox_tokens_mask(
+    def get_dfa_states(self, r: ParseResult) -> Iterable[DFAState]:
+        """
+        Returns the DFA state for the current partial code
+        """
+        cur_incomplete_string = r.remainder
+        if cur_incomplete_string is None:
+            return []
+
+        cur_dfa_states = self._dfas.compute_dfa_states(cur_incomplete_string)
+        return cur_dfa_states
+
+    def get_accept_mask(
             self, 
             r: ParseResult, 
             get_list=False, 
             logger: common.Logger=common.EmptyLogger()
             ) -> torch.Tensor:
+        """
+        Returns the mask for the acceptable tokens for the current partial code
+
+        Args:
+            r (ParseResult): The parse result
+            get_list (bool, optional): If True, returns the list of tokens instead of the mask. Defaults to False.
+            logger (common.Logger, optional): The logger. Defaults to common.EmptyLogger().
+        """
         start_time = time.time()
         cur_incomplete_string = r.remainder
         if cur_incomplete_string is None:
