@@ -16,6 +16,7 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/shubhamugare/syncode",
+    include_package_data=True,
     packages=setuptools.find_packages(),
     install_requires=requirements,
     classifiers=[
