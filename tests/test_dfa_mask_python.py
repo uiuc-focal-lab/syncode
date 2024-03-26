@@ -9,10 +9,6 @@ from syncode.dfa_mask_store import DFAMaskStore
 from syncode.parsers import create_parser
 from syncode.parsers.grammars.grammar import Grammar
 
-import argparse
-
-from unittest import TestLoader, TextTestRunner, TestSuite
-
 class TestDFAMaskLlama(unittest.TestCase):
 
     model = 'Llama-7b'
@@ -199,33 +195,27 @@ class TestDFAMaskWizard(unittest.TestCase):
     tokenizer = common.load_tokenizer(model)
     dfa_mask = DFAMaskStore.load_dfa_mask_store(grammar=Grammar('python'), tokenizer=tokenizer, use_cache=True, logger=common.EmptyLogger())
 
-    def test_dfa_mask10(self):
+    def test_dfa_mask13(self):
         ac_list = self.dfa_mask.get_accept_mask(ParseResult({AcceptSequence(['STRING'])}, "'", RemainderState.INCOMPLETE, next_ac_indents=None), get_list=True)
         self.assertIn(" '.", ac_list)
 
-    def test_dfa_mask11(self):
+    def test_dfa_mask14(self):
         ac_list = self.dfa_mask.get_accept_mask(ParseResult({AcceptSequence(['STRING'])}, "'", RemainderState.INCOMPLETE, next_ac_indents=None), get_list=True)
         self.assertIn(" '.", ac_list)
 
-
-import argparse
-import unittest
 
 if __name__ == '__main__':
 
-    run_ind, run_codegen, run_llama, run_wizard = True, True, True, True
+    run_codegen, run_llama, run_wizard = False, True, False
 
     if run_llama:
         suite = unittest.TestLoader().loadTestsFromTestCase(TestDFAMaskLlama)
         unittest.TextTestRunner().run(suite)
 
-    if run_codegen:
-        suite = unittest.TestLoader().loadTestsFromTestCase(TestDFAMaskCodegen)
-        unittest.TextTestRunner().run(suite)
+    # if run_codegen:
+    #     suite = unittest.TestLoader().loadTestsFromTestCase(TestDFAMaskCodegen)
+    #     unittest.TextTestRunner().run(suite)
 
-    if run_wizard:
-        suite = unittest.TestLoader().loadTestsFromTestCase(TestDFAMaskWizard)
-        unittest.TextTestRunner().run(suite)
-
-
-
+    # if run_wizard:
+    #     suite = unittest.TestLoader().loadTestsFromTestCase(TestDFAMaskWizard)
+    #     unittest.TextTestRunner().run(suite)

@@ -20,7 +20,8 @@ def compile_and_run(model, mode="grammar_mask", quantize=True, device="cuda", nu
 class Syncode:
     """Syncode class for running inference on a model
     Args:
-        mode (str, optional): Mode for inference. Defaults to "grammar_mask".
+        mode (str, optional): Mode for inference. Defaults to "grammar_mask". 
+            "original" for original model, "grammar_mask" for grammar mask, "grammar_strict" for strict grammar mask.
         model (str): Model id for huggingface model hub or model name if stored locally.
         quantize (bool, optional): Quantize model. Defaults to True.
         device (str, optional): Device to use. Defaults to "cuda".
@@ -45,7 +46,7 @@ class Syncode:
     def __init__(
         self, 
         model: str,
-        mode: Literal["original", "grammar_mask"] = "grammar_mask",
+        mode: Literal["original", "grammar_mask", "grammar_strict"] = "grammar_mask",
         quantize: bool = True,
         device: str = "cuda",
         num_samples: int = 1,
@@ -63,7 +64,7 @@ class Syncode:
         **kwargs
     ):  
         # Check inputs
-        assert mode in ["original", "grammar_mask"]
+        assert mode in ["original", "grammar_mask", "grammar_strict"]
         gen_kwargs = {'max_length', 'max_new_tokens', 'min_length', 'min_new_tokens', 'early_stopping', 'do_sample', 'num_beams', 'use_cache', 'temperature', 'top_k', 'top_p', 'num_return_sequences', 'pad_token_id', 'eos_token_id'}
         invalid_kwargs = kwargs.keys() - gen_kwargs
         assert invalid_kwargs == set(), f"Invalid arguments {invalid_kwargs}"
@@ -85,7 +86,7 @@ class Syncode:
             self.parse_output_only = parse_output_only
 
         # Set the grammar
-        self.grammar = Grammar(grammar) if self.mode == 'grammar_mask' else None
+        self.grammar = Grammar(grammar) if self.is_grammar_mode() else None
 
         # Load the dataset
         self.dataset = Dataset(dataset, language=grammar, num_few_shot=num_few_shot)
@@ -101,7 +102,7 @@ class Syncode:
         # Initialize logit processors
         self.grammar_decoder = None
         
-        if self.mode == 'grammar_mask':
+        if self.is_grammar_mode():
             self.grammar_decoder = GrammarDecoder(
                 self.grammar, 
                 tokenizer=tokenizer, 
@@ -110,7 +111,8 @@ class Syncode:
                 parse_output_only=self.parse_output_only,
                 num_samples=self.num_samples, 
                 dev_mode=dev_mode,
-                parser=parser
+                parser=parser,
+                mode=mode,
                 )
 
         # Set LLM generation args e.g. max_new_tokens, do_sample, etc.
@@ -126,6 +128,9 @@ class Syncode:
             mode=self.mode, 
             **kwargs
             )
+
+    def is_grammar_mode(self):
+        return self.mode == 'grammar_mask' or self.mode == 'grammar_strict'
 
     def infer(self, prompt=None, task_id=None):
         if self.logger.is_closed:

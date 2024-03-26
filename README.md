@@ -131,7 +131,7 @@ Check more examples of using Python, Go, and other grammars in <a href="#-exampl
 <details>
   <summary>Click to Expand on the List of Arguments for SynCode</summary>
   
-- `mode` (str, optional): Mode for inference. "grammar_mask" is the mode that enables our tool. "original" is the mode for the original LLM. Defaults to "grammar_mask". 
+- `mode` (str, optional): Mode for inference. "grammar_mask" is the mode that enables our tool. "original" is the mode for the original LLM. Defaults to "grammar_mask". "original" mode is used for the original LLM without any grammar constraints and "grammar_strict" mode is a stricter mode for grammar constrained generation.
   
 - `model` (str): Model ID for Hugging Face model hub or model name if stored locally.
   
@@ -176,7 +176,7 @@ git clone https://github.com/uiuc-focal-lab/syncode.git
 To run the tool with CLI, use the following command:
 ```
 python3 syncode/infer.py
-    --mode [original, grammar_mask]
+    --mode [original, grammar_mask, grammar_strict]
     --model [model_name]
     --quantize [True, False]
     --device ["cpu", "cuda", "cuda:1" etc.]

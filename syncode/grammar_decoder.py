@@ -31,7 +31,7 @@ class GrammarDecoder(LogitsProcessor):
         num_samples=1,
         dev_mode=False,
         parser='lalr',
-        **kwargs):
+        mode='grammar_mask'):
 
         time_start = time.time()
         self.tokenizer = tokenizer
@@ -54,6 +54,7 @@ class GrammarDecoder(LogitsProcessor):
                                     tokenizer=self.tokenizer, 
                                     use_cache=use_cache, 
                                     logger=self.logger,
+                                    mode=mode,
                                     )
 
         # Create parsers
