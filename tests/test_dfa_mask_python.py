@@ -206,16 +206,16 @@ class TestDFAMaskWizard(unittest.TestCase):
 
 if __name__ == '__main__':
 
-    run_codegen, run_llama, run_wizard = False, True, False
+    run_codegen, run_llama, run_wizard = True, True, True
 
     if run_llama:
         suite = unittest.TestLoader().loadTestsFromTestCase(TestDFAMaskLlama)
         unittest.TextTestRunner().run(suite)
 
-    # if run_codegen:
-    #     suite = unittest.TestLoader().loadTestsFromTestCase(TestDFAMaskCodegen)
-    #     unittest.TextTestRunner().run(suite)
+    if run_codegen:
+        suite = unittest.TestLoader().loadTestsFromTestCase(TestDFAMaskCodegen)
+        unittest.TextTestRunner().run(suite)
 
-    # if run_wizard:
-    #     suite = unittest.TestLoader().loadTestsFromTestCase(TestDFAMaskWizard)
-    #     unittest.TextTestRunner().run(suite)
+    if run_wizard:
+        suite = unittest.TestLoader().loadTestsFromTestCase(TestDFAMaskWizard)
+        unittest.TextTestRunner().run(suite)
