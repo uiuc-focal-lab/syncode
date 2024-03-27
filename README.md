@@ -389,7 +389,7 @@ There are two main differences between these modes:
   
 1. grammar_mask mode aims for overapproximation in allowing tokens. For example, if the sequence to accept is [NAME, LPAR] and the current input is "print", grammar_mask will permit anything that starts with '(', such as '(', '()', or '(['. This mode ensures no grammatical generation possibility is excluded.
 grammar_strict mode, conversely, would only allow '(' in this scenario. It does not overapproximate, meaning it adheres strictly to the immediate grammatical requirements.
-Special Tokens:
+
 
 2. grammar_mask mode allows all special tokens at any time, including the EOS (End Of Sequence) token, allowing the generation to conclude whenever.
 grammar_strict mode only permits the EOS token when the generation is a valid grammatical completion, specifically when $END is in the accept sequence.
