@@ -83,11 +83,17 @@ class DFAs:
             state_id = dfa.map[state_id][dfa.alphabet[symbol]]      
         return state_id
 
+    def is_final(self, dfa_state: DFAState) -> bool:
+        """
+        Returns True if the dfa state is a final state
+        """
+        return dfa_state.state_id in self._terminals_to_dfa[dfa_state.terminal].finals
+
     def consume_prefix(self, dfa_state: DFAState, input_str: str) -> Tuple[bool, Optional[str]]:
         """
-        Consume longest prefix of s that is accepted by dfa and return the remainder. 
+        Consume longest prefix of input_str that is accepted by dfa and return the remainder. 
         If we reach a dead state, return (False, None). 
-        If the consumption ends at any live state that is not an accept state, return (True, None).
+        If the consumption ends at any live state that is not an accept state, return (True, '').
         If we reach a final state, return (True, remainder).
         """
         cur_state_id = dfa_state.state_id
@@ -118,7 +124,7 @@ class DFAs:
         if longest_accept_index != -1: # reached accept state at some point
             return (True, input_str[longest_accept_index:])
         elif cur_state_id != None and dfa.islive(cur_state_id): # if state is a live state
-            return (True, None)
+            return (True, '')
         
         # if we never reach a final state and reach a dead state at some point
         return (False, None)
@@ -127,14 +133,15 @@ class LookupTable:
     """
     Stores the overapproximate tokens
     """
-    def __init__(self, vocab: Iterable[str], special_token_ids: Iterable[int], indentation=False):
+    def __init__(self, vocab: Iterable[str], special_token_ids: Iterable[int], indentation=False, mode='grammar_mask'):
         self._dfa_state_and_next_terminal_to_tokens: defaultdict = defaultdict(list)
-        self._incomplete_case_lookup: Dict[DFAState, Any] = {}
-        self._complete_case_lookup: dict = {}
+        self._overapprox_lookup: Dict[DFAState, Any] = {}
+        self._exact_lookup: dict = {}
+        self._mode = mode
         self._vocab: Iterable[str] = vocab
-        self._default_mask = self._get_default_mask(special_token_ids)
         self.indentation = indentation
 
+        self._default_mask = self._get_default_mask(special_token_ids)
         if indentation:
             self._whitespace_tokens_map: defaultdict = defaultdict(list)
             self._indentation_to_tokens_map: defaultdict = defaultdict(list)
@@ -142,23 +149,27 @@ class LookupTable:
 
     def incomplete_case_lookup(self, dfa_state: DFAState) -> Any:
         assert isinstance(dfa_state, DFAState)
-        return self._incomplete_case_lookup[dfa_state]
+        if self._mode == 'grammar_mask':
+            return self._overapprox_lookup[dfa_state]
+        elif self._mode == 'grammar_strict':
+            return self._exact_lookup[dfa_state]
+        raise ValueError(f"Invalid mode: {self._mode}")
     
-    def incomplete_case_store(self, dfa_state: DFAState, mask: torch.Tensor):
+    def store_overapprox_lookup(self, dfa_state: DFAState, mask: torch.Tensor):
         assert isinstance(dfa_state, DFAState)
-        if dfa_state not in self._incomplete_case_lookup:
-            self._incomplete_case_lookup[dfa_state] = self._get_default_mask()
-        self._incomplete_case_lookup[dfa_state] |= mask
+        if dfa_state not in self._overapprox_lookup:
+            self._overapprox_lookup[dfa_state] = self._get_default_mask()
+        self._overapprox_lookup[dfa_state] |= mask
     
     def complete_case_lookup(self, dfa_state: DFAState) -> Any:
         assert isinstance(dfa_state, DFAState)
-        return self._complete_case_lookup[dfa_state]
+        return self._exact_lookup[dfa_state]
 
-    def complete_case_add(self, dfa_state: DFAState, token):
+    def add_exact_lookup(self, dfa_state: DFAState, token):
         assert isinstance(dfa_state, DFAState)
-        if dfa_state not in self._complete_case_lookup:
-            self._complete_case_lookup[dfa_state] = []
-        self._complete_case_lookup[dfa_state].append(token)        
+        if dfa_state not in self._exact_lookup:
+            self._exact_lookup[dfa_state] = []
+        self._exact_lookup[dfa_state].append(token)        
 
     def dfa_state_and_next_terminal_to_tokens(self, dfa_state: DFAState, next_terminal) -> torch.Tensor:
         assert isinstance(dfa_state, DFAState)
@@ -186,10 +197,10 @@ class LookupTable:
             m = self._list_to_mask(val)
             self._dfa_state_and_next_terminal_to_tokens[key] = m
             (dfa_state, _) = key
-            self.incomplete_case_store(dfa_state, m)
+            self.store_overapprox_lookup(dfa_state, m)
         
-        for key, val in self._complete_case_lookup.items():
-            self._complete_case_lookup[key] = self._list_to_mask(val)
+        for key, val in self._exact_lookup.items():
+            self._exact_lookup[key] = self._list_to_mask(val)
         
         # TODO: move this logic to the lookup table
         if self.indentation:
@@ -201,8 +212,10 @@ class LookupTable:
     def _get_default_mask(self, special_token_ids=None) -> torch.Tensor:
         if special_token_ids is not None:
             mask = torch.zeros(len(self._vocab), dtype=torch.bool)
-            for token_id in special_token_ids:
-                mask[token_id] = True
+            if self._mode == 'grammar_mask':
+                # If not strict mode always allow special tokens
+                for token_id in special_token_ids:
+                    mask[token_id] = True
         else:
             mask = copy.deepcopy(self._default_mask)
         return mask
@@ -274,26 +287,42 @@ class DFAMaskStore:
     def __init__(self, 
                  terminals: Iterable[TerminalDef], 
                  vocab: Iterable[str], 
-                 simplifications: dict = {}, 
-                 special_token_ids: list = [], 
-                 indentation: bool = True
+                 simplifications: dict={}, 
+                 special_token_ids: Iterable=[], 
+                 indentation: bool=True,
+                 mode='grammar_mask',
+                 ignore_terminals: Iterable[str]=[]
                  ):
         self._vocab = vocab
         self.special_token_ids = special_token_ids  
+        self._mode = mode
         self._dfas = DFAs(terminals, simplifications)
 
+        # Check if whitespace is in ignore terminals
+        self._ignore_whitespace = self.set_ignore_whitespace(terminals, ignore_terminals)
+        print(f"Ignore whitespace tokens is {self._ignore_whitespace}", flush=True)
+        
         # Iterate through each pair of DFA state and next terminals and store the overapproximate tokens
-        self._lookup_table = LookupTable(vocab, special_token_ids, indentation=indentation)
+        self._lookup_table = LookupTable(vocab, special_token_ids, indentation=indentation, mode=mode)
         terminal_names = [terminal.name for terminal in terminals]
         self._store_overapproximate_tokens(terminal_names, vocab)
 
-        self.indentation = indentation
-        
+        self.indentation = indentation       
+
         # NOTE: This should be called at the end of the constructor
-        self._lookup_table.convert_lookups_from_list_to_mask()  # convert to boolean tensor mask. This is useful for fast union operations
+        self._lookup_table.convert_lookups_from_list_to_mask() 
+
+    def set_ignore_whitespace(self, terminals: Iterable[TerminalDef], ignore_terminals: Iterable[str]) -> bool:
+        ignore_whitespace = False
+        for ig_name in ignore_terminals:
+            for terminal in terminals:
+                if terminal.name == ig_name:
+                    if regex.match(terminal.pattern.to_regexp(), ' ') is not None:
+                        ignore_whitespace = True # convert to boolean tensor mask. This is useful for fast union operations
+        return ignore_whitespace
 
     @staticmethod
-    def load_dfa_mask_store(grammar: Grammar, tokenizer, use_cache=True, logger=None):
+    def load_dfa_mask_store(grammar: Grammar, tokenizer, use_cache=True, logger=None, mode='grammar_mask'):
         '''
         Loads the dfa for the given language and tokenizer. If the dfa is not cached, it is created and cached. 
         '''
@@ -302,7 +331,7 @@ class DFAMaskStore:
         grammar_hash = grammar.hash()
 
         # TODO: Hasing using the tokenizer vocab size, this may be problmatic if we have two fine-tuned models with same tokenizer, same vocab size but different vocab
-        dfa_path = f'{dfa_dir}dfa_mask_{grammar_hash}_{tokenizer.vocab_size}.pkl'
+        dfa_path = f'{dfa_dir}{mode}_{grammar_hash}_{tokenizer.vocab_size}.pkl'
         
         start_time = time.time()
         if use_cache and os.path.exists(dfa_path):
@@ -317,13 +346,13 @@ class DFAMaskStore:
         vocab = common.get_vocab_from_tokenizer(tokenizer)
         logger.log_time(f"Time taken for loading vocab: {time.time() - start_time:.2f}s")
 
-        terminals = create_base_parser(grammar).terminals
+        base_parser = create_base_parser(grammar)
         logger.log_time(f"Time taken for loading parser: {time.time() - start_time:.2f}s")
 
         simplifications = grammar.simplifications()
         os.makedirs(dfa_dir, exist_ok=True)
 
-        mask_store = DFAMaskStore(terminals, vocab, simplifications=simplifications, special_token_ids=[tokenizer.eos_token_id])
+        mask_store = DFAMaskStore(base_parser.terminals, vocab, simplifications=simplifications, special_token_ids=[tokenizer.eos_token_id], mode=mode, ignore_terminals=base_parser.ignore_tokens)
         logger.log_time(f"Time taken for creating dfa: {time.time() - start_time:.2f}s")
 
         pickle.dump(mask_store, open(dfa_path, 'wb'))
@@ -332,8 +361,9 @@ class DFAMaskStore:
 
     def _get_default_mask(self) -> torch.Tensor:
         mask = torch.zeros(len(self._vocab), dtype=torch.bool)
-        for token_id in self.special_token_ids:
-            mask[token_id] = True
+        if self._mode == 'grammar_mask':
+            for token_id in self.special_token_ids:
+                mask[token_id] = True
         return mask
 
     def _store_overapproximate_tokens(self, terminals: Iterable[str], vocab: Iterable[str]):
@@ -344,37 +374,56 @@ class DFAMaskStore:
         pbar = tqdm(total=len(all_dfa_states))
         for dfa_state in all_dfa_states:
             for token_idx, token in enumerate(vocab):
-                remainder = token.replace('\t', '    ')
-                is_valid, remainder = self._dfas.consume_prefix(dfa_state, remainder)
-                if is_valid:
-                    if remainder is None or remainder == '':
-                        # We reached a live state for the current terminal, thus we add the token in all overapproximate sets of next terminals
-                        for next_terminal in terminals:
-                            self._lookup_table.dfa_state_and_next_terminal_to_tokens_add(dfa_state, next_terminal, token_idx)
-                    else:
-                        if remainder.startswith(' '): # ignore left space
-                            remainder = remainder[1:]
+                is_special_token = token_idx in self.special_token_ids
 
-                        # We reached the final state while consuming the token, thus we conusme the remainder with all next terminals
-                        for next_terminal in terminals:
-                            initial_state = self._dfas.initial(next_terminal)
-                            is_valid, _ = self._dfas.consume_prefix(initial_state, remainder)
-                            if is_valid: 
-                                # We reached a live state for the next terminal, thus we add the 
-                                # token in the  overapproximate sets of next terminals
-                                self._lookup_table.dfa_state_and_next_terminal_to_tokens_add(dfa_state, next_terminal, token_idx)
-
-                # For COMPLETE case:
-                remainder = token
-                if remainder.startswith(' '): # ignore left space
-                    remainder = remainder[1:]
-
-                is_valid, remainder = self._dfas.consume_prefix(dfa_state, remainder)
-                if is_valid:
-                    self._lookup_table.complete_case_add(dfa_state, token_idx)
+                if is_special_token:
+                    if self._dfas.is_final(dfa_state):
+                        self._lookup_table.dfa_state_and_next_terminal_to_tokens_add(
+                            dfa_state, '$END', token_idx)
+                else:
+                    self._process_regular_tokens(terminals, dfa_state, token_idx, token)
             
             pbar.update(1)
+
+    def _process_regular_tokens(self, terminals, dfa_state, token_idx, token):
+        remainder = token.replace('\t', '    ')
+        is_valid, remainder = self._dfas.consume_prefix(dfa_state, remainder)
+        if is_valid:
+            if remainder == '':
+                # We reached a live state for the current terminal, thus we add the token in all overapproximate sets of next terminals
+                for next_terminal in terminals:
+                    self._lookup_table.dfa_state_and_next_terminal_to_tokens_add(dfa_state, next_terminal, token_idx)
+            else:
+                if remainder.startswith(' ') and self._ignore_whitespace: # ignore left space
+                    remainder = remainder[1:]
+
+                # We reached the final state while consuming the token, thus we conusme the remainder with all next terminals
+                for next_terminal in terminals:
+                    initial_state = self._dfas.initial(next_terminal)
+                    is_valid, remainder_new = self._dfas.consume_prefix(initial_state, remainder)
+                    if self._mode == 'grammar_mask':
+                        if is_valid: # In the non-strict mode we overapproximate
+                            # We reached a live state for the next terminal, thus we add the 
+                            # token in the  overapproximate sets of next terminals
+                            self._lookup_table.dfa_state_and_next_terminal_to_tokens_add(dfa_state, next_terminal, token_idx)
+                    elif self._mode == 'grammar_strict':
+                        if is_valid and remainder_new == '': 
+                            # We reached a live state for the next terminal and the remainder 
+                            # is empty, thus we add the token in the exact set of next terminals
+                            self._lookup_table.dfa_state_and_next_terminal_to_tokens_add(dfa_state, next_terminal, token_idx)
+                    else:
+                        raise ValueError(f"Invalid mode: {self._mode}")
+                    
+        # For COMPLETE case:
+        remainder = token
+        if remainder.startswith(' ') and self._ignore_whitespace: # ignore left space
+            remainder = remainder[1:]
+
+        is_valid, remainder = self._dfas.consume_prefix(dfa_state, remainder)
+        if is_valid and remainder == '':
+            self._lookup_table.add_exact_lookup(dfa_state, token_idx)
         
+
     def _lookup_next_tokens_for_dfa_state(self, dfa_state: DFAState, next_terminal) -> torch.Tensor:
         tokens = self._lookup_table.dfa_state_and_next_terminal_to_tokens(dfa_state, next_terminal)
         if tokens == []:
@@ -438,16 +487,16 @@ class DFAMaskStore:
             return torch.ones(len(self._vocab), dtype=torch.bool)
 
         cur_dfa_states = self._dfas.compute_dfa_states(cur_incomplete_string)
-        overapprox_token_ids = self._lookup_next_tokens(cur_dfa_states, r)
+        accept_token_mask = self._lookup_next_tokens(cur_dfa_states, r)
 
         if self.indentation and r.next_ac_indents is not None:
             indent_ac_token = self._lookup_table.get_indentation_tokens(r.next_ac_indents)
-            overapprox_token_ids &= indent_ac_token
+            accept_token_mask &= indent_ac_token
             
         if get_list: # This is useful for testing
-            return self._get_tokens_list(overapprox_token_ids)
+            return self._get_tokens_list(accept_token_mask)
         logger.log_time(f"Time taken for computing the mask: {time.time() - start_time:.3f}s")
-        return overapprox_token_ids
+        return accept_token_mask
     
     def _list_to_mask(self, tokens_idx_list) -> torch.Tensor:
         indices = torch.tensor(tokens_idx_list)
