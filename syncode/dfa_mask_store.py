@@ -498,6 +498,19 @@ class DFAMaskStore:
         logger.log_time(f"Time taken for computing the mask: {time.time() - start_time:.3f}s")
         return accept_token_mask
     
+    def is_valid_prefix(self, r: ParseResult) -> bool:
+        """
+        Check if r.remainder is a valid prefix for accept sequences in r
+        """
+        cur_incomplete_string = r.remainder
+
+        cur_dfa_states = self._dfas.compute_dfa_states(cur_incomplete_string)
+        for accept_sequence in r.accept_sequences:
+            for dfa_state in cur_dfa_states:
+                if dfa_state.terminal == accept_sequence[0]:
+                    return True
+        return False
+
     def _list_to_mask(self, tokens_idx_list) -> torch.Tensor:
         indices = torch.tensor(tokens_idx_list)
         tokens_mask = self._get_default_mask()
