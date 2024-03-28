@@ -212,10 +212,6 @@ class LookupTable:
     def _get_default_mask(self, special_token_ids=None) -> torch.Tensor:
         if special_token_ids is not None:
             mask = torch.zeros(len(self._vocab), dtype=torch.bool)
-            if self._mode == 'grammar_mask':
-                # If not strict mode always allow special tokens
-                for token_id in special_token_ids:
-                    mask[token_id] = True
         else:
             mask = copy.deepcopy(self._default_mask)
         return mask
@@ -361,9 +357,6 @@ class DFAMaskStore:
 
     def _get_default_mask(self) -> torch.Tensor:
         mask = torch.zeros(len(self._vocab), dtype=torch.bool)
-        if self._mode == 'grammar_mask':
-            for token_id in self.special_token_ids:
-                mask[token_id] = True
         return mask
 
     def _store_overapproximate_tokens(self, terminals: Iterable[str], vocab: Iterable[str]):
