@@ -1,0 +1,36 @@
+// Modified from https://github.com/ligurio/lark-grammars/blob/master/lark_grammars/grammars/yaml.lark
+start		: yaml
+
+yaml		: data
+data		: scalar | map_items  | sequence_items 
+
+scalar		: ( signed_number | number | STRING | date | BOOLEAN | NIL )
+
+map_items    : map_item+
+sequence_items: sequence_item+
+map_item    : key ":" scalar _NL | key ":" _NL _INDENT data _DEDENT
+sequence_item: DASH data _NL
+
+STRING: /"[a-zA-Z0-9]*"/ | /[a-zA-Z0-9]*[a-zA-Z][a-zA-Z0-9]+/
+DASH: "- "
+
+key		: scalar
+signed_number.4    : ("+" | "-") number 
+
+number: DEC_NUMBER | FLOAT_NUMBER
+DEC_NUMBER: /0|[1-9]\d*/i
+FLOAT_NUMBER.2: /((\d+\.\d*|\.\d+)(e[-+]?\d+)?|\d+(e[-+]?\d+))/i
+date: /(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}):(\d{2}):(\d{2}))?/
+
+// LCASE_LETTER	: "a".."z" // Writing these type of rules is not recommended since each terminal in this case will be more granular
+
+DIGIT        : /[0-9]/
+BOOLEAN.2		: "true" | "false"
+NIL		: "~"
+_NL        : /(\r?\n[ ]*)+/
+
+// TAB		: SPACE+ // This can be problematic since Lark will treat both SPACE and TAB as terminals. The parser states are created assuming they are independent terminals, but the lexer is returning SPACE for single " "!
+
+// %ignore /\\[\t ]*\n/
+%declare _INDENT _DEDENT
+%ignore " "

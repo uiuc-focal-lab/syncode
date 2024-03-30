@@ -158,10 +158,11 @@ class _Parser:
         """
         try:
             token = last_token
+            all_tokens = []
             for token in state.lexer.lex(state):
                 assert token is not None
                 state.feed_token(token)
-
+                all_tokens.append(token) # For debugging
             end_token = Token.new_borrow_pos('$END', '', token) if token else Token('$END', '', 0, 1, 1)
             return state.feed_token(end_token, True)
         except UnexpectedInput as e:

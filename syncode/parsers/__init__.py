@@ -5,21 +5,24 @@ from syncode.parsers.go_parser import GoIncrementalParser
 import syncode.common as common
 from syncode.larkm.lark import Lark
 from syncode.parsers.grammars.grammar import Grammar
+from syncode.parsers.yaml_parser import YamlIndenter
 
-def create_parser(grammar: Grammar, parser='lalr', **kwargs) -> incremental_parser.IncrementalParser:   
+def create_parser(grammar: Grammar, parser='lalr', use_cache=True, strict=False, **kwargs) -> incremental_parser.IncrementalParser:   
         """ 
         Creates an incremental parser for the given grammar. The parser is cached for future use.
         parser (str, optional): The type of parser to use. Can be 'lalr' or 'lr'. Defaults to 'lalr'.        
         """
         indenter = None
         parser_cache_dir = common.SYNCODE_CACHE + 'parsers/'
-        cache_filename = parser_cache_dir + f'{grammar}_{parser}_{grammar.hash()}_parser.pkl'
+        cache_filename = parser_cache_dir + f'{grammar}_{parser}_{grammar.hash()}_parser.pkl' if use_cache else None
         os.makedirs(os.path.dirname(parser_cache_dir), exist_ok=True)
 
         if grammar.name == 'python':
             indenter = PythonIndenter()
+        elif grammar.name == 'yaml':
+            indenter = YamlIndenter()
 
-        base_parser = create_base_parser(grammar, parser, indenter, cache_filename)
+        base_parser = create_base_parser(grammar, parser, indenter, cache_filename, strict=strict)
 
         if grammar.name == 'python':
             return PythonIncrementalParser(base_parser, indenter, **kwargs)
@@ -27,7 +30,7 @@ def create_parser(grammar: Grammar, parser='lalr', **kwargs) -> incremental_pars
             return GoIncrementalParser(base_parser, **kwargs)
         return incremental_parser.IncrementalParser(base_parser, **kwargs)
 
-def create_base_parser(grammar, parser='lalr', indenter=None, cache_filename=None):
+def create_base_parser(grammar, parser='lalr', indenter=None, cache_filename=None, strict=None):
     base_parser = Lark( # This is the standard Lark parser
                         grammar.ebnf,
                         parser=parser,
@@ -35,7 +38,8 @@ def create_base_parser(grammar, parser='lalr', indenter=None, cache_filename=Non
                         start="start",
                         postlex=indenter,
                         propagate_positions=True,
-                        cache = cache_filename
+                        cache = cache_filename,
+                        strict=strict
                     )
                 
     return base_parser
