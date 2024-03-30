@@ -20,11 +20,18 @@
 > This repository is currently under active development!
 
 ## ℹ️ About
-* **SynCode** is a novel framework for grammar-guided generation of Large Language Models (LLMs) that is scalable to general-purpose programming languages and has soundness and completeness guarantees. 
-* With **SynCode**, you can provably ensure that your Language Model is generating output that is syntactically valid with respect to the rules defined by a Context-Free Grammar (CFG). 
+* **SynCode** is a novel framework for the grammar-guided generation of Large Language Models (LLMs) that is scalable to general-purpose programming languages and has soundness and completeness guarantees. 
+* With **SynCode**, you can ensure that your Language Model is generating output that is syntactically valid with respect to the rules defined by a Context-Free Grammar (CFG). 
+
+## Builtin Grammars
+
+![Python](https://img.shields.io/badge/Python-Supported-blue.svg)  ![Go](https://img.shields.io/badge/Go-Supported-00ADD8.svg)  ![SQL](https://img.shields.io/badge/SQL-Supported-orange.svg)  ![JSON](https://img.shields.io/badge/JSON-Supported-lightgrey.svg) 
+
+![Misc](https://img.shields.io/badge/Miscellaneous-Supported-purple.svg) Define your own grammar using simple EBNF syntax. Check out our [notebooks directory](./notebooks/) for examples
 
 
-### How Does **SynCode** Compare to Other Constrained Decoders?
+## How Does **SynCode** Compare to Other Constrained Decoders?
+
 
 | Tool                                                      | Regex     | CFG*       | Pre-Computed* | GPL* |
 |----------------------------------------------------       |-----------|-----------|:-------------:|------|
