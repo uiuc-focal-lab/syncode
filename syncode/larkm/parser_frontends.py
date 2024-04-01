@@ -29,7 +29,10 @@ def _wrap_lexer(lexer_class):
 
 def _deserialize_parsing_frontend(data, memo, lexer_conf, callbacks, options):
     parser_conf = ParserConf.deserialize(data['parser_conf'], memo)
-    cls = (options and options._plugins.get('LALR_Parser')) or LALR_Parser
+    if parser_conf.parser_type == 'lalr':
+        cls = (options and options._plugins.get('LALR_Parser')) or LALR_Parser
+    else:
+        cls = (options and options._plugins.get('LR_Parser')) or LR_Parser
     parser = cls.deserialize(data['parser'], memo, callbacks, options.debug)
     parser_conf.callbacks = callbacks
     return ParsingFrontend(lexer_conf, parser_conf, options, parser=parser)
