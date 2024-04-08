@@ -1,36 +1,36 @@
 import time
+import torch
+import syncode.common as common
 from syncode.grammar_decoder import GrammarDecoder
-from transformers import LogitsProcessorList
+from transformers import LogitsProcessorList, StoppingCriteriaList, StoppingCriteria
 from syncode.parsers.grammars import Grammar
 from syncode.utils.generation import filter_code, fix_indents
-import syncode.common as common
-import torch
-from typing import Callable, Iterable, Tuple
+from typing import Callable, Iterable
 from transformers.generation.utils import GenerationMode
 from transformers.generation.configuration_utils import GenerationConfig
 
-class LanguageModel:
-    def vocabulary(self) -> Iterable[str]:
-        raise NotImplementedError()
 
-    def predict_tokens(self, prefix: str, n: int) -> Iterable[int]:
-        raise NotImplementedError()
+class KeywordsStoppingCriteria(StoppingCriteria):
+    '''
+    Assume batch_size = 1
 
-    def predict_token(self, prefix: str, valid_tokens: Iterable[int], top_k: int = 1) -> Tuple[Iterable[int], Iterable[float]]:
-        'Given prefix (prompt + already generated code), predicts next token'
-        raise NotImplementedError()
+    We can use this class to check if the stop word is present in the completion. This is more expensive since we need to decode the completion to check if the stop word is present.
+    '''
+    def __init__(self, tokenizer, stop_words = []):
+        super().__init__()
+        self.tokenizer = tokenizer
+        self.stop_words = stop_words
+        self.stop_words_ids = []
 
-    def tokenize(self, s: str) -> Iterable[int]:
-        raise NotImplementedError()
-
-    def get_token(self, i: int) -> str:
-        return self.vocabulary()[i]
-
-    def predict_unconstrained(self, prefix: str, max_tokens: int, stop=None):
-        raise NotImplementedError()
+    def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor) -> bool:
+        partial_output = self.tokenizer.batch_decode(input_ids, skip_special_tokens=True)[0]
+        for stop_word in self.stop_words:
+            if partial_output.endswith(stop_word):
+                return True
+        return False    
 
 
-class HuggingFaceModel(LanguageModel):
+class HuggingFaceModel:
     def __init__(
             self, 
             model: Callable, 
@@ -67,7 +67,7 @@ class HuggingFaceModel(LanguageModel):
         return None
 
     @torch.inference_mode()
-    def generate_batch_completion_grammar(self, prompt, batch_size) -> Iterable[str]:
+    def generate_batch_completion_grammar(self, prompt, batch_size, stop_words=[]) -> Iterable[str]:
         '''
         Generates batch_size completions for the given prompt. 
         '''
@@ -78,20 +78,43 @@ class HuggingFaceModel(LanguageModel):
         input_batch = [prompt for _ in range(batch_size)]
         inputs = self.tokenizer(input_batch, return_tensors="pt").to(self.model.device)
         input_ids_cutoff = inputs.input_ids.size(dim=1)
-
+        
         start_time = time.time()
         gen_config = GenerationConfig.from_model_config(self.model.config)
         gen_config.update(**self.gen_args)
 
+        # Get the generation mode
         gen_mode = self._get_generation_mode(gen_config)
 
+        # Create stopping criteria
+        if len(stop_words) > 0:
+            stop_criteria = StoppingCriteriaList([KeywordsStoppingCriteria(self.tokenizer, stop_words=stop_words)])
+        else:
+            stop_criteria = []
+
+        # Generate completions
         if (gen_mode == GenerationMode.SAMPLE or gen_mode == GenerationMode.GREEDY_SEARCH) and batch_size == 1: # Use our own implementation for greedy search and sampling
-            generated_ids = self._generate(inputs, gen_config, gen_mode, grammar_decoder=self.grammar_decoder)
+            generated_ids = self._generate(
+                inputs, 
+                gen_config, 
+                gen_mode, 
+                grammar_decoder=self.grammar_decoder,
+                stop_criteria=stop_criteria
+                )
         else:
             # Use generate from transformers library for other modes
-            generated_ids = self.model.generate(**inputs, logits_processor=self.logit_processors, **self.gen_args)
+            if stop_criteria is not None:
+                print('Warning: Stopping criteria is not supported for batch generation')
+
+            generated_ids = self.model.generate(
+                **inputs, 
+                logits_processor=self.logit_processors, 
+                stoppings=stop_words,
+                **self.gen_args
+                )
         batch_completions = []
 
+        # TODO: Move this to CodeEval
         for i in range(batch_size):
             raw_completion = self.tokenizer.decode(generated_ids[i][input_ids_cutoff:len(generated_ids[i])], skip_special_tokens=True)                                       
             self.logger.log_code("Raw completion", raw_completion)
@@ -114,13 +137,15 @@ class HuggingFaceModel(LanguageModel):
         self.logger.log(f"Completion: {batch_completions}")
         return batch_completions
 
+
     @torch.inference_mode()
     def _generate(
         self, 
         inputs:dict, 
         gen_config:GenerationConfig, 
         gen_mode:GenerationMode, 
-        grammar_decoder:GrammarDecoder=None
+        grammar_decoder:GrammarDecoder=None,
+        stop_criteria:StoppingCriteria=[]
         ):
         """
         We support greedy search and sampling for batch size 1 otherwise we use the generate function from transformers library.
@@ -159,9 +184,16 @@ class HuggingFaceModel(LanguageModel):
             
             token_ids = torch.cat([token_ids, next_token[:, None]], dim=-1)
 
-            if next_token == self.tokenizer.eos_token_id or token_ids.size(1) >= max_tokens:
+            # Check stopping criteria
+            finish_generation = False
+            for stop_criterion in stop_criteria:
+                if stop_criterion(token_ids, next_token_scores):
+                    finish_generation = True
+                    
+             # Check if the next token is the end of the sequence or the max tokens is reached
+            if finish_generation or next_token == self.tokenizer.eos_token_id or token_ids.size(1) >= max_tokens:
                 break
-            
+
             # Update attention mask
             attention_mask = torch.cat([attention_mask, torch.ones((attention_mask.size(0), 1), dtype=attention_mask.dtype).to(self.device)], dim=-1)
             
@@ -285,69 +317,3 @@ class HuggingFaceModel(LanguageModel):
     
     def tokenize(self, s: str) -> 'Iterable[int]':
         return self.tokenizer.encode(s, add_special_tokens=False)
-
-    def vocabulary(self) -> Iterable[str]:
-        return self.vocab
-
-    def predict_token(self, prefix: str, valid_tokens: Iterable[int], top_k: int = 1) -> Tuple[Iterable[int], Iterable[float]]:
-        input_ids = self.tokenizer.encode(prefix, return_tensors="pt", add_special_tokens=False)
-        input_ids = input_ids.to(self.device)
-        with torch.no_grad():
-            logits = self.model(input_ids).logits[:, -1]
-            valid_tokens_mask = torch.zeros(logits.shape[-1], dtype=torch.bool)
-            valid_tokens_set = set(valid_tokens)
-            if None in valid_tokens_set:
-                valid_tokens_set.remove(None)
-            valid_tokens = list(valid_tokens_set)
-            # make sure there's no None in valid_tokens
-            valid_tokens_mask[valid_tokens] = True
-            logits = logits.squeeze(0)
-            filtered_logits = logits.softmax(dim=-1)
-            filtered_logits[~valid_tokens_mask] = 0
-            filtered_logits = filtered_logits / filtered_logits.sum()
-
-        top_values, top_indices = torch.topk(filtered_logits, top_k)
-        top_indices = top_indices.tolist()
-        top_values = top_values.log().tolist()
-        
-        return top_indices, top_values
-
-    def predict_unconstrained(self, prefix: str, max_tokens: int, stop=None):
-        prompt = f"{self.prompt_template}{prefix}"
-        print('Prompt:', prompt)
-        print(repr(prompt))
-        
-        self._before_prediction_hook()
-        input_ids = self.tokenizer.encode(prompt, return_tensors="pt", add_special_tokens=False)
-
-        # Cut off inputs which are too long
-        input_length = self.model.config.max_position_embeddings - max_tokens - 1
-        if len(input_ids[0]) > input_length:
-            input_ids = input_ids[:, -input_length:]
-        input_ids = input_ids.to(self.device)
-        with torch.cuda.amp.autocast():
-            if self.temperature == 0.0:
-                output = self.model.generate(
-                    input_ids=input_ids,
-                    max_new_tokens=max_tokens,
-                    do_sample=False,
-                )
-            else:
-                output = self.model.generate(
-                    input_ids=input_ids,
-                    max_new_tokens=max_tokens,
-                    do_sample=True,
-                    temperature=self.temperature,
-                    top_p=self.top_p,
-                )
-            # remove the prompt
-            output = output[:, len(input_ids[0]):]
-        # print('Here is the output:', output[0])
-        # detokenized = self.tokenizer.decode(output[0])
-        # if stop is not None:
-        #     for stop_token in stop:
-        #         if stop_token in detokenized:
-        #             # split on the first stop token
-        #             detokenized = detokenized.split(stop_token)[0]
-        return output[0]
-    
