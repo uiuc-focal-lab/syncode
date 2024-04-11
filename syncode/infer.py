@@ -13,7 +13,7 @@ from syncode.evaluation.sql_eval import SQLEval
 from syncode.evaluation.json_eval import JSONEval
 
 
-def compile_and_run(model, mode="grammar_mask", quantize=True, device="cuda", num_samples=1, grammar=None, dataset="input", num_few_shot=0, chat_mode=False, dev_mode=False, log_level=1, new_mask_store=False, parser="lalr", task_id=None, json_eval_type = 'schema', **kwargs):
+def compile_and_run(model, mode="grammar_mask", quantize=True, device="cuda", num_samples=1, grammar=None, dataset="input", num_few_shot=0, chat_mode=False, dev_mode=False, log_level=1, new_mask_store=False, parser="lalr", task_id=None, json_eval_type='schema', **kwargs):
     sc = Syncode(model, mode=mode, quantize=quantize, device=device, num_samples=num_samples, grammar=grammar, dataset=dataset, num_few_shot=num_few_shot, chat_mode=chat_mode, dev_mode=dev_mode, log_level=log_level, new_mask_store=new_mask_store, parser=parser, task_id=task_id, json_eval_type= json_eval_type, **kwargs)
     sc.infer(task_id=task_id)
 
@@ -80,6 +80,7 @@ class Syncode:
         self.parser = parser
         self.chat_mode = chat_mode
         self.json_eval_type = json_eval_type
+
         if self.chat_mode:
             self.parse_output_only = True
         else:
@@ -132,7 +133,7 @@ class Syncode:
     def is_grammar_mode(self):
         return self.mode == 'grammar_mask' or self.mode == 'grammar_strict'
 
-    def infer(self, prompt=None, task_id=None):
+    def infer(self, prompt=None, task_id=None, stop_words=[]):
         if self.logger.is_closed:
             self.logger.open()
 
@@ -143,7 +144,7 @@ class Syncode:
         elif self.dataset.type == "sql":
             output = SQLEval.run_eval(self)
         elif self.dataset.type == "input":
-            output = self.user_input(prompt)
+            output = self.user_input(prompt, stop_words=stop_words)
         elif self.dataset.type == "json":
             output = JSONEval.run_json_eval(self, debug_task_id=task_id, eval_type = self.json_eval_type)
         else:
@@ -169,7 +170,7 @@ class Syncode:
             kwargs['top_p'] = kwargs.get('top_p', 0.95)
             print(f"Generation args: {kwargs}")
 
-    def user_input(self, prompt:str):
+    def user_input(self, prompt:str, stop_words=[]):
         """
         Run user input on the model with grammar mask
         """
@@ -179,7 +180,7 @@ class Syncode:
             if self.chat_mode:
                 return self.model.generate_chat_completion_grammar(prompt)
             else:
-                return self.model.generate_batch_completion_grammar(prompt, self.num_samples)
+                return self.model.generate_batch_completion_grammar(prompt, self.num_samples, stop_words=stop_words)
         
         else:
             while True:

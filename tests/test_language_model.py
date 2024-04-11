@@ -2,6 +2,8 @@ import sys, os
 from typing import Dict
 import torch
 from transformers import BatchEncoding
+
+from syncode.infer import Syncode
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../')
 import syncode.common as common
 from syncode.language_model import HuggingFaceModel
@@ -73,3 +75,22 @@ class TestHuggingFaceModel(unittest.TestCase):
         output = lm.generate_batch_completion_grammar(prompt, 2)
         self.assertEqual(len(output[0]), 15, "The output length does not match the expected value.")
         self.assertEqual(len(output[1]), 15, "The output length does not match the expected value.")
+    
+    @unittest.skip("Only for local testing")
+    def test_stop_word(self):
+        torch.manual_seed(0)
+        syncode = Syncode(model="microsoft/phi-2", mode='original')
+        prompt = "Generate a json for the country nigeria.\n```json\n"
+        stop_words = ["```"]
+        output = syncode.infer(prompt, stop_words=stop_words)[0]
+        assert output.endswith('```')
+
+    @unittest.skip("Only for local testing")
+    def test_stop_word2(self):
+        torch.manual_seed(0)
+        syncode = Syncode(model="microsoft/phi-2", mode='original')
+        prompt = "def add(a, b):\n"
+        stop_words = ["\n\n"]
+        output = syncode.infer(prompt, stop_words=stop_words)[0]
+        print(repr(output))
+        assert output == '    return a + b\n\n'
