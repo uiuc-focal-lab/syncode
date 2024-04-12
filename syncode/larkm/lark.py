@@ -342,7 +342,7 @@ class Lark(Serialize):
                         file_sha256 = f.readline().rstrip(b'\n')
                         cached_used_files = pickle.load(f)
                         if file_sha256 == cache_sha256.encode('utf8') and verify_used_files(cached_used_files):
-                            print(f"Loading Lark base parser from cache: {cache_fn}")
+                            # print(f"Loading Lark base parser from cache: {cache_fn}")
                             cached_parser_data = pickle.load(f)
                             self._load(cached_parser_data, **options)
                             return
