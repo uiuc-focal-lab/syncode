@@ -1,4 +1,3 @@
-import os
 import time
 from tqdm import tqdm
 from typing import Optional
@@ -20,6 +19,10 @@ class JSONEval:
         eval_type = 'schema'
         ):
         problems = syncode.dataset.problems
+        if syncode.grammar_decoder is not None:
+            # For this evaluation, we only parse the output (and not the input+output)
+            syncode.grammar_decoder.parse_output_only = True
+
         if debug_task_id is not None:
             problems = [problems[debug_task_id]]
 
@@ -60,9 +63,6 @@ class JSONEval:
         """
         run evaluation for a specific task
         """
-        if syncode.grammar_decoder is not None:
-            syncode.grammar_decoder.reset()
-
         prompt = syncode.model.tokenizer.apply_chat_template(problem["prompt"], tokenize = False)
         prompt = f"{prompt}\nJSON:\n"
 

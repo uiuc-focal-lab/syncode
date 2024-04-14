@@ -6,7 +6,7 @@ import syncode.common as common
 from syncode.larkm.lark import Lark
 from syncode.parsers.grammars.grammar import Grammar
 
-def create_parser(grammar: Grammar, parser='lalr', **kwargs):   
+def create_parser(grammar: Grammar, parser='lalr', **kwargs) -> incremental_parser.IncrementalParser:   
         """ 
         Creates an incremental parser for the given grammar. The parser is cached for future use.
         parser (str, optional): The type of parser to use. Can be 'lalr' or 'lr'. Defaults to 'lalr'.        

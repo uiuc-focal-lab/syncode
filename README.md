@@ -20,11 +20,18 @@
 > This repository is currently under active development!
 
 ## ℹ️ About
-* **SynCode** is a novel framework for grammar-guided generation of Large Language Models (LLMs) that is scalable to general-purpose programming languages and has soundness and completeness guarantees. 
-* With **SynCode**, you can provably ensure that your Language Model is generating output that is syntactically valid with respect to the rules defined by a Context-Free Grammar (CFG). 
+* **SynCode** is a novel framework for the grammar-guided generation of Large Language Models (LLMs) that is scalable to general-purpose programming languages and has soundness and completeness guarantees. 
+* With **SynCode**, you can ensure that your Language Model is generating output that is syntactically valid with respect to the rules defined by a Context-Free Grammar (CFG). 
+
+## Builtin Grammars
+
+![Python](https://img.shields.io/badge/Python-Supported-blue.svg)  ![Go](https://img.shields.io/badge/Go-Supported-00ADD8.svg)  ![SQL](https://img.shields.io/badge/SQL-Supported-orange.svg)  ![JSON](https://img.shields.io/badge/JSON-Supported-lightgrey.svg) 
+
+![Misc](https://img.shields.io/badge/Miscellaneous-Supported-purple.svg) Define your own grammar using simple EBNF syntax. Check out our [notebooks directory](./notebooks/) for examples
 
 
-### How Does **SynCode** Compare to Other Constrained Decoders?
+## How Does **SynCode** Compare to Other Constrained Decoders?
+
 
 | Tool                                                      | Regex     | CFG*       | Pre-Computed* | GPL* |
 |----------------------------------------------------       |-----------|-----------|:-------------:|------|
@@ -131,7 +138,7 @@ Check more examples of using Python, Go, and other grammars in <a href="#-exampl
 <details>
   <summary>Click to Expand on the List of Arguments for SynCode</summary>
   
-- `mode` (str, optional): Mode for inference. "grammar_mask" is the mode that enables our tool. "original" is the mode for the original LLM. Defaults to "grammar_mask". 
+- `mode` (str, optional): Mode for inference. "grammar_mask" is the mode that enables our tool. "original" is the mode for the original LLM. Defaults to "grammar_mask". "original" mode is used for the original LLM without any grammar constraints and "grammar_strict" mode is a stricter mode for grammar constrained generation.
   
 - `model` (str): Model ID for Hugging Face model hub or model name if stored locally.
   
@@ -176,7 +183,7 @@ git clone https://github.com/uiuc-focal-lab/syncode.git
 To run the tool with CLI, use the following command:
 ```
 python3 syncode/infer.py
-    --mode [original, grammar_mask]
+    --mode [original, grammar_mask, grammar_strict]
     --model [model_name]
     --quantize [True, False]
     --device ["cpu", "cuda", "cuda:1" etc.]
@@ -378,6 +385,22 @@ WizardLM models: "WizardLM/WizardCoder-1B-V1.0"
 For parser selection, we offer the choice between LR(1) and LALR(1) parsers, specified by setting the parser argument to either 'lr' or 'lalr', respectively. We recommend utilizing the LR(1) parser due to its faster inference time. While constructing an LR(1) parser may require a slightly longer initial setup, we cache the parser for subsequent uses, mitigating this overhead.
 </p>
 </details>
+
+<details><summary> What is the difference between grammar_mask and grammar_strict modes? </summary>
+
+<p>
+  
+`grammar_mask` is our current default mode, and it aligns with the theory in our paper. We have recently added `grammar_strict` mode which works better for some grammars that are not well-known to the LLM from its training/fine-tuning. Please refer to this [`Notebook`](https://github.com/uiuc-focal-lab/syncode/blob/main/notebooks/example_misc.ipynb) for examples where `grammar_strict` mode does much better than `grammar_mask` mode. 
+  
+There are two main differences between these modes:
+  
+1. grammar_mask mode aims for overapproximation in allowing tokens. For example, if the sequence to accept is [NAME, LPAR] and the current input is "print", grammar_mask will permit anything that starts with '(', such as '(', '()', or '(['. This mode ensures no grammatical generation possibility is excluded.
+grammar_strict mode, conversely, would only allow '(' in this scenario. It does not overapproximate, meaning it adheres strictly to the immediate grammatical requirements.
+
+
+2. grammar_mask mode allows all special tokens at any time, including the EOS (End Of Sequence) token, allowing the generation to conclude whenever.
+grammar_strict mode only permits the EOS token when the generation is a valid grammatical completion, specifically when $END is in the accept sequence.
+
 
 [test-img]: https://github.com/shubhamugare/llm-cfg/actions/workflows/run_tests.yml/badge.svg
 [tests]: https://github.com/shubhamugare/llm-cfg/actions/workflows/run_tests.yml

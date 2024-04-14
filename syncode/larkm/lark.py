@@ -342,13 +342,14 @@ class Lark(Serialize):
                         file_sha256 = f.readline().rstrip(b'\n')
                         cached_used_files = pickle.load(f)
                         if file_sha256 == cache_sha256.encode('utf8') and verify_used_files(cached_used_files):
-                            print(f"Loading Lark base parser from cache: {cache_fn}")
+                            # print(f"Loading Lark base parser from cache: {cache_fn}")
                             cached_parser_data = pickle.load(f)
                             self._load(cached_parser_data, **options)
                             return
                 except FileNotFoundError:
                     # The cache file doesn't exist; parse and compose the grammar as normal
-                    pass
+                    if self.options.parser == 'lr':
+                        print(f"Cache file {cache_fn} not found. Building LR parser from scratch may take 2-3 minutes for large grammars. This will be cached for future runs.")
                 except Exception: # We should probably narrow done which errors we catch here.
                     logger.exception("Failed to load Lark from cache: %r. We will try to carry on.", cache_fn)
 

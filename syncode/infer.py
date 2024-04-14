@@ -3,7 +3,6 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import fire
 import syncode.common as common
 from syncode.language_model import HuggingFaceModel
-from transformers import LogitsProcessorList
 from syncode.grammar_decoder import GrammarDecoder
 from typing import Optional, Literal
 from syncode.parsers.grammars import Grammar
@@ -14,14 +13,15 @@ from syncode.evaluation.sql_eval import SQLEval
 from syncode.evaluation.json_eval import JSONEval
 
 
-def compile_and_run(model, mode="grammar_mask", quantize=True, device="cuda", num_samples=1, grammar=None, dataset="input", num_few_shot=0, chat_mode=False, dev_mode=False, log_level=1, new_mask_store=False, parser="lalr", task_id=None, json_eval_type = 'schema', **kwargs):
+def compile_and_run(model, mode="grammar_mask", quantize=True, device="cuda", num_samples=1, grammar=None, dataset="input", num_few_shot=0, chat_mode=False, dev_mode=False, log_level=1, new_mask_store=False, parser="lalr", task_id=None, json_eval_type='schema', **kwargs):
     sc = Syncode(model, mode=mode, quantize=quantize, device=device, num_samples=num_samples, grammar=grammar, dataset=dataset, num_few_shot=num_few_shot, chat_mode=chat_mode, dev_mode=dev_mode, log_level=log_level, new_mask_store=new_mask_store, parser=parser, task_id=task_id, json_eval_type= json_eval_type, **kwargs)
     sc.infer(task_id=task_id)
 
 class Syncode:
     """Syncode class for running inference on a model
     Args:
-        mode (str, optional): Mode for inference. Defaults to "grammar_mask".
+        mode (str, optional): Mode for inference. Defaults to "grammar_mask". 
+            "original" for original model, "grammar_mask" for grammar mask, "grammar_strict" for strict grammar mask.
         model (str): Model id for huggingface model hub or model name if stored locally.
         quantize (bool, optional): Quantize model. Defaults to True.
         device (str, optional): Device to use. Defaults to "cuda".
@@ -46,7 +46,7 @@ class Syncode:
     def __init__(
         self, 
         model: str,
-        mode: Literal["original", "grammar_mask"] = "grammar_mask",
+        mode: Literal["original", "grammar_mask", "grammar_strict"] = "grammar_mask",
         quantize: bool = True,
         device: str = "cuda",
         num_samples: int = 1,
@@ -64,7 +64,7 @@ class Syncode:
         **kwargs
     ):  
         # Check inputs
-        assert mode in ["original", "grammar_mask"]
+        assert mode in ["original", "grammar_mask", "grammar_strict"]
         gen_kwargs = {'max_length', 'max_new_tokens', 'min_length', 'min_new_tokens', 'early_stopping', 'do_sample', 'num_beams', 'use_cache', 'temperature', 'top_k', 'top_p', 'num_return_sequences', 'pad_token_id', 'eos_token_id'}
         invalid_kwargs = kwargs.keys() - gen_kwargs
         assert invalid_kwargs == set(), f"Invalid arguments {invalid_kwargs}"
@@ -80,13 +80,14 @@ class Syncode:
         self.parser = parser
         self.chat_mode = chat_mode
         self.json_eval_type = json_eval_type
+
         if self.chat_mode:
             self.parse_output_only = True
         else:
             self.parse_output_only = parse_output_only
 
         # Set the grammar
-        self.grammar = Grammar(grammar) if self.mode == 'grammar_mask' else None
+        self.grammar = Grammar(grammar) if self.is_grammar_mode() else None
 
         # Load the dataset
         self.dataset = Dataset(dataset, language=grammar, num_few_shot=num_few_shot)
@@ -100,10 +101,9 @@ class Syncode:
         self.logger = common.Logger(self.num_samples, mode, parser, out_dir, log_level=log_level, task_id=task_id)
         
         # Initialize logit processors
-        logit_processors = None
         self.grammar_decoder = None
         
-        if self.mode == 'grammar_mask':
+        if self.is_grammar_mode():
             self.grammar_decoder = GrammarDecoder(
                 self.grammar, 
                 tokenizer=tokenizer, 
@@ -112,9 +112,9 @@ class Syncode:
                 parse_output_only=self.parse_output_only,
                 num_samples=self.num_samples, 
                 dev_mode=dev_mode,
-                parser=parser
+                parser=parser,
+                mode=mode,
                 )
-            logit_processors = LogitsProcessorList([self.grammar_decoder])
 
         # Set LLM generation args e.g. max_new_tokens, do_sample, etc.
         self.set_generation_args(kwargs, tokenizer)
@@ -125,12 +125,15 @@ class Syncode:
             logger=self.logger, 
             tokenizer=tokenizer, 
             device=device, 
-            logit_processors=logit_processors, 
+            grammar_decoder=self.grammar_decoder, 
             mode=self.mode, 
             **kwargs
             )
 
-    def infer(self, prompt=None, task_id=None):
+    def is_grammar_mode(self):
+        return self.mode == 'grammar_mask' or self.mode == 'grammar_strict'
+
+    def infer(self, prompt=None, task_id=None, stop_words=[]):
         if self.logger.is_closed:
             self.logger.open()
 
@@ -141,7 +144,7 @@ class Syncode:
         elif self.dataset.type == "sql":
             output = SQLEval.run_eval(self)
         elif self.dataset.type == "input":
-            output = self.user_input(prompt)
+            output = self.user_input(prompt, stop_words=stop_words)
         elif self.dataset.type == "json":
             output = JSONEval.run_json_eval(self, debug_task_id=task_id, eval_type = self.json_eval_type)
         else:
@@ -167,27 +170,25 @@ class Syncode:
             kwargs['top_p'] = kwargs.get('top_p', 0.95)
             print(f"Generation args: {kwargs}")
 
-    def user_input(self, prompt):
+    def user_input(self, prompt:str, stop_words=[]):
         """
         Run user input on the model with grammar mask
         """
         if prompt:
             if self.grammar_decoder is not None: # TODO: Remove this check
-                    self.grammar_decoder.reset()
+                    self.grammar_decoder.reset(prompt)
             if self.chat_mode:
                 return self.model.generate_chat_completion_grammar(prompt)
             else:
-                return self.model.generate_batch_completion_grammar(prompt, self.num_samples)
+                return self.model.generate_batch_completion_grammar(prompt, self.num_samples, stop_words=stop_words)
         
         else:
             while True:
-                if self.grammar_decoder is not None:
-                    self.grammar_decoder.reset()
-
                 prompt = input('Enter prompt: ')
                 prompt = prompt.replace('\\n', '\n').replace('\\"', '\"').replace('\\t', '\t').replace("\\'", "\'").replace('\\b', '\b').replace('\\r', '\r') if self.grammar.name == 'python' else prompt
                 if prompt == "exit":
                     break
+
                 batch_completions = self.model.generate_batch_completion_grammar(prompt, self.num_samples)
                 for i, completion in enumerate(batch_completions):
                     print(prompt + completion)

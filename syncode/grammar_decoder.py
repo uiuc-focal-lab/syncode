@@ -1,7 +1,9 @@
 import time
+from typing import Iterator
 import torch
 import syncode.common as common
 from transformers import LogitsProcessor, PreTrainedTokenizer
+from syncode.parse_result import RemainderState
 from syncode.parsers.incremental_parser import IncrementalParser, ParseResult
 from syncode.parsers import create_parser
 from syncode.dfa_mask_store import DFAMaskStore
@@ -29,7 +31,7 @@ class GrammarDecoder(LogitsProcessor):
         num_samples=1,
         dev_mode=False,
         parser='lalr',
-        **kwargs):
+        mode='grammar_mask'):
 
         time_start = time.time()
         self.tokenizer = tokenizer
@@ -37,10 +39,8 @@ class GrammarDecoder(LogitsProcessor):
         self.logger = logger
         self.dev_mode = dev_mode
         self.batch_size = num_samples
-        self.inc_parsers: list[IncrementalParser] = []
 
         # For backtracking to syntactically valid completions
-        self.partial_codes_trace: list = []
         self.last_valid_state: list = []
         self.function_end: list = []
 
@@ -54,13 +54,13 @@ class GrammarDecoder(LogitsProcessor):
                                     tokenizer=self.tokenizer, 
                                     use_cache=use_cache, 
                                     logger=self.logger,
+                                    mode=mode,
                                     )
 
         # Create parsers
-        self.inc_parsers = [create_parser(self.grammar, logger=self.logger, parser=parser) for _ in range(self.batch_size)]
+        self.inc_parsers: Iterator[IncrementalParser] = [create_parser(self.grammar, logger=self.logger, parser=parser) for _ in range(self.batch_size)]
 
         # For profiling
-        self.token_cnt = 0
         self.debug = True
         self.logger.log_time(f"Time taken for preprocessing: {time.time() - time_start:.2f}s")
         
@@ -68,73 +68,103 @@ class GrammarDecoder(LogitsProcessor):
         self.logger.log_code('Partial code', partial_code)
         self.logger.log(repr(r))
 
-    def reset(self):
+    def reset(self, prompt: str):
         """
         Resets the decoder state on every new prompt.
         """
         self.last_valid_state = [0 for _ in range(self.batch_size)]
         self.function_end = [None for _ in range(self.batch_size)]
-        self.partial_codes_trace = []
-        self.token_cnt = 0
-        self.start_from = None 
+
+        prompt_tokens = self.tokenizer.encode(prompt, return_tensors='pt')[0]
+        if self.parse_output_only:
+            self.start_from = len(prompt_tokens)
+        else:
+            self.start_from = 0
+
         for p in self.inc_parsers:
             p.reset()
 
 
+    def is_valid(self, input_ids: torch.LongTensor, next_token: torch.LongTensor) -> bool:
+        """
+        Check if the next token is valid given the input_ids.
+
+        Args:
+            input_ids (torch.LongTensor): The input ids.
+            next_token (torch.LongTensor): The next token.
+
+        Returns:
+            bool: True if the next token is valid, False otherwise.
+        """
+        assert len(input_ids) == 1, "Only one input is supported for now."
+        input_ids = torch.cat((input_ids, next_token.unsqueeze(0)), dim=-1)
+        partial_code = self._get_partial_codes(input_ids)[0]
+
+        try:
+            r = self.inc_parsers[0].get_acceptable_next_terminals(partial_code)
+        except Exception as e:
+            self.logger.log(f"Exception while parsing:\n {e}")
+            return False
+        
+        self.update_valid_state(input_ids, 0, r)
+        if r.remainder_state == RemainderState.COMPLETE or r.remainder_state == RemainderState.MAYBE_COMPLETE:
+            return True
+
+        # Check if the remainder is a valid prefix for the last terminal
+        return self.dfa_mask_store.is_valid_prefix(r)
+    
+
     def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor) -> torch.FloatTensor:    
         time1 = time.time() 
         # start_from is used for choosing where the parsing should start
-        if self.start_from == None:
-            if self.parse_output_only:
-                self.start_from = len(input_ids[0])
-            else:
-                self.start_from = 0
-                
-        partial_codes = self.tokenizer.batch_decode(input_ids[:, self.start_from:], skip_special_tokens=True)
+        partial_codes = self._get_partial_codes(input_ids)
 
-        self.token_cnt += self.batch_size
-        greedy_grammar_token = None
         for idx, partial_code in enumerate(partial_codes):
-            try:
-                time2 = time.time()
-                self.partial_codes_trace.append(partial_code)
+            time2 = time.time()
 
-                # returns the names of the Terminals that are currently accepted.
+            ## Parsing
+            try: # returns the accept sequences that are currently accepted.
                 r = self.inc_parsers[idx].get_acceptable_next_terminals(partial_code)
-                self.logger.log_time(f"Time taken for compilation: {time.time() - time2:.3f}s")
-
-                self.update_valid_state(input_ids, idx, r)
-            
-                accept_mask = self.dfa_mask_store.get_overapprox_tokens_mask(r, logger=self.logger)
-
-                if self.debug:
-                    self._log_current_status(partial_code, r)
-                greedy_token = self.tokenizer.decode(scores[idx].argmax(dim=-1)) # For debugging, do not move this line
-
-                if torch.sum(accept_mask) != 0: # If there are acceptable tokens for the current partial code 
-                    if len(scores[idx]) != len(accept_mask):
-                        # Pad accept_mask with 0 values. Since scores[i] may be longer than tokenizer vocab size, we need to pad accept_mask with 0 values
-                        accept_mask = torch.cat((accept_mask, torch.zeros(len(scores[idx]) - len(accept_mask), dtype=torch.bool)))
-                        
-                    scores[idx] = scores[idx].masked_fill(~accept_mask.to(scores.device), -float("inf"))
-                else: # Otherwise, report the error and mask no tokens
-                    self.logger.log('No acceptable tokens for the current partial code!')
-                    self._log_current_status(partial_code, r)
-
-                self.logger.log_time(f"Time taken for masking: {time.time() - time2:.3f}s")
-                
-                # For debugging - remove later
-                greedy_grammar_token = self.tokenizer.decode(scores[idx].argmax(dim=-1))
-                if greedy_token != greedy_grammar_token:
-                    self._log_greedy_difference(greedy_grammar_token, partial_code, r, greedy_token)
             except Exception as e:
                 if self.dev_mode == True:
                     raise e
                 self.logger.log(f"Exception while parsing:\n {e}")
                 # print(f"Exception while parsing! Fix this!\n {e}")
+                continue  # Skip altering the scores for this batch
+
+            self.logger.log_time(f"Time taken for compilation: {time.time() - time2:.3f}s")
+            self.update_valid_state(input_ids, idx, r)
+        
+            accept_mask = self.dfa_mask_store.get_accept_mask(r, logger=self.logger)
+
+            if self.debug:
+                self._log_current_status(partial_code, r)
+            greedy_token = self.tokenizer.decode(scores[idx].argmax(dim=-1)) # For debugging, do not move this line
+
+            if torch.sum(accept_mask) != 0: # If there are acceptable tokens for the current partial code 
+                if len(scores[idx]) != len(accept_mask):
+                    # Pad accept_mask with 0 values. Since scores[i] may be longer than tokenizer vocab size, we need to pad accept_mask with 0 values
+                    accept_mask = torch.cat((accept_mask, torch.zeros(len(scores[idx]) - len(accept_mask), dtype=torch.bool)))
+                    
+                scores[idx] = scores[idx].masked_fill(~accept_mask.to(scores.device), -float("inf"))
+            else: # Otherwise, report the error and mask no tokens
+                self.logger.log('No acceptable tokens for the current partial code!')
+                self._log_current_status(partial_code, r)
+
+            self.logger.log_time(f"Time taken for masking: {time.time() - time2:.3f}s")
+            
+            # For debugging - remove later
+            greedy_grammar_token = self.tokenizer.decode(scores[idx].argmax(dim=-1))
+            if greedy_token != greedy_grammar_token:
+                self._log_greedy_difference(greedy_grammar_token, partial_code, r, greedy_token)
 
         self.logger.log_time(f"Time taken for decoding: {time.time() - time1:.3f}s")
         return scores
+
+    def _get_partial_codes(self, input_ids: torch.LongTensor):   
+        assert self.start_from <= input_ids.size(1), "Make sure that the decoder is reset for new prompt."            
+        partial_codes = self.tokenizer.batch_decode(input_ids[:, self.start_from:], skip_special_tokens=True)
+        return partial_codes
 
     def update_valid_state(self, input_ids, idx: int, r: ParseResult):
         """

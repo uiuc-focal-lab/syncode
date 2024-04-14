@@ -40,7 +40,7 @@ def load_model(model_name, device):
         elif model_name not in llama_models:
             model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.bfloat16, cache_dir=HF_CACHE, token=HF_ACCESS_TOKEN, trust_remote_code=True).eval().to(device)
         elif model_name in llama_models:
-            model_location = "/share/models/hugging_face/" + model_name
+            model_location = "/data/share/models/hugging_face/" + model_name
             model = LlamaForCausalLM.from_pretrained(model_location, torch_dtype=torch.bfloat16).eval().to(device)
         return model
 
@@ -53,7 +53,8 @@ def load_tokenizer(model_name):
         elif model_name not in llama_models:
             tokenizer = AutoTokenizer.from_pretrained(model_name, cache_dir=HF_CACHE, token=HF_ACCESS_TOKEN, trust_remote_code=True)
         elif model_name in llama_models:
-            model_location = "/share/models/hugging_face/" + model_name
+            # TODO: remove this hardcoding
+            model_location = "/data/share/models/hugging_face/" + model_name
             tokenizer = LlamaTokenizer.from_pretrained(model_location)
         return tokenizer
 
