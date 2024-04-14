@@ -1,6 +1,7 @@
 import copy, time
 import syncode.common as common
 import syncode.larkm as lark
+from syncode.larkm.parser_frontends import PostLexConnector
 from syncode.larkm.parsers.lalr_interactive_parser import InteractiveParser
 from syncode.parse_result import ParseResult, RemainderState
 from syncode.larkm.lexer import Token
@@ -72,32 +73,6 @@ class IncrementalParser:
 
         self.logger.log_time(f'Time taken for restoring parser state:{time.time() - time_start}')
 
-    def _lex_code(self, code) -> Tuple[Iterable[Token], bool]:
-        """
-        Lexes the given code and returns the list of tokens.
-        """
-        # Collect Lexer tokens
-        lexer_tokens: Iterable[Token] = []
-        interactive = self.base_parser.parse_interactive(code)
-        lexing_start_time = time.time()
-        lexer_state = interactive.lexer_thread.state
-        lexing_incomplete = False
-        try:
-            while lexer_state.line_ctr.char_pos < len(lexer_state.text):
-                blexer = interactive.lexer_thread.lexer
-                token = blexer.next_token(lexer_state)
-                self.lexer_pos = lexer_state.line_ctr.char_pos
-                lexer_tokens.append(token)
-        except lark.exceptions.UnexpectedCharacters as e:
-            lexing_incomplete = True
-            # We update the lexer position to the current position since the lexer has stopped at this position
-            self.lexer_pos = lexer_state.line_ctr.char_pos
-        except EOFError as e:
-            pass
-    
-        self.logger.log_time(f'Time taken for lexing:{time.time() - lexing_start_time}')
-        return lexer_tokens, lexing_incomplete
-    
     def _restore_recent_parser_state(self, lexer_tokens):
         """
         Restores the parser state to the most recent prefix matching state that was stored. 
@@ -113,6 +88,8 @@ class IncrementalParser:
             self.cur_pos = max_matching_index + 1
             assert (max_matching_index) in self.cur_pos_to_parser_state
             self._restore_parser_state(max_matching_index)
+        else:
+            self.reset()
 
 
     def get_acceptable_next_terminals(self, partial_code) -> ParseResult:
@@ -209,3 +186,41 @@ class IncrementalParser:
             # If it is the final token that gave the error, then it is okay
             self.cur_ac_terminals = self.next_ac_terminals
             self.next_ac_terminals = set()
+
+    def _lex_code(self, code) -> Tuple[Iterable[Token], bool]:
+        """
+        Lexes the given code and returns the list of tokens.
+        """
+        # Collect Lexer tokens
+        lexer_tokens: Iterable[Token] = []
+        interactive = self.base_parser.parse_interactive(code)
+        lexing_start_time = time.time()
+        lexer_state = interactive.lexer_thread.state
+        lexing_incomplete = False
+
+        blexer = self._get_blexer(interactive)
+
+        try:
+            while lexer_state.line_ctr.char_pos < len(lexer_state.text):
+                token = blexer.next_token(lexer_state)
+                self.lexer_pos = lexer_state.line_ctr.char_pos
+                lexer_tokens.append(token)
+        except lark.exceptions.UnexpectedCharacters as e:
+            lexing_incomplete = True
+            # We update the lexer position to the current position since the lexer has stopped at this position
+            self.lexer_pos = lexer_state.line_ctr.char_pos
+        except EOFError as e:
+            pass
+    
+        self.logger.log_time(f'Time taken for lexing:{time.time() - lexing_start_time}')
+        return lexer_tokens, lexing_incomplete
+    
+    def _get_blexer(self, interactive):
+        """
+        Returns the lexer for the given interactive parser.
+        """
+        lexer = interactive.lexer_thread.lexer
+        if isinstance(lexer, PostLexConnector): # In case the lexer consists of a connector with indenter
+            return lexer.lexer
+        return lexer
+    

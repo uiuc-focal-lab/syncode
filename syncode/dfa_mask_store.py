@@ -163,7 +163,11 @@ class LookupTable:
     
     def complete_case_lookup(self, dfa_state: DFAState) -> Any:
         assert isinstance(dfa_state, DFAState)
-        return self._exact_lookup[dfa_state]
+        if self._mode == 'grammar_mask':
+            return self._overapprox_lookup[dfa_state]
+        elif self._mode == 'grammar_strict':
+            return self._exact_lookup[dfa_state]
+        raise ValueError(f"Invalid mode: {self._mode}")
 
     def add_exact_lookup(self, dfa_state: DFAState, token):
         assert isinstance(dfa_state, DFAState)
