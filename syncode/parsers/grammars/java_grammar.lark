@@ -1,0 +1,256 @@
+start: compilation_unit
+
+%import common.CNAME
+%import common.DIGIT
+
+%ignore /\s+/
+
+compilation_unit: package_declaration? import_declarations? type_declarations?
+
+package_declaration: "package" name ";"
+
+import_declarations: import_declaration+
+
+import_declaration: "import" name ("." "*")? ";"
+
+type_declarations: type_declaration+
+
+type_declaration: class_declaration | interface_declaration | ";"
+
+modifiers: ("public" | "protected" | "private" | "static" | "abstract" | "final" | "native" | "synchronized" | "transient" | "volatile")+
+
+class_declaration: modifiers? "class" CNAME super? interfaces? class_body
+
+super: "extends" class_type
+
+interfaces: "implements" interface_type ("," interface_type)*
+
+interface_type: class_or_interface_type
+
+class_type: class_or_interface_type
+
+class_or_interface_type: name
+
+class_body: "{" class_body_declarations "}" | "{" "}"
+
+class_body_declarations: class_body_declaration*
+
+class_body_declaration: field_declaration | method_declaration | static_initializer | constructor_declaration
+
+field_declaration: modifiers? type variable_declarators ";"
+
+variable_declarators: variable_declarator ("," variable_declarator)*
+
+variable_declarator: CNAME ("[" "]")? ("=" variable_initializer)?
+
+variable_initializer: expression | array_initializer
+
+method_declaration: method_header method_body
+
+method_header: modifiers? type method_declarator throws?
+
+method_declarator: CNAME "(" formal_parameter_list? ")"
+
+formal_parameter_list: formal_parameter ("," formal_parameter)*
+
+formal_parameter: type CNAME
+
+throws: "throws" class_type ("," class_type)*
+
+method_body: block | ";"
+
+static_initializer: "static" block
+
+constructor_declaration: modifiers? constructor_declarator throws? constructor_body
+
+constructor_declarator: CNAME "(" formal_parameter_list? ")"
+
+constructor_body: "{" explicit_constructor_invocation? block_statements? "}"
+
+explicit_constructor_invocation: ("this" | "super") "(" argument_list? ")" ";"
+
+interface_declaration: modifiers? "interface" CNAME extends_interfaces? interface_body
+
+extends_interfaces: "extends" interface_type ("," interface_type)*
+
+interface_body: "{" interface_member_declarations "}" | "{" "}"
+
+interface_member_declarations: interface_member_declaration*
+
+interface_member_declaration: constant_declaration | abstract_method_declaration
+
+constant_declaration: field_declaration
+
+abstract_method_declaration: method_header ";"
+
+array_initializer: "{" variable_initializers? "}"
+
+variable_initializers: variable_initializer ("," variable_initializer)*
+
+block: "{" block_statements? "}" | "{" "}"
+
+block_statements: block_statement*
+
+block_statement: local_variable_declaration_statement | statement
+
+local_variable_declaration_statement: local_variable_declaration ";"
+
+local_variable_declaration: type variable_declarators
+
+statement: block | empty_statement | expression_statement | switch_statement | break_statement | continue_statement | return_statement | synchronized_statement | throw_statement | try_statement | labeled_statement | if_then_statement | if_then_else_statement | while_statement | do_statement | for_statement
+
+empty_statement: ";"
+
+labeled_statement: CNAME ":" statement
+
+expression_statement: statement_expression ";"
+
+statement_expression: assignment | pre_increment_expression | pre_decrement_expression | post_increment_expression | post_decrement_expression | method_invocation | class_instance_creation_expression
+
+if_then_statement: "if" "(" expression ")" statement
+
+if_then_else_statement: "if" "(" expression ")" statement "else" statement
+
+switch_statement: "switch" "(" expression ")" switch_block
+
+switch_block: "{" switch_block_statement_groups? switch_labels? "}"
+
+switch_block_statement_groups: switch_block_statement_group+
+
+switch_block_statement_group: switch_labels block_statements
+
+switch_labels: switch_label+
+
+switch_label: "case" constant_expression ":" | "default" ":"
+
+while_statement: "while" "(" expression ")" statement
+
+do_statement: "do" statement "while" "(" expression ")" ";"
+
+for_statement: "for" "(" for_init? ";" expression? ";" for_update? ")" statement
+
+for_init: statement_expression_list | local_variable_declaration
+
+for_update: statement_expression_list
+
+statement_expression_list: statement_expression ("," statement_expression)*
+
+break_statement: "break" CNAME? ";"
+
+continue_statement: "continue" CNAME? ";"
+
+return_statement: "return" expression? ";"
+
+throw_statement: "throw" expression ";"
+
+synchronized_statement: "synchronized" "(" expression ")" block
+
+try_statement: "try" block catches? finally?
+
+catches: catch_clause+
+
+catch_clause: "catch" "(" formal_parameter ")" block
+
+finally: "finally" block
+
+primary: primary_no_new_array | array_creation_expression
+
+primary_no_new_array: literal | "this" | "(" expression ")" | class_instance_creation_expression | field_access | method_invocation | array_access
+
+literal: integer_literal | floating_point_literal | boolean_literal | character_literal | string_literal | null_literal
+
+integer_literal: DIGIT+
+
+floating_point_literal: DIGIT+ "." DIGIT+
+
+boolean_literal: "true" | "false"
+
+character_literal: "/'[^\n\r']?'/"
+
+string_literal: /".*?"/
+
+null_literal: "null"
+
+class_instance_creation_expression: "new" class_type "(" argument_list? ")"
+
+argument_list: expression ("," expression)*
+
+array_creation_expression: "new" (primitive_type dim_exprs dims | class_or_interface_type dim_exprs dims)
+
+dim_exprs: dim_expr+
+
+dim_expr: "[" expression "]"
+
+dims: "[" "]"+
+
+field_access: primary "." CNAME | "super" "." CNAME
+
+method_invocation: name "(" argument_list? ")" | primary "." CNAME "(" argument_list? ")" | "super" "." CNAME "(" argument_list? ")"
+
+array_access: name "[" expression "]" | primary_no_new_array "[" expression "]"
+
+postfix_expression: primary | name | post_increment_expression | post_decrement_expression
+
+post_increment_expression: postfix_expression "++"
+
+post_decrement_expression: postfix_expression "--"
+
+unary_expression: pre_increment_expression | pre_decrement_expression | "+" unary_expression | "-" unary_expression | unary_expression_not_plus_minus
+
+pre_increment_expression: "++" unary_expression
+
+pre_decrement_expression: "--" unary_expression
+
+unary_expression_not_plus_minus: postfix_expression | "~" unary_expression | "!" unary_expression | cast_expression
+
+cast_expression: "(" primitive_type dims? ")" unary_expression | "(" primitive_type ")" unary_expression | "(" expression ")" unary_expression_not_plus_minus | "(" name dims? ")" unary_expression_not_plus_minus
+
+multiplicative_expression: unary_expression | multiplicative_expression "*" unary_expression | multiplicative_expression "/" unary_expression | multiplicative_expression "%" unary_expression
+
+additive_expression: multiplicative_expression | additive_expression "+" multiplicative_expression | additive_expression "-" multiplicative_expression
+
+shift_expression: additive_expression | shift_expression "<<" additive_expression | shift_expression ">>" additive_expression | shift_expression ">>>" additive_expression
+
+relational_expression: shift_expression | relational_expression "<" shift_expression | relational_expression ">" shift_expression | relational_expression "<=" shift_expression | relational_expression ">=" shift_expression | relational_expression "instanceof" reference_type
+
+equality_expression: relational_expression | equality_expression "==" relational_expression | equality_expression "!=" relational_expression
+
+and_expression: equality_expression | and_expression "&" equality_expression
+
+exclusive_or_expression: and_expression | exclusive_or_expression "^" and_expression
+
+inclusive_or_expression: exclusive_or_expression | inclusive_or_expression "|" exclusive_or_expression
+
+conditional_and_expression: inclusive_or_expression | conditional_and_expression "&&" inclusive_or_expression
+
+conditional_or_expression: conditional_and_expression | conditional_or_expression "||" conditional_and_expression
+
+conditional_expression: conditional_or_expression | conditional_or_expression "?" expression ":" conditional_expression
+
+assignment_expression: conditional_expression | assignment
+
+assignment: left_hand_side assignment_operator assignment_expression
+
+left_hand_side: name | field_access | array_access
+
+assignment_operator: "=" | "*=" | "/=" | "%=" | "+=" | "-=" | "<<=" | ">>=" | ">>>=" | "&=" | "^=" | "|="
+
+expression: assignment_expression
+
+constant_expression: expression
+
+name: CNAME | name "." CNAME
+
+type: primitive_type | reference_type
+
+primitive_type: numeric_type | "boolean"
+
+numeric_type: integral_type | floating_point_type
+
+integral_type: "byte" | "short" | "int" | "long" | "char"
+
+floating_point_type: "float" | "double"
+
+reference_type: class_or_interface_type | array_type
+
+array_type: primitive_type dims | name dims | array_type dims
