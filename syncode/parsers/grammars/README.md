@@ -1,4 +1,4 @@
-## Creating new Grammars
+## ℹ️ Adding new Grammars
 
 SynCode utilizes Lark Extended Backus–Naur form ([EBNF](https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_form)) grammars to guide generation, ensuring outputs adhere to specific formats. 
 These grammars construct parsers that filter out incompatible tokens during the generation process, resulting in output that follows the grammar's production rules.
@@ -16,8 +16,8 @@ LR(1) is more powerful in terms of representing certain syntax, however common f
 
 - Currently, similar to Lark, we handle shift-reduce conflicts by prioritizing shift
 - In the case of reduce-reduce conflicts, SynCode will halt with an error. Fixing these grammars requires a good understanding of how bottom-up parser generators work.
-- In most cases, it should be possible to fix these errors by rewriting some of the grammar rules.
-- However, in some rare cases it is possible that it is impossible to represent the grammar as LR(1)
+In most cases, it should be possible to fix these errors by rewriting some of the grammar rules.
+However, in some rare cases it is possible that it is impossible to represent the grammar as LR(1)
 
 ### Backreferences and Lookarounds
 
