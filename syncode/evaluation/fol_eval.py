@@ -7,7 +7,6 @@ import re
 from mxeval.data import write_jsonl
 
 from tqdm import tqdm
-os.environ['PROVER9'] = '/home/shubham/Logic-LLM/models/symbolic_solvers/Prover9/bin'
 
 prompt_template = """Given a problem description and a question. The task is to parse the problem and the question into first-order logic formulars.
 The grammar of the first-order logic formular is defined as follows:
@@ -85,6 +84,8 @@ class FOLEval:
         results = {}
         samples = []
         count_pass = 0
+        count_syntax_error = 0
+        count_exec_error = 0
 
         for task_id, problem in enumerate(problems):
             if syncode.grammar_decoder is not None:
@@ -96,12 +97,22 @@ class FOLEval:
                 syncode.num_samples
                 )[0]
             logic_program = completion.split('------')[0]
+            
+            # Execute the logic program
             answer = None
+            is_parsed = False
+            rand_ans = False
 
             try:
                 program = FOL_Prover9_Program(logic_program)
+                if program.is_parsed:
+                    is_parsed = True
+                else:
+                    raise Exception("Failed to parse logic program")
                 answer, error_message = program.execute_program()
+                answer = program.answer_mapping(answer)
             except Exception as e:
+                count_exec_error += 1
                 print(e)
 
             if answer is None:
@@ -114,16 +125,21 @@ class FOLEval:
             res = dict(
                 task_id=task_id,
                 passed=(answer == ground_truth),
+                parsed=is_parsed,
                 random=(rand_ans),
                 logic_program=logic_program,
-                answer=answer,
+                answer=answer,  
+                ground_truth=ground_truth,
             )
             count_pass += (answer == ground_truth)
+            count_syntax_error += (not is_parsed)
             samples += [res]
             pbar.update(syncode.num_samples)
 
         write_jsonl(syncode.out_path, samples)
         print(f"Pass rate: {count_pass}/{len(problems)}")
+        print(f"Syntax error rate: {count_syntax_error}/{len(problems)}")
+        print(f"Execution error rate: {count_exec_error}/{len(problems)}")
         pbar.close()
 
     @staticmethod
@@ -459,7 +475,7 @@ class Prover9_FOL_Formula:
 class FOL_Prover9_Program:
     def __init__(self, logic_program:str, dataset_name = 'FOLIO') -> None:
         self.logic_program = logic_program
-        self.flag = self.parse_logic_program()
+        self.is_parsed = self.parse_logic_program()
         self.dataset_name = dataset_name
 
     def parse_logic_program(self):
@@ -490,7 +506,6 @@ class FOL_Prover9_Program:
             self.prover9_conclusion = Prover9_FOL_Formula(fol_conclusion).formula
             return True
         except Exception as e:
-            print(e)
             return False
 
     def execute_program(self):
@@ -500,12 +515,9 @@ class FOL_Prover9_Program:
             goal = Expression.fromstring(self.prover9_conclusion)
             assumptions = [Expression.fromstring(a) for a in self.prover9_premises]
             timeout = 1000
-            #prover = Prover9()
-            #result = prover.prove(goal, assumptions)
             
             prover = Prover9Command(goal, assumptions, timeout=timeout)
             result = prover.prove()
-            # print(prover.proof())
             if result:
                 return 'True', ''
             else:

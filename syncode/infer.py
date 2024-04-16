@@ -145,7 +145,7 @@ class Syncode:
         elif self.dataset.type == "sql":
             output = SQLEval.run_eval(self)
         elif self.dataset.type == "fol":
-            output = FOLEval.run_eval(self)
+            output = FOLEval.run_eval(self, debug_task_id=task_id)
         elif self.dataset.type == "input":
             output = self.user_input(prompt, stop_words=stop_words)
         elif self.dataset.type == "json":
