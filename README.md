@@ -355,30 +355,6 @@ print(f"Syncode augmented LLM output:\n{output}")
 &nbsp;
 
 ## 🤔 FAQs
-<details><summary> Evaluation for code generation </summary>
-<p>
-
-The generation results are stored in a JSON file in the "results" directory. To evaluate the result of generation, use the following command:
-```
-python3 syncode/evaluation.py path_to_json_file
-```
-</p>
-</details>
-
-<details><summary> List of currently tested models </summary>
-<p>
-
-
-```
-Llama models: "Llama-7b", "CodeLlama-7b", "CodeLlama-7b-Python", "Llama-13b"
-CodeGen models: "Salesforce/codegen-350M-multi", "Salesforce/codegen2-1b"
-Bigcode models: "bigcode/starcoderbase-1b", "bigcode/santacoder" (1.1b WIP)
-WizardLM models: "WizardLM/WizardCoder-1B-V1.0"
-```
-</p>
-</details>
-
-
 <details><summary> Which parser should I use? </summary>
 <p>
   
