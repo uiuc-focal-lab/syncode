@@ -1,7 +1,6 @@
 """
 Adapted from https://github.com/teacherpeterpan/Logic-LLM. Use Prover9 to solve first-order logic problems.
 """
-import os
 import random
 import re
 from mxeval.data import write_jsonl

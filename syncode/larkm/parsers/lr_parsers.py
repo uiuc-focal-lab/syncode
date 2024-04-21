@@ -150,7 +150,7 @@ class _Parser:
 
 
     def parse_from_state(self, state: ParserState, last_token: Optional[Token]=None):
-        """Run the main LALR parser loop
+        """Run the main LR parser loop
 
         Parameters:
             state - the initial state. Changed in-place.
