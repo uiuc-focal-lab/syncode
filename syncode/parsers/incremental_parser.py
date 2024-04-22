@@ -113,6 +113,8 @@ class IncrementalParser:
             self.cur_pos = max_matching_index + 1
             assert (max_matching_index) in self.cur_pos_to_parser_state
             self._restore_parser_state(max_matching_index)
+        else:
+            self.cur_pos = 0
 
 
     def get_acceptable_next_terminals(self, partial_code) -> ParseResult:
