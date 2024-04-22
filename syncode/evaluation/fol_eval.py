@@ -104,6 +104,7 @@ class FOLEval:
             answer = None
             is_parsed = False
             rand_ans = False
+            error_message = None
 
             try:
                 program = FOL_Prover9_Program(logic_program)
@@ -116,6 +117,7 @@ class FOLEval:
             except Exception as e:
                 count_exec_error += 1
                 print(e)
+                error_message = str(e)
 
             if answer is None:
                 answer = random.choice(['A', 'B', 'C'])
@@ -132,6 +134,7 @@ class FOLEval:
                 logic_program=logic_program,
                 answer=answer,  
                 ground_truth=ground_truth,
+                error_message=error_message,
             )
             count_pass += (answer == ground_truth)
             count_syntax_error += (not is_parsed)
