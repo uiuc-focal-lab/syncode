@@ -4,7 +4,7 @@ predicate_section: "Predicates:" predicate_definition+
 premise_section: "Premises:" premise+
 conclusion_section: "Conclusion:" conclusion+
 
-predicate_definition: VAR "(" VAR ("," VAR)* ")" COMMENT  -> define_predicate
+predicate_definition: PREDICATE "(" VAR ("," VAR)* ")" COMMENT  -> define_predicate
 premise: quantified_expr COMMENT -> define_premise
 conclusion: expression COMMENT -> define_conclusion
 
@@ -19,12 +19,14 @@ expression: implication_expr
 ?and_expr: neg_expr ("∧" and_expr)?              -> and
 ?neg_expr: "¬" atom -> neg | atom
 
-?atom: VAR "(" VAR ("," VAR)* ")" -> predicate 
+?atom: PREDICATE "(" VAR ("," VAR)* ")" -> predicate 
     | "(" expression ")" 
 
-VAR.-1: /[a-zA-Z_][a-zA-Z0-9_]*/
+// Variable names begin with a lowercase letter
+VAR.-1: /[a-z][a-zA-Z0-9_]*/  | /[0-9]+/
 
-// PREDICATE: /[A-Z][a-zA-Z]*/
+// Predicate names begin with a capital letter
+PREDICATE.-1: /[A-Z][a-zA-Z]*/
 
 COMMENT: /:::.*\n/
 

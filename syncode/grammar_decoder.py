@@ -111,7 +111,8 @@ class GrammarDecoder(LogitsProcessor):
             return True
 
         # Check if the remainder is a valid prefix for the last terminal
-        return self.dfa_mask_store.is_valid_prefix(r)
+        out = self.dfa_mask_store.is_valid_prefix(r)
+        return out
     
 
     def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor) -> torch.FloatTensor:    

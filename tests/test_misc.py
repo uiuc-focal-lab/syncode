@@ -46,3 +46,9 @@ Jokes(rina) ⊕ Unaware(rina) ::: Rina is either a person who jokes about being 
         """
         r = inc_parser.base_parser.parse(partial_code)
         # print(r.pretty())
+
+    def test_parser_prover9_2(self):
+        inc_parser = create_parser(Grammar('prover9'))
+        partial_code = f"""Predicates:\nPer"""
+        r = inc_parser.get_acceptable_next_terminals(partial_code)
+        print(r)

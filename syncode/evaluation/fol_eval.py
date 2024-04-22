@@ -79,6 +79,10 @@ class FOLEval:
         problems = syncode.dataset.problems[:100]
         if debug_task_id is not None:
             problems = [problems[debug_task_id]]
+        
+        if syncode.grammar_decoder is not None:
+            syncode.grammar_decoder.parse_output_only = True # Do not parse input+output
+
         pbar = tqdm(total=len(problems) * syncode.num_samples)
         results = {}
         samples = []
@@ -87,13 +91,12 @@ class FOLEval:
         count_exec_error = 0
 
         for task_id, problem in enumerate(problems):
-            if syncode.grammar_decoder is not None:
-                syncode.grammar_decoder.reset()
             results[task_id] = []
             full_prompt = FOLEval._prompt_folio(problem)
             completion = syncode.model.generate_batch_completion_grammar(
                 full_prompt, 
-                syncode.num_samples
+                syncode.num_samples,
+                stop_words=['\n\n', '------']
                 )[0]
             logic_program = completion.split('------')[0]
             
@@ -237,7 +240,7 @@ class FOL_Parser:
         """
         NOTE: since nltk does not support reg strs like \w+, we cannot separately recognize VAR, PRED, and CONST.
         Instead, we first allow VAR, PRED, and CONST to be matched with all symbols found in the FOL; once the tree is
-        parsered, we then go back and figure out the exact type of each symbols
+        parsed, we then go back and figure out the exact type of each symbols
         """
         sym_ls = list(set([e for e in token_ls if self.sym_reg.match(e)]))
         sym_str = ' | '.join(["'%s'" % s for s in sym_ls])
