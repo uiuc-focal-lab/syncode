@@ -113,7 +113,7 @@ print(f"LLM output:\n{output}\n")
 #        'name': country_name,
 #        'capital':
 ```
-When guided with the JSON grammar with SynCode, the model is able to generate a syntactically valid JSON object. 
+When guided with the JSON grammar with SynCode, the model can generate a syntactically valid JSON object. 
 ``` python
 from syncode import Syncode
 
@@ -383,7 +383,7 @@ grammar_strict mode only permits the EOS token when the generation is a valid gr
 [tests]: https://github.com/shubhamugare/llm-cfg/actions/workflows/run_tests.yml
 
 ## Citation
-
+![Arxiv](https://img.shields.io/badge/Paper-arXiv-blue)
 ```
 @misc{ugare2024syncode,
       title={SynCode: LLM Generation with Grammar Augmentation}, 
