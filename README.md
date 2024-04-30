@@ -5,7 +5,7 @@
   <img width="400" alt="syncode" src="https://github.com/shubhamugare/syncode/assets/14147610/99c30a9d-b5f5-49ab-9295-33738fde1de2" />
 </p>
 
-# SynCode: grammar augmented LLM generation [![Test Status][test-img]][tests]
+# SynCode: LLM Generation with Grammar Augmentation [![Test Status][test-img]][tests]
 
 <p align="left">
     ℹ️&nbsp;<a href="#-about">About</a>
