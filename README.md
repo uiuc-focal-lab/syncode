@@ -382,8 +382,11 @@ grammar_strict mode only permits the EOS token when the generation is a valid gr
 [test-img]: https://github.com/shubhamugare/llm-cfg/actions/workflows/run_tests.yml/badge.svg
 [tests]: https://github.com/shubhamugare/llm-cfg/actions/workflows/run_tests.yml
 
-## Citation
-![Arxiv](https://img.shields.io/badge/Paper-arXiv-blue)
+## 📜 Citation
+<p>
+    <a href="https://arxiv.org/abs/2403.01632"><img src="https://img.shields.io/badge/Paper-arXiv-blue"></a>
+</p>
+
 ```
 @misc{ugare2024syncode,
       title={SynCode: LLM Generation with Grammar Augmentation}, 
