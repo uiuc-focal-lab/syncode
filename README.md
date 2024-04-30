@@ -152,7 +152,7 @@ Check more examples of using Python, Go, and other grammars in <a href="#-exampl
   
 - `dataset` (str, optional): Dataset. Defaults to "input". "input" indicates that the user can provide input via CLI or by passing in a prompt as a string. 
    
-- `num_few_shot` (int, optional): Number of examples for few shot prompting. Defaults to 0.
+- `num_few_shot` (int, optional): Number of examples for few-shot prompting. Defaults to 0.
     
 - `chat_mode` (bool, optional): True if using a Chat/Instruct LLM. False otherwise. Defaults to False. 
   
@@ -317,7 +317,7 @@ from syncode import Syncode
 model_name = "microsoft/phi-2"
 
 # Load the unconstrained original model
-llm = Syncode(model=model_name, mode='original', max_new_tokens=20, chat_mode=True)
+llm = Syncode(model=model_name, mode='original', max_new_tokens=20)
 
 inp = "When is the christmas day?"
 
@@ -343,7 +343,7 @@ grammar = """ start: month day
 model_name = "microsoft/phi-2"
 
 # Load the Syncode augmented model
-syn_llm = Syncode(model=model_name, mode='grammar_mask', grammar=grammar, chat_mode=True)
+syn_llm = Syncode(model=model_name, mode='grammar_mask', grammar=grammar, parse_output_only=True)
 
 inp = "When is the christmas day?"
 
@@ -376,7 +376,8 @@ grammar_strict mode, conversely, would only allow '(' in this scenario. It does 
 
 2. grammar_mask mode allows all special tokens at any time, including the EOS (End Of Sequence) token, allowing the generation to conclude whenever.
 grammar_strict mode only permits the EOS token when the generation is a valid grammatical completion, specifically when $END is in the accept sequence.
-
+</p>
+</details>
 
 [test-img]: https://github.com/shubhamugare/llm-cfg/actions/workflows/run_tests.yml/badge.svg
 [tests]: https://github.com/shubhamugare/llm-cfg/actions/workflows/run_tests.yml
@@ -384,8 +385,8 @@ grammar_strict mode only permits the EOS token when the generation is a valid gr
 ## Citation
 
 ```
-@misc{ugare2024improving,
-      title={Improving LLM Code Generation with Grammar Augmentation}, 
+@misc{ugare2024syncode,
+      title={SynCode: LLM Generation with Grammar Augmentation}, 
       author={Shubham Ugare and Tarun Suresh and Hangoo Kang and Sasa Misailovic and Gagandeep Singh},
       year={2024},
       eprint={2403.01632},
