@@ -34,13 +34,18 @@ class IncrementalParser:
         """
         Resets the parser to the initial state.
         """
-        self.cur_pos = 0
-        self.lexer_pos = 0
-        self.dedent_queue = []
-        self.parsed_lexer_tokens = []
         self.prev_lexer_tokens = []
         self.cur_pos_to_parser_state = {}
         self.time_accepts = 0
+        self.lexer_pos = 0
+
+        # Reset the parser state
+        self._set_initial_parser_state()
+
+    def _set_initial_parser_state(self):
+        self.cur_pos = 0
+        self.dedent_queue = []
+        self.parsed_lexer_tokens = []
         self.interactive = self.base_parser.parse_interactive('')
         self.cur_ac_terminals = set()
         self.next_ac_terminals = self._accepts(self.interactive)
@@ -114,7 +119,7 @@ class IncrementalParser:
             assert (max_matching_index) in self.cur_pos_to_parser_state
             self._restore_parser_state(max_matching_index)
         else:
-            self.cur_pos = 0
+            self._set_initial_parser_state()
 
 
     def get_acceptable_next_terminals(self, partial_code) -> ParseResult:
