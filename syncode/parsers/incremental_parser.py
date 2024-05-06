@@ -10,10 +10,11 @@ class IncrementalParser:
     """
     This is the base class for all incremental parsers.
     """
-    def __init__(self, base_parser, logger: Optional[common.Logger]=None) -> None:
+    def __init__(self, base_parser, logger: Optional[common.Logger]=None, ignore_whitespace=False) -> None:
         self.cur_pos = 0 # Current cursor position in the lexer tokens list
         self.lexer_pos = 0 # Current lexer position in the code
         self.dedent_queue: list = []
+        self._ignore_whitespace = ignore_whitespace
 
         # Initialize the parser
         time_start = time.time()
@@ -171,7 +172,10 @@ class IncrementalParser:
         final_terminal = None
         if lexing_incomplete: # Lexing is incomplete
             current_term_str = code[self.lexer_pos:]
-            current_term_str = current_term_str.lstrip(' ') # Remove space from the beginning
+            
+            if self._ignore_whitespace:
+                current_term_str = current_term_str.lstrip(' ') # Remove space from the beginning
+
             if current_term_str == '':
                 remainder_state = RemainderState.COMPLETE
             else: 
