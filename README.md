@@ -118,7 +118,7 @@ When guided with the JSON grammar with SynCode, the model can generate a syntact
 from syncode import Syncode
 
 # Load the Syncode augmented model
-syn_llm = Syncode(model = "microsoft/phi-2", mode='grammar_mask', grammar='json', parse_output_only=True, max_new_tokens=50)
+syn_llm = Syncode(model = "microsoft/phi-2", grammar='json', parse_output_only=True, max_new_tokens=50)
 
 prompt = "Please return a json object to represent country India with name, capital and population?"
 output = syn_llm.infer(prompt)[0]
@@ -138,15 +138,15 @@ Check more examples of using Python, Go, and other grammars in <a href="#-exampl
 <details>
   <summary>Click to Expand on the List of Arguments for SynCode</summary>
   
-- `mode` (str, optional): Mode for inference. "grammar_mask" is the mode that enables our tool. "original" is the mode for the original LLM. Defaults to "grammar_mask". "original" mode is used for the original LLM without any grammar constraints and "grammar_strict" mode is a stricter mode for grammar constrained generation.
+- `mode` (str, optional): Mode for inference. `grammar_mask` and `grammar_strict` are the modes that enable our tool. `original` is the mode for the original LLM. Defaults to "grammar_strict". "original" mode is used for the original LLM without any grammar constraints and "grammar_strict" mode is a stricter mode for grammar-constrained generation.
   
 - `model` (str): Model ID for Hugging Face model hub or model name if stored locally.
   
-- `quantize` (bool, optional): Quantize the model. Defaults to True.
+- `quantize` (bool, optional): Quantize the model to bfloat16. Defaults to True.
   
 - `device` (str, optional): Device to run the model on. Defaults to "cuda". 
 
-- `grammar` (str, optional): Grammar in EBNF form (string or file path) or language for constrained generation. Defaults to None. You can use one of the `python`, `go`, `sql`, `json`, `calc` or pass in a custom grammar in EBNF format.
+- `grammar` (str, optional): Grammar in EBNF form (string or file path) or language for constrained generation. Defaults to None. You can use one of the `python`, `go`, `sql`, `json`, `java`, `calc` or pass in a custom grammar (check notebooks for examples) in EBNF format.
   
 - `num_samples` (int, optional): Number of samples. Defaults to 1.
   
@@ -241,7 +241,7 @@ exec(unconstrained_output)
 # IndentationError: unindent does not match any outer indentation level
 ```
 
-SynCode can fix this problem! We simply switch the mode to `grammar_mask` to load the SynCode augmented model. With the constrained decoding of SynCode, the LLM is able to generate a correct Python program.  
+SynCode can fix this problem! We simply switch the mode to `grammar_mask`/`grammar_strict` to load the SynCode augmented model. With the constrained decoding of SynCode, the LLM is able to generate a correct Python program.  
 
 ``` python
 from syncode import Syncode
@@ -249,7 +249,7 @@ from syncode import Syncode
 model_name = "WizardLM/WizardCoder-1B-V1.0"
 
 # Load the Syncode augmented model
-syn_llm = Syncode(model=model_name, mode='grammar_mask', grammar='python')
+syn_llm = Syncode(model=model_name, mode='grammar_strict', grammar='python')
 partial_code = "def is_prime(n):\n    '''Return if prime'''\n  "
 
 #generate a completion to the input partial code
@@ -343,7 +343,7 @@ grammar = """ start: month day
 model_name = "microsoft/phi-2"
 
 # Load the Syncode augmented model
-syn_llm = Syncode(model=model_name, mode='grammar_mask', grammar=grammar, parse_output_only=True)
+syn_llm = Syncode(model=model_name, grammar=grammar, parse_output_only=True)
 
 inp = "When is the christmas day?"
 
@@ -362,11 +362,11 @@ For parser selection, we offer the choice between LR(1) and LALR(1) parsers, spe
 </p>
 </details>
 
-<details><summary> What is the difference between grammar_mask and grammar_strict modes? </summary>
+<details><summary> What is the difference between `grammar_mask` and `grammar_strict` modes? </summary>
 
 <p>
   
-`grammar_mask` is our current default mode, and it aligns with the theory in our paper. We have recently added `grammar_strict` mode which works better for some grammars that are not well-known to the LLM from its training/fine-tuning. Please refer to this [`Notebook`](https://github.com/uiuc-focal-lab/syncode/blob/main/notebooks/example_misc.ipynb) for examples where `grammar_strict` mode does much better than `grammar_mask` mode. 
+We have recently added `grammar_strict` mode which works better for some grammars that are not well-known to the LLM from its training/fine-tuning. Please refer to this [`Notebook`](https://github.com/uiuc-focal-lab/syncode/blob/main/notebooks/example_misc.ipynb) for examples where `grammar_strict` mode does much better than `grammar_mask` mode. 
   
 There are two main differences between these modes:
   
