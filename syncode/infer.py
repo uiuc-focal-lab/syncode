@@ -14,7 +14,7 @@ from syncode.evaluation.json_eval import JSONEval
 from syncode.evaluation.fol_eval import FOLEval
 
 
-def compile_and_run(model, mode="grammar_mask", quantize=True, device="cuda", num_samples=1, grammar=None, dataset="input", num_few_shot=0, chat_mode=False, dev_mode=False, log_level=1, new_mask_store=False, parser="lalr", task_id=None, json_eval_type='schema', **kwargs):
+def compile_and_run(model, mode="grammar_strict", quantize=True, device="cuda", num_samples=1, grammar=None, dataset="input", num_few_shot=0, chat_mode=False, dev_mode=False, log_level=1, new_mask_store=False, parser="lalr", task_id=None, json_eval_type='schema', **kwargs):
     sc = Syncode(model, mode=mode, quantize=quantize, device=device, num_samples=num_samples, grammar=grammar, dataset=dataset, num_few_shot=num_few_shot, chat_mode=chat_mode, dev_mode=dev_mode, log_level=log_level, new_mask_store=new_mask_store, parser=parser, task_id=task_id, json_eval_type= json_eval_type, **kwargs)
     sc.infer(task_id=task_id)
 
@@ -47,7 +47,7 @@ class Syncode:
     def __init__(
         self, 
         model: str,
-        mode: Literal["original", "grammar_mask", "grammar_strict"] = "grammar_mask",
+        mode: Literal["original", "grammar_mask", "grammar_strict"] = "grammar_strict",
         quantize: bool = True,
         device: str = "cuda",
         num_samples: int = 1,

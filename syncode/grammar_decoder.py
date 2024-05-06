@@ -5,7 +5,7 @@ import syncode.common as common
 from transformers import LogitsProcessor, PreTrainedTokenizer
 from syncode.parse_result import RemainderState
 from syncode.parsers.incremental_parser import IncrementalParser, ParseResult
-from syncode.parsers import create_parser
+from syncode.parsers import create_parser, create_base_parser
 from syncode.dfa_mask_store import DFAMaskStore
 from syncode.parsers.grammars import Grammar
 
@@ -48,6 +48,9 @@ class GrammarDecoder(LogitsProcessor):
         self.parse_output_only = parse_output_only
         self.start_from = None         
 
+        # Ignore whitespace tokens
+        self._ignore_whitespace = self._get_ignore_whitespace(self.grammar)
+
         # Load dfa mask store
         self.dfa_mask_store = DFAMaskStore.load_dfa_mask_store(
                                     grammar=self.grammar, 
@@ -58,15 +61,32 @@ class GrammarDecoder(LogitsProcessor):
                                     )
 
         # Create parsers
-        self.inc_parsers: Iterator[IncrementalParser] = [create_parser(self.grammar, logger=self.logger, parser=parser) for _ in range(self.batch_size)]
+        self.inc_parsers: Iterator[IncrementalParser] = [create_parser(self.grammar, logger=self.logger, parser=parser, ignore_whitespace=self._ignore_whitespace) for _ in range(self.batch_size)]
 
         # For profiling
         self.debug = True
         self.logger.log_time(f"Time taken for preprocessing: {time.time() - time_start:.2f}s")
-        
+    
     def _log_current_status(self, partial_code, r: ParseResult):
         self.logger.log_code('Partial code', partial_code)
         self.logger.log(repr(r))
+
+    def _get_ignore_whitespace(self, grammar):
+        """
+        Check if the grammar allows whitespace tokens to be ignored.
+        """
+        base_parser = create_base_parser(grammar)
+        terminals = base_parser.terminals
+        ignore_terminals = base_parser.ignore_tokens
+        
+        import regex
+        ignore_whitespace = False
+        for ig_name in ignore_terminals:
+            for terminal in terminals:
+                if terminal.name == ig_name:
+                    if regex.match(terminal.pattern.to_regexp(), ' ') is not None:
+                        ignore_whitespace = True # convert to boolean tensor mask. This is useful for fast union operations
+        return ignore_whitespace
 
     def reset(self, prompt: str):
         """
