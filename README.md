@@ -132,7 +132,8 @@ print(f"SynCode output:\n{output}")
 # }
 ```
 
-Check more examples of using Python, Go, and other grammars in <a href="#-example-usage">Example Usage</a>
+Check more examples of using Python, Go, and other grammars in <a href="#-example-usage">Notebooks</a> and a quick example at 
+&nbsp; [<img align="center" src="https://colab.research.google.com/assets/colab-badge.svg" />](https://colab.research.google.com/github/stanfordnlp/dspy/blob/main/intro.ipynb)
 
 ### SynCode Arguments
 <details>
