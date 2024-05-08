@@ -28,7 +28,11 @@
 ![Python](https://img.shields.io/badge/Python-Supported-blue.svg)  ![Go](https://img.shields.io/badge/Go-Supported-00ADD8.svg)  ![SQL](https://img.shields.io/badge/SQL-Supported-orange.svg)  ![JSON](https://img.shields.io/badge/JSON-Supported-lightgrey.svg) ![Logic](https://img.shields.io/badge/Logic-FOL-yellow
 )
 
-![Misc](https://img.shields.io/badge/Miscellaneous-Supported-purple.svg) Define your own grammar using simple EBNF syntax. Check out our [notebooks directory](./notebooks/) for examples and a quick example at 
+Check [Grammars directory](./syncode/parsers/grammars) for supported grammars
+
+![Misc](https://img.shields.io/badge/Miscellaneous-Supported-purple.svg) 
+
+Define your own grammar using simple EBNF syntax. Check out our [notebooks directory](./notebooks/) for examples and a quick example at 
 &nbsp; [<img align="center" src="https://colab.research.google.com/assets/colab-badge.svg" />](https://colab.research.google.com/drive/1rYm8iehx_qYdtgWmqLkmhIjizhUVTb9E?usp=sharing)
 
 
