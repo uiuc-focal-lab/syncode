@@ -3,7 +3,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import fire
 import syncode.common as common
 from syncode.language_model import HuggingFaceModel
-from syncode.grammar_decoder import GrammarDecoder
+from syncode.grammar_decoder import SyncodeLogitsProcessor
 from typing import Optional, Literal
 from syncode.parsers.grammars import Grammar
 from syncode.dataset import Dataset
@@ -105,7 +105,7 @@ class Syncode:
         self.grammar_decoder = None
         
         if self.is_grammar_mode():
-            self.grammar_decoder = GrammarDecoder(
+            self.grammar_decoder = SyncodeLogitsProcessor(
                 self.grammar, 
                 tokenizer=tokenizer, 
                 logger=self.logger, 
