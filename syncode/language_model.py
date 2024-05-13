@@ -1,7 +1,7 @@
 import time
 import torch
 import syncode.common as common
-from syncode.grammar_decoder import GrammarDecoder
+from syncode.grammar_decoder import SyncodeLogitsProcessor
 from transformers import LogitsProcessorList, StoppingCriteriaList, StoppingCriteria
 from syncode.parsers.grammars import Grammar
 from syncode.utils.generation import filter_code, fix_indents
@@ -144,7 +144,7 @@ class HuggingFaceModel:
         inputs:dict, 
         gen_config:GenerationConfig, 
         gen_mode:GenerationMode, 
-        grammar_decoder:GrammarDecoder=None,
+        grammar_decoder:SyncodeLogitsProcessor=None,
         stop_criteria:StoppingCriteria=[]
         ):
         """

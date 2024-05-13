@@ -10,7 +10,7 @@ from syncode.dfa_mask_store import DFAMaskStore
 from syncode.parsers.grammars import Grammar
 
 
-class GrammarDecoder(LogitsProcessor):
+class SyncodeLogitsProcessor(LogitsProcessor):
     """
     This class is used to filter the logits of the model to only allow syntactically valid tokens for Python. 
 
@@ -25,7 +25,7 @@ class GrammarDecoder(LogitsProcessor):
     def __init__(self, 
         grammar: Grammar, 
         tokenizer: PreTrainedTokenizer, 
-        logger: common.Logger, 
+        logger: common.Logger=common.EmptyLogger(), 
         use_cache=True,
         parse_output_only=False, 
         num_samples=1,
@@ -66,6 +66,7 @@ class GrammarDecoder(LogitsProcessor):
         # For profiling
         self.debug = True
         self.logger.log_time(f"Time taken for preprocessing: {time.time() - time_start:.2f}s")
+
     
     def _log_current_status(self, partial_code, r: ParseResult):
         self.logger.log_code('Partial code', partial_code)
