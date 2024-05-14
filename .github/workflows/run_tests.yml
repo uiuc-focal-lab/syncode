@@ -35,6 +35,7 @@ jobs:
           python3 -m unittest tests.test_grammar_sql
           python3 -m unittest tests.test_grammar_python
           python3 -m unittest tests.test_grammar_json
+          python3 -m unittest tests.test_grammar_java
           python3 -m unittest tests.test_language_model
           python3 -m unittest tests.test_lr_parser
           python3 -m unittest tests.test_syncode

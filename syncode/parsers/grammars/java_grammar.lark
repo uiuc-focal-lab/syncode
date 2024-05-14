@@ -2,8 +2,9 @@ start: compilation_unit
 
 %import common.CNAME
 %import common.DIGIT
+%import common.WS
 
-%ignore /\s+/
+%ignore WS
 
 compilation_unit: package_declaration? import_declarations? type_declarations?
 
@@ -175,7 +176,7 @@ class_instance_creation_expression: "new" class_type "(" argument_list? ")"
 
 argument_list: expression ("," expression)*
 
-array_creation_expression: "new" (primitive_type dim_exprs dims | class_or_interface_type dim_exprs dims)
+array_creation_expression: "new" (primitive_type | class_or_interface_type) dim_exprs dims?
 
 dim_exprs: dim_expr+
 
