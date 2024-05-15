@@ -141,6 +141,18 @@ print(f"SynCode output:\n{output}")
 Check more examples of using Python, Go, and other grammars in <a href="#-example-usage">Notebooks</a> and a quick example at 
 &nbsp; [<img align="center" src="https://colab.research.google.com/assets/colab-badge.svg" />](https://colab.research.google.com/drive/1rYm8iehx_qYdtgWmqLkmhIjizhUVTb9E?usp=sharing)
 
+### Environment Variables
+Optionally, you can set the directories for cache by exporting the following environment variables. Add the following lines to your .bashrc or .zshrc file:
+```
+export HF_CACHE="path_to_hf_cache"
+export SYNCODE_CACHE="path_to_syncode_cache"
+```
+If these environment variables are not set, the tool will use the default cache directories.
+To use the gated models on HuggingFace such as Llamma models, you can set the environment variable `HF_ACCESS_TOKEN`
+```
+export HF_ACCESS_TOKEN="your_huggingface_api_key"
+```
+
 ### SynCode Arguments
 <details>
   <summary>Click to Expand on the List of Arguments for SynCode</summary>
@@ -206,15 +218,6 @@ python3 syncode/infer.py
     --task_id [task_id]
 ```
 </details>
-
-### Environment Variables
-Optionally, you can set the directories for cache by exporting the following environment variables. Add the following lines to your .bashrc or .zshrc file:
-```
-export HF_CACHE="path_to_hf_cache"
-export SYNCODE_CACHE="path_to_syncode_cache"
-```
-If these environment variables are not set, the tool will use the default cache directories.
-
 
 ## 👀 Example Usage
 Check out our [notebooks directory](./notebooks/) which contains various interactive examples that showcase different use cases of **SynCode**! The grammars for some common programming languages are defined in the [grammars directory](./syncode/parsers/grammars/). We also allow users to define a grammar using a simple EBNF syntax adapted from Lark. Users can pass in a string of rules or a path to a .lark file. 
