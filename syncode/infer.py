@@ -94,7 +94,7 @@ class Syncode:
         self.dataset = Dataset(dataset, language=grammar, num_few_shot=num_few_shot)
 
         # Load model
-        model = common.load_model(self.model_name, device)
+        model = common.load_model(self.model_name, device, quantize)
         tokenizer = common.load_tokenizer(self.model_name)
         
         # Setup output directory
