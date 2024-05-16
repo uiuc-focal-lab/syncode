@@ -37,12 +37,6 @@ class Syncode:
         log_level (int, optional): Log level. Defaults to 2. 0 for no logs, 1 for minimal logs, 2 for all logs including time.
         parser (str, optional): Parser to use. Defaults to "lalr".
         task_id (int, optional): For debugging a specific task. Defaults to None.
-
-        List of currently tested models:
-        Llama models: "Llama-7b", "CodeLlama-7b", "CodeLlama-7b-Python", "Llama-13b"
-        CodeGen models: "Salesforce/codegen-350M-multi", "Salesforce/codegen2-1b"
-        Bigcode models: "bigcode/starcoderbase-1b", "bigcode/santacoder" (1.1b WIP)
-        WizardLM models: "WizardLM/WizardCoder-1B-V1.0"
     """
     def __init__(
         self, 
