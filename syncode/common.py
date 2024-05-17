@@ -32,7 +32,9 @@ def get_vocab_from_tokenizer(tokenizer):
     return vocab
 
 def load_model(model_name, device, quantize):
-        if model_name == 'test-instruct':
+        if model_name == 'test':
+            model = AutoModelForCausalLM.from_pretrained('bigcode/tiny_starcoder_py').to(device)
+        elif model_name == 'test-instruct':
             model = AutoModelForCausalLM.from_pretrained("rahuldshetty/tiny-starcoder-instruct")
         else:
             if (quantize):
