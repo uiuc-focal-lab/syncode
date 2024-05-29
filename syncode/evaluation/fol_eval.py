@@ -7,6 +7,7 @@ from mxeval.data import write_jsonl
 
 from tqdm import tqdm
 
+import signal
 prompt_template = """Given a problem description and a question. The task is to parse the problem and the question into first-order logic formulars.
 The grammar of the first-order logic formular is defined as follows:
 1) logical conjunction of expr1 and expr2: expr1 ∧ expr2
@@ -291,28 +292,34 @@ class FOL_Parser:
 
 class FOL_Formula:
     def __init__(self, str_fol) -> None:
-        import signal
-        self.parser = FOL_Parser()
+        def parse_with_timeout(str_fol, timeout):
+            def raise_timeout_error(signum, frame):
+                raise TimeoutError("Parse timed out!")
+            
+            # Set the signal handler and a timeout alarm
+            signal.signal(signal.SIGALRM, raise_timeout_error)
+            signal.alarm(timeout)
+            
+            try:
+                tree = self.parser.parse_text_FOL_to_tree(str_fol)
+            finally:
+                # Disable the alarm
+                signal.alarm(0)
+            
+            return tree
 
-        def handler(signum, frame):
-            raise Exception("Timeout!")
-
-        # Set the signal handler and a 5-second alarm
-        # signal.signal(signal.SIGALRM, handler)
-        # signal.alarm(60)
         try:
-            tree = self.parser.parse_text_FOL_to_tree(str_fol)
-        except Exception as exc:
+            self.parser = FOL_Parser()
+            tree = parse_with_timeout(str_fol, 10)
+            self.tree = tree
+            self.is_valid = tree is not None
+            if self.is_valid:
+                self.variables, self.constants, self.predicates = self.parser.symbol_resolution(tree)
+        except TimeoutError as e:
+            print("Parsing timed out")
+            # Handle timeout
             tree = None
-            self.is_valid = False
-            return
-    
-        self.tree = tree
-        if tree is None:
-            self.is_valid = False
-        else:
-            self.is_valid = True
-            self.variables, self.constants, self.predicates = self.parser.symbol_resolution(tree)
+            self.is_valid = False 
     
     def __str__(self) -> str:
         _, rule_str = self.parser.msplit(''.join(self.tree.leaves()))
