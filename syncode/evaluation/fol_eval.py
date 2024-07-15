@@ -4,10 +4,11 @@ Adapted from https://github.com/teacherpeterpan/Logic-LLM. Use Prover9 to solve 
 import random
 import re
 from mxeval.data import write_jsonl
-
 from tqdm import tqdm
-
 import signal
+from syncode.parsers import create_base_parser
+from syncode.parsers.grammars.grammar import Grammar
+
 prompt_template = """Given a problem description and a question. The task is to parse the problem and the question into first-order logic formulars.
 The grammar of the first-order logic formular is defined as follows:
 1) logical conjunction of expr1 and expr2: expr1 ∧ expr2
@@ -64,7 +65,7 @@ Czech(miroslav) ∧ ChoralConductor(miroslav) ∧ Specialize(miroslav, renaissan
 Book(methodOfStudyingGregorianChant) ∧ Author(miroslav, methodOfStudyingGregorianChant) ∧ Publish(methodOfStudyingGregorianChant, year1946) ::: Miroslav Venhoda published a book in 1946 called Method of Studying Gregorian Chant.
 Conclusion:
 Love(miroslav, music) ::: Miroslav Venhoda loved music.
-∃y ∃x (Czech(x) ∧ Author(x, y) ∧ Book(y) ∧ Publish(y, year1946)) ::: A Czech person wrote a book in 1946.
+∃y (∃x (Czech(x) ∧ Author(x, y) ∧ Book(y) ∧ Publish(y, year1946))) ::: A Czech person wrote a book in 1946.
 ¬∃x (ChoralConductor(x) ∧ Specialize(x, renaissance)) ::: No choral conductor specialized in the performance of Renaissance.
 ------
 Problem:
@@ -88,9 +89,11 @@ class FOLEval:
         results = {}
         samples = []
         count_pass = 0
-        count_syntax_error = 0
+        count_compile_error = 0
+        count_syn_error = 0
         count_exec_error = 0
-
+        fol_parser = create_base_parser(Grammar('prover9'))
+        
         for task_id, problem in enumerate(problems):
             results[task_id] = []
             full_prompt = FOLEval._prompt_folio(problem)
@@ -103,16 +106,22 @@ class FOLEval:
             
             # Execute the logic program
             answer = None
-            is_parsed = False
+            compiles = False
             rand_ans = False
             error_message = None
 
             try:
+                fol_parser.parse(logic_program)
+                is_parsed = True
+            except:
+                is_parsed = False
+
+            try:
                 program = FOL_Prover9_Program(logic_program)
-                if program.is_parsed:
-                    is_parsed = True
+                if program.compiles:
+                    compiles = True
                 else:
-                    raise Exception("Failed to parse logic program")
+                    raise Exception("Failed to compile logic program")
                 answer, error_message = program.execute_program()
                 answer = program.answer_mapping(answer)
             except Exception as e:
@@ -130,7 +139,8 @@ class FOLEval:
             res = dict(
                 task_id=task_id,
                 passed=(answer == ground_truth),
-                parsed=is_parsed,
+                compiles=compiles,
+                is_parsed=is_parsed,
                 random=(rand_ans),
                 logic_program=logic_program,
                 answer=answer,  
@@ -138,14 +148,16 @@ class FOLEval:
                 error_message=error_message,
             )
             count_pass += (answer == ground_truth)
-            count_syntax_error += (not is_parsed)
+            count_compile_error += (not compiles)
+            count_syn_error += (not is_parsed)
             samples += [res]
             pbar.update(syncode.num_samples)
 
         write_jsonl(syncode.out_path, samples)
         print(f"Pass rate: {count_pass}/{len(problems)}")
-        print(f"Syntax error rate: {count_syntax_error}/{len(problems)}")
+        print(f"Compilation error rate: {count_compile_error}/{len(problems)}")
         print(f"Execution error rate: {count_exec_error}/{len(problems)}")
+        print(f"Syntax error rate: {count_syn_error}/{len(problems)}")
         pbar.close()
 
     @staticmethod
@@ -487,7 +499,7 @@ class Prover9_FOL_Formula:
 class FOL_Prover9_Program:
     def __init__(self, logic_program:str, dataset_name = 'FOLIO') -> None:
         self.logic_program = logic_program
-        self.is_parsed = self.parse_logic_program()
+        self.compiles = self.parse_logic_program()
         self.dataset_name = dataset_name
 
     def parse_logic_program(self):
