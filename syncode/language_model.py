@@ -151,7 +151,7 @@ class HuggingFaceModel:
         We support greedy search and sampling for batch size 1 otherwise we use the generate function from transformers library.
         """
         token_ids, attention_mask, past_key_values = inputs['input_ids'], inputs['attention_mask'], None
-        logit_warper = self.model._get_logits_warper(gen_config)
+        logit_warper = self.model._get_logits_warper(gen_config, device=self.device)
         max_tokens = self.gen_args['max_new_tokens']+token_ids.size(1)
 
         while True:
