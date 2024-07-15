@@ -6,27 +6,29 @@ conclusion_section: "Conclusion:" conclusion+
 
 predicate_definition: PREDICATE "(" VAR ("," VAR)* ")" COMMENT  -> define_predicate
 premise: quantified_expr COMMENT -> define_premise
-conclusion: expression COMMENT -> define_conclusion
+conclusion: quantified_expr COMMENT -> define_conclusion
 
 quantified_expr: quantifier VAR "(" expression ")" | expression
 quantifier: "∀" -> forall | "∃" -> exists
 
-expression: implication_expr
+expression: bimplication_expr
 
+?bimplication_expr: implication_expr ("↔" bimplication_expr)?  -> iff
 ?implication_expr: xor_expr ("→" implication_expr)?  -> imply
 ?xor_expr: or_expr ("⊕" xor_expr)?                -> xor
 ?or_expr: and_expr ("∨" or_expr)?                -> or
 ?and_expr: neg_expr ("∧" and_expr)?              -> and
-?neg_expr: "¬" atom -> neg | atom
+?neg_expr: "¬" quantified_expr                   -> neg 
+        | atom
 
 ?atom: PREDICATE "(" VAR ("," VAR)* ")" -> predicate 
-    | "(" expression ")" 
+    | "(" quantified_expr ")" 
 
 // Variable names begin with a lowercase letter
 VAR.-1: /[a-z][a-zA-Z0-9_]*/  | /[0-9]+/
 
 // Predicate names begin with a capital letter
-PREDICATE.-1: /[A-Z][a-zA-Z]*/
+PREDICATE.-1: /[A-Z][a-zA-Z0-9]*/
 
 COMMENT: /:::.*\n/
 
