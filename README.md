@@ -92,10 +92,10 @@ from syncode import SyncodeLogitsProcessor
 and this can be passed as an argument to `generate` function. For example, 
 ``` python
 output = model.generate(
-      inputs,
-      max_length=100, 
-      pad_token_id=tokenizer.eos_token_id, 
-      logits_processor=[syncode_logits_processor]
+          inputs,
+          max_length=100, 
+          pad_token_id=tokenizer.eos_token_id, 
+          logits_processor=[syncode_logits_processor]
       )
 ```
 
