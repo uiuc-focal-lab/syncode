@@ -82,6 +82,25 @@ Simply install SynCode via PyPi using the following command:
 ``` bash
 pip install git+https://github.com/uiuc-focal-lab/syncode.git
 ```
+### Usage option 1:
+SynCode can be used as a simple logit processor with HuggingFace [transformers](https://github.com/huggingface/transformers) library interface. Check this [notebook](./notebooks/example_logits_processor.ipynb) for example.
+
+Just import with and initialize it with the appropriate grammar
+```
+from syncode import SyncodeLogitsProcessor
+```
+and this can be passed as an argument to `generate` function. For example, 
+```
+output = model.generate(
+      inputs,
+      max_length=100, 
+      pad_token_id=tokenizer.eos_token_id, 
+      logits_processor=[syncode_logits_processor]
+      )
+```
+
+### Usage option 2:
+
 Then, in your Python program,
 ``` python
 from syncode import Syncode
