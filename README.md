@@ -86,11 +86,11 @@ pip install git+https://github.com/uiuc-focal-lab/syncode.git
 SynCode can be used as a simple logit processor with HuggingFace [transformers](https://github.com/huggingface/transformers) library interface. Check this [notebook](./notebooks/example_logits_processor.ipynb) for example.
 
 Just import with and initialize it with the appropriate grammar
-```
+``` python
 from syncode import SyncodeLogitsProcessor
 ```
 and this can be passed as an argument to `generate` function. For example, 
-```
+``` python
 output = model.generate(
       inputs,
       max_length=100, 
