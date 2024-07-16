@@ -96,7 +96,7 @@ output = model.generate(
           max_length=100, 
           pad_token_id=tokenizer.eos_token_id, 
           logits_processor=[syncode_logits_processor]
-      )
+        )
 ```
 
 ### Usage option 2:
