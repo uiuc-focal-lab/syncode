@@ -326,7 +326,7 @@ class DFAMaskStore:
         dfa_dir = common.SYNCODE_CACHE + 'mask_stores/' + tokenizer_name + '/'
         grammar_hash = grammar.hash()
 
-        # TODO: Hasing using the tokenizer vocab size, this may be problmatic if we have two fine-tuned models with same tokenizer, same vocab size but different vocab
+        # TODO: Hashing using the tokenizer vocab size, this may be problmatic if we have two fine-tuned models with same tokenizer, same vocab size but different vocab
         dfa_path = f'{dfa_dir}{mode}_{grammar_hash}_{tokenizer.vocab_size}.pkl'
         
         start_time = time.time()
@@ -387,8 +387,7 @@ class DFAMaskStore:
                 for next_terminal in terminals:
                     self._lookup_table.dfa_state_and_next_terminal_to_tokens_add(dfa_state, next_terminal, token_idx)
             else:
-                if remainder.startswith(' ') and self._ignore_whitespace: # ignore left space
-                    remainder = remainder[1:]
+                remainder = self.remove_left_whitespace(dfa_state, remainder)
 
                 # We reached the final state while consuming the token, thus we conusme the remainder with all next terminals
                 for next_terminal in terminals:
@@ -409,13 +408,22 @@ class DFAMaskStore:
                     
         # For COMPLETE case:
         remainder = token
-        if remainder.startswith(' ') and self._ignore_whitespace: # ignore left space
-            remainder = remainder[1:]
+        remainder = self.remove_left_whitespace(dfa_state, remainder)
 
         is_valid, remainder = self._dfas.consume_prefix(dfa_state, remainder)
         if is_valid and remainder == '':
             self._lookup_table.add_exact_lookup(dfa_state, token_idx)
-        
+
+    def remove_left_whitespace(self, dfa_state, remainder):
+        """
+        Ignore left space at the start of the terminal. This only helps the efficiency
+        e.g. without this say if the model wants to generate ' def' then syncode will force it to generate ' ' and 'def' seperately
+        """
+        if self._dfas.initial(dfa_state.terminal) == dfa_state and remainder.startswith(' ') and self._ignore_whitespace: 
+            
+            remainder = remainder[1:]
+        return remainder
+      
 
     def _lookup_next_tokens_for_dfa_state(self, dfa_state: DFAState, next_terminal) -> torch.Tensor:
         tokens = self._lookup_table.dfa_state_and_next_terminal_to_tokens(dfa_state, next_terminal)

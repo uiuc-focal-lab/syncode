@@ -67,7 +67,8 @@ class ParseResult:
                 else:
                     accept_sequences.add(AcceptSequence([t]))
         
-        if ignore_terminals is not None: # Does this cause imprecision?
+        # They should be always added
+        if ignore_terminals is not None: 
             # Add the sequences that only contain ignore_terminals    
             accept_sequences = accept_sequences.union({AcceptSequence([t]) for t in ignore_terminals})
 
