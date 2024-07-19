@@ -1,9 +1,10 @@
-from llama_cpp import Llama, LogitsProcessorList
+from llama_cpp import Llama, LogitsProcessorList, LlamaGrammar
 from syncode import SyncodeLogitsProcessor, Grammar
 from syncode.dataset import Dataset
 from syncode.common import LlamaTokenizerWrapper
 import unittest
 import json
+import httpx
 import torch
 
 class TestSyncode(unittest.TestCase):
@@ -35,6 +36,10 @@ class TestSyncode(unittest.TestCase):
 
     def test_llama_cpp(self):
         failed = []
+        grammar_text = httpx.get("https://raw.githubusercontent.com/ggerganov/llama.cpp/master/grammars/json_arr.gbnf").text
+        import pdb;pdb.set_trace()
+        grammar = LlamaGrammar.from_string(grammar_text)
+        
         for i, problem in enumerate(self.dataset.problems):
             if i == 27:
                 continue #skip this one due to context length of the model
@@ -42,10 +47,13 @@ class TestSyncode(unittest.TestCase):
             response = self.llm.create_chat_completion(
             messages= problem['prompt'], 
             max_tokens = 400, 
-            logits_processor = LogitsProcessorList([ SyncodeLogitsProcessor(grammar = self.grammar, 
-                                                                            tokenizer = self.llm, 
-                                                                            parse_output_only= True)])
+            grammar = grammar
+            
             )
+            
+            # logits_processor = LogitsProcessorList([ SyncodeLogitsProcessor(grammar = self.grammar, 
+            #                                                                 tokenizer = self.llm, 
+            #                                                                 parse_output_only= True)])
             
             try:
                 json.loads(response["choices"][0]["message"]["content"])
