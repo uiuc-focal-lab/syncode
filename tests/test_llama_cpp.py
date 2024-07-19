@@ -25,31 +25,28 @@ class TestSyncode(unittest.TestCase):
             prompt = problem['prompt'][0]['content']
             wrapper_tokd = wrapper.encode(prompt)
             actual_tokd = actual_tokenizer.encode(prompt)
-            
             assert wrapper_tokd[0] == actual_tokd, f'Encoding Error for {i}'
             
             wrapper_tokd_tensor = torch.tensor(wrapper_tokd)
-            
             wrapper_decoded = wrapper.batch_decode(wrapper_tokd)[0]
             actual_decoded = actual_tokenizer.decode(actual_tokd)
             wrapper_tensor_decoded = wrapper.batch_decode(wrapper_tokd_tensor)[0]
-            
             assert wrapper_decoded == actual_decoded == wrapper_tensor_decoded == prompt, f'Decoding Error for {i}'
-            
 
-    
     def test_llama_cpp(self):
         failed = []
         for i, problem in enumerate(self.dataset.problems):
             if i == 27:
-                continue
+                continue #skip this one due to context length of the model
 
             response = self.llm.create_chat_completion(
             messages= problem['prompt'], 
             max_tokens = 400, 
-            logits_processor = LogitsProcessorList([ SyncodeLogitsProcessor(grammar = self.grammar, tokenizer = self.llm, parse_output_only= True)])
+            logits_processor = LogitsProcessorList([ SyncodeLogitsProcessor(grammar = self.grammar, 
+                                                                            tokenizer = self.llm, 
+                                                                            parse_output_only= True)])
             )
-
+            
             try:
                 json.loads(response["choices"][0]["message"]["content"])
             except:
