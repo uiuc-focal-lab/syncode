@@ -383,30 +383,6 @@ print(f"Syncode augmented LLM output:\n{output}")
 ```
 &nbsp;
 
-## 🤔 FAQs
-<details><summary> Which parser should I use? </summary>
-<p>
-  
-For parser selection, we offer the choice between LR(1) and LALR(1) parsers, specified by setting the parser argument to either 'lr' or 'lalr', respectively. We recommend utilizing the LR(1) parser due to its faster inference time. While constructing an LR(1) parser may require a slightly longer initial setup, we cache the parser for subsequent uses, mitigating this overhead.
-</p>
-</details>
-
-<details><summary> What is the difference between `grammar_mask` and `grammar_strict` modes? </summary>
-
-<p>
-  
-We have recently added `grammar_strict` mode which works better for some grammars that are not well-known to the LLM from its training/fine-tuning. Please refer to this [`Notebook`](https://github.com/uiuc-focal-lab/syncode/blob/main/notebooks/example_misc.ipynb) for examples where `grammar_strict` mode does much better than `grammar_mask` mode. 
-  
-There are two main differences between these modes:
-  
-1. grammar_mask mode aims for overapproximation in allowing tokens. For example, if the sequence to accept is [NAME, LPAR] and the current input is "print", grammar_mask will permit anything that starts with '(', such as '(', '()', or '(['. This mode ensures no grammatical generation possibility is excluded.
-grammar_strict mode, conversely, would only allow '(' in this scenario. It does not overapproximate, meaning it adheres strictly to the immediate grammatical requirements.
-
-
-2. grammar_mask mode allows all special tokens at any time, including the EOS (End Of Sequence) token, allowing the generation to conclude whenever.
-grammar_strict mode only permits the EOS token when the generation is a valid grammatical completion, specifically when $END is in the accept sequence.
-</p>
-</details>
 
 [test-img]: https://github.com/shubhamugare/llm-cfg/actions/workflows/run_tests.yml/badge.svg
 [tests]: https://github.com/shubhamugare/llm-cfg/actions/workflows/run_tests.yml
