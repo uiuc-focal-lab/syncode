@@ -102,7 +102,7 @@ class ParserState(Generic[StateT]):
                 if uc_map is not None:
                     assert char_cnt is not None
                     if type(rule.origin.name) == Token:
-                        uc_map[rule.origin.name.value].append(char_cnt)
+                        uc_map[rule.origin.name.value].append(char_cnt-1)
 
                 value = callbacks[rule](s) if callbacks else s
 
