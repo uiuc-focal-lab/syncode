@@ -27,6 +27,8 @@ class IncrementalParser:
 
         self.cur_ac_terminals: set = set()
         self.next_ac_terminals: set = self._accepts(self.interactive)
+        self.uc_map = defaultdict(list)
+        self.token_to_pos = {}
 
     def reset(self):
         """
@@ -36,8 +38,13 @@ class IncrementalParser:
         self.cur_pos_to_parser_state = {}
         self.lexer_pos = 0
 
+        # Reset maps used to mark units 
+        self.uc_map = defaultdict(list)
+        self.token_to_pos = {}
+
         # Reset the parser state
         self._set_initial_parser_state()
+        
 
     def _set_initial_parser_state(self):
         self.cur_pos = 0
@@ -85,6 +92,8 @@ class IncrementalParser:
                 token = blexer.next_token(lexer_state)
                 self.lexer_pos = lexer_state.line_ctr.char_pos
                 lexer_tokens.append(token)
+
+                self.token_to_pos[token] = lexer_state.line_ctr.char_pos - len(token.value)
         except lark.exceptions.UnexpectedCharacters as e:
             lexing_incomplete = True
             # We update the lexer position to the current position since the lexer has stopped at this position
@@ -137,7 +146,9 @@ class IncrementalParser:
                 token = lexer_tokens[self.cur_pos]
                 self.cur_pos += 1
                 self.parsed_lexer_tokens.append(token) # parser_token_seq holds all tokens
-                interactive.feed_token(token)
+                
+                # Compute the number of characters in the input before the token
+                interactive.feed_token(token, uc_map=self.uc_map, char_cnt=self.token_to_pos[token])
 
                 # Store the current state of the parser
                 self._store_parser_state(

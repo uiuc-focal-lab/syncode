@@ -25,12 +25,12 @@ class InteractiveParser:
         warnings.warn("lexer_state will be removed in subsequent releases. Use lexer_thread instead.", DeprecationWarning)
         return self.lexer_thread
 
-    def feed_token(self, token: Token):
+    def feed_token(self, token: Token, uc_map=None, char_cnt=None):
         """Feed the parser with a token, and advance it to the next state, as if it received it from the lexer.
 
         Note that ``token`` has to be an instance of ``Token``.
         """
-        return self.parser_state.feed_token(token, token.type == '$END')
+        return self.parser_state.feed_token(token, token.type == '$END', uc_map=uc_map, char_cnt=char_cnt)
 
     def iter_parse(self) -> Iterator[Token]:
         """Step through the different stages of the parse, by reading tokens from the lexer
