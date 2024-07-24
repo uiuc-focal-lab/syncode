@@ -16,7 +16,6 @@ class JSONEval:
     def run_json_eval(
         syncode, 
         debug_task_id: Optional[int] = None,
-        eval_type = 'schema'
         ):
         problems = syncode.dataset.problems
         if syncode.grammar_decoder is not None:
@@ -41,15 +40,12 @@ class JSONEval:
         avg_time = (time.time() - time1) / len(problems)
         syncode.logger.log_time(f"Averge time taken for each task: {avg_time:.2f}s")
         
-        
-        if eval_type == 'schema':
-            correctness_result = validate_json_data(syncode, samples, results)
-        elif eval_type == 'exact_match':
-            correctness_result = validate_json_completion(syncode, samples, results)
-        else:
-            raise NotImplementedError("JSON Evaluation Type Not Implemented")
+        schema_result = validate_json_data(syncode, samples, results)
 
-        write_jsonl(syncode.out_path, correctness_result)
+        # exact match evaluation doesn't make sense
+        # exact_match_result = validate_json_completion(syncode, samples, results)
+
+        write_jsonl(syncode.out_path, schema_result)
         
         pass_at_k = compute_pass_at_k(results)
 
