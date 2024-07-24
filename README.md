@@ -338,9 +338,9 @@ print(f"SynCode output:\n{output}")
 # }
 ```
 ### 👤 Custom Grammar Input 
-Syncode allows user to define a grammar using a simple EBNF syntax adapted from Lark. One can also simply feed the grammar rules directly as a string of rules as shown below. 
+Syncode allows users to define grammar using a simple EBNF syntax adapted from Lark. One can also simply feed the grammar rules directly as a string of rules as shown below. 
 
-Please refer to the [notebooks directory](./notebooks/) for examples and a quick examples using custom grammars and [instructions](./syncode/parsers/grammars/README.md) for instructions to define your own grammar.
+Please refer to the [notebooks directory](./notebooks/) for examples using custom grammars and [instructions](./syncode/parsers/grammars/README.md) for instructions to define your own custom grammar.
 
 In our example, we want our model to only respond in the format `month day`. Without constrained decoding, the Language Model may not generate output that follows this syntax. Consider the code snippet below. 
 
