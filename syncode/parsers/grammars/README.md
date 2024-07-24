@@ -19,6 +19,28 @@ LR(1) is more powerful in terms of representing certain syntax, however common f
 In most cases, it should be possible to fix these errors by rewriting some of the grammar rules.
 However, in some rare cases it is possible that it is impossible to represent the grammar as LR(1)
 
+### Lexer Ambiguity 
+When defining a grammar, be cautious of lexer ambiguities that arise when one terminal is a substring of another.
+In some cases, these ambiguities can lead to unexpected behavior in the parser. 
+We are working on catching these ambiguities and providing more informative error messages. 
+However, it is always a good practice to avoid such ambiguities in the first place.
+ Consider the following example grammar:
+(Refer to [this](../../../notebooks/tests/lexer_ambiguity.ipynb) notebook for code example)
+```ebnf
+start: "random" "(" ident ")" ";"
+ident: chars*                                
+chars: "a"..."z"
+```
+
+In this grammar, the ident terminal matches any sequence (chars*) of lowercase letters (chars). However, this setup can lead to ambiguities because "random" and "ident" share the substring "r". To avoid such ambiguities, refine terminal definitions using specific regular expressions. For example:
+
+```ebnf
+start: "random" "(" ident ")" ";"
+ident: [a-z]+
+```
+
+Here, ident is defined using `[a-z]+`, ensuring it only matches sequences of lowercase letters without overlap with other terminals.
+
 ### Backreferences and Lookarounds
 
 ### 1-character Lookahead Lexer Assumption
