@@ -98,11 +98,12 @@ class ParserState(Generic[StateT]):
                 else:
                     s = []
 
-
                 if uc_map is not None:
                     assert char_cnt is not None
                     if type(rule.origin.name) == Token:
-                        uc_map[rule.origin.name.value].append(char_cnt-1)
+                        # Ensure that uc_map[rule.origin.name.value] is a sorted list of unique numbers
+                        if uc_map[rule.origin.name.value] == [] or uc_map[rule.origin.name.value][-1] != char_cnt-1:
+                            uc_map[rule.origin.name.value].append(char_cnt-1)
 
                 value = callbacks[rule](s) if callbacks else s
 
