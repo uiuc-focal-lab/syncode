@@ -36,28 +36,6 @@ Define your own grammar using simple EBNF syntax. Check out our [notebooks direc
 &nbsp; [<img align="center" src="https://colab.research.google.com/assets/colab-badge.svg" />](https://colab.research.google.com/drive/1rYm8iehx_qYdtgWmqLkmhIjizhUVTb9E?usp=sharing)
 
 
-## How Does **SynCode** Compare to Other Constrained Decoders?
-
-
-| Tool                                                      | Regex     | CFG*       | Pre-Computed* | GPL* |
-|----------------------------------------------------       |-----------|-----------|:-------------:|------|
-| [`LMQL`](https://github.com/eth-sri/lmql)                 | ✅        | ❌        |       ❌       | ❌   |
-| [`GUIDANCE`](https://github.com/guidance-ai/guidance)     | ✅        | ✅        |       ❌       | ❌   |
-| [`OUTLINES`](https://github.com/outlines-dev/outlines)    | ✅        | ✅        |       ✅       | ❌   |
-| [`PICARD`](https://github.com/ServiceNow/picard)          | ✅        | ✅        |       ❌       | ❌   |
-| [`SYNCHROMESH`](https://arxiv.org/abs/2201.11227)         | ✅        | ✅        |       ❌       | ❌   |
-| [`LLAMA.CPP`](https://github.com/ggerganov/llama.cpp)     | ✅        | ✅        |       ❌       | ❌   |
-| [`GCD`](https://arxiv.org/abs/2305.13971)                 | ✅        | ✅        |       ❌       | ❌   |
-| **SynCode**                                               | **✅**    | **✅**    |   **✅**       | **✅** |
----
-
-**CFG***: Guide generation with a Context Free Grammar (CFG)
-
-**Pre-Computed***: Precompute masks over the vocabulary to significantly improve generation speed
-
-**GPL***: Support general-purpose programming languages, which involve non-context-free fragments, such as  indentation in Python and end-of-scope markers in Golang.
-
-
 ## 📚 Features
 |                                                                                                              |
 |---------------------------------------------------------------------------------------------------------------------|
@@ -387,6 +365,26 @@ print(f"Syncode augmented LLM output:\n{output}")
 ```
 &nbsp;
 
+## How Does **SynCode** Compare to Other Constrained Decoders?
+
+
+| Tool                                                      | Regex     | CFG*       | Pre-Computed* | GPL* |
+|----------------------------------------------------       |-----------|-----------|:-------------:|------|
+| [`LMQL`](https://github.com/eth-sri/lmql)                 | ✅        | ❌        |       ❌       | ❌   |
+| [`GUIDANCE`](https://github.com/guidance-ai/guidance)     | ✅        | ✅        |       ❌       | ❌   |
+| [`OUTLINES`](https://github.com/outlines-dev/outlines)    | ✅        | ✅        |       ✅       | ❌   |
+| [`PICARD`](https://github.com/ServiceNow/picard)          | ✅        | ✅        |       ❌       | ❌   |
+| [`SYNCHROMESH`](https://arxiv.org/abs/2201.11227)         | ✅        | ✅        |       ❌       | ❌   |
+| [`LLAMA.CPP`](https://github.com/ggerganov/llama.cpp)     | ✅        | ✅        |       ❌       | ❌   |
+| [`GCD`](https://arxiv.org/abs/2305.13971)                 | ✅        | ✅        |       ❌       | ❌   |
+| **SynCode**                                               | **✅**    | **✅**    |   **✅**       | **✅** |
+---
+
+**CFG***: Guide generation with a Context Free Grammar (CFG)
+
+**Pre-Computed***: Precompute masks over the vocabulary to significantly improve generation speed
+
+**GPL***: Support general-purpose programming languages, which involve non-context-free fragments, such as  indentation in Python and end-of-scope markers in Golang.
 
 [test-img]: https://github.com/shubhamugare/llm-cfg/actions/workflows/run_tests.yml/badge.svg
 [tests]: https://github.com/shubhamugare/llm-cfg/actions/workflows/run_tests.yml
