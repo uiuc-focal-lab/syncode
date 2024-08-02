@@ -2,14 +2,37 @@ import unittest
 import os
 import sys
 
+from syncode.dfa_mask_store import DFAMaskStore
+
 # Adjusting the path so the modules can be imported correctly
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../')
 
+from syncode import common
 from syncode.parsers import create_parser
 from syncode.parse_result import AcceptSequence
 from syncode.parsers.grammars.grammar import Grammar
 
 class TestParserMisc(unittest.TestCase):
+    @staticmethod
+    def math_grammar():
+        return """
+        start: NUMBER OPERATOR NUMBER "=" NUMBER
+        NUMBER: /[0-9]+/
+        OPERATOR: "+" | "-" | "*" | "/"
+
+        %ignore " "
+    """
+
+    def test_mask_store_misc(self):
+        grammar = Grammar(TestParserMisc.math_grammar())
+        model = 'microsoft/Phi-3-mini-128k-instruct'
+        tokenizer = common.load_tokenizer(model)
+        inc_parser = create_parser(grammar)
+        r = inc_parser.get_acceptable_next_terminals("234 * 327 = 76518")
+        dfa_mask = DFAMaskStore.load_dfa_mask_store(grammar=grammar, tokenizer=tokenizer, use_cache=False, logger=common.EmptyLogger())
+        mask = dfa_mask.get_accept_mask(r, get_list=True)
+        self.assertNotIn(' (', mask)
+        
     def test_parser_calc(self):
         inc_parser = create_parser(Grammar('calc'))
         partial_code = "113 + 235 + 17"
