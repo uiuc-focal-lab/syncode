@@ -286,7 +286,7 @@ class DFAMaskStore:
                  simplifications: dict={}, 
                  special_token_ids: Iterable=[], 
                  indentation: bool=True,
-                 mode='grammar_mask',
+                 mode='grammar_strict', # 'grammar_strict' or 'grammar_mask'
                  ignore_terminals: Iterable[str]=[]
                  ):
         self._vocab = vocab
@@ -318,7 +318,7 @@ class DFAMaskStore:
         return ignore_whitespace
 
     @staticmethod
-    def load_dfa_mask_store(grammar: Grammar, tokenizer, use_cache=True, logger=None, mode='grammar_mask'):
+    def load_dfa_mask_store(grammar: Grammar, tokenizer, use_cache=True, logger=None, mode='grammar_strict'):
         '''
         Loads the dfa for the given language and tokenizer. If the dfa is not cached, it is created and cached. 
         '''
