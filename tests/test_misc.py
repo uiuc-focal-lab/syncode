@@ -32,7 +32,35 @@ class TestParserMisc(unittest.TestCase):
         dfa_mask = DFAMaskStore.load_dfa_mask_store(grammar=grammar, tokenizer=tokenizer, use_cache=False, logger=common.EmptyLogger())
         mask = dfa_mask.get_accept_mask(r, get_list=True)
         self.assertNotIn(' (', mask)
+    
+    @staticmethod
+    def essay_grammar():
+        # A Lark grammar for paragraphs in text
+        return """
+        start: paragraph+
+        ?paragraph: sentence+
+        ?sentence: word+ punctuation
+        word: /[a-zA-Z0-9]+/ | COMMA | SINGLE_QUOTE | ESCAPED_DOUBLE_QUOTE
+        punctuation: /[.!?]/
+        COMMA: ","
+        SINGLE_QUOTE: "'"
+        ESCAPED_DOUBLE_QUOTE: "\\\""
+
+        %import common.WS
+        %ignore WS
+    """
+
+    def test_mask_store_misc2(self):
+        grammar = Grammar(TestParserMisc.essay_grammar())
+        model = 'microsoft/Phi-3-mini-128k-instruct'
+        tokenizer = common.load_tokenizer(model)
+        inc_parser = create_parser(grammar)
+        r = inc_parser.get_acceptable_next_terminals("I")
+        dfa_mask = DFAMaskStore.load_dfa_mask_store(grammar=grammar, tokenizer=tokenizer, use_cache=False, logger=common.EmptyLogger())
+        mask = dfa_mask.get_accept_mask(r, get_list=True)
+        self.assertIn(' have', mask)
         
+
     def test_parser_calc(self):
         inc_parser = create_parser(Grammar('calc'))
         partial_code = "113 + 235 + 17"
