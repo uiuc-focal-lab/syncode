@@ -453,6 +453,13 @@ class DFAMaskStore:
                                 overapprox_token_ids |= self._lookup_table.complete_case_lookup(dfa_state)
                             elif len(accept_sequence) == 2:
                                 overapprox_token_ids |= self._lookup_next_tokens_for_dfa_state(dfa_state, accept_sequence[1])
+                            elif len(accept_sequence) == 3:
+                                # This is useful in under-approximating `grammar_strict` mode as they help improve the precision of SynCode
+                                if self._mode == 'grammar_strict':
+                                    # If the DFA state is a final state we can jump to the start of next terminal
+                                    if self._dfas.is_final(dfa_state): 
+                                        ignore_init_state = self._dfas.initial(accept_sequence[1])
+                                        overapprox_token_ids |= self._lookup_next_tokens_for_dfa_state(ignore_init_state, accept_sequence[2])
                             else:
                                 raise ValueError(f"Invalid accept sequence: {accept_sequence}")
         return overapprox_token_ids
