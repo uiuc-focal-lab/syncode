@@ -59,7 +59,16 @@ class TestParserMisc(unittest.TestCase):
         dfa_mask = DFAMaskStore.load_dfa_mask_store(grammar=grammar, tokenizer=tokenizer, use_cache=False, logger=common.EmptyLogger())
         mask = dfa_mask.get_accept_mask(r, get_list=True)
         self.assertIn(' have', mask)
-        
+    
+    def test_mask_store_misc3(self):
+        grammar = Grammar(TestParserMisc.essay_grammar())
+        model = 'microsoft/Phi-3-mini-128k-instruct'
+        tokenizer = common.load_tokenizer(model)
+        inc_parser = create_parser(grammar)
+        r = inc_parser.get_acceptable_next_terminals("I have been working there for 5 years.")
+        dfa_mask = DFAMaskStore.load_dfa_mask_store(grammar=grammar, tokenizer=tokenizer, use_cache=False, logger=common.EmptyLogger())
+        mask = dfa_mask.get_accept_mask(r, get_list=True)
+        self.assertIn(' I', mask)
 
     def test_parser_calc(self):
         inc_parser = create_parser(Grammar('calc'))
