@@ -38,7 +38,6 @@ class HuggingFaceModel:
             logger: common.Logger, 
             tokenizer=None, 
             prompt_template: str = '', 
-            api_key: str = None, 
             best_of: int = 1, 
             before_prediction_hook=lambda: None, 
             device='cuda', 
@@ -67,7 +66,7 @@ class HuggingFaceModel:
         return None
 
     @torch.inference_mode()
-    def generate_batch_completion_grammar(self, prompt, batch_size, stop_words=[]) -> Iterable[str]:
+    def generate_batch_completion_grammar(self, prompt, batch_size, stop_words=None) -> Iterable[str]:
         '''
         Generates batch_size completions for the given prompt. 
         '''
@@ -87,7 +86,7 @@ class HuggingFaceModel:
         gen_mode = self._get_generation_mode(gen_config)
 
         # Create stopping criteria
-        if len(stop_words) > 0:
+        if stop_words is not None:
             stop_criteria = StoppingCriteriaList([KeywordsStoppingCriteria(self.tokenizer, stop_words=stop_words)])
         else:
             stop_criteria = []
@@ -103,13 +102,11 @@ class HuggingFaceModel:
                 )
         else:
             # Use generate from transformers library for other modes
-            if stop_criteria is not None:
-                print('Warning: Stopping criteria is not supported for batch generation')
-
             generated_ids = self.model.generate(
                 **inputs, 
                 logits_processor=self.logit_processors, 
-                stoppings=stop_words,
+                stop_strings=stop_words,
+                tokenizer=self.tokenizer,
                 **self.gen_args
                 )
         batch_completions = []
