@@ -62,21 +62,17 @@ class Logger:
         if task_id is not None:
             prefix = f"task_{task_id}_mode_{mode}_samples_{num_samples_per_task}_parser_{parser}_eval.log"
             log_file = out_dir + 'logs/tasks/' + prefix
-            log_time_file = out_dir + 'logs/tasks/' + 'time_' + prefix
             log_eval_file = out_dir + 'logs/tasks/' + 'eval_' + prefix
             os.makedirs(out_dir + 'logs/tasks/', exist_ok=True)
         else:
             prefix = f"mode_{mode}_samples_{num_samples_per_task}_parser_{parser}_eval.log"
             log_file = out_dir + 'logs/' + prefix
-            log_time_file = out_dir + 'logs/' + 'time_' + prefix
             log_eval_file = out_dir + 'logs/' + 'eval_' + prefix
             os.makedirs(out_dir + 'logs/', exist_ok=True)
         
         if self.log_level >= 1:
             self.log_file = log_file
             self.file = open(log_file, 'w')
-            self.log_time_file = log_time_file
-            self.time_file = open(log_time_file, 'w')
         self.log_eval_file = log_eval_file
         self.eval_file = open(log_eval_file, 'w')
 
@@ -96,11 +92,6 @@ class Logger:
             # Log error in red color
             self.file.write(f"\n\n[ERROR]\n{msg}\n")
             self.file.flush()
-
-    def log_time(self, msg):
-        if self.log_level >= 2:
-            self.time_file.write(msg + '\n')
-            self.time_file.flush()
     
     def log_eval(self, msg):
         if self.log_level >= 0:
@@ -118,14 +109,12 @@ class Logger:
     def close(self):
         if self.log_level >= 1:
             self.file.close()
-            self.time_file.close()
         self.eval_file.close()
         self.is_closed = True
     
     def open(self):
         if self.log_level >= 1:
             self.file = open(self.log_file, 'w')
-            self.time_file = open(self.log_time_file, 'w')
         self.eval_file = open(self.log_eval_file, 'w')
 
 class EmptyLogger(Logger):
@@ -135,9 +124,7 @@ class EmptyLogger(Logger):
     def __init__(self):
         pass
     def log(self, msg):
-        pass  
-    def log_time(self, msg):
-        pass   
+        pass    
     def log_code(self, msg, code):
         pass
     def log_eval(self, msg):

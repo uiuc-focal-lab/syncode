@@ -51,7 +51,6 @@ class MathEval:
 
         # Log result and time
         avg_time = (time.time() - time1) / len(problems)
-        syncode.logger.log_time(f"Averge time taken for each task: {avg_time:.2f}s")
         syncode.logger.log(f"Result: {pass_at_k}")
         print(f"Result: {pass_at_k}")
         syncode.logger.close()

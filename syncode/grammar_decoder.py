@@ -33,7 +33,6 @@ class SyncodeLogitsProcessor(LogitsProcessor):
         parser='lalr',
         mode='grammar_mask'):
 
-        time_start = time.time()
         self.tokenizer = tokenizer
         self.grammar = grammar
         self.logger = logger
@@ -62,10 +61,6 @@ class SyncodeLogitsProcessor(LogitsProcessor):
 
         # Create parsers
         self.inc_parsers: Iterator[IncrementalParser] = [create_parser(self.grammar, logger=self.logger, parser=parser, ignore_whitespace=self._ignore_whitespace) for _ in range(self.batch_size)]
-
-        # For profiling
-        self.debug = True
-        self.logger.log_time(f"Time taken for preprocessing: {time.time() - time_start:.2f}s")
 
     
     def _log_current_status(self, partial_code, r: ParseResult):
@@ -137,13 +132,11 @@ class SyncodeLogitsProcessor(LogitsProcessor):
     
 
     def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor) -> torch.FloatTensor:    
-        time1 = time.time() 
         # start_from is used for choosing where the parsing should start
+        debug = False
         partial_codes = self._get_partial_codes(input_ids)
 
         for idx, partial_code in enumerate(partial_codes):
-            time2 = time.time()
-
             ## Parsing
             try: # returns the accept sequences that are currently accepted.
                 r = self.inc_parsers[idx].get_acceptable_next_terminals(partial_code)
@@ -151,17 +144,15 @@ class SyncodeLogitsProcessor(LogitsProcessor):
                 if self.dev_mode == True:
                     raise e
                 self.logger.log(f"Exception while parsing:\n {e}")
-                # print(f"Exception while parsing! Fix this!\n {e}")
                 continue  # Skip altering the scores for this batch
 
-            self.logger.log_time(f"Time taken for compilation: {time.time() - time2:.3f}s")
             self.update_valid_state(input_ids, idx, r)
         
             accept_mask = self.dfa_mask_store.get_accept_mask(r, logger=self.logger)
 
-            if self.debug:
+            if debug: 
                 self._log_current_status(partial_code, r)
-            greedy_token = self.tokenizer.decode(scores[idx].argmax(dim=-1)) # For debugging, do not move this line
+                greedy_token = self.tokenizer.decode(scores[idx].argmax(dim=-1)) 
 
             if torch.sum(accept_mask) != 0: # If there are acceptable tokens for the current partial code 
                 if len(scores[idx]) != len(accept_mask):
@@ -173,14 +164,9 @@ class SyncodeLogitsProcessor(LogitsProcessor):
                 self.logger.log('No acceptable tokens for the current partial code!')
                 self._log_current_status(partial_code, r)
 
-            self.logger.log_time(f"Time taken for masking: {time.time() - time2:.3f}s")
-            
             # For debugging - remove later
-            greedy_grammar_token = self.tokenizer.decode(scores[idx].argmax(dim=-1))
-            if greedy_token != greedy_grammar_token:
-                self._log_greedy_difference(greedy_grammar_token, partial_code, r, greedy_token)
+            if debug: self._debug_greedy(scores, idx, partial_code, r, greedy_token)
 
-        self.logger.log_time(f"Time taken for decoding: {time.time() - time1:.3f}s")
         return scores
 
     def _get_partial_codes(self, input_ids: torch.LongTensor):   
@@ -202,6 +188,11 @@ class SyncodeLogitsProcessor(LogitsProcessor):
                 # 'EOF' is special terminal since $END does not work with python
                 if accept_seq[0] == '$END' or accept_seq[0] == 'EOF':
                     self.last_valid_state[idx] = len(input_ids[idx])-1
+
+    def _debug_greedy(self, scores, idx, partial_code, r, greedy_token):
+        greedy_grammar_token = self.tokenizer.decode(scores[idx].argmax(dim=-1))
+        if greedy_token != greedy_grammar_token:
+            self._log_greedy_difference(greedy_grammar_token, partial_code, r, greedy_token)
 
     def _log_greedy_difference(self, greedy_grammar_token, partial_code, r, greedy_token):
         self.logger.log_check(f"Greedy token and greedy grammar-based token do not match!")

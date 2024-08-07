@@ -1,4 +1,3 @@
-import time
 from tqdm import tqdm
 from typing import Optional
 from mxeval.data import write_jsonl
@@ -30,15 +29,12 @@ class JSONEval:
         pbar = tqdm(total=len(problems) * syncode.num_samples)
         results = defaultdict(list)
         
-        time1 = time.time()
-        for task_id, problem in enumerate(problems):
+        for task_id, problem in enumerate(problems[:10]):
             output = JSONEval.run_eval_for_task(syncode, syncode.num_samples, problem, samples, pbar, task_id)
             if debug_task_id is not None:
                 return output
             outputs.append(outputs) 
 
-        avg_time = (time.time() - time1) / len(problems)
-        syncode.logger.log_time(f"Averge time taken for each task: {avg_time:.2f}s")
         
         schema_result = validate_json_data(syncode, samples, results)
 

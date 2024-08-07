@@ -78,7 +78,7 @@ class HuggingFaceModel:
         inputs = self.tokenizer(input_batch, return_tensors="pt").to(self.model.device)
         input_ids_cutoff = inputs.input_ids.size(dim=1)
         
-        start_time = time.time()
+        # Get the generation config
         gen_config = GenerationConfig.from_model_config(self.model.config)
         gen_config.update(**self.gen_args)
 
@@ -127,9 +127,6 @@ class HuggingFaceModel:
                 completion = raw_completion
 
             batch_completions.append(completion)
-
-        if self.grammar_decoder is not None:
-            self.logger.log_time(f"Time taken for generation: {time.time() - start_time:.2f}s")
         
         self.logger.log(f"Completion: {batch_completions}")
         return batch_completions

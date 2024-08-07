@@ -1,4 +1,4 @@
-import copy, time, regex
+import copy, regex
 from typing import Iterator
 import syncode.larkm as lark
 import syncode.common as common
@@ -44,7 +44,6 @@ class PythonIncrementalParser(IncrementalParser):
         next_ac_indents = None
 
         # Parse the tokens
-        parsing_start_time = time.time()
         self.time_accepts = 0
         
         try:
@@ -77,9 +76,6 @@ class PythonIncrementalParser(IncrementalParser):
                 )
         except lark.exceptions.UnexpectedToken as e:
             self._handle_parsing_error(lexer_tokens, token)
-
-        self.logger.log_time(f'Time taken for parsing:{time.time() - parsing_start_time}')
-        self.logger.log_time(f'Time taken for computing accepts:{self.time_accepts}')
 
         remainder_state, final_terminal = None, None
         # Compute current terminal string
@@ -137,7 +133,6 @@ class PythonIncrementalParser(IncrementalParser):
         indenter: PythonIndenter = self.base_parser.lexer_conf.postlex
 
         # Reset the indentation level
-        lexing_start_time = time.time()
         indenter.indent_level, indenter.paren_level = [0], 0
 
         try:
@@ -163,7 +158,6 @@ class PythonIncrementalParser(IncrementalParser):
         except EOFError as e:
             pass
 
-        self.logger.log_time(f'Time taken for lexing:{time.time() - lexing_start_time}')
         return lexer_tokens
 
 

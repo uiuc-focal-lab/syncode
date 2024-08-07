@@ -1,5 +1,5 @@
 from collections import defaultdict
-import copy, os, pickle, time
+import copy, os, pickle
 import interegular
 import torch
 import regex
@@ -329,30 +329,24 @@ class DFAMaskStore:
         # TODO: Hashing using the tokenizer vocab size, this may be problmatic if we have two fine-tuned models with same tokenizer, same vocab size but different vocab
         dfa_path = f'{dfa_dir}{mode}_{grammar_hash}_{tokenizer.vocab_size}.pkl'
         
-        start_time = time.time()
         if use_cache and os.path.exists(dfa_path):
             try:
                 mask_store = pickle.load(open(dfa_path, 'rb'))
-                logger.log_time(f"Time taken for loading dfa: {time.time() - start_time:.2f}s")
                 return mask_store
             except: # If we cannot load the file, we will create the dfa from scratch
                 pass
     
         print(f"Creating DFA mask store for {tokenizer_name} and {grammar}, may take more than 10 minutes. Caching at {os.path.abspath(dfa_path)}.", flush=True)
         vocab = common.get_vocab_from_tokenizer(tokenizer)
-        logger.log_time(f"Time taken for loading vocab: {time.time() - start_time:.2f}s")
 
         base_parser = create_base_parser(grammar)
-        logger.log_time(f"Time taken for loading parser: {time.time() - start_time:.2f}s")
 
         simplifications = grammar.simplifications()
         os.makedirs(dfa_dir, exist_ok=True)
 
         mask_store = DFAMaskStore(base_parser.terminals, vocab, simplifications=simplifications, special_token_ids=[tokenizer.eos_token_id], mode=mode, ignore_terminals=base_parser.ignore_tokens)
-        logger.log_time(f"Time taken for creating dfa: {time.time() - start_time:.2f}s")
 
         pickle.dump(mask_store, open(dfa_path, 'wb'))
-        logger.log_time(f"Time taken for storing the dfa: {time.time() - start_time:.2f}s")
         return mask_store
 
     def _get_default_mask(self) -> torch.Tensor:
@@ -489,7 +483,6 @@ class DFAMaskStore:
             get_list (bool, optional): If True, returns the list of tokens instead of the mask. Defaults to False.
             logger (common.Logger, optional): The logger. Defaults to common.EmptyLogger().
         """
-        start_time = time.time()
         cur_incomplete_string = r.remainder
         if cur_incomplete_string is None:
             return torch.ones(len(self._vocab), dtype=torch.bool)
@@ -503,7 +496,6 @@ class DFAMaskStore:
             
         if get_list: # This is useful for testing
             return self._get_tokens_list(accept_token_mask)
-        logger.log_time(f"Time taken for computing the mask: {time.time() - start_time:.3f}s")
         return accept_token_mask
     
     def is_valid_prefix(self, r: ParseResult) -> bool:
