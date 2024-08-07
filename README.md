@@ -5,7 +5,7 @@
   <img width="400" alt="syncode" src="https://github.com/shubhamugare/syncode/assets/14147610/99c30a9d-b5f5-49ab-9295-33738fde1de2" />
 </p>
 
-# SynCode: LLM Generation with Grammar Augmentation [![Test Status][test-img]][tests]
+# SynCode: LLM Generation with Grammar Augmentation [![Test Status][test-img]][tests] 
 
 <p align="left">
     ℹ️&nbsp;<a href="#-about">About</a>
@@ -16,8 +16,9 @@
     | 🤔&nbsp;<a href="#-faq">FAQs</a>
 </p>
 
-> [!WARNING]  
-> This repository is currently under active development!
+<p>
+    <a href="https://arxiv.org/abs/2403.01632"><img src="https://img.shields.io/badge/Paper-arXiv-blue"></a>
+</p>
 
 ## ℹ️ About
 * **SynCode** is a novel framework for the grammar-guided generation of Large Language Models (LLMs) that is scalable to general-purpose programming languages and has soundness and completeness guarantees. 
@@ -79,7 +80,7 @@ output = model.generate(
 
 ### Usage option 2:
 
-Then, in your Python program,
+The other option is to use the `SynCode` object for inference (this comes with additional optimizations),
 ``` python
 from syncode import Syncode
 ```
@@ -98,9 +99,9 @@ In the example below, the unconstrained original Phi-2 model fails to generate a
 from syncode import Syncode
 
 # Load the unconstrained original model
-llm = Syncode(model = "microsoft/phi-2", mode='original', max_new_tokens=50)
+llm = Syncode(model="microsoft/phi-2", mode='original', max_new_tokens=50)
 
-prompt = "Please return a json object to represent country India with name, capital and population?"
+prompt = "Please return a JSON object to represent the country India with name, capital, and population?"
 output = llm.infer(prompt)[0]
 print(f"LLM output:\n{output}\n")
 
@@ -123,7 +124,7 @@ from syncode import Syncode
 # Load the Syncode augmented model
 syn_llm = Syncode(model = "microsoft/phi-2", grammar='json', parse_output_only=True, max_new_tokens=50)
 
-prompt = "Please return a json object to represent country India with name, capital and population?"
+prompt = "Please return a JSON object to represent the country India with name, capital, and population?"
 output = syn_llm.infer(prompt)[0]
 print(f"SynCode output:\n{output}")
 
@@ -154,13 +155,13 @@ export HF_ACCESS_TOKEN="your_huggingface_api_key"
 <details>
   <summary>Click to Expand on the List of Arguments for SynCode</summary>
   
-- `mode` (str, optional): Mode for inference. `grammar_mask` and `grammar_strict` are the modes that enable our tool. `original` is the mode for the original LLM. Defaults to "grammar_strict". "original" mode is used for the original LLM without any grammar constraints and "grammar_strict" mode is a stricter mode for grammar-constrained generation.
+- `mode` (str, optional): Mode for inference. `grammar_mask` and `grammar_strict` are the modes that enable our tool. `original` is the mode for the original LLM. Defaults to "grammar_strict". "original" mode are used for the original LLM without any grammar constraints and "grammar_strict" mode is a stricter mode for a grammar-constrained generation.
   
 - `model` (str): Model ID for Hugging Face model hub or model name if stored locally.
   
 - `quantize` (bool, optional): Quantize the model to bfloat16. Defaults to True.
   
-- `device` (str, optional): Device to run the model on. Defaults to "cuda". 
+- `device` (str, optional): The device on which the model is run. Defaults to `cuda`. 
 
 - `grammar` (str, optional): Grammar in EBNF form (string or file path) or language for constrained generation. Defaults to None. You can use one of the `python`, `go`, `sql`, `json`, `java`, `calc` or pass in a custom grammar (check notebooks for examples) in EBNF format.
   
