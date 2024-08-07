@@ -39,3 +39,4 @@ jobs:
           python3 -m unittest tests.test_language_model
           python3 -m unittest tests.test_lr_parser
           python3 -m unittest tests.test_syncode
+          python3 -m unittest tests.test_llama_cpp

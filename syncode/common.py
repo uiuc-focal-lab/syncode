@@ -6,6 +6,9 @@ from transformers import (
     AutoModelForCausalLM,
 )
 import torch
+from llama_cpp import Llama
+import numpy as np
+from typing import List, Union
 
 # Remove this in future and add instruction to set the HF_CACHE env variable
 RESULTS_DIR = os.environ['RESULTS_DIR'] if 'RESULTS_DIR' in os.environ else 'results/'
@@ -16,6 +19,8 @@ HF_ACCESS_TOKEN = os.environ['HF_ACCESS_TOKEN'] if 'HF_ACCESS_TOKEN' in os.envir
 def get_vocab_from_tokenizer(tokenizer):
     # self.vocab is a list of readable token strings (e.g., ' hello' and '\n')
     # sorted by their token IDs (so self.vocab[0] is the first token, etc).
+    if isinstance(tokenizer, LlamaTokenizerWrapper):
+        return tokenizer.get_vocab()
     vocab = [v for k, v in
                     sorted([(t_id, tokenizer.decode([t_id]))
                             for _, t_id in tokenizer.get_vocab().items()])]
@@ -149,3 +154,31 @@ class EmptyLogger(Logger):
     def close(self):
         pass
 
+
+class LlamaTokenizerWrapper:
+    """
+    This class is a minimal wrapper around LlamaTokenizer for using SynCode with llama-cpp-python LogitsProcessor. 
+    """
+    def __init__(self, llm: Llama):
+        self.tokenizer = llm.tokenizer_
+        self.vocab_size = llm.n_vocab()
+        self.eos_token_id = llm.token_eos()
+    
+    def encode(self, text: str, add_special_tokens = True, add_bos = True, **kwargs) -> List[int]:
+        return [self.tokenizer.encode(text, add_bos=True, special=True)]
+    
+    def decode(self, token_ids: Union[int, List[int], torch.Tensor, np.ndarray], **kwargs) -> str:
+        if isinstance(token_ids, int) or (isinstance(token_ids, torch.Tensor) and token_ids.ndim == 0):
+            _token_ids = [token_ids]
+        elif isinstance(token_ids, (torch.Tensor, np.ndarray)):
+            _token_ids = token_ids.tolist()
+        else:
+            _token_ids = token_ids
+        return self.tokenizer.decode(_token_ids)
+    
+    def batch_decode(self, sequences: Union[List[int], List[List[int]], torch.Tensor, np.ndarray], **kwargs) -> List[str]:
+        _sequences = [sequences] if (isinstance(sequences,list) and isinstance(sequences[0], int)) else sequences
+        return [self.decode(seq) for seq in _sequences]
+    
+    def get_vocab(self) -> List[str]:
+        return [self.decode(token_id) for token_id in range(self.vocab_size)]

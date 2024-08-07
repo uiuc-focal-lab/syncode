@@ -1,5 +1,5 @@
 import time
-from typing import Iterator
+from typing import Iterator, Union
 import torch
 import syncode.common as common
 from transformers import LogitsProcessor, PreTrainedTokenizer
@@ -8,7 +8,8 @@ from syncode.parsers.incremental_parser import IncrementalParser, ParseResult
 from syncode.parsers import create_parser, create_base_parser
 from syncode.dfa_mask_store import DFAMaskStore
 from syncode.parsers.grammars import Grammar
-
+from llama_cpp import Llama
+import numpy as np
 
 class SyncodeLogitsProcessor(LogitsProcessor):
     """
@@ -24,7 +25,7 @@ class SyncodeLogitsProcessor(LogitsProcessor):
     """
     def __init__(self, 
         grammar: Grammar, 
-        tokenizer: PreTrainedTokenizer, 
+        tokenizer: Union[PreTrainedTokenizer, Llama],
         logger: common.Logger=common.EmptyLogger(), 
         use_cache=True,
         parse_output_only=False, 
@@ -34,7 +35,7 @@ class SyncodeLogitsProcessor(LogitsProcessor):
         mode='grammar_mask'):
 
         time_start = time.time()
-        self.tokenizer = tokenizer
+        self.tokenizer = common.LlamaTokenizerWrapper(tokenizer) if isinstance(tokenizer, Llama) else tokenizer
         self.grammar = grammar
         self.logger = logger
         self.dev_mode = dev_mode
@@ -136,8 +137,26 @@ class SyncodeLogitsProcessor(LogitsProcessor):
         return out
     
 
-    def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor) -> torch.FloatTensor:    
-        time1 = time.time() 
+    def __call__(self, input_ids: Union[np.ndarray, torch.LongTensor], scores: Union[np.ndarray, torch.FloatTensor]) -> Union[np.ndarray, torch.FloatTensor]: 
+        time1 = time.time()
+        
+        is_numpy = (isinstance(input_ids, np.ndarray) and isinstance(scores, np.ndarray))
+        is_torch = (isinstance(input_ids, torch.Tensor) and isinstance(scores, torch.Tensor))
+        assert is_numpy or is_torch, 'input_ids and scores must be either both torch.Tensor or both np.ndarray'
+        
+        #convert to input_ids and scores if np array to torch tensor for llama.cpp
+        if is_numpy:
+            input_ids = torch.as_tensor(input_ids)
+            scores = torch.as_tensor(scores)
+            input_ids_dim, scores_dim = input_ids.ndim, scores.ndim
+            if input_ids_dim == 1: 
+                input_ids = input_ids.unsqueeze(0)
+            if scores_dim == 1:
+                scores = scores.unsqueeze(0)
+
+        if self.start_from is None:
+            self.reset('') #dummy tokenizer reset
+            self.start_from = input_ids.size(1)
         # start_from is used for choosing where the parsing should start
         partial_codes = self._get_partial_codes(input_ids)
 
@@ -181,6 +200,15 @@ class SyncodeLogitsProcessor(LogitsProcessor):
                 self._log_greedy_difference(greedy_grammar_token, partial_code, r, greedy_token)
 
         self.logger.log_time(f"Time taken for decoding: {time.time() - time1:.3f}s")
+        
+        if is_numpy:
+            input_ids = np.asarray(input_ids)
+            scores = np.asarray(scores).astype(np.single)
+            if input_ids_dim == 1:
+                input_ids = input_ids.squeeze(0)
+            if scores_dim == 1:
+                scores = scores.squeeze(0)
+                       
         return scores
 
     def _get_partial_codes(self, input_ids: torch.LongTensor):   
