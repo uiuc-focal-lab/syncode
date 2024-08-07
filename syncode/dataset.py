@@ -50,6 +50,8 @@ class Dataset:
             ds = load_dataset("NousResearch/json-mode-eval", split = "train")
             self.problems = []
             for problem in ds:
+                prompt = [{'content': problem['prompt'][0]['content'] + problem['prompt'][1]['content'], 'role': 'user'}]
+                problem['prompt'] = prompt
                 self.problems.append({**problem, 'prompt': problem['prompt'], 'ground_truth': problem['completion'], 'schema': problem['schema']})
         elif dataset == "folio":
             self.dataset_name = "folio"

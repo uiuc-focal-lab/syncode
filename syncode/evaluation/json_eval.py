@@ -29,13 +29,12 @@ class JSONEval:
         pbar = tqdm(total=len(problems) * syncode.num_samples)
         results = defaultdict(list)
         
-        for task_id, problem in enumerate(problems[:10]):
+        for task_id, problem in enumerate(problems):
             output = JSONEval.run_eval_for_task(syncode, syncode.num_samples, problem, samples, pbar, task_id)
             if debug_task_id is not None:
                 return output
             outputs.append(outputs) 
 
-        
         schema_result = validate_json_data(syncode, samples, results)
 
         # exact match evaluation doesn't make sense
