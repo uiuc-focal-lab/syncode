@@ -29,7 +29,6 @@ class CodeEval:
                 outputs.append(CodeEval.run_eval_for_task(syncode, num_samples_per_task, format_tabs, problems, samples, pbar, task_id))
             write_jsonl(out_path, samples)
             avg_time = (time.time() - time1) / len(problems)
-            syncode.logger.log_time(f"Averge time taken for each task: {avg_time:.2f}s")
             functional_result = check_coorectness(out_path, logger=syncode.logger)
             syncode.logger.log(f"Functional result: {functional_result}")
 
