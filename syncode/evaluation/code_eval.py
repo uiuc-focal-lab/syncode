@@ -2,6 +2,7 @@ import os
 import time
 from tqdm import tqdm
 from typing import Optional
+from syncode import common
 from syncode.evaluation.mxeval_evaluation import check_coorectness
 from mxeval.data import write_jsonl
 
@@ -14,9 +15,10 @@ class CodeEval:
     def run_code_eval(
         syncode, 
         num_samples_per_task: int,
-        out_path: str,
+        out_path: Optional[str]=None,
         format_tabs: bool = False,
-        debug_task_id: Optional[int] = None
+        debug_task_id: Optional[int] = None,
+        logger=common.EmptyLogger()
         ):
         problems = syncode.dataset.problems
 
@@ -27,23 +29,25 @@ class CodeEval:
             time1 = time.time()
             for task_id in problems:
                 outputs.append(CodeEval.run_eval_for_task(syncode, num_samples_per_task, format_tabs, problems, samples, pbar, task_id))
-            write_jsonl(out_path, samples)
+            
+            if out_path is not None: write_jsonl(out_path, samples)
+            
             avg_time = (time.time() - time1) / len(problems)
-            functional_result = check_coorectness(out_path, logger=syncode.logger)
-            syncode.logger.log(f"Functional result: {functional_result}")
+            functional_result = check_coorectness(out_path, logger=logger)
+            logger.log(f"Functional result: {functional_result}")
 
             # Also log these results in a separate file
             CodeEval.write_results(syncode, out_path, avg_time, functional_result)
         else: # Debugging a specific task
             debug_task_id = list(problems.keys())[debug_task_id]
-            return CodeEval.run_eval_for_task(syncode, num_samples_per_task, format_tabs, problems, samples, pbar, debug_task_id)
+            return CodeEval.run_eval_for_task(syncode, num_samples_per_task, format_tabs, problems, samples, pbar, debug_task_id, logger=logger)
         return outputs
 
-    def run_eval_for_task(syncode, num_samples_per_task, format_tabs, problems, samples, pbar, task_id):
+    def run_eval_for_task(syncode, num_samples_per_task, format_tabs, problems, samples, pbar, task_id, logger=common.EmptyLogger()):
         """
         run evaluation for a specific task
         """
-        syncode.logger.log(f"Running eval for task {task_id}")
+        logger.log(f"Running eval for task {task_id}")
 
         if format_tabs:
             prompt = problems[task_id]["prompt"].replace("    ", "\t")

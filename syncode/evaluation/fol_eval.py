@@ -3,6 +3,7 @@ Adapted from https://github.com/teacherpeterpan/Logic-LLM. Use Prover9 to solve 
 """
 import random
 import re
+from typing import Optional
 from mxeval.data import write_jsonl
 from tqdm import tqdm
 import signal
@@ -77,7 +78,7 @@ Question:
 
 class FOLEval:
     @staticmethod
-    def run_eval(syncode, debug_task_id=None):
+    def run_eval(syncode, out_path: Optional[str]=None, debug_task_id=None):
         problems = syncode.dataset.problems[:100]
         if debug_task_id is not None:
             problems = [problems[debug_task_id]]
@@ -152,8 +153,9 @@ class FOLEval:
             count_syn_error += (not is_parsed)
             samples += [res]
             pbar.update(syncode.num_samples)
-
-        write_jsonl(syncode.out_path, samples)
+        
+        if out_path is not None: write_jsonl(out_path, samples)
+        
         print(f"Pass rate: {count_pass}/{len(problems)}")
         print(f"Compilation error rate: {count_compile_error}/{len(problems)}")
         print(f"Execution error rate: {count_exec_error}/{len(problems)}")

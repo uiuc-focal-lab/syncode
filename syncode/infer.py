@@ -15,8 +15,20 @@ from syncode.evaluation.fol_eval import FOLEval
 
 
 def compile_and_run(model, mode="grammar_strict", quantize=True, device="cuda", num_samples=1, grammar=None, dataset="input", num_few_shot=0, chat_mode=False, dev_mode=False, log_level=1, new_mask_store=False, parser="lalr", task_id=None, **kwargs):
-    sc = Syncode(model, mode=mode, quantize=quantize, device=device, num_samples=num_samples, grammar=grammar, dataset=dataset, num_few_shot=num_few_shot, chat_mode=chat_mode, dev_mode=dev_mode, log_level=log_level, new_mask_store=new_mask_store, parser=parser, task_id=task_id, **kwargs)
-    sc.infer(task_id=task_id)
+
+    syncode = Syncode(model, mode=mode, quantize=quantize, device=device, num_samples=num_samples, grammar=grammar, chat_mode=chat_mode, dev_mode=dev_mode, log_level=log_level, new_mask_store=new_mask_store, parser=parser, **kwargs)
+    
+    if dataset == "input":
+        syncode.infer()
+    else:
+        # Setup output directory and logger
+        out_dir, out_path = common.get_output_path(model, grammar, dataset, num_samples, mode)
+        logger = common.Logger(num_samples, mode, parser, out_dir, log_level=log_level, task_id=task_id)
+        if syncode.grammar_decoder is not None: syncode.grammar_decoder.logger = logger
+
+        # Run evaluation
+        syncode.evaluate(dataset=dataset, task_id=task_id, out_path=out_path, logger=logger, num_few_shot=num_few_shot)
+
 
 class Syncode:
     """Syncode class for running inference on a model
@@ -34,20 +46,16 @@ class Syncode:
         
         grammar (str, optional): Language. Defaults to "input". "input" is used for user input. 
             other options currently supported are "python", "go", "calc"
-        
-        dataset (str, optional): Dataset. Defaults to "humaneval".
-        
+                
         new_mask_store (bool, optional): Use new DFA mask store. Defaults to False.
-        
-        num_few_shot (int, optional): Number of examples for few shot prompting. Defaults to 0.
-        
+                
         chat_mode (bool, optional): Parse only the (output) and not (prompt+output) in chat mode. Defaults to False.
         
         dev_mode (bool, optional): Development mode. Defaults to False.
+
         log_level (int, optional): Log level. Defaults to 2. 0 for no logs, 1 for minimal logs, 2 for all logs including time.
         
         parser (str, optional): Parser to use. Defaults to "lalr".
-        task_id (int, optional): For debugging a specific task. Defaults to None.
     """
     def __init__(
         self, 
@@ -57,15 +65,12 @@ class Syncode:
         device: str = "cuda",
         num_samples: int = 1,
         grammar: Optional[str] = None,
-        dataset: Literal["mbxp", "humaneval", "mathqa-x", "input", "gsm8k", "spider", "json_eval"] = "input",
-        num_few_shot: int = 0,
         chat_mode: bool = False,
         parse_output_only: bool = False,
         dev_mode: bool = False,
         log_level: int = 1,
         new_mask_store: bool = False,
         parser: Literal["lr", "lalr"] = "lalr",
-        task_id: Optional[int] = None,
         **kwargs
     ):  
         # Check inputs
@@ -81,9 +86,9 @@ class Syncode:
         self.device = device
         self.num_samples = num_samples
         self.new_mask_store = new_mask_store
-        self.num_few_shot = num_few_shot
         self.parser = parser
         self.chat_mode = chat_mode
+        self.log_level = log_level
 
         if self.chat_mode:
             self.parse_output_only = True
@@ -93,16 +98,9 @@ class Syncode:
         # Set the grammar
         self.grammar = Grammar(grammar) if self.is_grammar_mode() else None
 
-        # Load the dataset
-        self.dataset = Dataset(dataset, language=grammar, num_few_shot=num_few_shot)
-
         # Load model
         model = common.load_model(self.model_name, device, quantize)
         tokenizer = common.load_tokenizer(self.model_name)
-        
-        # Setup output directory
-        out_dir, self.out_path = self.get_output_path()
-        self.logger = common.Logger(self.num_samples, mode, parser, out_dir, log_level=log_level, task_id=task_id)
         
         # Initialize logit processors
         self.grammar_decoder = None
@@ -111,7 +109,6 @@ class Syncode:
             self.grammar_decoder = SyncodeLogitsProcessor(
                 self.grammar, 
                 tokenizer=tokenizer, 
-                logger=self.logger, 
                 use_cache=(not self.new_mask_store), 
                 parse_output_only=self.parse_output_only,
                 num_samples=self.num_samples, 
@@ -126,7 +123,6 @@ class Syncode:
         self.model = HuggingFaceModel(
             model, 
             grammar=self.grammar,
-            logger=self.logger, 
             tokenizer=tokenizer, 
             device=device, 
             grammar_decoder=self.grammar_decoder, 
@@ -137,32 +133,48 @@ class Syncode:
     def is_grammar_mode(self):
         return self.mode == 'grammar_mask' or self.mode == 'grammar_strict'
 
-    def infer(self, prompt=None, task_id=None, stop_words=[]):
-        if self.logger.is_closed:
-            self.logger.open()
-
-        if self.dataset.type == "code": 
-            output = CodeEval.run_code_eval(self, self.num_samples, self.out_path, format_tabs=True, debug_task_id=task_id)
-        elif self.dataset.type == "math":
-            output = MathEval.run_math_eval(self, debug_task_id=task_id)
-        elif self.dataset.type == "sql":
-            output = SQLEval.run_eval(self)
-        elif self.dataset.type == "fol":
-            output = FOLEval.run_eval(self, debug_task_id=task_id)
-        elif self.dataset.type == "input":
-            output = self.user_input(prompt, stop_words=stop_words)
-        elif self.dataset.type == "json":
-            output = JSONEval.run_json_eval(self, debug_task_id=task_id)
-        else:
-            raise ValueError(f"Dataset type {self.dataset.type} not supported")
-        self.logger.close()
+    def infer(self, prompt=None, stop_words=[]):
+        output = self.user_input(prompt, stop_words=stop_words)
         return output
 
-    def get_output_path(self):
-        out_dir = f"results/{self.model_name}/{self.grammar}/{self.dataset}/"
-        out_path = out_dir + 'samples_' + str(self.num_samples) + '_mode_' + str(self.mode) + "_eval.jsonl"
-        os.makedirs(out_dir, exist_ok=True)
-        return out_dir,out_path
+    def evaluate(
+            self, 
+            dataset: Literal["mbxp", "humaneval", "mathqa-x", "gsm8k", "spider", "json_eval"],
+            out_path: str=None,
+            num_few_shot:int=0,
+            logger=common.EmptyLogger(), 
+            task_id=None
+        ) -> dict:
+        """
+        Run evaluation on the model:
+
+        Args:
+            dataset (str): Dataset to evaluate on. Options are "mbxp", "humaneval", "mathqa-x", "gsm8k", "spider", "json_eval".
+        
+            num_few_shot (int, optional): Number of examples for few shot prompting. Defaults to 0.
+
+            task_id (int, optional): For debugging a specific task. Defaults to None.
+        """
+        if logger.is_closed:
+            logger.open()
+
+        # Load the dataset
+        self.dataset = Dataset(dataset, language=self.grammar.name, num_few_shot=num_few_shot)
+
+        if self.dataset.type == "code": 
+            output = CodeEval.run_code_eval(self, self.num_samples, out_path, format_tabs=True, debug_task_id=task_id, logger=logger)
+        elif self.dataset.type == "math":
+            output = MathEval.run_math_eval(self, out_path, debug_task_id=task_id, logger=logger)
+        elif self.dataset.type == "sql":
+            output = SQLEval.run_eval(self, out_path)
+        elif self.dataset.type == "fol":
+            output = FOLEval.run_eval(self, out_path, debug_task_id=task_id)
+        elif self.dataset.type == "json":
+            output = JSONEval.run_json_eval(self, out_path, debug_task_id=task_id, logger=logger)
+        else:
+            raise ValueError(f"Dataset type {self.dataset.type} not supported")
+        logger.close()
+        return output
 
     def user_input(self, prompt:str, stop_words=[]):
         """
@@ -175,7 +187,6 @@ class Syncode:
                 return self.model.generate_chat_completion_grammar(prompt)
             else:
                 return self.model.generate_batch_completion_grammar(prompt, self.num_samples, stop_words=stop_words)
-        
         else:
             while True:
                 prompt = input('Enter prompt: ')

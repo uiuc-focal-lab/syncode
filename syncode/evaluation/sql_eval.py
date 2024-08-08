@@ -1,3 +1,4 @@
+from typing import Optional
 from tqdm import tqdm
 from mxeval.data import write_jsonl
 
@@ -7,13 +8,13 @@ class SQLEval:
     Run evaluation on SQL dataset
     """
     @staticmethod
-    def run_eval(syncode):
+    def run_eval(syncode, out_path: Optional[str]):
         problems = syncode.dataset.problems[:100]
         samples = []
         pbar = tqdm(total=len(problems) * syncode.num_samples)
         results = {}
         assert syncode.num_samples == 1, "SQL evaluation only supports num_samples=1"
-        predict_file = syncode.out_path
+        predict_file = out_path
 
         if syncode.grammar_decoder is not None:
             syncode.grammar_decoder.parse_output_only = True # Do not parse input+output
@@ -43,4 +44,5 @@ class SQLEval:
         databses = "syncode/utils/sql_spider_eval/databases"
         scores, error_types = evaluate(predict_file, gold_file, databses, etype="all", table=tables, result_jsonl=samples)
         print(f"Scores: {scores['all']}\n Error types: {error_types}")
-        write_jsonl(syncode.out_path, samples)
+        
+        if out_path is not None: write_jsonl(out_path, samples)

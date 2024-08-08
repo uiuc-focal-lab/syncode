@@ -1,11 +1,6 @@
 import os
-from transformers import (
-    LlamaTokenizer,
-    LlamaForCausalLM,
-    AutoTokenizer,
-    AutoModelForCausalLM,
-)
 import torch
+from transformers import AutoTokenizer, AutoModelForCausalLM
 
 # Remove this in future and add instruction to set the HF_CACHE env variable
 RESULTS_DIR = os.environ['RESULTS_DIR'] if 'RESULTS_DIR' in os.environ else 'results/'
@@ -51,6 +46,12 @@ def load_tokenizer(model_name):
         else:
             tokenizer = AutoTokenizer.from_pretrained(model_name, cache_dir=HF_CACHE, token=HF_ACCESS_TOKEN, trust_remote_code=True)
         return tokenizer
+
+def get_output_path(model_name, grammar, dataset, num_samples, mode):
+        out_dir = f"results/{model_name}/{grammar}/{dataset}/"
+        out_path = out_dir + 'samples_' + str(num_samples) + '_mode_' + str(mode) + "_eval.jsonl"
+        os.makedirs(out_dir, exist_ok=True)
+        return out_dir,out_path
 
 class Logger:
     """
@@ -135,4 +136,7 @@ class EmptyLogger(Logger):
         pass
     def close(self):
         pass
-
+    def is_closed(self):
+        return False
+    def open(self):
+        pass

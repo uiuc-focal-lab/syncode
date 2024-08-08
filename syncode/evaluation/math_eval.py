@@ -1,5 +1,7 @@
 import time
+from typing import Optional
 from tqdm import tqdm
+from syncode import common
 from syncode.evaluation.mxeval_evaluation import compute_pass_at_k
 from mxeval.data import write_jsonl
 
@@ -9,7 +11,7 @@ class MathEval:
     Run evaluation on math question-answer dataset 
     """
     @staticmethod
-    def run_math_eval(syncode, debug_task_id=None):
+    def run_math_eval(syncode, out_path: Optional[str], debug_task_id=None, logger=common.EmptyLogger()):
         problems = syncode.dataset.problems
         if debug_task_id is not None:
             problems = [problems[debug_task_id]]
@@ -26,7 +28,7 @@ class MathEval:
                 )
             for completion_id, raw_completion in enumerate(batch_completions):
                 completion = syncode.dataset.post_process_answer(raw_completion)
-                syncode.logger.log(f"\n\nProblem: {problem}\nCompletion: {completion}\n")
+                logger.log(f"\n\nProblem: {problem}\nCompletion: {completion}\n")
                 true_answer = float(problem['answer'].split('#')[-1].replace(',', ''))
                 llm_answer = None
                 try:
@@ -35,7 +37,7 @@ class MathEval:
                     llm_answer = float(ans.split('#')[-1])
                 except:
                     pass
-                syncode.logger.log(f"True answer: {true_answer},\nLLM answer: {llm_answer}")
+                logger.log(f"True answer: {true_answer},\nLLM answer: {llm_answer}")
                 passed = (true_answer == llm_answer)
                 res = dict(
                     task_id=task_id,
@@ -46,13 +48,12 @@ class MathEval:
                 results[task_id].append((completion_id, res))          
             pbar.update(syncode.num_samples)
 
-        write_jsonl(syncode.out_path, samples)
+        if out_path is not None: write_jsonl(out_path, samples)
         pass_at_k = compute_pass_at_k(results)
 
         # Log result and time
         avg_time = (time.time() - time1) / len(problems)
-        syncode.logger.log(f"Result: {pass_at_k}")
         print(f"Result: {pass_at_k}")
-        syncode.logger.close()
+        logger.log(f"Result: {pass_at_k}")
         return samples
     
