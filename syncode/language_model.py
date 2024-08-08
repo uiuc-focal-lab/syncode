@@ -35,7 +35,6 @@ class HuggingFaceModel:
             self, 
             model: Callable, 
             grammar: Grammar,
-            logger: common.Logger, 
             tokenizer=None, 
             prompt_template: str = '', 
             best_of: int = 1, 
@@ -48,7 +47,6 @@ class HuggingFaceModel:
 
         self.prompt_template = prompt_template
         self.model = model
-        self.logger = logger
         self.tokenizer = tokenizer
         self.device = device
         self.best_of = best_of
@@ -114,23 +112,18 @@ class HuggingFaceModel:
         # TODO: Move this to CodeEval
         for i in range(batch_size):
             raw_completion = self.tokenizer.decode(generated_ids[i][input_ids_cutoff:len(generated_ids[i])], skip_special_tokens=True)                                       
-            self.logger.log_code("Raw completion", raw_completion)
 
             # Post-processing to filter out using stop word (e.g. "\n\n")
             if self.grammar != None and self.grammar.name == "python":
                 completion = self.postproces_completion_python(i, batch_size, input_ids_cutoff, generated_ids, self.grammar_decoder, raw_completion)
-                self.logger.log_code("Filtered sample", completion)
             elif self.grammar != None and self.grammar.name == "go": 
                 completion = self.postproces_completion_go(i, batch_size, raw_completion, generated_ids, self.grammar_decoder, input_ids_cutoff)
-                self.logger.log_code("Filtered sample", completion)
             else: # TODO: handle the case for other grammars
                 completion = raw_completion
 
             batch_completions.append(completion)
         
-        self.logger.log(f"Completion: {batch_completions}")
         return batch_completions
-
 
     @torch.inference_mode()
     def _generate(
@@ -260,7 +253,6 @@ class HuggingFaceModel:
             generated_ids[0][input_ids_cutoff:len(generated_ids[0])], 
             skip_special_tokens=True)
 
-        self.logger.log_code("Raw completion", completion)
         return completion
 
 
@@ -283,7 +275,6 @@ class HuggingFaceModel:
         else:
             # When the grammar_decoder is used
             function_incomplete = [False for _ in range(batch_size)]
-            self.logger.log(f"Function incomplete!")
             completion = self.compute_backup_completion(grammar_decoder, function_incomplete, i, input_ids_cutoff, generated_ids)
 
             if function_incomplete[i]:
@@ -293,9 +284,6 @@ class HuggingFaceModel:
         return completion
 
     def compute_backup_completion(self, grammar_decoder, function_incomplete, i, input_ids_cutoff, generated_ids):
-        self.logger.log(f"Last valid state: {grammar_decoder.last_valid_state[i]}")
-        self.logger.log(f"Function end: {grammar_decoder.function_end[i]}")
-
         if grammar_decoder.function_end[i] is not None:
             # if the function end is not None, then the last valid state is the function end
             last_token_id = grammar_decoder.function_end[i]

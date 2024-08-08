@@ -5,6 +5,7 @@ import ast
 import json
 from jsonschema import validate, ValidationError
 from collections import defaultdict
+from syncode import common
 from syncode.evaluation.mxeval_evaluation import compute_pass_at_k
 
 class JSONEval:
@@ -13,8 +14,10 @@ class JSONEval:
     """
     @staticmethod
     def run_json_eval(
-        syncode, 
+        syncode,
+        out_path: Optional[str], 
         debug_task_id: Optional[int] = None,
+        logger=common.EmptyLogger()
         ):
         problems = syncode.dataset.problems
         if syncode.grammar_decoder is not None:
@@ -35,19 +38,19 @@ class JSONEval:
                 return output
             outputs.append(outputs) 
 
-        schema_result = validate_json_data(syncode, samples, results)
+        schema_result = validate_json_data(syncode, samples, results, logger=logger)
 
         # exact match evaluation doesn't make sense
-        # exact_match_result = validate_json_completion(syncode, samples, results)
-
-        write_jsonl(syncode.out_path, schema_result)
+        # exact_match_result = validate_json_completion(samples, results, logger=logger)
+        if out_path is not None:
+            write_jsonl(out_path, schema_result)
         
         pass_at_k = compute_pass_at_k(results)
 
         # Log result
-        syncode.logger.log(f"Result: {pass_at_k}")
+        logger.log(f"Result: {pass_at_k}")
         print(f"Result: {pass_at_k}")
-        syncode.logger.close()
+        logger.close()
         return outputs
     
     def run_eval_for_task(syncode, num_samples_per_task, problem, samples, pbar, task_id):
@@ -70,7 +73,7 @@ class JSONEval:
         pbar.update(num_samples_per_task)
         return batch_completions
     
-def validate_json_data(syncode, samples, results):
+def validate_json_data(syncode, samples, results, logger=common.EmptyLogger()):
     validation_results = []
     for sample in samples:
         valid = False
@@ -90,7 +93,7 @@ def validate_json_data(syncode, samples, results):
                 except (SyntaxError, ValueError) as e:
                     generated_json = json_object
                     error_message = f"JSON decoding error: {e}"
-                    syncode.logger.log(f"Validation failed for JSON data: {error_message}")
+                    logger.log(f"Validation failed for JSON data: {error_message}")
                     validation_results.append(dict(task_id = sample["task_id"], completion = generated_json, schema = json_schema, ground_truth = None, result = error_message, passed = valid, error_type = "Decoding Error"))
                     results[sample["task_id"]].append((sample["completion_id"], dict(task_id= sample["task_id"], completion= sample["completion"], passed= valid)))
                     continue
@@ -99,7 +102,7 @@ def validate_json_data(syncode, samples, results):
                 for index, item in enumerate(generated_json):
                     try:
                         validate(instance=item, schema=json_schema)
-                        syncode.logger.log(f"Item {index+1} is valid against the schema.")
+                        logger.log(f"Item {index+1} is valid against the schema.")
                     except ValidationError as e:
                         error_message = f"Validation failed for item {index+1}: {e}"
                         break
@@ -116,16 +119,13 @@ def validate_json_data(syncode, samples, results):
             valid = True
             error_message = "JSON data is valid against the schema."
             error_type = "No Error"
-            syncode.logger.log(error_message)
-        else:
-            syncode.logger.log(f"Validation failed for JSON data: {error_message}")
     
         validation_results.append(dict(task_id = sample["task_id"], completion = generated_json, schema = json_schema, ground_truth = None, result = error_message, passed = valid, error_type = error_type))
         results[sample["task_id"]].append((sample["completion_id"], dict(task_id= sample["task_id"], completion= sample["completion"], passed= valid)))
 
     return validation_results
 
-def validate_json_completion(syncode, samples, results):
+def validate_json_completion(samples, results, logger=common.EmptyLogger()):
     validation_results = []
     for sample in samples:
         json_object = sample["completion"]
@@ -141,16 +141,16 @@ def validate_json_completion(syncode, samples, results):
                 except (SyntaxError, ValueError) as e:
                     generated_json = json_object
                     error_message = f"JSON decoding error: {e}"
-                    syncode.logger.log(f"Validation failed for JSON data: {error_message}")
+                    logger.log(f"Validation failed for JSON data: {error_message}")
                     validation_results.append(dict(task_id = sample["task_id"], completion = generated_json, schema = None, ground_truth = ground_truth_json, result = error_message, passed = valid, error_type = "Decoding Error"))
                     results[sample["task_id"]].append((sample["completion_id"], dict(task_id= sample["task_id"], completion= sample["completion"], passed= valid)))
                     continue
             
             
             if set(generated_json.keys()) != set(ground_truth_json.keys()):
-                syncode.logger.log("Keys don't match:")
-                syncode.logger.log(f"Expected: {set(generated_json.keys())}")
-                syncode.logger.log(f"Got: {set(ground_truth_json.keys())}")
+                logger.log("Keys don't match:")
+                logger.log(f"Expected: {set(generated_json.keys())}")
+                logger.log(f"Got: {set(ground_truth_json.keys())}")
                 error_message = f"Keys don't match: Expected: {set(generated_json.keys())} Got: {set(ground_truth_json.keys())}"
                 validation_results.append(dict(task_id = sample["task_id"], completion = generated_json, schema = None, ground_truth = ground_truth_json, result = error_message, passed = valid, error_type = "Key Match Error"))
                 results[sample["task_id"]].append((sample["completion_id"], dict(task_id= sample["task_id"], completion= sample["completion"], passed= valid)))
@@ -158,9 +158,9 @@ def validate_json_completion(syncode, samples, results):
 
             for key in generated_json.keys():
                 if generated_json[key] != ground_truth_json[key]:
-                    syncode.logger.log(f"Values don't match for key '{key}'")
-                    syncode.logger.log(f"Expected: {generated_json[key]}")
-                    syncode.logger.log(f"Got: {ground_truth_json[key]}")
+                    logger.log(f"Values don't match for key '{key}'")
+                    logger.log(f"Expected: {generated_json[key]}")
+                    logger.log(f"Got: {ground_truth_json[key]}")
                     error_message = f"Values don't match for key '{key}' Expected: {generated_json[key]} Got: {ground_truth_json[key]}"
                     validation_results.append(dict(task_id = sample["task_id"], completion = generated_json, schema = None, ground_truth = ground_truth_json, result = error_message, passed = valid, error_type = "Value Match Error"))
                     results[sample["task_id"]].append((sample["completion_id"], dict(task_id= sample["task_id"], completion= sample["completion"], passed= valid)))
@@ -170,7 +170,7 @@ def validate_json_completion(syncode, samples, results):
                 continue
         
         except Exception as e:
-            syncode.logger.log(f"Exception occured: {e}")
+            logger.log(f"Exception occured: {e}")
             error_message = f"Error occurred: {e}"
             error_type = "Other Error"
             validation_results.append(dict(task_id = sample["task_id"], completion = generated_json, schema = None, ground_truth = ground_truth_json, result = error_message, passed = valid, error_type = error_type))
