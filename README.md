@@ -22,7 +22,8 @@
 
 ## ℹ️ About
 * **SynCode** is a novel framework for the grammar-guided generation of Large Language Models (LLMs) that is scalable to general-purpose programming languages and has soundness and completeness guarantees. 
-* With **SynCode**, you can ensure that your Language Model is generating output that is syntactically valid with respect to the rules defined by a Context-Free Grammar (CFG). 
+* With **SynCode**, you can ensure that your Language Model is generating output that is syntactically valid with respect to the rules defined by a Context-Free Grammar (CFG).
+* For example, SynCode gets 99% accuracy in JSON generation with Gemma-2b (check [here](./notebooks/eval_json.ipynb)) and is 10-20% faster than standard unconstrained generation
 
 ## Builtin Grammars
 
