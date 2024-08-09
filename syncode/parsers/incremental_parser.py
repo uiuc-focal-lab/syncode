@@ -5,6 +5,7 @@ from syncode.larkm.parsers.lalr_interactive_parser import InteractiveParser
 from syncode.parse_result import ParseResult, RemainderState
 from syncode.larkm.lexer import Token
 from typing import Optional, Any, Tuple, Iterable
+from collections import defaultdict
 
 class IncrementalParser:    
     """
