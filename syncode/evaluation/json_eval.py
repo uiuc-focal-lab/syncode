@@ -17,7 +17,8 @@ class JSONEval:
         syncode,
         out_path: Optional[str], 
         debug_task_id: Optional[int] = None,
-        logger=common.EmptyLogger()
+        logger=common.EmptyLogger(),
+        prompt_type='original'
         ):
         problems = syncode.dataset.problems
         if syncode.grammar_decoder is not None:
@@ -33,7 +34,7 @@ class JSONEval:
         results = defaultdict(list)
         
         for task_id, problem in enumerate(problems):
-            output = JSONEval.run_eval_for_task(syncode, syncode.num_samples, problem, samples, pbar, task_id)
+            output = JSONEval.run_eval_for_task(syncode, syncode.num_samples, problem, samples, pbar, task_id, prompt_type=prompt_type)
             if debug_task_id is not None:
                 return output
             outputs.append(outputs) 
@@ -53,12 +54,17 @@ class JSONEval:
         logger.close()
         return outputs
     
-    def run_eval_for_task(syncode, num_samples_per_task, problem, samples, pbar, task_id):
+    def run_eval_for_task(syncode, num_samples_per_task, problem, samples, pbar, task_id, prompt_type='original'):
         """
         run evaluation for a specific task
         """
+        
+        if prompt_type == 'original':
+            problem["prompt"][0]['content'] = f"{problem['prompt'][0]['content']}\nJSON:\n"
+        else:
+            problem["prompt"][0]['content'] = f"{problem['prompt'][0]['content']}\nOnly output JSON.\nJSON:\n"
+
         prompt = syncode.model.tokenizer.apply_chat_template(problem["prompt"], tokenize = False)
-        prompt = f"{prompt}\nJSON:\n"
 
         batch_completions = syncode.model.generate_batch_completion_grammar(prompt, num_samples_per_task)
         for completion_id, completion in enumerate(batch_completions):
