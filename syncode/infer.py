@@ -96,6 +96,7 @@ class Syncode:
             self.parse_output_only = parse_output_only
 
         # Set the grammar
+        self.language = grammar
         self.grammar = Grammar(grammar) if self.is_grammar_mode() else None
 
         # Load model
@@ -143,7 +144,8 @@ class Syncode:
             out_path: str=None,
             num_few_shot:int=0,
             logger=common.EmptyLogger(), 
-            task_id=None
+            task_id=None,
+            prompt_type='original' # For JSONEvalL: "original" or "explicit"
         ) -> dict:
         """
         Run evaluation on the model:
@@ -159,7 +161,7 @@ class Syncode:
             logger.open()
 
         # Load the dataset
-        self.dataset = Dataset(dataset, language=self.grammar.name, num_few_shot=num_few_shot)
+        self.dataset = Dataset(dataset, language=self.language, num_few_shot=num_few_shot)
 
         if self.dataset.type == "code": 
             output = CodeEval.run_code_eval(self, self.num_samples, out_path, format_tabs=True, debug_task_id=task_id, logger=logger)
@@ -170,7 +172,7 @@ class Syncode:
         elif self.dataset.type == "fol":
             output = FOLEval.run_eval(self, out_path, debug_task_id=task_id)
         elif self.dataset.type == "json":
-            output = JSONEval.run_json_eval(self, out_path, debug_task_id=task_id, logger=logger)
+            output = JSONEval.run_json_eval(self, out_path, debug_task_id=task_id, logger=logger, prompt_type=prompt_type)
         else:
             raise ValueError(f"Dataset type {self.dataset.type} not supported")
         logger.close()
