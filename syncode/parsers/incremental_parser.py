@@ -136,6 +136,12 @@ class IncrementalParser:
         if len(self.prev_lexer_tokens) > 0:
             self._restore_recent_parser_state(lexer_tokens)
 
+        if len(lexer_tokens) > len(self.prev_lexer_tokens):
+            start_idx = max(len(self.prev_lexer_tokens)-1, 0)
+            end_idx = len(lexer_tokens)-1
+            for idx in range(start_idx, end_idx):
+                self.uc_map[lexer_tokens[idx].type].append(lexer_tokens[idx].end_pos)
+
         self.prev_lexer_tokens = lexer_tokens  # Set the previous lexer tokens
 
         # Parse the tokens
