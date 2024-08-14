@@ -155,14 +155,16 @@ class IncrementalParser:
             while self.cur_pos < len(lexer_tokens):
                 token = lexer_tokens[self.cur_pos]
                 self.cur_pos += 1
-                self.parsed_lexer_tokens.append(token) # parser_token_seq holds all tokens
                 
                 # Update the uc map. This should be called before updating the parser state
                 self._update_uc_map_nonterminals(interactive.parser_state, token)
 
                 # Compute the number of characters in the input before the token
                 if token.type != 'IGNORED':
+                    self.parsed_lexer_tokens.append(token) # parser_token_seq holds all tokens
                     interactive.feed_token(token)
+                else:
+                    continue
 
                 # Store the current state of the parser
                 self._store_parser_state(

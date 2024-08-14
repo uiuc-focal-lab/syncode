@@ -57,6 +57,8 @@ class PythonIncrementalParser(IncrementalParser):
                 elif token.type == '_DEDENT': # Do not shoot dedent tokens unless there is some code on the next line
                     self.dedent_queue.append(token)
                     continue
+                elif token.type == 'IGNORED':
+                    continue
                 else:
                     self.parsed_lexer_tokens.append(token) # parser_token_seq holds all tokens except _INDENT and _DEDENT
 
@@ -65,7 +67,8 @@ class PythonIncrementalParser(IncrementalParser):
                         dedent_token = self.dedent_queue.pop()
                         interactive.feed_token(dedent_token)
                 
-                interactive.feed_token(token)
+                if token.type != 'IGNORED':
+                    interactive.feed_token(token)
 
                 # Store the current state of the parser
                 self._store_parser_state(
