@@ -1,4 +1,6 @@
 import copy
+from syncode.larkm.parsers.lalr_analysis import Reduce
+from syncode.larkm.parsers.lalr_parser_state import ParserState
 import syncode.common as common
 import syncode.larkm as lark
 from syncode.larkm.parsers.lalr_interactive_parser import InteractiveParser
@@ -136,11 +138,7 @@ class IncrementalParser:
         if len(self.prev_lexer_tokens) > 0:
             self._restore_recent_parser_state(lexer_tokens)
 
-        if len(lexer_tokens) > len(self.prev_lexer_tokens):
-            start_idx = max(len(self.prev_lexer_tokens)-1, 0)
-            end_idx = len(lexer_tokens)-1
-            for idx in range(start_idx, end_idx):
-                self.uc_map[lexer_tokens[idx].type].append(lexer_tokens[idx].end_pos)
+        self._update_uc_map_terminals(lexer_tokens)
 
         self.prev_lexer_tokens = lexer_tokens  # Set the previous lexer tokens
 
@@ -154,8 +152,11 @@ class IncrementalParser:
                 self.cur_pos += 1
                 self.parsed_lexer_tokens.append(token) # parser_token_seq holds all tokens
                 
+                # Update the uc map. This should be called before updating the parser state
+                self._update_uc_map_nonterminals(interactive.parser_state, token)
+
                 # Compute the number of characters in the input before the token
-                interactive.feed_token(token, uc_map=self.uc_map, char_cnt=self.token_to_pos[token])
+                interactive.feed_token(token)
 
                 # Store the current state of the parser
                 self._store_parser_state(
@@ -171,6 +172,7 @@ class IncrementalParser:
         remainder_state, current_term_str, final_terminal = self._get_remainder(partial_code, lexing_incomplete=lexing_incomplete, parse_incomplete=parse_incomplete)            
         
         return ParseResult.from_accept_terminals(self.cur_ac_terminals, self.next_ac_terminals, current_term_str, remainder_state, final_terminal=final_terminal, ignore_terminals=self.base_parser.lexer_conf.ignore)
+
 
     def _get_remainder(self, code, lexing_incomplete=False, parse_incomplete=False):
         final_terminal = None
@@ -222,3 +224,59 @@ class IncrementalParser:
             # If it is the final token that gave the error, then it is okay
             self.cur_ac_terminals = self.next_ac_terminals
             self.next_ac_terminals = set()
+
+    def _update_uc_map_terminals(self, lexer_tokens):
+        """
+        Updates the uc_map with the current token for terminals.
+        """
+        if len(lexer_tokens) > len(self.prev_lexer_tokens):
+            start_idx = max(len(self.prev_lexer_tokens)-1, 0)
+            end_idx = len(lexer_tokens)-1
+            for idx in range(start_idx, end_idx):
+                self.uc_map[lexer_tokens[idx].type].append(lexer_tokens[idx].end_pos)
+
+    def _update_uc_map_nonterminals(self, parser_state: ParserState, token: Token) -> Any:
+        """
+        Updates the uc_map with the current token for non-terminals. 
+        """ 
+        uc_map:dict = self.uc_map
+        char_cnt:int = self.token_to_pos[token]
+
+        # Copy the parser state
+        state_stack = copy.deepcopy(parser_state.state_stack)
+        value_stack = copy.deepcopy(parser_state.value_stack)
+
+        states = parser_state.parse_conf.states
+        callbacks = parser_state.parse_conf.callbacks
+
+        while True:
+            state = state_stack[-1]
+            try:
+                action, arg = states[state][token.type]
+            except KeyError:
+                break
+
+            if action is Reduce:
+                # reduce+shift as many times as necessary
+                rule = arg
+                size = len(rule.expansion)
+                if size:
+                    s = value_stack[-size:]
+                    del state_stack[-size:]
+                    del value_stack[-size:]
+                else:
+                    s = []
+
+                assert char_cnt is not None
+                if type(rule.origin.name) == Token:
+                    # Ensure that uc_map[rule.origin.name.value] is a sorted list of unique numbers
+                    if uc_map[rule.origin.name.value] == [] or uc_map[rule.origin.name.value][-1] != char_cnt-1:
+                        uc_map[rule.origin.name.value].append(char_cnt-1)
+
+                value = callbacks[rule](s) if callbacks else s
+
+                _, new_state = states[state_stack[-1]][rule.origin.name]
+                state_stack.append(new_state)
+                value_stack.append(value)
+            else:
+                break

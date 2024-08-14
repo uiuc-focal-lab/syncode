@@ -64,7 +64,7 @@ class ParserState(Generic[StateT]):
     def copy(self) -> 'ParserState[StateT]':
         return copy(self)
 
-    def feed_token(self, token: Token, is_end=False, uc_map=None, char_cnt=None) -> Any:
+    def feed_token(self, token: Token, is_end=False) -> Any:
         state_stack = self.state_stack
         value_stack = self.value_stack
         states = self.parse_conf.states
@@ -97,13 +97,6 @@ class ParserState(Generic[StateT]):
                     del value_stack[-size:]
                 else:
                     s = []
-
-                if uc_map is not None:
-                    assert char_cnt is not None
-                    if type(rule.origin.name) == Token:
-                        # Ensure that uc_map[rule.origin.name.value] is a sorted list of unique numbers
-                        if uc_map[rule.origin.name.value] == [] or uc_map[rule.origin.name.value][-1] != char_cnt-1:
-                            uc_map[rule.origin.name.value].append(char_cnt-1)
 
                 value = callbacks[rule](s) if callbacks else s
 
