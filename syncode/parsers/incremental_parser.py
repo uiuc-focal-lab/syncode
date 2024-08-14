@@ -31,7 +31,6 @@ class IncrementalParser:
         self.cur_ac_terminals: set = set()
         self.next_ac_terminals: set = self._accepts(self.interactive)
         self.uc_map = defaultdict(list)
-        self.token_to_pos = {}
 
     def reset(self):
         """
@@ -43,7 +42,6 @@ class IncrementalParser:
 
         # Reset maps used to mark units 
         self.uc_map = defaultdict(list)
-        self.token_to_pos = {}
 
         # Reset the parser state
         self._set_initial_parser_state()
@@ -94,16 +92,23 @@ class IncrementalParser:
                 blexer = interactive.lexer_thread.lexer
                 token = blexer.next_token(lexer_state)
                 self.lexer_pos = lexer_state.line_ctr.char_pos
+
+                if len(lexer_tokens)>0 and token.start_pos > lexer_tokens[-1].end_pos:
+                    # We have a gap in the tokens. This can happen if we had ignored tokens in the middle
+                    lexer_tokens.append(Token('IGNORED', None, start_pos=lexer_tokens[-1].end_pos+1))
                 lexer_tokens.append(token)
 
-                self.token_to_pos[token] = lexer_state.line_ctr.char_pos - len(token.value)
         except lark.exceptions.UnexpectedCharacters as e:
             lexing_incomplete = True
             # We update the lexer position to the current position since the lexer has stopped at this position
             self.lexer_pos = lexer_state.line_ctr.char_pos
         except EOFError as e:
             pass
-    
+        
+        if len(lexer_tokens)>0 and lexer_tokens[-1].end_pos < len(code):
+            # We have a gap in the tokens. This can happen if we had ignored token at the end
+            lexer_tokens.append(Token('IGNORED', None, start_pos=lexer_tokens[-1].end_pos+1))
+
         return lexer_tokens, lexing_incomplete
     
     def _restore_recent_parser_state(self, lexer_tokens):
@@ -156,7 +161,8 @@ class IncrementalParser:
                 self._update_uc_map_nonterminals(interactive.parser_state, token)
 
                 # Compute the number of characters in the input before the token
-                interactive.feed_token(token)
+                if token.type != 'IGNORED':
+                    interactive.feed_token(token)
 
                 # Store the current state of the parser
                 self._store_parser_state(
@@ -233,14 +239,16 @@ class IncrementalParser:
             start_idx = max(len(self.prev_lexer_tokens)-1, 0)
             end_idx = len(lexer_tokens)-1
             for idx in range(start_idx, end_idx):
-                self.uc_map[lexer_tokens[idx].type].append(lexer_tokens[idx].end_pos)
+                if lexer_tokens[idx].type != 'IGNORED':
+                    if len(self.uc_map[lexer_tokens[idx].type]) == 0 or self.uc_map[lexer_tokens[idx].type][-1] != lexer_tokens[idx].end_pos:
+                        self.uc_map[lexer_tokens[idx].type].append(lexer_tokens[idx].end_pos)
 
-    def _update_uc_map_nonterminals(self, parser_state: ParserState, token: Token) -> Any:
+    def _update_uc_map_nonterminals(self, parser_state: ParserState, token: Token):
         """
         Updates the uc_map with the current token for non-terminals. 
         """ 
         uc_map:dict = self.uc_map
-        char_cnt:int = self.token_to_pos[token]
+        char_cnt:int = token.start_pos
 
         # Copy the parser state
         state_stack = copy.deepcopy(parser_state.state_stack)
@@ -251,9 +259,23 @@ class IncrementalParser:
 
         while True:
             state = state_stack[-1]
-            try:
+            
+            if token.type in states[state]:
                 action, arg = states[state][token.type]
-            except KeyError:
+            elif token.type == 'IGNORED':
+                possible_rules = set()
+                for term, (action, rule) in states[state].items():
+                    if action != Reduce:
+                        break
+                    possible_rules.add(rule)
+                
+                if len(possible_rules) == 1:
+                    rule = list(possible_rules)[0]
+                    action = Reduce
+                    arg = rule
+                else:
+                    break
+            else:
                 break
 
             if action is Reduce:
