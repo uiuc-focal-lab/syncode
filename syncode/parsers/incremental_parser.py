@@ -9,6 +9,46 @@ from syncode.larkm.lexer import Token
 from typing import Optional, Any, Tuple, Iterable
 from collections import defaultdict
 
+class SymbolPosMap:
+    """
+    This class stores the mapping of the symbols to their positions in the code as a map of symbol to list of positions. The list of positions is sorted in increasing order.
+    """
+    def __init__(self):
+        self._pos_map = defaultdict(list)
+    
+    def add_symbol_pos(self, symbol:str, pos:int):
+        """
+        Adds the position of the symbol in the code.
+        """
+        if len(self._pos_map[symbol]) == 0 or self._pos_map[symbol][-1] != pos:
+            self._pos_map[symbol].append(pos)
+
+    def get_symbol_pos(self, symbol:str, k:int) -> int:
+        """
+        Returns the k-th position of the symbol in the code.
+        """
+        return self._pos_map[symbol][k]
+
+    def get_symbol_count(self, symbol: str, after: int=0) -> int:
+        """
+        Returns the number of times the symbol is present in the code after the given position.
+        """
+        return len([pos for pos in self._pos_map[symbol] if pos > after])
+    
+    def crop(self, target_char_pos:int):
+        """
+        Updates the symbol pos map and removes the positions that are greater than the target_char_pos.
+        """
+        for symbol, pos_list in self._pos_map.items():
+            self._pos_map[symbol] = [pos for pos in pos_list if pos <= target_char_pos]
+    
+    def is_present(self, symbol:str) -> bool:
+        """
+        Returns True if the symbol is present in the symbol pos map.
+        """
+        return symbol in self._pos_map
+                
+
 class IncrementalParser:    
     """
     This is the base class for all incremental parsers.
@@ -30,7 +70,7 @@ class IncrementalParser:
 
         self.cur_ac_terminals: set = set()
         self.next_ac_terminals: set = self._accepts(self.interactive)
-        self.uc_map = defaultdict(list)
+        self.symbol_pos_map: SymbolPosMap = SymbolPosMap()
 
     def reset(self):
         """
@@ -41,7 +81,7 @@ class IncrementalParser:
         self.lexer_pos = 0
 
         # Reset maps used to mark units 
-        self.uc_map = defaultdict(list)
+        self.symbol_pos_map = SymbolPosMap()
 
         # Reset the parser state
         self._set_initial_parser_state()
@@ -143,7 +183,7 @@ class IncrementalParser:
         if len(self.prev_lexer_tokens) > 0:
             self._restore_recent_parser_state(lexer_tokens)
 
-        self._update_uc_map_terminals(lexer_tokens)
+        self._update_symbol_pos_map_terminals(lexer_tokens)
 
         self.prev_lexer_tokens = lexer_tokens  # Set the previous lexer tokens
 
@@ -157,7 +197,7 @@ class IncrementalParser:
                 self.cur_pos += 1
                 
                 # Update the uc map. This should be called before updating the parser state
-                self._update_uc_map_nonterminals(interactive.parser_state, token)
+                self._update_symbol_pos_map_nonterminals(interactive.parser_state, token)
 
                 # Compute the number of characters in the input before the token
                 if token.type != 'IGNORED':
@@ -233,7 +273,7 @@ class IncrementalParser:
             self.cur_ac_terminals = self.next_ac_terminals
             self.next_ac_terminals = set()
 
-    def _update_uc_map_terminals(self, lexer_tokens):
+    def _update_symbol_pos_map_terminals(self, lexer_tokens):
         """
         Updates the uc_map with the current token for terminals.
         """
@@ -242,14 +282,12 @@ class IncrementalParser:
             end_idx = len(lexer_tokens)-1
             for idx in range(start_idx, end_idx):
                 if lexer_tokens[idx].type != 'IGNORED':
-                    if len(self.uc_map[lexer_tokens[idx].type]) == 0 or self.uc_map[lexer_tokens[idx].type][-1] != lexer_tokens[idx].end_pos:
-                        self.uc_map[lexer_tokens[idx].type].append(lexer_tokens[idx].end_pos)
+                    self.symbol_pos_map.add_symbol_pos(lexer_tokens[idx].type, lexer_tokens[idx].end_pos)
 
-    def _update_uc_map_nonterminals(self, parser_state: ParserState, token: Token):
+    def _update_symbol_pos_map_nonterminals(self, parser_state: ParserState, token: Token):
         """
         Updates the uc_map with the current token for non-terminals. 
         """ 
-        uc_map:dict = self.uc_map
         char_cnt:int = token.start_pos
 
         # Copy the parser state
@@ -293,9 +331,7 @@ class IncrementalParser:
 
                 assert char_cnt is not None
                 if type(rule.origin.name) == Token:
-                    # Ensure that uc_map[rule.origin.name.value] is a sorted list of unique numbers
-                    if uc_map[rule.origin.name.value] == [] or uc_map[rule.origin.name.value][-1] != char_cnt-1:
-                        uc_map[rule.origin.name.value].append(char_cnt-1)
+                    self.symbol_pos_map.add_symbol_pos(rule.origin.name.value, char_cnt-1)
 
                 value = callbacks[rule](s) if callbacks else s
 
