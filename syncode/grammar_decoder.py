@@ -135,6 +135,7 @@ class SyncodeLogitsProcessor(LogitsProcessor):
         # start_from is used for choosing where the parsing should start
         debug = False
         partial_codes = self._get_partial_codes(input_ids)
+        assert len(partial_codes) == len(self.inc_parsers), "Number of partial codes should match the number of parsers. Make sure that the argument `num_samples` is set correctly in the SyncodeLogitsProcessor."
 
         for idx, partial_code in enumerate(partial_codes):
             ## Parsing
