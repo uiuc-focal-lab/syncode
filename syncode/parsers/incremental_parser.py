@@ -1,4 +1,5 @@
 import copy
+from syncode.larkm.tree import Tree
 from syncode.larkm.parsers.lalr_analysis import Reduce
 from syncode.larkm.parsers.lalr_parser_state import ParserState
 import syncode.common as common
@@ -11,36 +12,51 @@ from collections import defaultdict
 
 class SymbolPosMap:
     """
-    This class stores the mapping of the symbols to their positions in the code as a map of symbol to list of positions. The list of positions is sorted in increasing order.
+    This class stores the mapping of the symbols to their positions in the code as a map of symbol to list of positions. The list of positions is sorted in increasing order. 
+    A position is a tuple of start and end position of the symbol in the code.
+
+    Example:
+    symbol_pos_map = {
+        'NUMBER': [(0, 2), (4, 6), (8, 10)],
+        'OPERATOR': [(3, 3), (7, 7)]
+    }
     """
     def __init__(self):
         self._pos_map = defaultdict(list)
     
-    def add_symbol_pos(self, symbol:str, pos:int):
+    def add_symbol_pos(self, symbol:str, pos:Tuple[int, int]):
         """
         Adds the position of the symbol in the code.
         """
-        if len(self._pos_map[symbol]) == 0 or self._pos_map[symbol][-1] != pos:
+        start_pos, end_pos = pos
+
+        if len(self._pos_map[symbol]) == 0 or self._pos_map[symbol][-1][1] != end_pos:
             self._pos_map[symbol].append(pos)
 
-    def get_symbol_pos(self, symbol:str, k:int) -> int:
+    def get_symbol_pos_end(self, symbol:str, k:int) -> int:
         """
         Returns the k-th position of the symbol in the code.
         """
-        return self._pos_map[symbol][k]
+        return self._pos_map[symbol][k][1]
+
+    def get_symbol_pos_all(self, symbol:str) -> list:
+        """
+        Returns all the positions of the symbol in the code.
+        """
+        return self._pos_map[symbol]
 
     def get_symbol_count(self, symbol: str, after: int=0) -> int:
         """
         Returns the number of times the symbol is present in the code after the given position.
         """
-        return len([pos for pos in self._pos_map[symbol] if pos > after])
+        return len([pos for pos in self._pos_map[symbol] if pos[1] > after])
     
     def crop(self, target_char_pos:int):
         """
         Updates the symbol pos map and removes the positions that are greater than the target_char_pos.
         """
         for symbol, pos_list in self._pos_map.items():
-            self._pos_map[symbol] = [pos for pos in pos_list if pos <= target_char_pos]
+            self._pos_map[symbol] = [pos for pos in pos_list if pos[1] <= target_char_pos]
     
     def is_present(self, symbol:str) -> bool:
         """
@@ -282,13 +298,16 @@ class IncrementalParser:
             end_idx = len(lexer_tokens)-1
             for idx in range(start_idx, end_idx):
                 if lexer_tokens[idx].type != 'IGNORED':
-                    self.symbol_pos_map.add_symbol_pos(lexer_tokens[idx].type, lexer_tokens[idx].end_pos)
+                    self.symbol_pos_map.add_symbol_pos(
+                        lexer_tokens[idx].type, 
+                        pos=(lexer_tokens[idx].start_pos, lexer_tokens[idx].end_pos)
+                        )
 
     def _update_symbol_pos_map_nonterminals(self, parser_state: ParserState, token: Token):
         """
         Updates the uc_map with the current token for non-terminals. 
         """ 
-        char_cnt:int = token.start_pos
+        end_pos:int = token.start_pos-1
 
         # Copy the parser state
         state_stack = copy.deepcopy(parser_state.state_stack)
@@ -329,9 +348,13 @@ class IncrementalParser:
                 else:
                     s = []
 
-                assert char_cnt is not None
+                assert end_pos is not None
                 if type(rule.origin.name) == Token:
-                    self.symbol_pos_map.add_symbol_pos(rule.origin.name.value, char_cnt-1)
+                    start_pos = self._get_nonterminal_start_pos(s)
+                    self.symbol_pos_map.add_symbol_pos(
+                            rule.origin.name.value, 
+                            pos=(start_pos, end_pos)
+                            )
 
                 value = callbacks[rule](s) if callbacks else s
 
@@ -340,3 +363,11 @@ class IncrementalParser:
                 value_stack.append(value)
             else:
                 break
+    
+    def _get_nonterminal_start_pos(self, s:Iterable[Tree]) -> int:
+        while True:
+            assert len(s) > 0
+            if type(s[0]) == Token:
+                return s[0].start_pos
+            else:
+                s = s[0].children
