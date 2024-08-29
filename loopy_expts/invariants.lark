@@ -1,0 +1,80 @@
+// TODO: Need to add C_type_name and C_type_expr from the manual
+string: \S+                                                     -> string
+
+literal: "\true"                                                -> true 
+    | "\false"                                                  -> false
+    | [0-9]+                                                    -> integer
+    | [0-9]+\.[0-9]+                                            -> real
+    | string                                                    -> string
+    | \S                                                        -> char
+
+id: [a-zA-Z_][a-zA-Z0-9_]*                                      -> id
+
+bin_op: "+" | "-" | "*" | "/" | "%" | "==" | "!=" 
+    | "<" | "<=" | ">" | ">=" | "&&" | "||" | "^^" 
+    | ">>" | "<<" | "&" | "|" | "^" | "-->" | "<-->"
+
+unary_op: "+" | "-" | "!" | "~" | "*" | "&"
+
+ident: id
+
+poly_id: id
+
+type_name: logic_type_name | C_type_name
+
+type_expr: logic_type_name | C_type_expr
+
+
+logic_type_name: built_in_logic_type | id
+
+built_in_logic_type: "boolean" | "integer" | "real"
+
+term: literal | ident | unary_op term | term bin_op term 
+    | term "[" term "]" -> array_index
+    | "{" term "\with" "[" term "]" "=" term "}"                -> array_update
+    | term "." id                                               -> field_access
+    |  "{" term "\with" "." id "=" term "}"                     -> field_update
+    | term "->" id                                              -> pointer_field_access
+    | "(" type_expr ")" term                                    -> cast
+    | ident "(" term ("," term)* ")"                            -> function_call
+    | "(" term ")"                                              -> parenthesis
+    | term ? term : term                                        -> ternary
+    | "\let" id "=" term ";" term                               -> let
+    | "sizeof" "(" term ")"                                     -> sizeof
+    | "sizeof" "(" C_type_expr ")"                              -> sizeof_type
+    | id ":" term                                               -> syntactic_naming
+    | string ":" term                                           -> syntactic_naming_str
+
+
+rel_op: "==" | "!=" | "<" | "<=" | ">" | ">="
+
+pred:  "\true" | "\false" 
+| term (rel_op term)+ 
+| ident "(" term ("," term)* ")"
+| "(" pred ")"
+| pred "&&" pred
+| pred "||" pred
+| pred "==>" pred
+| pred "<==>" pred
+| "!" pred
+| pred "^^" pred
+| term "?" pred ":" pred
+| pred "?" pred ":" pred
+| "\let" id "=" term ";" pred
+| "\let" id "=" pred ";" pred
+| "\forall" binders ";" pred
+| "\exists" binders ";" pred
+| id ":" pred
+| string ":" pred
+
+binders: binder (, binder)*
+
+binder: type_name variable_ident (,variable_ident)*
+
+variable_ident: id
+| "*" variable_ident
+| variable_ident "[]"
+| "(" variable_ident ")"
+
+WS : /[ \t\n]+/
+%ignore WS
