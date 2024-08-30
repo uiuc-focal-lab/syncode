@@ -8,7 +8,7 @@ class SQLEval:
     Run evaluation on SQL dataset
     """
     @staticmethod
-    def run_eval(syncode, out_path: Optional[str]):
+    def run_eval(syncode, out_path: Optional[str], debug_task_id: Optional[int] = None):
         problems = syncode.dataset.problems[:100]
         samples = []
         pbar = tqdm(total=len(problems) * syncode.num_samples)
@@ -18,6 +18,9 @@ class SQLEval:
 
         if syncode.grammar_decoder is not None:
             syncode.grammar_decoder.parse_output_only = True # Do not parse input+output
+
+        if debug_task_id is not None:
+            problems = [problems[debug_task_id]]
 
         with open(predict_file, 'w') as f:
             for task_id, problem in enumerate(problems):
@@ -45,4 +48,4 @@ class SQLEval:
         scores, error_types = evaluate(predict_file, gold_file, databses, etype="all", table=tables, result_jsonl=samples)
         print(f"Scores: {scores['all']}\n Error types: {error_types}")
         
-        if out_path is not None: write_jsonl(out_path, samples)
+        if out_path is not None and debug_task_id is None: write_jsonl(out_path, samples)

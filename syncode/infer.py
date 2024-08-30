@@ -168,7 +168,7 @@ class Syncode:
         elif self.dataset.type == "math":
             output = MathEval.run_math_eval(self, out_path, debug_task_id=task_id, logger=logger)
         elif self.dataset.type == "sql":
-            output = SQLEval.run_eval(self, out_path)
+            output = SQLEval.run_eval(self, out_path, debug_task_id=task_id)
         elif self.dataset.type == "fol":
             output = FOLEval.run_eval(self, out_path, debug_task_id=task_id)
         elif self.dataset.type == "json":
