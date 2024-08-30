@@ -370,4 +370,7 @@ class IncrementalParser:
             if type(s[0]) == Token:
                 return s[0].start_pos
             else:
-                s = s[0].children
+                idx = 0
+                while s[idx] is None: # Skip None values
+                    idx += 1
+                s = s[idx].children
