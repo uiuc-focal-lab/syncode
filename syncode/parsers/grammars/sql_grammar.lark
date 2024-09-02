@@ -30,7 +30,7 @@
 //OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-start: set_expr -> final
+start: set_expr ";"? -> final
 
 set_expr: query_expr
         | set_expr "UNION"i ["DISTINCT"i] set_expr -> union_distinct

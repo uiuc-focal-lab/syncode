@@ -133,7 +133,7 @@ class SyncodeLogitsProcessor(LogitsProcessor):
 
     def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor) -> torch.FloatTensor:    
         # start_from is used for choosing where the parsing should start
-        debug = False
+        debug = True
         partial_codes = self._get_partial_codes(input_ids)
         assert len(partial_codes) == len(self.inc_parsers), "Number of partial codes should match the number of parsers. Make sure that the argument `num_samples` is set correctly in the SyncodeLogitsProcessor."
 
