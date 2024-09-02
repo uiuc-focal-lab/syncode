@@ -1,3 +1,5 @@
+// term: "sizeof" "(" c_type_expr ")"                              -> sizeof_type
+
 string: /\S+/                                                   -> string
 
 literal: "\true"                                                -> true 
@@ -86,36 +88,30 @@ term: literal | ident | unary_op term | term bin_op term
     | term "?" term ":" term                                        -> ternary
     | "\let" id "=" term ";" term                               -> let
     | "sizeof" "(" term ")"                                     -> sizeof
-    | "sizeof" "(" c_type_expr ")"                              -> sizeof_type
     | id ":" term                                               -> syntactic_naming
     | string ":" term                                           -> syntactic_naming_str
-    | "\at" "(" term "," label_id ")"                           -> at
 
-label_id: "Here" | "Old" | "Pre" | "Post"
-| "LoopEntry" | "LoopCurrent" | "Init" | id
 
 rel_op: "==" | "!=" | "<" | "<=" | ">" | ">="
 
-pred:  "\true" 
-    | "\false" 
-    | term (rel_op term)+ 
-    | ident "(" term ("," term)* ")"
-    | "(" pred ")"
-    | pred "&&" pred
-    | pred "||" pred
-    | pred "==>" pred
-    | pred "<==>" pred
-    | "!" pred
-    | pred "^^" pred
-    | term "?" pred ":" pred
-    | pred "?" pred ":" pred
-    | "\let" id "=" term ";" pred
-    | "\let" id "=" pred ";" pred
-    | "\forall" binders ";" pred
-    | "\exists" binders ";" pred
-    | id ":" pred
-    | string ":" pred
-    | "\at" "(" pred "," label_id ")"
+pred:  "\true" | "\false" 
+| term (rel_op term)+ 
+| ident "(" term ("," term)* ")"
+| "(" pred ")"
+| pred "&&" pred
+| pred "||" pred
+| pred "==>" pred
+| pred "<==>" pred
+| "!" pred
+| pred "^^" pred
+| term "?" pred ":" pred
+| pred "?" pred ":" pred
+| "\let" id "=" term ";" pred
+| "\let" id "=" pred ";" pred
+| "\forall" binders ";" pred
+| "\exists" binders ";" pred
+| id ":" pred
+| string ":" pred
 
 
 binder: type_name variable_ident ("," variable_ident)*
