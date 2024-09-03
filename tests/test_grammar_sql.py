@@ -33,4 +33,12 @@ class TestSQLParser(unittest.TestCase):
         r = inc_parser.get_acceptable_next_terminals(partial_code)
         assert r.remainder == 'NOT'
         assert r.remainder_state == RemainderState.MAYBE_COMPLETE
+    
+    def test_sql_parser4(self):
+        inc_parser.reset()
+        # partial_code = "SELECT first_name, age FROM Customers where Customers.age = (select MAX(age) from Customers)"
+        partial_code = "SELECT * FROM cars_data WHERE weight < (SELECT"
+        r = inc_parser.get_acceptable_next_terminals(partial_code)
+        assert r.remainder == 'SELECT'
+        assert r.remainder_state == RemainderState.MAYBE_COMPLETE
         

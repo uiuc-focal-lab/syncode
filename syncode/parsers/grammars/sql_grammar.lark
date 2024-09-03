@@ -81,6 +81,7 @@ JOIN_DIRECTION: "FULL"i | "LEFT"i | "RIGHT"i
                | "RANK"i "(" ")" window_form -> rank_expression
                | "DENSE_RANK"i "(" ")" window_form -> dense_rank_expression
                | "COALESCE"i "(" [(expression_math ",")*] expression_math ")" -> coalesce_expression
+               | subquery -> subquery_expression
 
 window_form: "OVER"i "(" ["PARTITION"i "BY"i (partition_by ",")* partition_by] ["ORDER"i "BY"i (order ",")* order [ row_range_clause ] ] ")"
 
