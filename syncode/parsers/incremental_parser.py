@@ -363,14 +363,14 @@ class IncrementalParser:
                 value_stack.append(value)
             else:
                 break
-    
+        
     def _get_nonterminal_start_pos(self, s:Iterable[Tree]) -> int:
-        while True:
-            assert len(s) > 0
-            if type(s[0]) == Token:
-                return s[0].start_pos
-            else:
-                idx = 0
-                while s[idx] is None: # Skip None values
-                    idx += 1
-                s = s[idx].children
+        for item in s:
+            if type(item) == Token:
+                return item.start_pos
+            elif item != None:
+                # If the item is not None, then it is a tree
+                return item.meta.start_pos
+        
+        # This should not happen
+        return -1
