@@ -1,3 +1,4 @@
+import os
 from typing import Optional
 from tqdm import tqdm
 from mxeval.data import write_jsonl
@@ -41,11 +42,21 @@ class SQLEval:
         pbar.close()
 
         # Run evaluation script
-        from syncode.utils.sql_spider_eval.evaluation import evaluate
-        gold_file = "syncode/utils/sql_spider_eval/evaluation_examples/gold_example.txt"
-        tables = "syncode/utils/sql_spider_eval/evaluation_examples/examples/tables.json"
-        databses = "syncode/utils/sql_spider_eval/databases"
-        scores, error_types = evaluate(predict_file, gold_file, databses, etype="all", table=tables, result_jsonl=samples)
-        print(f"Scores: {scores['all']}\n Error types: {error_types}")
+        SQLEval.compute_accuracy(samples, predict_file)
         
         if out_path is not None and debug_task_id is None: write_jsonl(out_path, samples)
+
+    @staticmethod
+    def compute_accuracy(samples, predict_file):
+        from syncode.utils.sql_spider_eval.evaluation import evaluate
+
+        # Get current dir path
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+
+        # Set paths
+        gold_file = f"{current_dir}/../utils/sql_spider_eval/evaluation_examples/gold_example.txt"
+        tables = f"{current_dir}/..//utils/sql_spider_eval/evaluation_examples/examples/tables.json"
+        databses = f"{current_dir}/..//utils/sql_spider_eval/databases"
+
+        scores, error_types = evaluate(predict_file, gold_file, databses, etype="all", table=tables, result_jsonl=samples)
+        print(f"Scores: {scores['all']}\n Error types: {error_types}")
