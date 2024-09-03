@@ -26,4 +26,11 @@ class TestSQLParser(unittest.TestCase):
         r = inc_parser.get_acceptable_next_terminals(partial_code)
         assert r.remainder == ''
         assert r.remainder_state == RemainderState.COMPLETE
+    
+    def test_sql_parser3(self):
+        inc_parser.reset()
+        partial_code = "SELECT stuid FROM has_pet WHERE pettype = 'cat' AND has_pet.stuid NOT"
+        r = inc_parser.get_acceptable_next_terminals(partial_code)
+        assert r.remainder == 'NOT'
+        assert r.remainder_state == RemainderState.MAYBE_COMPLETE
         
