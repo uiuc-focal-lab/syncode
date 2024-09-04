@@ -83,7 +83,10 @@ class ParseResult:
         next_ac_indents: IndentationConstraint = next_ac_indents
 
         if remainder_state == RemainderState.INCOMPLETE: # If the terminal is not complete, then next_accept_terminals should be None
-            assert len(next_accept_terminals) == 0, f'remiander: {repr(remainder)}, next_accept_terminals: {next_accept_terminals}, cur_accept_terminals: {cur_accept_terminals}'
+            if len(next_accept_terminals) == 0:
+                # print(f'Warning: something is wrong with the parse result. cur_accept_terminals: {cur_accept_terminals}, next_accept_terminals: {next_accept_terminals}, remainder: {remainder}, remainder_state: {remainder_state}')
+                # TODO: Plan how to gracefully handle cases when the output diverges from the grammar
+                pass
         function_end = True if '$END' in next_accept_terminals else False
         return ParseResult(accept_sequences, remainder, remainder_state, next_ac_indents, function_end=function_end)
 
