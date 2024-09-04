@@ -81,6 +81,7 @@ JOIN_DIRECTION: "FULL"i | "LEFT"i | "RIGHT"i
                | "RANK"i "(" ")" window_form -> rank_expression
                | "DENSE_RANK"i "(" ")" window_form -> dense_rank_expression
                | "COALESCE"i "(" [(expression_math ",")*] expression_math ")" -> coalesce_expression
+               | subquery -> subquery_expression
 
 window_form: "OVER"i "(" ["PARTITION"i "BY"i (partition_by ",")* partition_by] ["ORDER"i "BY"i (order ",")* order [ row_range_clause ] ] ")"
 
@@ -138,7 +139,7 @@ TYPENAME:  "object"i
          | "date"i
          | "category"i
          | "string"i
-AGGREGATION.8: ("sum("i | "avg("i | "min("i | "max("i | "count("i "distinct"i | "count("i)
+AGGREGATION.8: ("SUM("i | "AVG("i | "MIN("i | "MAX("i | "COUNT("i "DISTINCT"i | "COUNT("i)
 alias: name -> alias_string
 _window_name: name
 limit_count: integer_ -> limit_count
@@ -152,8 +153,8 @@ bool_parentheses: comparison_type
 comparison_type: equals | not_equals | greater_than | less_than | greater_than_or_equal
 | less_than_or_equal | between | in_expr | not_in_expr | subquery_in | is_null | is_not_null
 equals: expression_math "=" expression_math
-is_null: expression_math "is"i "null"i
-is_not_null: expression_math "is"i "not"i "null"i
+is_null: expression_math "IS"i "NULL"i
+is_not_null: expression_math "IS"i "NOT"i "NULL"i
 not_equals: expression_math ("<>" | "!=") expression_math
 greater_than: expression_math ">" expression_math
 less_than: expression_math "<" expression_math
@@ -167,8 +168,8 @@ not_in_expr: expression_math "NOT"i "IN"i "(" [expression_math ","]* expression_
        | number_expr -> number
        | /'([^'])+'|''/ -> string
        | timestamp_expression -> timestamp_expression
-boolean: "true"i -> true
-       | "false"i -> false
+boolean: "TRUE"i -> true
+       | "FALSE"i -> false
 ?number_expr: product
 
 ?product: NUMBER
