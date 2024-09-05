@@ -33,11 +33,11 @@ class SymbolPosMap:
         if len(self._pos_map[symbol]) == 0 or self._pos_map[symbol][-1][0] != start_pos:
             self._pos_map[symbol].append(pos)
 
-    def get_symbol_pos_end(self, symbol:str, k:int) -> int:
+    def get_symbol_pos_start(self, symbol:str, k:int) -> int:
         """
         Returns the k-th position of the symbol in the code.
         """
-        return self._pos_map[symbol][k][1]
+        return self._pos_map[symbol][k][0]
 
     def get_symbol_pos_all(self, symbol:str) -> list:
         """
