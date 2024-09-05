@@ -28,9 +28,9 @@ class SymbolPosMap:
         """
         Adds the position of the symbol in the code.
         """
-        start_pos, end_pos = pos
+        start_pos, _ = pos
 
-        if len(self._pos_map[symbol]) == 0 or self._pos_map[symbol][-1][1] != end_pos:
+        if len(self._pos_map[symbol]) == 0 or self._pos_map[symbol][-1][0] != start_pos:
             self._pos_map[symbol].append(pos)
 
     def get_symbol_pos_end(self, symbol:str, k:int) -> int:
@@ -151,7 +151,7 @@ class IncrementalParser:
 
                 if len(lexer_tokens)>0 and token.start_pos > lexer_tokens[-1].end_pos:
                     # We have a gap in the tokens. This can happen if we had ignored tokens in the middle
-                    lexer_tokens.append(Token('IGNORED', None, start_pos=lexer_tokens[-1].end_pos+1))
+                    lexer_tokens.append(Token('IGNORED', None, start_pos=lexer_tokens[-1].end_pos))
                 lexer_tokens.append(token)
 
         except lark.exceptions.UnexpectedCharacters as e:
@@ -163,7 +163,7 @@ class IncrementalParser:
         
         if len(lexer_tokens)>0 and lexer_tokens[-1].end_pos < len(code):
             # We have a gap in the tokens. This can happen if we had ignored token at the end
-            lexer_tokens.append(Token('IGNORED', None, start_pos=lexer_tokens[-1].end_pos+1))
+            lexer_tokens.append(Token('IGNORED', None, start_pos=lexer_tokens[-1].end_pos))
 
         return lexer_tokens, lexing_incomplete
     
@@ -212,7 +212,7 @@ class IncrementalParser:
                 token = lexer_tokens[self.cur_pos]
                 self.cur_pos += 1
                 
-                # Update the uc map. This should be called before updating the parser state
+                # Update the symbol position map. This should be called before updating the parser state
                 self._update_symbol_pos_map_nonterminals(interactive.parser_state, token)
 
                 # Compute the number of characters in the input before the token
@@ -307,7 +307,9 @@ class IncrementalParser:
         """
         Updates the uc_map with the current token for non-terminals. 
         """ 
-        end_pos:int = token.start_pos-1
+        # The start position of the next token is the end position for the non-terminal
+        # that is reduced by the current token
+        end_pos:int = token.start_pos 
 
         # Copy the parser state
         state_stack = copy.deepcopy(parser_state.state_stack)
