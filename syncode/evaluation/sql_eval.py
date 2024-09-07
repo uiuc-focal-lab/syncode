@@ -47,7 +47,7 @@ class SQLEval:
         if out_path is not None and debug_task_id is None: write_jsonl(out_path, samples)
 
     @staticmethod
-    def compute_accuracy(samples, predict_file):
+    def compute_accuracy(results_jsonl, predict_file):
         from syncode.utils.sql_spider_eval.evaluation import evaluate
 
         # Get current dir path
@@ -58,5 +58,6 @@ class SQLEval:
         tables = f"{current_dir}/..//utils/sql_spider_eval/evaluation_examples/examples/tables.json"
         databses = f"{current_dir}/..//utils/sql_spider_eval/databases"
 
-        scores, error_types = evaluate(predict_file, gold_file, databses, etype="all", table=tables, result_jsonl=samples)
+        scores, error_types = evaluate(predict_file, gold_file, databses, etype="all", table=tables, result_jsonl=results_jsonl)
         print(f"Scores: {scores['all']}\n Error types: {error_types}")
+        return scores, error_types, results_jsonl

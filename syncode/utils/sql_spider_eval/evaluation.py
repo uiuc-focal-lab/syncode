@@ -508,6 +508,8 @@ def evaluate(predict, gold, db_dir, etype, table, result_jsonl=None):
     for p, g in zip(plist, glist):
         p_str = p[0]
         g_str, db = g
+        result_jsonl[i]['canonical_solution'] = g_str
+
         db_name = db
         db = os.path.join(db_dir, db, db + ".sqlite")
         schema = Schema(get_schema(db))

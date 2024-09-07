@@ -111,24 +111,33 @@ class IncrementalParser:
         self.cur_ac_terminals = set()
         self.next_ac_terminals = self._accepts(self.interactive)
     
-    def _store_parser_state(self, pos: int, parser_state, accepts: set, indent_levels: Optional[list] = None):  
+    def _store_parser_state(self, pos: int, parser_state, accepts: set, indent_levels: Optional[list] = None):
+        """
+        Make immutable copies of the parser state and restore the parser state to the given position.
+        """  
         cur_ac_terminals = self.next_ac_terminals  
         next_ac_terminals = accepts 
         
         # parser_state, cur_ac_terminals, next_ac_terminals, indent_levels, dedent_queue
-        self.cur_pos_to_parser_state[pos] = (copy.deepcopy(self.parsed_lexer_tokens), parser_state, cur_ac_terminals, next_ac_terminals, indent_levels, copy.deepcopy(self.dedent_queue))
+        self.cur_pos_to_parser_state[pos] = (copy.deepcopy(self.parsed_lexer_tokens), parser_state, cur_ac_terminals, next_ac_terminals, indent_levels, copy.deepcopy(self.dedent_queue), copy.deepcopy(self.symbol_pos_map))
+        # self.cur_pos_to_parser_state[pos] = (copy.deepcopy(self.parsed_lexer_tokens), parser_state, cur_ac_terminals, next_ac_terminals, indent_levels, copy.deepcopy(self.dedent_queue))
         
         self.cur_ac_terminals = copy.deepcopy(cur_ac_terminals)
         self.next_ac_terminals = copy.deepcopy(next_ac_terminals)
 
     def _restore_parser_state(self, pos: int):
-        parsed_lexer_tokens, parser_state, cur_ac_terminals, next_ac_terminals, indent_levels, dedent_queue = self.cur_pos_to_parser_state[pos]
+        """
+        Restore immutable copies of the parser state and restore the parser state to the given position.
+        """
+        parsed_lexer_tokens, parser_state, cur_ac_terminals, next_ac_terminals, indent_levels, dedent_queue, symbol_pos_map = self.cur_pos_to_parser_state[pos]
+        # parsed_lexer_tokens, parser_state, cur_ac_terminals, next_ac_terminals, indent_levels, dedent_queue = self.cur_pos_to_parser_state[pos]
         
         self.interactive.parser_state = parser_state.copy()
         self.parsed_lexer_tokens = copy.deepcopy(parsed_lexer_tokens)
         self.dedent_queue = copy.deepcopy(dedent_queue)
         self.cur_ac_terminals = copy.deepcopy(cur_ac_terminals)
         self.next_ac_terminals = copy.deepcopy(next_ac_terminals)
+        self.symbol_pos_map = copy.deepcopy(symbol_pos_map)
 
         if indent_levels is not None:
             self.indent_level = copy.deepcopy(indent_levels)
@@ -306,10 +315,10 @@ class IncrementalParser:
     def _update_symbol_pos_map_nonterminals(self, parser_state: ParserState, token: Token):
         """
         Updates the uc_map with the current token for non-terminals. 
+
+        end_pos: The position of the end of reduced non-terminal
         """ 
-        # The start position of the next token is the end position for the non-terminal
-        # that is reduced by the current token
-        end_pos:int = token.start_pos 
+        end_pos = token.start_pos
 
         # Copy the parser state
         state_stack = copy.deepcopy(parser_state.state_stack)
@@ -353,6 +362,7 @@ class IncrementalParser:
                 assert end_pos is not None
                 if type(rule.origin.name) == Token:
                     start_pos = self._get_nonterminal_start_pos(s)
+                    # end_pos = self._get_nonterminal_end_pos(s) # Not using now since we are getting the end_pos from the lexer token
                     self.symbol_pos_map.add_symbol_pos(
                             rule.origin.name.value, 
                             pos=(start_pos, end_pos)
@@ -376,3 +386,14 @@ class IncrementalParser:
         
         # This should not happen
         return -1
+
+    def _get_nonterminal_end_pos(self, s:Iterable[Tree]) -> int:
+        for item in reversed(s):
+            if type(item) == Token:
+                return item.end_pos
+            elif item != None:
+                # If the item is not None, then it is a tree
+                return item.meta.end_pos
+        
+        return -1
+    
