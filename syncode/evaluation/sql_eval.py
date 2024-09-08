@@ -59,5 +59,5 @@ class SQLEval:
         databses = f"{current_dir}/..//utils/sql_spider_eval/databases"
 
         scores, error_types = evaluate(predict_file, gold_file, databses, etype="all", table=tables, result_jsonl=results_jsonl)
-        print(f"Scores: {scores['all']}\n Error types: {error_types}")
+        print(f"Scores: {[(lvl, scores[lvl]['exec']) for lvl in scores.keys()]}\nError types: {error_types}\nCounts: {[(lvl, scores[lvl]['count']) for lvl in scores.keys()]}")
         return scores, error_types, results_jsonl
