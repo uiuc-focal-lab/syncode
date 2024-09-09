@@ -42,3 +42,10 @@ class TestSQLParser(unittest.TestCase):
         assert r.remainder == 'SELECT'
         assert r.remainder_state == RemainderState.MAYBE_COMPLETE
         
+    def test_sql_parser5(self):
+        inc_parser.reset()
+        partial_code = "\nSELECT airline , COUNT(*) as num_flights\nFROM flights\nGROUP BY airline\nORDER BY COUNT(*) DESC\nLIMIT 1;"
+        r = inc_parser.get_acceptable_next_terminals(partial_code)
+        print(r)
+        assert r.remainder == ';'
+        assert r.remainder_state == RemainderState.MAYBE_COMPLETE
