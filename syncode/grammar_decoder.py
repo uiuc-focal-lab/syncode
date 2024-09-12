@@ -1,9 +1,8 @@
-import time
 from typing import Iterator
 import torch
 import syncode.common as common
 from transformers import LogitsProcessor, PreTrainedTokenizer
-from syncode.parse_result import RemainderState
+from syncode.parse_result import AcceptSequence, RemainderState
 from syncode.parsers.incremental_parser import IncrementalParser, ParseResult
 from syncode.parsers import create_parser, create_base_parser
 from syncode.dfa_mask_store import DFAMaskStore
@@ -123,6 +122,10 @@ class SyncodeLogitsProcessor(LogitsProcessor):
             return False
         
         self.update_valid_state(input_ids, 0, r)
+
+        if input_ids[0, -1] == self.tokenizer.eos_token_id:
+            return AcceptSequence(['$END']) in r.accept_sequences
+
         if r.remainder_state == RemainderState.COMPLETE or r.remainder_state == RemainderState.MAYBE_COMPLETE:
             return True
 
