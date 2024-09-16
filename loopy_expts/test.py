@@ -5,4 +5,9 @@ grammar = grammar_file.read()
 grammar_file.close()
 
 parser = Lark(grammar, start='start', parser='lalr')
-print(parser.parse("/*@ loop invariant x > 0; */"))
+print(parser.parse(
+    """
+    /*@ 
+    loop invariant a; 
+    */"""
+    ))
