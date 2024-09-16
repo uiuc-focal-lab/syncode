@@ -1,132 +1,44 @@
-string: /\S+/                                                   -> string
+STRING: /"([^"\\]|\\.)*"/                                    -> string
 
-literal: "\true"                                                -> true 
-    | "\false"                                                  -> false
-    | /[0-9]+/                                                  -> integer
-    | /[0-9]+\.[0-9]+/                                          -> real
-    | string                                                    -> string
-    | /\S/                                                      -> char
+INTEGER: /[0-9]+/                                              -> integer
 
-id: /[a-zA-Z_][a-zA-Z0-9_]*/                                    -> id
+REAL: /[0-9]+\.[0-9]+/                                         -> real
 
-bin_op: "+" | "-" | "*" | "/" | "%" | "&&" | "||" | "^^" 
-    | ">>" | "<<" | "&" | "|" | "^" | "-->" | "<-->"
+CHAR: /'([^'\\]|\\.)'/                                        -> char
 
-unary_op: "+" | "-" | "!" | "~" | "*" | "&"
+TRUE: "\true"                                                  -> true
 
-ident: id
+FALSE: "\false"                                                -> false
 
-poly_id: id
+IDENTIFIER: /[a-zA-Z_][a-zA-Z0-9_]*/                           -> identifier
 
-logic_type_name: built_in_logic_type | id
+unary_logic_op: "~" 
 
-built_in_logic_type: "boolean" | "integer" | "real"
+bin_logic_op: "&&" | "||" | "=>" | "<=>" 
 
-type_name: logic_type_name | c_type_name
+rel_arith_op: "==" | "!=" | "<" | "<=" | ">" | ">="
 
-type_expr: logic_type_name | c_type_expr
+unary_arith_op: "-"
 
-c_type_expr: c_specifier_qualifier+  c_abstract_declarator?
+binary_arith_op: "+" | "-" | "*" | "/" | "%" | "^"
 
-c_type_name: c_declaration_specifier+
+expr: INTEGER 
+    | REAL 
+    | CHAR 
+    | STRING 
+    | IDENTIFIER 
+    | IDENTIFIER "(" expr ("," expr)* ")"
+    | "(" expr ")" 
+    | unary_arith_op expr 
+    | expr bin_arith_op expr 
+    | expr "?" expr ":" expr
 
-c_specifier_qualifier: c_type_specifier | c_type_qualifier
-
-c_type_qualifier: "const" | "volatile"
-
-c_type_specifier: "void" 
-| "char"
-| "short"
-| "int"
-| "long"
-| "float"
-| "double"
-| "signed"
-| "unsigned"
-| ("struct" | "union" | "enum") ident
-| ident
-
-c_abstract_declarator: c_pointer 
-| c_pointer c_direct_abstract_declarator 
-| c_direct_abstract_declarator
-
-c_pointer: ("*" c_type_qualifier*)+
-
-c_direct_abstract_declarator: "(" c_abstract_declarator ")"
-| c_direct_abstract_declarator? "[" CONSTANT_EXPRESSION "]"
-| c_direct_abstract_declarator? "(" c_parameter_type_list? ")"
-
-c_parameter_type_list: c_parameter_declaration ("," c_parameter_declaration)+
-
-c_parameter_declaration: c_declaration_specifier+ c_declarator
-| c_declaration_specifier+ c_abstract_declarator
-| c_declaration_specifier+
-
-c_declaration_specifier: c_type_specifier | c_type_qualifier
-
-c_declarator: c_pointer? c_direct_declarator
-
-c_direct_declarator: ident
-| "(" c_declarator ")"
-| c_direct_declarator "[" CONSTANT_EXPRESSION? "]"
-| c_direct_declarator "(" c_parameter_type_list ")"
-| c_direct_declarator "(" ident* ")"
-
-CONSTANT_EXPRESSION: /[0-9]+/
-
-term: literal | ident | unary_op term | term bin_op term 
-    | term "[" term "]" -> array_index
-    | "{" term "\with" "[" term "]" "=" term "}"                -> array_update
-    | term "." id                                               -> field_access
-    |  "{" term "\with" "." id "=" term "}"                     -> field_update
-    | term "->" id                                              -> pointer_field_access
-    | "(" type_expr ")" term                                    -> cast
-    | ident "(" term ("," term)* ")"                            -> function_call
-    | "(" term ")"                                              -> parenthesis
-    | term "?" term ":" term                                        -> ternary
-    | "\let" id "=" term ";" term                               -> let
-    | "sizeof" "(" term ")"                                     -> sizeof
-    | "sizeof" "(" c_type_expr ")"                              -> sizeof_type
-    | id ":" term                                               -> syntactic_naming
-    | string ":" term                                           -> syntactic_naming_str
-    | "\at" "(" term "," label_id ")"                           -> at
-
-label_id: "Here" | "Old" | "Pre" | "Post"
-| "LoopEntry" | "LoopCurrent" | "Init" | id
-
-rel_op: "==" | "!=" | "<" | "<=" | ">" | ">="
-
-pred:  "\true" 
-    | "\false" 
-    | term (rel_op term)+ 
-    | ident "(" term ("," term)* ")"
-    | "(" pred ")"
-    | pred "&&" pred
-    | pred "||" pred
-    | pred "==>" pred
-    | pred "<==>" pred
-    | "!" pred
-    | pred "^^" pred
-    | term "?" pred ":" pred
-    | pred "?" pred ":" pred
-    | "\let" id "=" term ";" pred
-    | "\let" id "=" pred ";" pred
-    | "\forall" binders ";" pred
-    | "\exists" binders ";" pred
-    | id ":" pred
-    | string ":" pred
-    | "\at" "(" pred "," label_id ")"
-
-
-binder: type_name variable_ident ("," variable_ident)*
-
-binders: binder ("," binder)*
-
-
-variable_ident: id
-| "*" variable_ident
-| variable_ident "[]"
-| "(" variable_ident ")"
+pred: TRUE 
+    | FALSE 
+    | "(" pred ")" 
+    | unary_logic_op pred 
+    | pred bin_logic_op pred 
+    | expr rel_arith_op expr
 
 invariant: "loop invariant " pred ";"
 
