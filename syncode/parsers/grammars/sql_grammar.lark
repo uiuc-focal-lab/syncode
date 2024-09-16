@@ -57,10 +57,11 @@ groupby_expr: expression -> group_by
 
 window_expr: [window_expr ","] _window_name "AS"i ( window_definition )
 
-from_item: name [ [ "AS"i ] alias ] -> table
+from_item: table_name [ [ "AS"i ] alias ] -> table
             | join -> join
             | cross_join -> cross_join_expression
             | subquery
+table_name: name
 
 subquery: ( "(" (query_expr | join | cross_join) ")" ) [ [ "AS"i ] alias ]
 
@@ -91,8 +92,8 @@ row_range_clause: ( ROWS | RANGE ) frame_extent
 frame_extent: frame_between | frame_preceding
 frame_between: "BETWEEN"i frame_bound "AND"i frame_bound
 frame_bound: frame_preceding | frame_following | "CURRENT"i "ROW"i
-frame_preceding: UNBOUNDED PRECEDING | integer_ PRECEDING
-frame_following: UNBOUNDED FOLLOWING | integer_ FOLLOWING
+frame_preceding: UNBOUNDED PRECEDING | INT_NUMBER PRECEDING
+frame_following: UNBOUNDED FOLLOWING | INT_NUMBER FOLLOWING
 RANGE: "RANGE"i
 ROWS: "ROWS"i
 UNBOUNDED: "UNBOUNDED"i
@@ -103,7 +104,7 @@ when_then: "WHEN"i bool_expression "THEN"i expression_math
 order: expression_math ["ASC"i] -> order_asc
           | expression_math "DESC"i -> order_desc
 
-column_name: [name "."] name
+
 ?expression_product: expression_parens
                   | expression_product "*" expression_parens -> expression_mul
                   | expression_product "/" expression_parens -> expression_div
@@ -114,7 +115,8 @@ column_name: [name "."] name
                   | "(" expression_parens "+" expression ")" -> expression_add
                   | "(" expression_parens "-" expression ")" -> expression_sub
 
-?expression: [name "."] (name | STAR) -> column_name
+column_name: [name "."] (name | STAR)
+?expression: column_name -> column_name
             | literal
 
 
@@ -142,14 +144,15 @@ TYPENAME:  "object"i
 AGGREGATION.8: ("SUM("i | "AVG("i | "MIN("i | "MAX("i | "COUNT("i "DISTINCT"i | "COUNT("i)
 alias: name -> alias_string
 _window_name: name
-limit_count: integer_ -> limit_count
-skip_rows: integer_
+limit_count: INT_NUMBER -> limit_count
+skip_rows: INT_NUMBER
 bool_expression: bool_parentheses
                  | bool_expression "AND"i bool_parentheses -> bool_and
                  | bool_expression "OR"i bool_parentheses -> bool_or
 bool_parentheses: comparison_type
                  | "(" bool_expression "AND"i comparison_type ")" -> bool_and
                  | "(" bool_expression "OR"i comparison_type ")" -> bool_or
+                 | "EXISTS"i subquery -> exists
 comparison_type: equals | not_equals | greater_than | less_than | greater_than_or_equal
 | less_than_or_equal | between | in_expr | not_in_expr | subquery_in | is_null | is_not_null
 equals: expression_math "=" expression_math
@@ -161,9 +164,13 @@ less_than: expression_math "<" expression_math
 greater_than_or_equal: expression_math ">=" expression_math
 less_than_or_equal: expression_math "<=" expression_math
 between: expression_math "BETWEEN"i expression_math "AND"i expression_math
+
+// `IN` and `NOT IN`
 in_expr: expression_math "IN"i "(" [expression_math ","]* expression_math ")"
 subquery_in: expression_math "IN"i subquery
 not_in_expr: expression_math "NOT"i "IN"i "(" [expression_math ","]* expression_math ")"
+subquery_not_in: expression_math "NOT"i "IN"i subquery
+
 ?literal: boolean -> bool
        | number_expr -> number
        | /'([^'])+'|''/ -> string
@@ -172,9 +179,11 @@ boolean: "TRUE"i -> true
        | "FALSE"i -> false
 ?number_expr: product
 
-?product: NUMBER
+?product: INT_NUMBER -> integer
+       | FLOAT -> float
 
-integer_: /[1-9][0-9]*/
+INT_NUMBER: /[1-9][0-9]*/
+
 STAR: "*"
 window_definition:
 timestamp_expression: "NOW"i "(" ")" -> datetime_now
@@ -196,10 +205,10 @@ ESCAPED_STRING: "\"" _STRING_INNER "\""
 
 // %import common.ESCAPED_STRING
 %import common.CNAME
-%import common.NUMBER
 %import common.WS
 %import common.SQL_COMMENT
 %import common.WS_INLINE
+%import common.FLOAT
 
 %ignore WS
 %ignore SQL_COMMENT

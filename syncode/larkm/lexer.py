@@ -260,7 +260,7 @@ class Token(str):
         return 'Token(%r, %r)' % (self.type, self.value)
 
     def __deepcopy__(self, memo):
-        return Token(self.type, self.value, self.start_pos, self.line, self.column)
+        return Token(self.type, self.value, self.start_pos, self.line, self.column, self.end_line, self.end_column, self.end_pos)
 
     def __eq__(self, other):
         if isinstance(other, Token) and self.type != other.type:
