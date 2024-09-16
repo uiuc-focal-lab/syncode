@@ -1,16 +1,28 @@
-STRING: /"([^"\\]|\\.)*"/                                    -> string
+start: BLOCK_BEGIN invariants BLOCK_END
 
-INTEGER: /[0-9]+/                                              -> integer
+invariants: invariant+ -> multiple_invariants
 
-REAL: /[0-9]+\.[0-9]+/                                         -> real
+invariant: KEYWORD pred ";" -> invariant
 
-CHAR: /'([^'\\]|\\.)'/                                        -> char
+BLOCK_BEGIN: "/*@"
 
-TRUE: "\true"                                                  -> true
+BLOCK_END: "*/"
 
-FALSE: "\false"                                                -> false
+KEYWORD.3: "loop" "invariant"
 
-IDENTIFIER: /[a-zA-Z_][a-zA-Z0-9_]*/                           -> identifier
+STRING: /"([^"\\]|\\.)*"/
+
+INTEGER: /[0-9]+/
+
+REAL: /[0-9]+\.[0-9]+/
+
+CHAR: /'([^'\\]|\\.)'/
+
+TRUE: "\true"
+
+FALSE: "\false"
+
+IDENTIFIER: /[a-zA-Z_][a-zA-Z0-9_]*/
 
 unary_logic_op: "~" 
 
@@ -20,7 +32,7 @@ rel_arith_op: "==" | "!=" | "<" | "<=" | ">" | ">="
 
 unary_arith_op: "-"
 
-binary_arith_op: "+" | "-" | "*" | "/" | "%" | "^"
+bin_arith_op: "+" | "-" | "*" | "/" | "%" | "^"
 
 expr: INTEGER 
     | REAL 
@@ -35,16 +47,11 @@ expr: INTEGER
 
 pred: TRUE 
     | FALSE 
-    | "(" pred ")" 
+    | "(" pred ")"
+    | expr
     | unary_logic_op pred 
     | pred bin_logic_op pred 
     | expr rel_arith_op expr
 
-invariant: "loop invariant " pred ";"
-
-invariants: invariant*
-
-start: "/*@" invariants "*/"
-
-WS: /[ \t\n]+/
+%import common.WS
 %ignore WS
