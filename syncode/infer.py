@@ -2,6 +2,7 @@ import os, sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import fire
 import syncode.common as common
+import torch
 from syncode.language_model import HuggingFaceModel
 from syncode.grammar_decoder import SyncodeLogitsProcessor
 from typing import Optional, Literal
@@ -14,9 +15,9 @@ from syncode.evaluation.json_eval import JSONEval
 from syncode.evaluation.fol_eval import FOLEval
 
 
-def compile_and_run(model, mode="grammar_strict", quantize=True, device="cuda", num_samples=1, grammar=None, dataset="input", num_few_shot=0, chat_mode=False, dev_mode=False, log_level=1, new_mask_store=False, parser="lalr", task_id=None, **kwargs):
+def compile_and_run(model, mode="grammar_strict", quantize=True, device="cuda", num_samples=1, grammar=None, dataset="input", num_few_shot=0, chat_mode=False, dev_mode=False, log_level=1, new_mask_store=False, parser="lalr", task_id=None, seed=None, **kwargs):
 
-    syncode = Syncode(model, mode=mode, quantize=quantize, device=device, num_samples=num_samples, grammar=grammar, chat_mode=chat_mode, dev_mode=dev_mode, log_level=log_level, new_mask_store=new_mask_store, parser=parser, **kwargs)
+    syncode = Syncode(model, mode=mode, quantize=quantize, device=device, num_samples=num_samples, grammar=grammar, chat_mode=chat_mode, dev_mode=dev_mode, log_level=log_level, new_mask_store=new_mask_store, parser=parser, seed=seed, **kwargs)
     
     if dataset == "input":
         syncode.infer()
@@ -71,6 +72,7 @@ class Syncode:
         log_level: int = 1,
         new_mask_store: bool = False,
         parser: Literal["lr", "lalr"] = "lalr",
+        seed: Optional[int] = None,
         **kwargs
     ):  
         # Check inputs
@@ -89,6 +91,10 @@ class Syncode:
         self.parser = parser
         self.chat_mode = chat_mode
         self.log_level = log_level
+
+        # Set seed
+        if seed is not None:
+            torch.manual_seed(seed)
 
         if self.chat_mode:
             self.parse_output_only = True
