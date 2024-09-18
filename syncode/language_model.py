@@ -109,6 +109,11 @@ class HuggingFaceModel:
                 )
         batch_completions = []
 
+        # Total tokens generated
+        self.total_tokens = 0
+        for i in range(batch_size):
+            self.total_tokens += len(generated_ids[i])-input_ids_cutoff+1
+
         # TODO: Move this to CodeEval
         for i in range(batch_size):
             raw_completion = self.tokenizer.decode(generated_ids[i][input_ids_cutoff:len(generated_ids[i])], skip_special_tokens=True)                                       
