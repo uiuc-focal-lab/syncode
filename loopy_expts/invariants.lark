@@ -1,16 +1,8 @@
-start: BLOCK_BEGIN invariants BLOCK_END
+start: invariants
 
 invariants: invariant+ -> multiple_invariants
 
-invariant: LOOP INVARIANT pred ";" -> invariant
-
-BLOCK_BEGIN: "/*@"
-
-BLOCK_END: "*/"
-
-LOOP: "loop"
-
-INVARIANT: "invariant"
+invariant: pred ";" -> invariant
 
 STRING: /"([^"\\]|\\.)*"/
 
