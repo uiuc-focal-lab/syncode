@@ -1,8 +1,16 @@
-start: invariants
+start: BLOCK_BEGIN invariants BLOCK_END
 
 invariants: invariant+ -> multiple_invariants
 
-invariant: pred ";" -> invariant
+invariant: LOOP INVARIANT pred ";" -> invariant
+
+BLOCK_BEGIN: "/*@"
+
+BLOCK_END: "*/"
+
+LOOP: "loop"
+
+INVARIANT: "invariant"
 
 STRING: /"([^"\\]|\\.)*"/
 
@@ -46,6 +54,3 @@ pred: TRUE
     | unary_logic_op pred 
     | pred bin_logic_op pred 
     | expr rel_arith_op expr
-
-%import common.WS
-%ignore WS
