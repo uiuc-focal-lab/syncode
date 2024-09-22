@@ -36,9 +36,11 @@ def main(
             benchmark_code = open(benchmark, 'r').read()
             prompt = prompt_system + '\n' + prompt_text.format(code = benchmark_code)
             results = []
+            Logger.log_model_request(llm.model_name, [{'role': 'Prompt', 'content': prompt}])
             for i in range(num_samples):
                 Logger.log_info(f"Generating sample {i}")
                 result = llm.infer(prompt)
+                Logger.log_model_response(llm.model_name, [result])
                 results.append(result)
             
             expt_logs.append({
