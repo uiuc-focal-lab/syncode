@@ -1,0 +1,16 @@
+Consider the following C program:
+```
+{{ code }}
+```
+
+You are allowed to use implication to take care of the conditional nature of the code. Use implication (==>) instead of using if-then.
+
+For all variables, add conjunctions that bound the maximum and minimum values that they can take, if such bounds exist.
+
+If a variable is always equal to or smaller or larger than another variable, add a conjunction for their relation.
+
+If the assertion is guarded by a condition, use the guard condition in an implication.
+
+If certain variables are non-deterministic at the beginning or end of the loop, use an implication to make the invariant trivially true at that location. 
+
+Output the loop invariants for the loop in the program above. Let's think step by step.
