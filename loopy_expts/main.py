@@ -10,7 +10,7 @@ from utils import Logger
 sys.path.append(os.path.join(os.path.dirname(__file__), '../'))
 
 def init(model: str, grammar: str):
-    syncode = Syncode(model = model, mode='grammar_mask', grammar=grammar, parse_output_only=True, log_level=2, max_new_tokens=1200)
+    syncode = Syncode(model = model, mode='grammar_mask', grammar=grammar, parse_output_only=True, log_level=2, max_new_tokens=10000, device='cuda:0')
     return syncode
 
 def main(
@@ -39,33 +39,30 @@ def main(
                 benchmark_code = open(benchmark, 'r').read()
                 prompt_text_template = deepcopy(prompt_text)
                 prompt = prompt_system + '\n' + prompt_text_template.format(code = benchmark_code)
-                results = []
+                benchmark_log = {
+                    'file': benchmark,
+                    'prompt': prompt,
+                    'completions': []
+                }
                 Logger.log_model_request(llm.model_name, [{'role': 'Prompt', 'content': prompt}])
                 for i in range(num_samples):
                     Logger.log_info(f"Generating sample {i + 1}/{num_samples}")
                     result = llm.infer(prompt)
                     Logger.log_model_response(llm.model_name, [result])
-                    results.append(result)
+                    benchmark_log['completions'].append(result)
                 
-                expt_logs.append({
-                    'file': benchmark,
-                    'prompt': prompt,
-                    'completions': results
-                })
+                expt_logs.append(benchmark_log)
             except Exception as e:
                 Logger.log_error(f'Error in benchmark {benchmark} sample {i}: {e}')
-                results.append('Error in benchmark {benchmark} sample {i}: {e}')
-                expt_logs.append({
-                    'file': benchmark,
-                    'error': str(e),
-                })
+                benchmark_log['error'] = str(e)
+                expt_logs.append(benchmark_log)
     except KeyboardInterrupt:
         Logger.log_info('Received keyboard interrupt. Exiting...')
     
     return expt_logs
 
 if __name__ == '__main__':
-    model = '/data/share/models/hugging_face/models--Qwen--Qwen2.5-Coder-7B/snapshots/4c1c1611f30619a8695cf6d44b492a25c52b6f00/'
+    model = '/data/share/models/hugging_face/models--Qwen--Qwen2.5-Coder-1.5B/snapshots/835b517c690ba0a4a54212e87a0d6ab1a7fc03d0/'
     grammar = 'invariants.lark'
     Logger.log_info(f"Initializing model {model}")
     Logger.log_info(f"Initializing grammar {grammar}")
