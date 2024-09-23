@@ -1,4 +1,4 @@
-// Source: data/benchmarks/code2inv/34.c
+
 #include <stdlib.h>
 #define assume(e) if(!(e)) exit(-1);
 

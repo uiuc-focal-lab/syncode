@@ -1,4 +1,4 @@
-// Source: data/benchmarks/LinearArbitrary-SeaHorn/loops/loops/while_infinite_loop_2_true-unreach-call_false-termination.i.annot.c
+
 #include <stdlib.h>
 #define assume(e) if(!(e)) exit(-1);
 

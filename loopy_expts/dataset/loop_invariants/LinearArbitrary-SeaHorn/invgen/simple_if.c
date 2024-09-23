@@ -1,4 +1,4 @@
-// Source: data/benchmarks/LinearArbitrary-SeaHorn/invgen/simple_if.c
+
 #include <stdlib.h>
 #define assume(e) if(!(e)) exit(-1);
 

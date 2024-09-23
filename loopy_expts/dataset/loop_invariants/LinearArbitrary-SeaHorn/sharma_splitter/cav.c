@@ -1,4 +1,4 @@
-// Source: data/benchmarks/LinearArbitrary-SeaHorn/sharma_splitter/cav.c
+
 #include <stdlib.h>
 #define assume(e) if(!(e)) exit(-1);
 

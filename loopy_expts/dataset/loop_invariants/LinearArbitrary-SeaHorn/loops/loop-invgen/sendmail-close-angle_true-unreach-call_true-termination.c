@@ -1,4 +1,4 @@
-// Source: data/benchmarks/LinearArbitrary-SeaHorn/loops/loop-invgen/sendmail-close-angle_true-unreach-call_true-termination.c
+
 #include <stdlib.h>
 #define assume(e) if(!(e)) exit(-1);
 extern int unknown_int(void);

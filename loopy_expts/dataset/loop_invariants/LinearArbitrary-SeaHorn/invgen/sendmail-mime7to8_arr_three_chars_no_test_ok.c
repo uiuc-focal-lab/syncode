@@ -1,4 +1,4 @@
-// Source: data/benchmarks/LinearArbitrary-SeaHorn/invgen/sendmail-mime7to8_arr_three_chars_no_test_ok.c
+
 #include <stdlib.h>
 #define assume(e) if(!(e)) exit(-1);
 extern int unknown(void);

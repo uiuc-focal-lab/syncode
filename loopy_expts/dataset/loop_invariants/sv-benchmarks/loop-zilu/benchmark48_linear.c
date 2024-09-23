@@ -1,4 +1,4 @@
-// Source: data/benchmarks/sv-benchmarks/loop-zilu/benchmark48_linear.c
+
 #include <stdlib.h>
 #define assume(e) if(!(e)) exit(-1);
 extern int unknown_int(void);

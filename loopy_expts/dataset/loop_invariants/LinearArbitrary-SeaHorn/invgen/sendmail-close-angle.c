@@ -1,4 +1,4 @@
-// Source: data/benchmarks/LinearArbitrary-SeaHorn/invgen/sendmail-close-angle.c
+
 #include <stdlib.h>
 #define assume(e) if(!(e)) exit(-1);
 extern int unknown(void);

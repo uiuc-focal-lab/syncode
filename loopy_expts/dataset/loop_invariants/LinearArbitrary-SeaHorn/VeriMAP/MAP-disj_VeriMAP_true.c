@@ -1,4 +1,4 @@
-// Source: data/benchmarks/LinearArbitrary-SeaHorn/VeriMAP/MAP-disj_VeriMAP_true.c
+
 #include <stdlib.h>
 #define assume(e) if(!(e)) exit(-1);
 

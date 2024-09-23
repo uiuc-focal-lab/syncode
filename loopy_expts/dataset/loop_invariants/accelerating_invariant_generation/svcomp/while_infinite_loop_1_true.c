@@ -1,4 +1,4 @@
-// Source: data/benchmarks/accelerating_invariant_generation/svcomp/while_infinite_loop_1_true.c
+
 #include <stdlib.h>
 #define assume(e) if(!(e)) exit(-1);
 

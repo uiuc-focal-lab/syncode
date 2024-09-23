@@ -1,4 +1,4 @@
-// Source: data/benchmarks/sv-benchmarks/loop-invgen/MADWiFi-encode_ie_ok.c
+
 #include <stdlib.h>
 #define assume(e) if(!(e)) exit(-1);
 #define LARGE_INT 1000000

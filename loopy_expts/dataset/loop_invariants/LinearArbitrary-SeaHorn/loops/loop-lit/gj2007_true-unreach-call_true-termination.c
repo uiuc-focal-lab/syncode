@@ -1,4 +1,4 @@
-// Source: data/benchmarks/LinearArbitrary-SeaHorn/loops/loop-lit/gj2007_true-unreach-call_true-termination.c
+
 #include <stdlib.h>
 #define assume(e) if(!(e)) exit(-1);
 

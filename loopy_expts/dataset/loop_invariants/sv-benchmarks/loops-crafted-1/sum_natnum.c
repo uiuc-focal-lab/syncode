@@ -1,4 +1,4 @@
-// Source: data/benchmarks/sv-benchmarks/loops-crafted-1/sum_natnum.c
+
 #include <stdlib.h>
 #define assume(e) if(!(e)) exit(-1);
 

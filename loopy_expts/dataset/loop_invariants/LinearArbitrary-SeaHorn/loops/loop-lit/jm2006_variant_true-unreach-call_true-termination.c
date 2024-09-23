@@ -1,4 +1,4 @@
-// Source: data/benchmarks/LinearArbitrary-SeaHorn/loops/loop-lit/jm2006_variant_true-unreach-call_true-termination.c
+
 #include <stdlib.h>
 #define assume(e) if(!(e)) exit(-1);
 #define LARGE_INT 1000000

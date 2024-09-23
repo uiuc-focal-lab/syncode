@@ -1,4 +1,4 @@
-// Source: data/benchmarks/LinearArbitrary-SeaHorn/pie/ICE/benchmarks/sum04_safe.c
+
 #include <stdlib.h>
 #define assume(e) if(!(e)) exit(-1);
 

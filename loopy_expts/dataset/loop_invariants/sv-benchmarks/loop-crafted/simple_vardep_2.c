@@ -1,4 +1,4 @@
-// Source: data/benchmarks/sv-benchmarks/loop-crafted/simple_vardep_2.c
+
 #include <stdlib.h>
 #define assume(e) if(!(e)) exit(-1);
 

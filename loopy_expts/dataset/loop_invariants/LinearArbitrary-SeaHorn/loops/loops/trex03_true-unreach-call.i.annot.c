@@ -1,4 +1,4 @@
-// Source: data/benchmarks/LinearArbitrary-SeaHorn/loops/loops/trex03_true-unreach-call.i.annot.c
+
 #include <stdlib.h>
 #define assume(e) if(!(e)) exit(-1);
 extern unsigned int unknown_uint(void);

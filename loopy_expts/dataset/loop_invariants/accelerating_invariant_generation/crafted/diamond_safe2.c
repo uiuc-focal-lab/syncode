@@ -1,4 +1,4 @@
-// Source: data/benchmarks/accelerating_invariant_generation/crafted/diamond_safe2.c
+
 #include <stdlib.h>
 #define assume(e) if(!(e)) exit(-1);
 

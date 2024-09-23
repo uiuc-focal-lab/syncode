@@ -1,4 +1,4 @@
-// Source: data/benchmarks/LinearArbitrary-SeaHorn/pie/ICE/benchmarks/cggmp2005_true-unreach-call.c
+
 #include <stdlib.h>
 #define assume(e) if(!(e)) exit(-1);
 

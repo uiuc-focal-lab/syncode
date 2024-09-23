@@ -1,4 +1,4 @@
-// Source: data/benchmarks/accelerating_invariant_generation/invgen/NetBSD_loop_int.c
+
 #include <stdlib.h>
 #define assume(e) if(!(e)) exit(-1);
 

@@ -1,4 +1,4 @@
-// Source: data/benchmarks/sv-benchmarks/loop-acceleration/diamond_1-1.c
+
 #include <stdlib.h>
 #define assume(e) if(!(e)) exit(-1);
 extern unsigned int unknown_uint(void);

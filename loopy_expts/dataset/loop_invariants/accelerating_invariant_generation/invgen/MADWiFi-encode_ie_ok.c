@@ -1,4 +1,4 @@
-// Source: data/benchmarks/accelerating_invariant_generation/invgen/MADWiFi-encode_ie_ok.c
+
 #include <stdlib.h>
 #define assume(e) if(!(e)) exit(-1);
 

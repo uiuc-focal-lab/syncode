@@ -1,4 +1,4 @@
-// Source: data/benchmarks/sv-benchmarks/loop-acceleration/simple_3-2.c
+
 #include <stdlib.h>
 #define assume(e) if(!(e)) exit(-1);
 extern unsigned short unknown_ushort(void);

@@ -1,4 +1,4 @@
-// Source: data/benchmarks/sv-benchmarks/loop-invariants/linear-inequality-inv-a.c
+
 #include <stdlib.h>
 #define assume(e) if(!(e)) exit(-1);
 extern unsigned char unknown_uchar(void);

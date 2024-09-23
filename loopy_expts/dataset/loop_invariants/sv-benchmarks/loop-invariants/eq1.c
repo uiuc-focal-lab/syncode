@@ -1,4 +1,4 @@
-// Source: data/benchmarks/sv-benchmarks/loop-invariants/eq1.c
+
 #include <stdlib.h>
 #define assume(e) if(!(e)) exit(-1);
 extern unsigned int unknown_uint(void);

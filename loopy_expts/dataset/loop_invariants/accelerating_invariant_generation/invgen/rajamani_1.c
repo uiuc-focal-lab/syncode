@@ -1,4 +1,4 @@
-// Source: data/benchmarks/accelerating_invariant_generation/invgen/rajamani_1.c
+
 #include <stdlib.h>
 #define assume(e) if(!(e)) exit(-1);
 

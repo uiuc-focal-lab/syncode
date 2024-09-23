@@ -1,6 +1,6 @@
-start: BACKTICK BACKTICK BACKTICK BLOCK_BEGIN invariants BLOCK_END BACKTICK BACKTICK BACKTICK
+start: BACKTICK "\n" BLOCK_BEGIN invariants BLOCK_END "\n" BACKTICK
 
-BACKTICK: "`"
+BACKTICK: "```"
 
 invariants: invariant+ -> multiple_invariants
 

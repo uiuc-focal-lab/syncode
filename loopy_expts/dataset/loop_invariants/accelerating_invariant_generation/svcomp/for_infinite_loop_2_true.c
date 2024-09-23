@@ -1,4 +1,4 @@
-// Source: data/benchmarks/accelerating_invariant_generation/svcomp/for_infinite_loop_2_true.c
+
 #include <stdlib.h>
 #define assume(e) if(!(e)) exit(-1);
 extern int unknown_int(void);

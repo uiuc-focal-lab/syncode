@@ -1,6 +1,6 @@
 Consider the following C program:
 ```
-{{ code }}
+{code}
 ```
 
 You are allowed to use implication to take care of the conditional nature of the code. Use implication (==>) instead of using if-then.

@@ -1,4 +1,4 @@
-// Source: data/benchmarks/LinearArbitrary-SeaHorn/pie/hola/19.c
+
 #include <stdlib.h>
 #define assume(e) if(!(e)) exit(-1);
 

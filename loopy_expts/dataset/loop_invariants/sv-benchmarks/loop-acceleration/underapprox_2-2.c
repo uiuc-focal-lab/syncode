@@ -1,4 +1,4 @@
-// Source: data/benchmarks/sv-benchmarks/loop-acceleration/underapprox_2-2.c
+
 #include <stdlib.h>
 #define assume(e) if(!(e)) exit(-1);
 

@@ -1,4 +1,4 @@
-// Source: data/benchmarks/accelerating_invariant_generation/dagger/substring1.c
+
 #include <stdlib.h>
 #define assume(e) if(!(e)) exit(-1);
 

@@ -1,4 +1,4 @@
-// Source: data/benchmarks/sv-benchmarks/loops-crafted-1/sumt3.c
+
 #include <stdlib.h>
 #define assume(e) if(!(e)) exit(-1);
 extern unsigned int unknown_uint(void);
