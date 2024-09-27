@@ -32,6 +32,8 @@ class SymbolPosMap:
 
         if len(self._pos_map[symbol]) == 0 or self._pos_map[symbol][-1][0] != start_pos:
             self._pos_map[symbol].append(pos)
+        elif self._pos_map[symbol][-1][0] == start_pos:
+            self._pos_map[symbol][-1] = pos
 
     def get_symbol_pos_start(self, symbol:str, idx:int) -> int:
         """
