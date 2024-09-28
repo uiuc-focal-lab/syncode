@@ -4,7 +4,7 @@ import fire
 import syncode.common as common
 from syncode.language_model import HuggingFaceModel
 from syncode.grammar_decoder import SyncodeLogitsProcessor
-from typing import Optional, Literal
+from typing import Optional, Literal, Union
 from syncode.parsers.grammars import Grammar
 from syncode.dataset import Dataset
 from syncode.evaluation.code_eval import CodeEval
@@ -134,7 +134,7 @@ class Syncode:
     def is_grammar_mode(self):
         return self.mode == 'grammar_mask' or self.mode == 'grammar_strict'
 
-    def infer(self, prompt=None, stop_words=[]):
+    def infer(self, prompt: Union[str, list]=None, stop_words=[]):
         output = self.user_input(prompt, stop_words=stop_words)
         return output
 
@@ -178,17 +178,13 @@ class Syncode:
         logger.close()
         return output
 
-    def user_input(self, prompt:str, stop_words=[]):
+    def user_input(self, prompt: Union[str, list], stop_words=[]):
         """
         Run user input on the model with grammar mask
         """
         if prompt:
-            if self.grammar_decoder is not None: # TODO: Remove this check
-                    self.grammar_decoder.reset(prompt)
-            if self.chat_mode:
-                return self.model.generate_chat_completion_grammar(prompt)
-            else:
-                return self.model.generate_batch_completion_grammar(prompt, self.num_samples, stop_words=stop_words)
+            # Run inference
+            return self.model.generate_batch_completion_grammar(prompt, self.num_samples, stop_words=stop_words)
         else:
             while True:
                 prompt = input('Enter prompt: ')

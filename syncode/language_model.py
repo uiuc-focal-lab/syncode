@@ -5,7 +5,7 @@ from syncode.grammar_decoder import SyncodeLogitsProcessor
 from transformers import LogitsProcessorList, StoppingCriteriaList, StoppingCriteria
 from syncode.parsers.grammars import Grammar
 from syncode.utils.generation import filter_code, fix_indents
-from typing import Callable, Iterable
+from typing import Callable, Iterable, Union
 from transformers.generation.utils import GenerationMode
 from transformers.generation.configuration_utils import GenerationConfig
 
@@ -52,7 +52,7 @@ class HuggingFaceModel:
         self.best_of = best_of
         self._before_prediction_hook = before_prediction_hook
         self.grammar_decoder = grammar_decoder
-        self.logit_processors: Iterable = LogitsProcessorList([self.grammar_decoder])
+        self.logit_processors: Iterable = LogitsProcessorList([self.grammar_decoder]) if self.grammar_decoder is not None else None
         self.mode = mode
         self.grammar = grammar
         self.vocab = common.get_vocab_from_tokenizer(self.tokenizer)
@@ -64,7 +64,7 @@ class HuggingFaceModel:
         return None
 
     @torch.inference_mode()
-    def generate_batch_completion_grammar(self, prompt, batch_size, stop_words=None) -> Iterable[str]:
+    def generate_batch_completion_grammar(self, prompt: Union[str, list], batch_size, stop_words=None) -> Iterable[str]:
         '''
         Generates batch_size completions for the given prompt. 
         '''
@@ -72,8 +72,17 @@ class HuggingFaceModel:
         if self.grammar_decoder is not None:
             self.grammar_decoder.reset(prompt)
 
-        input_batch = [prompt for _ in range(batch_size)]
-        inputs = self.tokenizer(input_batch, return_tensors="pt").to(self.model.device)
+        if (isinstance(prompt, str)):
+            input_batch = [prompt for _ in range(batch_size)]
+            inputs = self.tokenizer(input_batch, return_tensors="pt").to(self.device)
+        elif (isinstance(prompt, list)):
+            inputs = self.tokenizer.apply_chat_template(
+                prompt, 
+                add_generation_prompt=True, 
+                return_tensors="pt",
+                return_dict=True
+            ).to(self.device)
+        
         input_ids_cutoff = inputs.input_ids.size(dim=1)
         
         # Get the generation config
@@ -258,7 +267,10 @@ class HuggingFaceModel:
             generated_ids[0][input_ids_cutoff:len(generated_ids[0])], 
             skip_special_tokens=True)
 
-        return completion
+        # Total tokens generated
+        self.total_tokens = len(generated_ids[0])-input_ids_cutoff+1
+
+        return [completion]
 
 
     def postproces_completion_python(self, i, batch_size, input_ids_cutoff, generated_ids, grammar_decoder, raw_completion):

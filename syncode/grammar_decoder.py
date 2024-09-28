@@ -90,7 +90,16 @@ class SyncodeLogitsProcessor(LogitsProcessor):
         self.last_valid_state = [0 for _ in range(self.batch_size)]
         self.function_end = [None for _ in range(self.batch_size)]
 
-        prompt_tokens = self.tokenizer.encode(prompt, return_tensors='pt')[0]
+        if (isinstance(prompt, str)):
+            prompt_tokens = self.tokenizer.encode(prompt, return_tensors='pt')[0]
+        elif (isinstance(prompt, list)):
+            prompt_tokens = self.tokenizer.apply_chat_template(
+                prompt, 
+                add_generation_prompt=True, 
+                return_tensors="pt",
+                return_dict=True
+            )[0]
+        
         if self.parse_output_only:
             self.start_from = len(prompt_tokens)
         else:
