@@ -45,7 +45,7 @@ select: "SELECT"i [SELECT_CONSTRAINT] [(select_expr ",")*] select_expr "FROM"i [
 
 where_expr: bool_expression
 
-select_expr.0: expression_math [ [ "AS"i ] alias ] -> select_expression
+select_expr.0: expression_math [ "AS"i alias ] -> select_expression
 
 ?from_expr: from_item -> from_expression
 
@@ -57,13 +57,13 @@ groupby_expr: expression -> group_by
 
 window_expr: [window_expr ","] _window_name "AS"i ( window_definition )
 
-from_item: table_name [ [ "AS"i ] alias ] -> table
+from_item: table_name [ "AS"i alias ] -> table
             | join -> join
             | cross_join -> cross_join_expression
             | subquery
 table_name: name
 
-subquery: ( "(" (query_expr | join | cross_join) ")" ) [ [ "AS"i ] alias ]
+subquery: ( "(" (query_expr | join | cross_join) ")" ) [ "AS"i alias ]
 
 cross_join: from_item "CROSS"i "JOIN"i from_item
 join: from_item JOIN_EXPR from_item [ "ON"i bool_expression ] -> join_expression
