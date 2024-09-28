@@ -49,3 +49,23 @@ class TestSQLParser(unittest.TestCase):
         print(r)
         assert r.remainder == ';'
         assert r.remainder_state == RemainderState.MAYBE_COMPLETE
+    
+    def test_sql_parser6(self):
+        """
+        Tests support for NOT IN
+        """
+        inc_parser.reset()
+        partial_code = "SELECT AVG(age) FROM student WHERE stuid NOT IN (SELECT DISTINCT"
+        r = inc_parser.get_acceptable_next_terminals(partial_code)
+        assert r.remainder == 'DISTINCT'
+        assert r.remainder_state == RemainderState.MAYBE_COMPLETE
+    
+    def test_sql_parser7(self):
+        """
+        Tests support for LIKE
+        """
+        inc_parser.reset()
+        partial_code = "SELECT singer.name , singer.country FROM singer WHERE singer.song_name LIKE '%Hey%'"
+        r = inc_parser.get_acceptable_next_terminals(partial_code)
+        assert r.remainder == "'%Hey%'"
+        assert r.remainder_state == RemainderState.MAYBE_COMPLETE

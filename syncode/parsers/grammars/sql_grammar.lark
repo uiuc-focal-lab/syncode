@@ -154,7 +154,8 @@ bool_parentheses: comparison_type
                  | "(" bool_expression "OR"i comparison_type ")" -> bool_or
                  | "EXISTS"i subquery -> exists
 comparison_type: equals | not_equals | greater_than | less_than | greater_than_or_equal
-| less_than_or_equal | between | in_expr | not_in_expr | subquery_in | is_null | is_not_null
+| less_than_or_equal | between | in_expr | not_in_expr | subquery_in | subquery_not_in | is_null | is_not_null | like_expr | not_like_expr
+
 equals: expression_math "=" expression_math
 is_null: expression_math "IS"i "NULL"i
 is_not_null: expression_math "IS"i "NOT"i "NULL"i
@@ -164,6 +165,10 @@ less_than: expression_math "<" expression_math
 greater_than_or_equal: expression_math ">=" expression_math
 less_than_or_equal: expression_math "<=" expression_math
 between: expression_math "BETWEEN"i expression_math "AND"i expression_math
+
+// `LIKE` and `NOT LIKE`
+like_expr: expression_math "LIKE"i expression_math
+not_like_expr: expression_math "NOT"i "LIKE"i expression_math
 
 // `IN` and `NOT IN`
 in_expr: expression_math "IN"i "(" [expression_math ","]* expression_math ")"
