@@ -52,15 +52,16 @@ class HuggingFaceModel:
         self.best_of = best_of
         self._before_prediction_hook = before_prediction_hook
         self.grammar_decoder = grammar_decoder
-        self.logit_processors: Iterable = LogitsProcessorList([self.grammar_decoder])
+        self.grammar_processor: Iterable = LogitsProcessorList([self.grammar_decoder])
+
         self.mode = mode
         self.grammar = grammar
         self.vocab = common.get_vocab_from_tokenizer(self.tokenizer)
         self.gen_args = kwargs
 
     def get_grammar_decoder(self):
-        if self.logit_processors is not None and len(self.logit_processors) > 0:
-            return self.logit_processors[0]
+        if self.grammar_processor is not None and len(self.grammar_processor) > 0:
+            return self.grammar_processor[0]
         return None
 
     @torch.inference_mode()
@@ -102,7 +103,7 @@ class HuggingFaceModel:
             # Use generate from transformers library for other modes
             generated_ids = self.model.generate(
                 **inputs, 
-                logits_processor=self.logit_processors, 
+                logits_processor=self.grammar_processor, 
                 stop_strings=stop_words,
                 tokenizer=self.tokenizer,
                 **self.gen_args
@@ -138,7 +139,11 @@ class HuggingFaceModel:
         We support greedy search and sampling for batch size 1 otherwise we use the generate function from transformers library.
         """
         token_ids, attention_mask, past_key_values = inputs['input_ids'], inputs['attention_mask'], None
-        logit_warper = self.model._get_logits_warper(gen_config, device=self.device)
+        
+        # This does not include grammar decoder
+        self.model._prepare_special_tokens(gen_config, False, device=self.device)
+        logits_processor = self.model._get_logits_processor(gen_config, token_ids.size(1), token_ids, prefix_allowed_tokens_fn=None, logits_processor=[])
+
         max_tokens = self.gen_args['max_new_tokens']+token_ids.size(1)
 
         while True:
@@ -159,15 +164,15 @@ class HuggingFaceModel:
             next_token_scores, past_key_values = outputs.logits[:, -1, :], outputs.past_key_values
             
             if grammar_decoder is not None:
-                next_token = self._get_next_token(gen_mode, token_ids, logit_warper, next_token_scores)
+                next_token = self._get_next_token(gen_mode, token_ids, logits_processor, next_token_scores)
                 is_valid = grammar_decoder.is_valid(token_ids, next_token)
 
                 if not is_valid:
                     # calling grammar decoder is expensive. Hence, in the opportunist mode, we call it only when the standard generation is syntactically incorrect
                     next_token_scores = grammar_decoder(token_ids, next_token_scores)
-                    next_token = self._get_next_token(gen_mode, token_ids, logit_warper, next_token_scores)
+                    next_token = self._get_next_token(gen_mode, token_ids, logits_processor, next_token_scores)
             else:
-                next_token = self._get_next_token(gen_mode, token_ids, logit_warper, next_token_scores)
+                next_token = self._get_next_token(gen_mode, token_ids, logits_processor, next_token_scores)
             
             token_ids = torch.cat([token_ids, next_token[:, None]], dim=-1)
 
@@ -186,11 +191,11 @@ class HuggingFaceModel:
             
         return token_ids
 
-    def _get_next_token(self, gen_mode, token_ids, logit_warper, next_token_scores):
+    def _get_next_token(self, gen_mode, token_ids, logits_processor, next_token_scores):
         if gen_mode == GenerationMode.GREEDY_SEARCH:
             next_token = torch.argmax(next_token_scores, dim=-1)
         elif gen_mode == GenerationMode.SAMPLE:
-            next_token_scores = logit_warper(token_ids, next_token_scores)
+            next_token_scores = logits_processor(token_ids, next_token_scores)
             probs = torch.nn.functional.softmax(next_token_scores, dim=-1)
             next_token = torch.multinomial(probs, num_samples=1).squeeze(1)
         return next_token
@@ -246,7 +251,7 @@ class HuggingFaceModel:
 
         generated_ids = self.model.generate(
             inputs,
-            logits_processor=self.logit_processors,
+            logits_processor=self.grammar_processor,
             **self.gen_args
         )
         completion = self.tokenizer.decode(
