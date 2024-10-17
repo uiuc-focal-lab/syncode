@@ -30,7 +30,9 @@ class SyncodeLogitsProcessor(LogitsProcessor):
         num_samples=1,
         dev_mode=False,
         parser='lalr',
-        mode='grammar_mask'):
+        mode='grammar_mask',
+        use_mask_store=True
+        ):
 
         self.tokenizer = tokenizer
         self.grammar = grammar
@@ -50,14 +52,16 @@ class SyncodeLogitsProcessor(LogitsProcessor):
         self._ignore_whitespace = self._get_ignore_whitespace(self.grammar)
 
         # Load dfa mask store
+        self.use_mask_store = use_mask_store
         self.dfa_mask_store = DFAMaskStore.load_dfa_mask_store(
                                     grammar=self.grammar, 
                                     tokenizer=self.tokenizer, 
                                     use_cache=use_cache, 
                                     logger=self.logger,
                                     mode=mode,
+                                    use_mask_store=use_mask_store
                                     )
-
+        
         # Create parser
         self.inc_parser: IncrementalParser = create_parser(self.grammar, logger=self.logger, parser=parser, ignore_whitespace=self._ignore_whitespace)
 
@@ -136,6 +140,15 @@ class SyncodeLogitsProcessor(LogitsProcessor):
     def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor) -> torch.FloatTensor:    
         # start_from is used for choosing where the parsing should start
         debug = True
+
+        if self.use_mask_store:
+            self._use_mask_store_to_update_scores(input_ids, scores, debug)
+        else:
+            self._use_simple_update_scores(input_ids, scores, debug)
+
+        return scores
+
+    def _use_mask_store_to_update_scores(self, input_ids, scores, debug):
         partial_codes = self._get_partial_codes(input_ids)
 
         for idx, partial_code in enumerate(partial_codes):
@@ -169,7 +182,17 @@ class SyncodeLogitsProcessor(LogitsProcessor):
             # For debugging - remove later
             if debug: self._debug_greedy(scores, idx, partial_code, r, greedy_token)
 
-        return scores
+    def _use_simple_update_scores(self, input_ids, scores, debug):
+        """
+        This is a simple algorithms where we iterate 
+        """
+        for idx in range(len(input_ids)):
+            for token_id in range(len(scores[idx])):
+                if self.is_valid(input_ids[idx:idx+1], torch.tensor([token_id]).to(input_ids.device)):
+                    scores[idx, token_id] = scores[idx, token_id]
+                else:
+                    scores[idx, token_id] = -float("inf")
+            
 
     def _get_partial_codes(self, input_ids: torch.LongTensor):   
         assert self.start_from <= input_ids.size(1), "Make sure that the decoder is reset for new prompt."            

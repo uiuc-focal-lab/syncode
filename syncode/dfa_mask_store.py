@@ -291,7 +291,8 @@ class DFAMaskStore:
                  special_token_ids: Iterable=[], 
                  indentation: bool=True,
                  mode='grammar_strict', # 'grammar_strict' or 'grammar_mask'
-                 ignore_terminals: Iterable[str]=[]
+                 ignore_terminals: Iterable[str]=[],
+                 use_mask_store: bool=True
                  ):
         self._vocab = vocab
         self.special_token_ids = special_token_ids  
@@ -305,7 +306,9 @@ class DFAMaskStore:
         # Iterate through each pair of DFA state and next terminals and store the overapproximate tokens
         self._lookup_table = LookupTable(vocab, special_token_ids, indentation=indentation, mode=mode)
         terminal_names = [terminal.name for terminal in terminals]
-        self._store_overapproximate_tokens(terminal_names, vocab)
+
+        if use_mask_store:
+            self._store_overapproximate_tokens(terminal_names, vocab)
 
         self.indentation = indentation       
 
@@ -322,7 +325,7 @@ class DFAMaskStore:
         return ignore_whitespace
 
     @staticmethod
-    def load_dfa_mask_store(grammar: Grammar, tokenizer, use_cache=True, logger=None, mode='grammar_strict'):
+    def load_dfa_mask_store(grammar: Grammar, tokenizer, use_cache=True, logger=None, mode='grammar_strict', use_mask_store=True):
         '''
         Loads the dfa for the given language and tokenizer. If the dfa is not cached, it is created and cached. 
         '''
@@ -331,7 +334,7 @@ class DFAMaskStore:
         grammar_hash = grammar.hash()
 
         # TODO: Hashing using the tokenizer vocab size, this may be problmatic if we have two fine-tuned models with same tokenizer, same vocab size but different vocab
-        dfa_path = f'{dfa_dir}{mode}_{grammar_hash}_{tokenizer.vocab_size}.pkl'
+        dfa_path = f'{dfa_dir}{mode}_{grammar_hash}_{tokenizer.vocab_size}_lookup_table:{use_mask_store}.pkl'
         
         if use_cache and os.path.exists(dfa_path):
             try:
@@ -339,8 +342,9 @@ class DFAMaskStore:
                 return mask_store
             except: # If we cannot load the file, we will create the dfa from scratch
                 pass
-    
-        print(f"Creating DFA mask store for {tokenizer_name} and {grammar}, may take more than 10 minutes. Caching at {os.path.abspath(dfa_path)}.", flush=True)
+        
+        if use_mask_store:
+            print(f"Creating DFA mask store for {tokenizer_name} and {grammar}, may take more than 10 minutes. Caching at {os.path.abspath(dfa_path)}.", flush=True)
         vocab = common.get_vocab_from_tokenizer(tokenizer)
 
         base_parser = create_base_parser(grammar)
@@ -348,7 +352,7 @@ class DFAMaskStore:
         simplifications = grammar.simplifications()
         os.makedirs(dfa_dir, exist_ok=True)
 
-        mask_store = DFAMaskStore(base_parser.terminals, vocab, simplifications=simplifications, special_token_ids=[tokenizer.eos_token_id], mode=mode, ignore_terminals=base_parser.ignore_tokens)
+        mask_store = DFAMaskStore(base_parser.terminals, vocab, simplifications=simplifications, special_token_ids=[tokenizer.eos_token_id], mode=mode, ignore_terminals=base_parser.ignore_tokens, use_mask_store=use_mask_store)
 
         pickle.dump(mask_store, open(dfa_path, 'wb'))
         return mask_store
