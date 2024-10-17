@@ -1,4 +1,3 @@
-from typing import Iterator
 import torch
 import syncode.common as common
 from transformers import LogitsProcessor, PreTrainedTokenizer
@@ -8,6 +7,8 @@ from syncode.parsers import create_parser, create_base_parser
 from syncode.dfa_mask_store import DFAMaskStore
 from syncode.parsers.grammars import Grammar
 
+# Set to True for debugging
+DEBUG = False
 
 class SyncodeLogitsProcessor(LogitsProcessor):
     """
@@ -135,7 +136,6 @@ class SyncodeLogitsProcessor(LogitsProcessor):
 
     def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor) -> torch.FloatTensor:    
         # start_from is used for choosing where the parsing should start
-        debug = True
         partial_codes = self._get_partial_codes(input_ids)
 
         for idx, partial_code in enumerate(partial_codes):
@@ -152,7 +152,7 @@ class SyncodeLogitsProcessor(LogitsProcessor):
         
             accept_mask = self.dfa_mask_store.get_accept_mask(r, logger=self.logger)
 
-            if debug: 
+            if DEBUG: 
                 self._log_current_status(partial_code, r)
                 greedy_token = self.tokenizer.decode(scores[idx].argmax(dim=-1)) 
 
@@ -167,7 +167,7 @@ class SyncodeLogitsProcessor(LogitsProcessor):
                 self._log_current_status(partial_code, r)
 
             # For debugging - remove later
-            if debug: self._debug_greedy(scores, idx, partial_code, r, greedy_token)
+            if DEBUG: self._debug_greedy(scores, idx, partial_code, r, greedy_token)
 
         return scores
 
