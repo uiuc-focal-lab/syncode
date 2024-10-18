@@ -70,6 +70,19 @@ class TestParserMisc(unittest.TestCase):
         mask = dfa_mask.get_accept_mask(r, get_list=True)
         self.assertIn(' I', mask)
 
+    def test_lexer_error(self):
+        grammar = """ 
+                start: name1 | name2
+                name1: "Ali"
+                name2: "Aliana"
+        """
+        try:
+            _ = create_parser(Grammar(grammar))
+            is_error = False
+        except ValueError as e:
+            is_error = True
+        self.assertTrue(is_error)
+
     def test_parser_calc(self):
         inc_parser = create_parser(Grammar('calc'))
         partial_code = "113 + 235 + 17"
@@ -112,3 +125,4 @@ Jokes(rina) ⊕ Unaware(rina) ::: Rina is either a person who jokes about being 
         partial_code = f"""Predicates:\nPer"""
         r = inc_parser.get_acceptable_next_terminals(partial_code)
         print(r)
+    

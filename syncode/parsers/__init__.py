@@ -20,12 +20,21 @@ def create_parser(grammar: Grammar, parser='lalr', **kwargs) -> incremental_pars
             indenter = PythonIndenter()
 
         base_parser = create_base_parser(grammar, parser, indenter, cache_filename)
-
+        check_grammar_errors(base_parser)
+                         
         if grammar.name == 'python':
             return PythonIncrementalParser(base_parser, indenter, **kwargs)
         elif grammar.name == 'go':
             return GoIncrementalParser(base_parser, **kwargs)
         return incremental_parser.IncrementalParser(base_parser, **kwargs)
+
+def check_grammar_errors(base_parser):
+    for t1 in base_parser.terminals:
+         for t2 in base_parser.terminals:
+              if t1.pattern.type == 'str' and t2.pattern.type == 'str' and t1 != t2:
+                       # If either of the strings is a substring of the other, then we raise an error
+                    if t1.pattern.value in t2.pattern.value or t2.pattern.value in t1.pattern.value:
+                        raise ValueError(f"Terminals {t1.name} and {t2.name} have overlapping patterns: {t1.pattern.value} and {t2.pattern.value}")
 
 def create_base_parser(grammar, parser='lalr', indenter=None, cache_filename=None):
     base_parser = Lark( # This is the standard Lark parser
