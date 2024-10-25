@@ -62,6 +62,14 @@ Simply install SynCode via PyPi using the following command:
 ``` bash
 pip install git+https://github.com/uiuc-focal-lab/syncode.git
 ```
+
+Note: SynCode depends on HuggingFace [transformers](https://github.com/huggingface/transformers):
+| SynCode version | Recommended transformers version |
+| -------------- | -------------------------------- |
+| `v0.1.4` (latest) | `v4.44.0`                         |
+| `v0.1.2`          | `v4.42.0`                         |
+
+
 ### Usage option 1:
 SynCode can be used as a simple logit processor with HuggingFace [transformers](https://github.com/huggingface/transformers) library interface. Check this [notebook](./notebooks/example_logits_processor.ipynb) for example.
 
