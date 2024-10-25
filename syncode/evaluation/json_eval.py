@@ -35,8 +35,12 @@ class JSONEval:
         
         for task_id, problem in enumerate(problems):
             output = JSONEval.run_eval_for_task(syncode, syncode.num_samples, problem, samples, pbar, task_id, prompt_type=prompt_type)
+            
             if debug_task_id is not None:
+                # This is for debugging purposes
+                logger.log_code(msg="Problem", code=output[0])
                 return output
+            
             outputs.append(outputs) 
 
         schema_result = validate_json_data(syncode, samples, results, logger=logger)
