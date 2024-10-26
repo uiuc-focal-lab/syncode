@@ -1,4 +1,4 @@
-start:invariants
+start: invariants
 
 invariants: (invariant (/\n+/))+ -> multiple_invariants
 

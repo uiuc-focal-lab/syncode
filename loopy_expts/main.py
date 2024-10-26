@@ -62,7 +62,8 @@ def main(
     return expt_logs
 
 if __name__ == '__main__':
-    model = 'Qwen/Qwen2.5-Coder-7B'
+    model = 'meta-llama/CodeLlama-7b-Instruct-hf'
+    # ['Qwen/Qwen2.5-Coder-7B', 'meta-llama/Llama-3.1-8B', 'meta-llama/Llama-3.1-8B-Instruct']
     grammar = 'invariants.lark'
     Logger.log_info(f"Initializing model {model}")
     Logger.log_info(f"Initializing grammar {grammar}")
