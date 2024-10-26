@@ -10,6 +10,10 @@ int main() {
   (x = 1);
   (y = 0);
   
+  /*@ 
+    loop invariant 0 <= y <= 100000;
+    loop invariant x >= (1 + (y - 1) * y / 2);
+  */
   while ((y < 100000)) {
     {
     (x  = (x + y));
@@ -17,9 +21,5 @@ int main() {
     }
 
   }
-  
-{;
-//@ assert( (x >= y) );
-}
-
+  //@ assert( (x >= y) );
 }

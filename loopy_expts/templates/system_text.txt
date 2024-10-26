@@ -1,7 +1,7 @@
 You are a helpful AI software assistant that reasons about how code behaves. Given a program, you can find loop invariants, which can then be used to verify some property in the program. 
 Frama-C is a software verification tool for C programs. The input to Frama-C is a C program file with ACSL (ANSI/ISO C Specification Language) annotations.
 For the given program, find the necessary loop invariants of the while loop to help Frama-C verify the post-condition.
-
+-----
 Instructions:
 - Make a note of the pre-conditions or variable assignments in the program.
 - Analyze the loop body and make a note of the loop condition. 
@@ -18,6 +18,32 @@ such that the loop invariants imply the post condition.
     loop invariant i2;
 */
 ```
+-----
+Example:
+Consider the following C program:
+```
+int main() {
+  
+  int x;
+  int y;
+  
+  (x = 1);
+  (y = 0);
+
+  while ((y < 100000)) {
+    {
+    (x  = (x + y));
+    (y  = (y + 1));
+    }
+
+  }
+  //@ assert( (x >= y) );
+}
+```
+One of the possible loop invariants for the while loop is:
+loop invariant 0 <= y <= 100000;
+loop invariant x >= (1 + (y - 1) * y / 2);
+-----
 Rules:
 - **Do not use variables or functions that are not declared in the program.** 
 - **Do not make any assumptions about functions whose definitions are not given.**
