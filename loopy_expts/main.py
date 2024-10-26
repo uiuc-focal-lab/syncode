@@ -10,7 +10,7 @@ from utils import Logger
 sys.path.append(os.path.join(os.path.dirname(__file__), '../'))
 
 def init(model: str, grammar: str):
-    syncode = Syncode(model = model, mode='grammar_mask', grammar=grammar, parse_output_only=True, log_level=2, max_new_tokens=10000, device='cuda:0')
+    syncode = Syncode(model = model, mode='grammar_mask', grammar=grammar, parse_output_only=True, log_level=2, max_new_tokens=1000, device='cuda:0', dev_mode=True)
     return syncode
 
 def main(
@@ -62,14 +62,14 @@ def main(
     return expt_logs
 
 if __name__ == '__main__':
-    model = '/data/share/models/hugging_face/models--Qwen--Qwen2.5-Coder-1.5B/snapshots/835b517c690ba0a4a54212e87a0d6ab1a7fc03d0/'
+    model = 'Qwen/Qwen2.5-Coder-7B'
     grammar = 'invariants.lark'
     Logger.log_info(f"Initializing model {model}")
     Logger.log_info(f"Initializing grammar {grammar}")
     llm = init(model, grammar)
     datasets_file = 'benchmarks.txt'
     prompt = ('templates/system_text.txt', 'templates/prompt_text.txt')
-    num_samples = 10
+    num_samples = 2
 
     expt_logs = main(llm, datasets_file, prompt, num_samples)
     log_file_name = datetime.now().strftime("%Y_%m_%d_%H_%M_%S") + '_expt_logs.json'

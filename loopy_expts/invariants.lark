@@ -1,18 +1,14 @@
-start: BACKTICK "\n" BLOCK_BEGIN invariants BLOCK_END "\n" BACKTICK
+start: BACKTICK "\n" BLOCK_BEGIN invariants BLOCK_END BACKTICK
 
 BACKTICK: "```"
 
-invariants: invariant+ -> multiple_invariants
+invariants: (invariant (/\s+/|/\n+/))+ -> multiple_invariants
 
-invariant: LOOP INVARIANT pred ";" -> invariant
+invariant: "loop" /\s+/ "invariant" /\s+/ pred ";" -> invariant
 
-BLOCK_BEGIN: "/*@"
+BLOCK_BEGIN: "/" "*" "@\n"
 
-BLOCK_END: "*/"
-
-LOOP: "loop"
-
-INVARIANT: "invariant"
+BLOCK_END: "\n" "*" "/" "\n"
 
 STRING: /"([^"\\]|\\.)*"/
 
@@ -43,16 +39,16 @@ expr: INTEGER
     | CHAR 
     | STRING 
     | IDENTIFIER 
-    | IDENTIFIER "(" expr ("," expr)* ")"
-    | "(" expr ")" 
-    | unary_arith_op expr 
-    | expr bin_arith_op expr 
-    | expr "?" expr ":" expr
+    | IDENTIFIER /\s+/ "(" /\s+/ expr /\s+/ ("," /\s+/ expr)* /\s+/ ")"
+    | "(" /\s+/ expr /\s+/ ")" 
+    | unary_arith_op /\s+/ expr 
+    | expr /\s+/ bin_arith_op /\s+/ expr 
+    | expr /\s+/ "?" /\s+/ expr /\s+/ ":" /\s+/ expr
 
 pred: TRUE 
     | FALSE 
-    | "(" pred ")"
+    | "(" /\s+/ pred /\s+/ ")"
     | expr
-    | unary_logic_op pred 
-    | pred bin_logic_op pred 
-    | expr rel_arith_op expr
+    | unary_logic_op /\s+/ pred 
+    | pred /\s+/ bin_logic_op /\s+/ pred 
+    | expr /\s+/ rel_arith_op /\s+/ expr
