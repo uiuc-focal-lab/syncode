@@ -1,6 +1,6 @@
 start: invariants
 
-invariants: (invariant (/\n+/))+ -> multiple_invariants
+invariants: (invariant /\n+/)+ -> multiple_invariants
 
 invariant: "loop" /\s+/ "invariant" /\s+/ pred ";" -> invariant
 
