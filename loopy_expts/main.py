@@ -88,6 +88,8 @@ def main(
 
 if __name__ == "__main__":
     model = "meta-llama/CodeLlama-7b-Instruct-hf"
+    if len(sys.argv) < 2:
+        sys.argv.append("codellama")
     if sys.argv[1] == "qwencoder":
         model = "Qwen/Qwen2.5-Coder-7B"
     elif sys.argv[1] == "llama":
