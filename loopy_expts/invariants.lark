@@ -1,14 +1,8 @@
-start: BACKTICK "\n" BLOCK_BEGIN invariants BLOCK_END BACKTICK
+start:invariants
 
-BACKTICK: "```"
-
-invariants: (invariant (/\s+/|/\n+/))+ -> multiple_invariants
+invariants: (invariant (/\n+/))+ -> multiple_invariants
 
 invariant: "loop" /\s+/ "invariant" /\s+/ pred ";" -> invariant
-
-BLOCK_BEGIN: "/" "*" "@\n"
-
-BLOCK_END: "\n" "*" "/" "\n"
 
 STRING: /"([^"\\]|\\.)*"/
 
