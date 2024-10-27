@@ -6,6 +6,7 @@ from datetime import datetime
 from typing import Tuple
 from syncode import Syncode
 from utils import Logger
+import argparse
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "../"))
 
@@ -86,26 +87,58 @@ def main(
     return expt_logs
 
 
+def parse_args(
+    args: argparse.Namespace,
+) -> Tuple[str, str, str, Tuple[str, str], int]:
+    parser = argparse.ArgumentParser(
+        description="Run experiments using Syncode on LLMs"
+    )
+    parser.add_argument(
+        "--model",
+        type=str,
+        default="meta-llama/CodeLlama-7b-Instruct-hf",
+        choices=["meta-llama/CodeLlama-7b-Instruct-hf", "Qwen/Qwen2.5-Coder-7B", "meta-llama/Llama-3.1-8B", "meta-llama/Llama-3.1-8B-Instruct"],
+        help="Model to use",
+    )
+    parser.add_argument(
+        "--grammar",
+        type=str,
+        default="invariants.lark",
+        help="Grammar to use",
+    )
+    parser.add_argument(
+        "--dataset",
+        type=str,
+        default="benchmarks.txt",
+        help="File containing list of benchmarks",
+    )
+    parser.add_argument(
+        "--mode",
+        type=str,
+        default="grammar_mask",
+        help="Mode to run the model in",
+    )
+    parser.add_argument(
+        "--num_samples",
+        type=int,
+        default=15,
+        help="Number of samples to generate for each benchmark",
+    )
+    
+    parser.parse_args(namespace=args)
+
+
 if __name__ == "__main__":
-    model = "meta-llama/CodeLlama-7b-Instruct-hf"
-    if len(sys.argv) < 2:
-        sys.argv.append("codellama")
-    if sys.argv[1] == "qwencoder":
-        model = "Qwen/Qwen2.5-Coder-7B"
-    elif sys.argv[1] == "llama":
-        model = "meta-llama/Llama-3.1-8B"
-    # ['Qwen/Qwen2.5-Coder-7B', 'meta-llama/Llama-3.1-8B', 'meta-llama/Llama-3.1-8B-Instruct']
-    grammar = "invariants.lark"
-    Logger.log_info(f"Initializing model {model}")
-    Logger.log_info(f"Initializing grammar {grammar}")
-    llm = init(model, grammar)
-    datasets_file = "benchmarks.txt"
+    args = parse_args(args[1:])
+
+    Logger.log_info(f"Initializing model {args.model}")
+    Logger.log_info(f"Initializing grammar {args.grammar}")
+    llm = init(args.model, args.grammar)
     prompt = ("templates/system_text.txt", "templates/prompt_text.txt")
-    num_samples = 15
 
     expt_logs = []
     try:
-        expt_logs = main(llm, datasets_file, prompt, num_samples)
+        expt_logs = main(llm, args.dataset, prompt, args.num_samples)
     except Exception as e:
         Logger.log_error(f"Error in main: {e}")
         new_expt_logs = {
@@ -113,6 +146,10 @@ if __name__ == "__main__":
             "logs": expt_logs,
         }
     log_file_name = "logs/" + datetime.now().strftime("%Y_%m_%d_%H_%M_%S") + "_expt_logs.json"
+    grammar_text = None
+    with open(args.grammar, "r") as grammar_file:
+        grammar_text = grammar_file.read()
+    expt_logs = {"model": args.model, "grammar": grammar_text, "logs": expt_logs}
     with open(log_file_name, "w") as log_file:
         json.dump(expt_logs, log_file, indent=4)
 
