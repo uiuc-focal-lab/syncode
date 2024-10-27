@@ -149,7 +149,7 @@ if __name__ == "__main__":
     grammar_text = None
     with open(args.grammar, "r") as grammar_file:
         grammar_text = grammar_file.read()
-    expt_logs = {"model": args.model, "grammar": grammar_text, "logs": expt_logs}
+    expt_logs = {"params": vars(args), "logs": expt_logs}
     with open(log_file_name, "w") as log_file:
         json.dump(expt_logs, log_file, indent=4)
 
