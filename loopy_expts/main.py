@@ -11,12 +11,7 @@ import argparse
 sys.path.append(os.path.join(os.path.dirname(__file__), "../"))
 
 
-def init(model: str, grammar: str):
-    device = ""
-    if model == "Qwen/Qwen2.5-Coder-7B":
-        device = "cuda:0"
-    else:
-        device = "cuda:1"
+def init(model: str, grammar: str, device:str):
     syncode = Syncode(
         model=model,
         mode="grammar_mask",
@@ -116,7 +111,14 @@ def parse_args(
         "--mode",
         type=str,
         default="grammar_mask",
+        choices=["original", "grammar_mask", "grammar_strict"],
         help="Mode to run the model in",
+    )
+    parser.add_argument(
+        "--device",
+        type=str,
+        default="cuda:0",
+        help="Device to run the model on",
     )
     parser.add_argument(
         "--num_samples",
@@ -125,15 +127,15 @@ def parse_args(
         help="Number of samples to generate for each benchmark",
     )
     
-    parser.parse_args(namespace=args)
+    return parser.parse_args(args)
 
 
 if __name__ == "__main__":
-    args = parse_args(args[1:])
+    args = parse_args(sys.argv[1:])
 
     Logger.log_info(f"Initializing model {args.model}")
     Logger.log_info(f"Initializing grammar {args.grammar}")
-    llm = init(args.model, args.grammar)
+    llm = init(args.model, args.grammar, args.device)
     prompt = ("templates/system_text.txt", "templates/prompt_text.txt")
 
     expt_logs = []
