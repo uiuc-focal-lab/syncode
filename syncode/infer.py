@@ -57,6 +57,7 @@ class Syncode:
         log_level (int, optional): Log level. Defaults to 2. 0 for no logs, 1 for minimal logs, 2 for all logs including time.
         
         parser (str, optional): Parser to use. Defaults to "lalr".
+        opp (bool, optional): Whether to use opportunistic generation. Defaults to True.
     """
     def __init__(
         self, 
@@ -73,6 +74,7 @@ class Syncode:
         new_mask_store: bool = False,
         parser: Literal["lr", "lalr"] = "lalr",
         seed: Optional[int] = None,
+        opp: bool = True,
         **kwargs
     ):  
         # Check inputs
@@ -133,7 +135,8 @@ class Syncode:
             tokenizer=tokenizer, 
             device=device, 
             grammar_decoder=self.grammar_decoder, 
-            mode=self.mode, 
+            mode=self.mode,
+            opp=opp,
             **kwargs
             )
 

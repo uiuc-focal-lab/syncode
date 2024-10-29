@@ -41,7 +41,8 @@ class HuggingFaceModel:
             before_prediction_hook=lambda: None, 
             device='cuda', 
             grammar_decoder=None, 
-            mode: str ='original', 
+            mode: str ='original',
+            opp: bool = True,
             **kwargs) -> None:
         super().__init__()
 
@@ -58,6 +59,7 @@ class HuggingFaceModel:
         self.grammar = grammar
         self.vocab = common.get_vocab_from_tokenizer(self.tokenizer)
         self.gen_args = kwargs
+        self.opp = opp
 
     def get_grammar_decoder(self):
         if self.grammar_processor is not None and len(self.grammar_processor) > 0:
@@ -65,7 +67,7 @@ class HuggingFaceModel:
         return None
 
     @torch.inference_mode()
-    def generate_batch_completion_grammar(self, prompt, batch_size, stop_words=None, opp: bool=True) -> Iterable[str]:
+    def generate_batch_completion_grammar(self, prompt, batch_size, stop_words=None) -> Iterable[str]:
         '''
         Generates batch_size completions for the given prompt. 
         '''
@@ -91,7 +93,7 @@ class HuggingFaceModel:
             stop_criteria = []
 
         # Generate completions
-        if opp and (gen_mode == GenerationMode.SAMPLE or gen_mode == GenerationMode.GREEDY_SEARCH) and batch_size == 1: # Use our own implementation for greedy search and sampling
+        if self.opp and (gen_mode == GenerationMode.SAMPLE or gen_mode == GenerationMode.GREEDY_SEARCH) and batch_size == 1: # Use our own implementation for greedy search and sampling
             generated_ids = self._generate(
                 inputs, 
                 gen_config, 
@@ -100,7 +102,7 @@ class HuggingFaceModel:
                 stop_criteria=stop_criteria
             )
         else:
-            if opp:
+            if self.opp:
                 if not (gen_mode == GenerationMode.SAMPLE or gen_mode == GenerationMode.GREEDY_SEARCH):
                     print("WARNING: Opportunistic mode requires SAMPLE or GREEDY_SEARCH generation mode.")
                 if not batch_size == 1:
