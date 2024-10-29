@@ -65,7 +65,7 @@ class HuggingFaceModel:
         return None
 
     @torch.inference_mode()
-    def generate_batch_completion_grammar(self, prompt, batch_size, stop_words=None) -> Iterable[str]:
+    def generate_batch_completion_grammar(self, prompt, batch_size, stop_words=None, opp: bool=True) -> Iterable[str]:
         '''
         Generates batch_size completions for the given prompt. 
         '''
@@ -91,15 +91,21 @@ class HuggingFaceModel:
             stop_criteria = []
 
         # Generate completions
-        if (gen_mode == GenerationMode.SAMPLE or gen_mode == GenerationMode.GREEDY_SEARCH) and batch_size == 1: # Use our own implementation for greedy search and sampling
+        if opp and (gen_mode == GenerationMode.SAMPLE or gen_mode == GenerationMode.GREEDY_SEARCH) and batch_size == 1: # Use our own implementation for greedy search and sampling
             generated_ids = self._generate(
                 inputs, 
                 gen_config, 
                 gen_mode, 
                 grammar_decoder=self.grammar_decoder,
                 stop_criteria=stop_criteria
-                )
+            )
         else:
+            if opp:
+                if not (gen_mode == GenerationMode.SAMPLE or gen_mode == GenerationMode.GREEDY_SEARCH):
+                    print("WARNING: Opportunistic mode requires SAMPLE or GREEDY_SEARCH generation mode.")
+                if not batch_size == 1:
+                    print("WARNING: Opportunistic mode requires batch_size of 1.")
+                print("Using huggingface generation as fallback.")
             # Use generate from transformers library for other modes
             generated_ids = self.model.generate(
                 **inputs, 
