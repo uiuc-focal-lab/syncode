@@ -1,0 +1,11 @@
+{
+    "params": {
+        "model": "Qwen/Qwen2.5-Coder-7B",
+        "grammar": "invariants.lark",
+        "dataset": "positive.txt",
+        "mode": "original",
+        "device": "cuda:1",
+        "num_samples": 15
+    },
+    "logs": []
+}
