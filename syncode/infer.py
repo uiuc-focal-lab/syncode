@@ -15,9 +15,9 @@ from syncode.evaluation.json_eval import JSONEval
 from syncode.evaluation.fol_eval import FOLEval
 
 
-def compile_and_run(model, mode="grammar_strict", quantize=True, device="cuda", num_samples=1, grammar=None, dataset="input", num_few_shot=0, chat_mode=False, dev_mode=False, log_level=1, new_mask_store=False, parser="lalr", task_id=None, seed=None, **kwargs):
+def compile_and_run(model, mode="grammar_strict", quantize=True, device="cuda", num_samples=1, grammar=None, dataset="input", num_few_shot=0, chat_mode=False, dev_mode=False, log_level=1, new_mask_store=False, parser="lalr", task_id=None, seed=None, opp=True, **kwargs):
 
-    syncode = Syncode(model, mode=mode, quantize=quantize, device=device, num_samples=num_samples, grammar=grammar, chat_mode=chat_mode, dev_mode=dev_mode, log_level=log_level, new_mask_store=new_mask_store, parser=parser, seed=seed, **kwargs)
+    syncode = Syncode(model, mode=mode, quantize=quantize, device=device, num_samples=num_samples, grammar=grammar, chat_mode=chat_mode, dev_mode=dev_mode, log_level=log_level, new_mask_store=new_mask_store, parser=parser, seed=seed, opp=opp, **kwargs)
     
     if dataset == "input":
         syncode.infer()
@@ -57,6 +57,7 @@ class Syncode:
         log_level (int, optional): Log level. Defaults to 2. 0 for no logs, 1 for minimal logs, 2 for all logs including time.
         
         parser (str, optional): Parser to use. Defaults to "lalr".
+        opp (bool, optional): Whether to use opportunistic generation. Defaults to True.
     """
     def __init__(
         self, 
@@ -73,6 +74,7 @@ class Syncode:
         new_mask_store: bool = False,
         parser: Literal["lr", "lalr"] = "lalr",
         seed: Optional[int] = None,
+        opp: bool = True,
         **kwargs
     ):  
         # Check inputs
@@ -133,7 +135,8 @@ class Syncode:
             tokenizer=tokenizer, 
             device=device, 
             grammar_decoder=self.grammar_decoder, 
-            mode=self.mode, 
+            mode=self.mode,
+            opp=opp,
             **kwargs
             )
 
