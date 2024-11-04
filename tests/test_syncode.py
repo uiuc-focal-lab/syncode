@@ -37,12 +37,13 @@ class TestSyncode(unittest.TestCase):
     def test_syntax_mask_humaneval_python(self):
         # Test grammar_mask does not cause functional generated code to fail
         for i in [7, 12, 28]:
-            result = check_correctness_python(self.problems[i], self.sg_mask.evaluate(dataset='humaneval', task_id=i)[0], timeout=10.0)['result']
+            output = self.sg_mask.evaluate(dataset='humaneval', task_id=i, format_tabs=True)[0]
+            result = check_correctness_python(self.problems[i], output, timeout=10.0)['result']
             self.assertEqual(result, 'passed', f"SynCode Causes Functional Generated Code to Fail for HumanEval/{i}")
         
         # Test grammar_mask eliminates syntax errors in generated code
         for i in [25, 81, 84, 105, 107]:
-            output = self.sg_mask.evaluate(dataset='humaneval', task_id=i)[0]
+            output = self.sg_mask.evaluate(dataset='humaneval', task_id=i, format_tabs=True)[0]
             error_type = check_correctness_python(self.problems[i], output, timeout=10.0)['error_type']
             self.assertNotIn('Syntax', error_type, f"Generated Code for HumanEval/{i} has a Syntax Error\n{output}")
 

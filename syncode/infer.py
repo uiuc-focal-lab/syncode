@@ -15,20 +15,21 @@ from syncode.evaluation.json_eval import JSONEval
 from syncode.evaluation.fol_eval import FOLEval
 
 
-def compile_and_run(model, mode="grammar_strict", quantize=True, device="cuda", num_samples=1, grammar=None, dataset="input", num_few_shot=0, chat_mode=False, dev_mode=False, log_level=1, new_mask_store=False, parser="lalr", task_id=None, seed=None, opp=True, **kwargs):
+def compile_and_run(model, mode="grammar_strict", quantize=True, device="cuda", grammar=None, dataset="input", num_few_shot=0, chat_mode=False, dev_mode=False, log_level=1, new_mask_store=False, parser="lalr", num_tasks=None, task_id=None, seed=None, opp=True, **kwargs):
 
-    syncode = Syncode(model, mode=mode, quantize=quantize, device=device, num_samples=num_samples, grammar=grammar, chat_mode=chat_mode, dev_mode=dev_mode, log_level=log_level, new_mask_store=new_mask_store, parser=parser, seed=seed, opp=opp, **kwargs)
+    syncode = Syncode(model, mode=mode, quantize=quantize, device=device, grammar=grammar, chat_mode=chat_mode, dev_mode=dev_mode, log_level=log_level, new_mask_store=new_mask_store, parser=parser, seed=seed, opp=opp, **kwargs)
     
     if dataset == "input":
         syncode.infer()
     else:
         # Setup output directory and logger
+        num_samples = kwargs.get('num_return_sequences', 1)
         out_dir, out_path = common.get_output_path(model, grammar, dataset, num_samples, mode)
         logger = common.Logger(num_samples, mode, parser, out_dir, log_level=log_level, task_id=task_id)
         if syncode.grammar_decoder is not None: syncode.grammar_decoder.logger = logger
 
         # Run evaluation
-        syncode.evaluate(dataset=dataset, task_id=task_id, out_path=out_path, logger=logger, num_few_shot=num_few_shot)
+        syncode.evaluate(dataset=dataset, num_tasks=num_tasks, task_id=task_id, out_path=out_path, logger=logger, num_few_shot=num_few_shot)
 
 
 class Syncode:
@@ -65,7 +66,6 @@ class Syncode:
         mode: Literal["original", "grammar_mask", "grammar_strict"] = "grammar_strict",
         quantize: bool = True,
         device: str = "cuda",
-        num_samples: int = 1,
         grammar: Optional[str] = None,
         chat_mode: bool = False,
         parse_output_only: bool = False,
@@ -88,7 +88,7 @@ class Syncode:
         self.model_name = model
         self.quantize = quantize
         self.device = device
-        self.num_samples = num_samples
+        self.num_samples = kwargs.get('num_return_sequences', 1)
         self.new_mask_store = new_mask_store
         self.parser = parser
         self.chat_mode = chat_mode
@@ -129,7 +129,7 @@ class Syncode:
         # Set LLM max new tokens to 200 by default
         kwargs['max_new_tokens'] = kwargs.get('max_new_tokens', 200)
 
-        self.model = HuggingFaceModel(
+        self.model: HuggingFaceModel = HuggingFaceModel(
             model, 
             grammar=self.grammar,
             tokenizer=tokenizer, 
@@ -151,16 +151,22 @@ class Syncode:
             self, 
             dataset: Literal["mbxp", "humaneval", "mathqa-x", "gsm8k", "spider", "json_eval"],
             out_path: str=None,
+            num_tasks: Optional[int]=None,
             num_few_shot:int=0,
             logger=common.EmptyLogger(), 
             task_id=None,
-            prompt_type='original' # For JSONEvalL: "original" or "explicit"
+            prompt_type='original', # For JSONEvalL: "original" or "explicit"
+            format_tabs=False # For CodeEval: Format tabs in prompt
         ) -> dict:
         """
         Run evaluation on the model:
 
         Args:
             dataset (str): Dataset to evaluate on. Options are "mbxp", "humaneval", "mathqa-x", "gsm8k", "spider", "json_eval".
+
+            out_path (str, optional): Output path for evaluation results. Defaults to None.
+
+            num_tasks (int, optional): Number of tasks to evaluate. Defaults to None.
         
             num_few_shot (int, optional): Number of examples for few shot prompting. Defaults to 0.
 
@@ -173,11 +179,11 @@ class Syncode:
         self.dataset = Dataset(dataset, language=self.language, num_few_shot=num_few_shot)
 
         if self.dataset.type == "code": 
-            output = CodeEval.run_code_eval(self, self.num_samples, out_path, format_tabs=True, debug_task_id=task_id, logger=logger)
+            output = CodeEval.run_code_eval(self, self.num_samples, out_path, format_tabs=format_tabs, debug_task_id=task_id, logger=logger, num_tasks=num_tasks)
         elif self.dataset.type == "math":
             output = MathEval.run_math_eval(self, out_path, debug_task_id=task_id, logger=logger)
         elif self.dataset.type == "sql":
-            output = SQLEval.run_eval(self, out_path, debug_task_id=task_id)
+            output = SQLEval.run_eval(self, out_path, debug_task_id=task_id, num_tasks=num_tasks)
         elif self.dataset.type == "fol":
             output = FOLEval.run_eval(self, out_path, debug_task_id=task_id)
         elif self.dataset.type == "json":

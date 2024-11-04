@@ -61,7 +61,7 @@ type_term : "~"? type_
 
 // Function declarations
 
-function_decl: "func" NAME type_parameters? signature ("{" statement_list? ("}" | "eof"))? 
+function_decl: "func" NAME type_parameters? signature ("{" statement_list? "}" ["eof"])? 
 // eof: "}" // This indicates end of function body
 
 method_decl: "func" receiver NAME signature block?
