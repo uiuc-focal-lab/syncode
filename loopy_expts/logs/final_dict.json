@@ -35,7 +35,9 @@
             "max": 1002,
             "count": 15,
             "sum": 3751
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/VeriMAP/MAP-disj_VeriMAP_true.c": {
         "with_syncode_before_processing": {
@@ -73,7 +75,9 @@
             "max": 993,
             "count": 15,
             "sum": 2278
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/VeriMAP/MAP-forward_VeriMAP_true.c": {
         "with_syncode_before_processing": {
@@ -111,7 +115,9 @@
             "max": 1005,
             "count": 15,
             "sum": 6314
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/VeriMAP/MAP-interpolants_needed-pepm-proc.c_VeriMAP_true.c": {
         "with_syncode_before_processing": {
@@ -149,7 +155,9 @@
             "max": 1005,
             "count": 15,
             "sum": 6487
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/VeriMAP/MAP-singleloop2-pepm-proc.c_VeriMAP_true.c": {
         "with_syncode_before_processing": {
@@ -187,7 +195,9 @@
             "max": 1005,
             "count": 15,
             "sum": 6858
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": false
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/VeriMAP/TRACER-paper-prog_d-pepm-proc.c_VeriMAP_true.c": {
         "with_syncode_before_processing": {
@@ -225,7 +235,9 @@
             "max": 1003,
             "count": 15,
             "sum": 3327
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/VeriMAP/TRACER-testabs12_VeriMAP_true.c": {
         "with_syncode_before_processing": {
@@ -263,7 +275,9 @@
             "max": 1004,
             "count": 15,
             "sum": 3527
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/VeriMAP/TRACER-testabs13_VeriMAP_true.c": {
         "with_syncode_before_processing": {
@@ -301,7 +315,9 @@
             "max": 1004,
             "count": 15,
             "sum": 2343
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/VeriMAP/TRACER-testabs15_VeriMAP_true.c": {
         "with_syncode_before_processing": {
@@ -339,7 +355,9 @@
             "max": 994,
             "count": 15,
             "sum": 3566
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/VeriMAP/TRACER-testabs7_VeriMAP_true.c": {
         "with_syncode_before_processing": {
@@ -377,7 +395,9 @@
             "max": 1006,
             "count": 15,
             "sum": 3321
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/VeriMAP/TRACER-testabs8_VeriMAP_true.c": {
         "with_syncode_before_processing": {
@@ -415,7 +435,9 @@
             "max": 1005,
             "count": 15,
             "sum": 3424
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/VeriMAP/TRACER-testloop10_VeriMAP_true.c": {
         "with_syncode_before_processing": {
@@ -453,7 +475,9 @@
             "max": 1004,
             "count": 15,
             "sum": 9274
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/VeriMAP/TRACER-testloop11_VeriMAP_true.c": {
         "with_syncode_before_processing": {
@@ -491,7 +515,9 @@
             "max": 1002,
             "count": 15,
             "sum": 3334
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/VeriMAP/TRACER-testloop13_VeriMAP_true.c": {
         "with_syncode_before_processing": {
@@ -529,7 +555,9 @@
             "max": 1005,
             "count": 15,
             "sum": 5486
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/VeriMAP/TRACER-testloop14_VeriMAP_true.c": {
         "with_syncode_before_processing": {
@@ -567,7 +595,9 @@
             "max": 1004,
             "count": 15,
             "sum": 4002
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/VeriMAP/TRACER-testloop15_VeriMAP_true.c": {
         "with_syncode_before_processing": {
@@ -605,7 +635,9 @@
             "max": 1005,
             "count": 15,
             "sum": 3365
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/VeriMAP/TRACER-testloop16_VeriMAP_true.c": {
         "with_syncode_before_processing": {
@@ -643,7 +675,9 @@
             "max": 1004,
             "count": 15,
             "sum": 3512
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/VeriMAP/TRACER-testloop1_VeriMAP_true.c": {
         "with_syncode_before_processing": {
@@ -681,7 +715,9 @@
             "max": 1004,
             "count": 15,
             "sum": 4677
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/VeriMAP/TRACER-testloop29_VeriMAP_true.c": {
         "with_syncode_before_processing": {
@@ -719,7 +755,9 @@
             "max": 1004,
             "count": 15,
             "sum": 4510
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/VeriMAP/TRACER-testloop2_VeriMAP_true.c": {
         "with_syncode_before_processing": {
@@ -757,7 +795,9 @@
             "max": 1004,
             "count": 15,
             "sum": 2693
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/VeriMAP/TRACER-testloop4_VeriMAP_true.c": {
         "with_syncode_before_processing": {
@@ -795,7 +835,9 @@
             "max": 104,
             "count": 15,
             "sum": 533
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/VeriMAP/TRACER-testloop6_VeriMAP_true.c": {
         "with_syncode_before_processing": {
@@ -833,7 +875,9 @@
             "max": 1006,
             "count": 15,
             "sum": 3760
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/VeriMAP/TRACER-testloop7_VeriMAP_true.c": {
         "with_syncode_before_processing": {
@@ -871,7 +915,9 @@
             "max": 1005,
             "count": 15,
             "sum": 4759
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/invgen/NetBSD_g_Ctoc.c": {
         "with_syncode_before_processing": {
@@ -909,7 +955,9 @@
             "max": 1004,
             "count": 15,
             "sum": 6670
-        }
+        },
+        "with_syncode_success": false,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/invgen/NetBSD_loop.c": {
         "with_syncode_before_processing": {
@@ -947,7 +995,9 @@
             "max": 998,
             "count": 15,
             "sum": 9428
-        }
+        },
+        "with_syncode_success": false,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/invgen/NetBSD_loop_int.c": {
         "with_syncode_before_processing": {
@@ -985,7 +1035,9 @@
             "max": 1004,
             "count": 15,
             "sum": 9074
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/invgen/bind_expands_vars2.c": {
         "with_syncode_before_processing": {
@@ -1023,7 +1075,9 @@
             "max": 1003,
             "count": 15,
             "sum": 1808
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/invgen/gulwani_cegar1.c": {
         "with_syncode_before_processing": {
@@ -1061,7 +1115,9 @@
             "max": 1003,
             "count": 15,
             "sum": 5372
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/invgen/gulwani_cegar2.c": {
         "with_syncode_before_processing": {
@@ -1099,7 +1155,9 @@
             "max": 1006,
             "count": 15,
             "sum": 4570
-        }
+        },
+        "with_syncode_success": false,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/invgen/gulwani_fig1a.c": {
         "with_syncode_before_processing": {
@@ -1137,7 +1195,9 @@
             "max": 1003,
             "count": 15,
             "sum": 5860
-        }
+        },
+        "with_syncode_success": false,
+        "without_syncode_success": false
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/invgen/ken-imp.c": {
         "with_syncode_before_processing": {
@@ -1175,7 +1235,9 @@
             "max": 1006,
             "count": 15,
             "sum": 7584
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/invgen/rajamani_1.c": {
         "with_syncode_before_processing": {
@@ -1213,7 +1275,9 @@
             "max": 1001,
             "count": 15,
             "sum": 3120
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/invgen/sendmail-close-angle.c": {
         "with_syncode_before_processing": {
@@ -1251,7 +1315,9 @@
             "max": 1006,
             "count": 15,
             "sum": 9413
-        }
+        },
+        "with_syncode_success": false,
+        "without_syncode_success": false
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/invgen/sendmail-mime-fromqp.c": {
         "with_syncode_before_processing": {
@@ -1289,7 +1355,9 @@
             "max": 1006,
             "count": 15,
             "sum": 3691
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/invgen/sendmail-mime7to8_arr_three_chars_no_test_ok.c": {
         "with_syncode_before_processing": {
@@ -1327,7 +1395,9 @@
             "max": 1005,
             "count": 15,
             "sum": 8683
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/invgen/simple.c": {
         "with_syncode_before_processing": {
@@ -1365,7 +1435,9 @@
             "max": 1002,
             "count": 15,
             "sum": 2323
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/invgen/simple_if.c": {
         "with_syncode_before_processing": {
@@ -1403,7 +1475,9 @@
             "max": 1006,
             "count": 15,
             "sum": 8331
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/invgen/split.c": {
         "with_syncode_before_processing": {
@@ -1441,7 +1515,9 @@
             "max": 1004,
             "count": 15,
             "sum": 4263
-        }
+        },
+        "with_syncode_success": false,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/invgen/up-nested.c": {
         "with_syncode_before_processing": {
@@ -1479,7 +1555,9 @@
             "max": 1006,
             "count": 15,
             "sum": 7427
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/llreve/barthe2_merged_safe.c": {
         "with_syncode_before_processing": {
@@ -1517,7 +1595,9 @@
             "max": 1000,
             "count": 15,
             "sum": 3558
-        }
+        },
+        "with_syncode_success": false,
+        "without_syncode_success": false
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/llreve/barthe_merged_safe.c": {
         "with_syncode_before_processing": {
@@ -1555,7 +1635,9 @@
             "max": 1004,
             "count": 15,
             "sum": 6795
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/llreve/loop4_merged_safe.c": {
         "with_syncode_before_processing": {
@@ -1593,7 +1675,9 @@
             "max": 1006,
             "count": 15,
             "sum": 5640
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/loops/loop-invgen/NetBSD_loop_true-unreach-call_true-termination.c": {
         "with_syncode_before_processing": {
@@ -1631,7 +1715,9 @@
             "max": 1006,
             "count": 15,
             "sum": 8689
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/loops/loop-invgen/sendmail-close-angle_true-unreach-call_true-termination.c": {
         "with_syncode_before_processing": {
@@ -1669,7 +1755,9 @@
             "max": 1004,
             "count": 15,
             "sum": 4763
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": false
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/loops/loop-lit/afnp2014_true-unreach-call_true-termination.c": {
         "with_syncode_before_processing": {
@@ -1707,7 +1795,9 @@
             "max": 1003,
             "count": 15,
             "sum": 2722
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/loops/loop-lit/bhmr2007_true-unreach-call_true-termination.c": {
         "with_syncode_before_processing": {
@@ -1745,7 +1835,9 @@
             "max": 1001,
             "count": 15,
             "sum": 5958
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/loops/loop-lit/cggmp2005_true-unreach-call_true-termination.c": {
         "with_syncode_before_processing": {
@@ -1783,7 +1875,9 @@
             "max": 1006,
             "count": 15,
             "sum": 6584
-        }
+        },
+        "with_syncode_success": false,
+        "without_syncode_success": false
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/loops/loop-lit/cggmp2005_variant_true-unreach-call_true-termination.c": {
         "with_syncode_before_processing": {
@@ -1821,7 +1915,9 @@
             "max": 1006,
             "count": 15,
             "sum": 7582
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": false
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/loops/loop-lit/css2003_true-unreach-call_true-termination.c": {
         "with_syncode_before_processing": {
@@ -1859,7 +1955,9 @@
             "max": 1004,
             "count": 15,
             "sum": 4885
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/loops/loop-lit/gj2007_true-unreach-call_true-termination.c": {
         "with_syncode_before_processing": {
@@ -1897,7 +1995,9 @@
             "max": 962,
             "count": 15,
             "sum": 2123
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": false
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/loops/loop-lit/gr2006_true-unreach-call_true-termination.c": {
         "with_syncode_before_processing": {
@@ -1935,7 +2035,9 @@
             "max": 1001,
             "count": 15,
             "sum": 4107
-        }
+        },
+        "with_syncode_success": false,
+        "without_syncode_success": false
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/loops/loop-lit/hhk2008_true-unreach-call_true-termination.c": {
         "with_syncode_before_processing": {
@@ -1973,7 +2075,9 @@
             "max": 1003,
             "count": 15,
             "sum": 3713
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/loops/loop-lit/jm2006_true-unreach-call_true-termination.c": {
         "with_syncode_before_processing": {
@@ -2011,7 +2115,9 @@
             "max": 1005,
             "count": 15,
             "sum": 6066
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/loops/loop-lit/jm2006_variant_true-unreach-call_true-termination.c": {
         "with_syncode_before_processing": {
@@ -2049,7 +2155,9 @@
             "max": 1005,
             "count": 15,
             "sum": 7850
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/loops/loop-new/count_by_1_true-unreach-call_true-termination.c": {
         "with_syncode_before_processing": {
@@ -2087,7 +2195,9 @@
             "max": 1000,
             "count": 15,
             "sum": 2445
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/loops/loop-new/count_by_1_variant_true-unreach-call_true-termination.c": {
         "with_syncode_before_processing": {
@@ -2125,7 +2235,9 @@
             "max": 1006,
             "count": 15,
             "sum": 4270
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/loops/loop-new/count_by_2_true-unreach-call_true-termination.c": {
         "with_syncode_before_processing": {
@@ -2163,7 +2275,9 @@
             "max": 56,
             "count": 15,
             "sum": 475
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/loops/loop-new/count_by_k_true-unreach-call_true-termination.c": {
         "with_syncode_before_processing": {
@@ -2201,7 +2315,9 @@
             "max": 1006,
             "count": 15,
             "sum": 3615
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/loops/loop-new/half_true-unreach-call_true-termination.c": {
         "with_syncode_before_processing": {
@@ -2239,7 +2355,9 @@
             "max": 1004,
             "count": 15,
             "sum": 3082
-        }
+        },
+        "with_syncode_success": false,
+        "without_syncode_success": false
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/loops/loops/count_up_down_true-unreach-call_true-termination.i.annot.c": {
         "with_syncode_before_processing": {
@@ -2277,7 +2395,9 @@
             "max": 1000,
             "count": 15,
             "sum": 3575
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/loops/loops/for_infinite_loop_1_true-unreach-call_false-termination.i.annot.c": {
         "with_syncode_before_processing": {
@@ -2315,7 +2435,9 @@
             "max": 1001,
             "count": 15,
             "sum": 2571
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/loops/loops/for_infinite_loop_2_true-unreach-call_false-termination.i.annot.c": {
         "with_syncode_before_processing": {
@@ -2353,7 +2475,9 @@
             "max": 1005,
             "count": 15,
             "sum": 7341
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/loops/loops/sum03_true-unreach-call_false-termination.i.annot.c": {
         "with_syncode_before_processing": {
@@ -2391,7 +2515,9 @@
             "max": 999,
             "count": 15,
             "sum": 3243
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/loops/loops/sum04_true-unreach-call_true-termination.i.annot.c": {
         "with_syncode_before_processing": {
@@ -2429,7 +2555,9 @@
             "max": 997,
             "count": 15,
             "sum": 2022
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/loops/loops/terminator_02_true-unreach-call_true-termination.i.annot.c": {
         "with_syncode_before_processing": {
@@ -2467,7 +2595,9 @@
             "max": 1004,
             "count": 15,
             "sum": 2154
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/loops/loops/terminator_03_true-unreach-call_true-termination.i.annot.c": {
         "with_syncode_before_processing": {
@@ -2505,7 +2635,9 @@
             "max": 1006,
             "count": 15,
             "sum": 2954
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/loops/loops/trex03_true-unreach-call.i.annot.c": {
         "with_syncode_before_processing": {
@@ -2543,7 +2675,9 @@
             "max": 997,
             "count": 15,
             "sum": 8555
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/loops/loops/while_infinite_loop_1_true-unreach-call_false-termination.i.annot.c": {
         "with_syncode_before_processing": {
@@ -2581,7 +2715,9 @@
             "max": 1006,
             "count": 15,
             "sum": 5348
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/loops/loops/while_infinite_loop_2_true-unreach-call_false-termination.i.annot.c": {
         "with_syncode_before_processing": {
@@ -2619,7 +2755,9 @@
             "max": 1000,
             "count": 15,
             "sum": 1368
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/pie/ICE/benchmarks/afnp2014_true-unreach-call.c": {
         "with_syncode_before_processing": {
@@ -2657,7 +2795,9 @@
             "max": 929,
             "count": 15,
             "sum": 2484
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/pie/ICE/benchmarks/cegar2.c": {
         "with_syncode_before_processing": {
@@ -2695,7 +2835,9 @@
             "max": 1006,
             "count": 15,
             "sum": 5615
-        }
+        },
+        "with_syncode_success": false,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/pie/ICE/benchmarks/cegar2.v.c": {
         "with_syncode_before_processing": {
@@ -2733,7 +2875,9 @@
             "max": 1005,
             "count": 15,
             "sum": 8997
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/pie/ICE/benchmarks/dec.c": {
         "with_syncode_before_processing": {
@@ -2771,7 +2915,9 @@
             "max": 1000,
             "count": 15,
             "sum": 2827
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/pie/ICE/benchmarks/decn.c": {
         "with_syncode_before_processing": {
@@ -2809,7 +2955,9 @@
             "max": 978,
             "count": 15,
             "sum": 1521
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/pie/ICE/benchmarks/ex14n.v.c": {
         "with_syncode_before_processing": {
@@ -2847,7 +2995,9 @@
             "max": 1003,
             "count": 15,
             "sum": 4732
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/pie/ICE/benchmarks/fig1.c": {
         "with_syncode_before_processing": {
@@ -2885,7 +3035,9 @@
             "max": 87,
             "count": 15,
             "sum": 609
-        }
+        },
+        "with_syncode_success": false,
+        "without_syncode_success": false
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/pie/ICE/benchmarks/fig3.c": {
         "with_syncode_before_processing": {
@@ -2923,7 +3075,9 @@
             "max": 1004,
             "count": 15,
             "sum": 2492
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/pie/ICE/benchmarks/fig3.v.c": {
         "with_syncode_before_processing": {
@@ -2961,7 +3115,9 @@
             "max": 1005,
             "count": 15,
             "sum": 3718
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/pie/ICE/benchmarks/fig9.c": {
         "with_syncode_before_processing": {
@@ -2999,7 +3155,9 @@
             "max": 1000,
             "count": 15,
             "sum": 2516
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/pie/ICE/benchmarks/fig9.v.c": {
         "with_syncode_before_processing": {
@@ -3037,7 +3195,9 @@
             "max": 1004,
             "count": 15,
             "sum": 4902
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/pie/ICE/benchmarks/form22.c": {
         "with_syncode_before_processing": {
@@ -3075,7 +3235,9 @@
             "max": 1004,
             "count": 15,
             "sum": 3575
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/pie/ICE/benchmarks/form25.c": {
         "with_syncode_before_processing": {
@@ -3113,7 +3275,9 @@
             "max": 1006,
             "count": 15,
             "sum": 8013
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/pie/ICE/benchmarks/form27.c": {
         "with_syncode_before_processing": {
@@ -3151,7 +3315,9 @@
             "max": 1004,
             "count": 15,
             "sum": 8659
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/pie/ICE/benchmarks/inc.c": {
         "with_syncode_before_processing": {
@@ -3189,7 +3355,9 @@
             "max": 1004,
             "count": 15,
             "sum": 3473
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/pie/ICE/benchmarks/incn.c": {
         "with_syncode_before_processing": {
@@ -3227,7 +3395,9 @@
             "max": 1001,
             "count": 15,
             "sum": 2332
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/pie/ICE/benchmarks/incn.v.c": {
         "with_syncode_before_processing": {
@@ -3265,7 +3435,9 @@
             "max": 997,
             "count": 15,
             "sum": 4228
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": false
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/pie/ICE/benchmarks/sum01.c": {
         "with_syncode_before_processing": {
@@ -3303,7 +3475,9 @@
             "max": 1002,
             "count": 15,
             "sum": 4515
-        }
+        },
+        "with_syncode_success": false,
+        "without_syncode_success": false
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/pie/ICE/benchmarks/sum01_safe.c": {
         "with_syncode_before_processing": {
@@ -3341,7 +3515,9 @@
             "max": 1006,
             "count": 15,
             "sum": 4661
-        }
+        },
+        "with_syncode_success": false,
+        "without_syncode_success": false
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/pie/ICE/benchmarks/sum03.c": {
         "with_syncode_before_processing": {
@@ -3379,7 +3555,9 @@
             "max": 1001,
             "count": 15,
             "sum": 2917
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/pie/ICE/benchmarks/sum03.v.c": {
         "with_syncode_before_processing": {
@@ -3417,7 +3595,9 @@
             "max": 1006,
             "count": 15,
             "sum": 5035
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/pie/ICE/benchmarks/sum03_safe.c": {
         "with_syncode_before_processing": {
@@ -3455,7 +3635,9 @@
             "max": 1000,
             "count": 15,
             "sum": 1563
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/pie/ICE/benchmarks/sum03_safe.v.c": {
         "with_syncode_before_processing": {
@@ -3493,7 +3675,9 @@
             "max": 1006,
             "count": 15,
             "sum": 6191
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/pie/ICE/benchmarks/sum04.c": {
         "with_syncode_before_processing": {
@@ -3531,7 +3715,9 @@
             "max": 1005,
             "count": 15,
             "sum": 5167
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/pie/ICE/benchmarks/sum04_safe.c": {
         "with_syncode_before_processing": {
@@ -3569,7 +3755,9 @@
             "max": 1004,
             "count": 15,
             "sum": 3313
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/pie/ICE/benchmarks/trex03.c": {
         "with_syncode_before_processing": {
@@ -3607,7 +3795,9 @@
             "max": 1002,
             "count": 15,
             "sum": 7014
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/pie/ICE/benchmarks/trex03.v.c": {
         "with_syncode_before_processing": {
@@ -3645,7 +3835,9 @@
             "max": 1002,
             "count": 15,
             "sum": 9521
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/pie/ICE/benchmarks/trex03_safe.c": {
         "with_syncode_before_processing": {
@@ -3683,7 +3875,9 @@
             "max": 1005,
             "count": 15,
             "sum": 9290
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/pie/ICE/benchmarks/trex03_safe.v.c": {
         "with_syncode_before_processing": {
@@ -3721,7 +3915,9 @@
             "max": 1004,
             "count": 15,
             "sum": 9294
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/pie/ICE/benchmarks/w1.c": {
         "with_syncode_before_processing": {
@@ -3759,7 +3955,9 @@
             "max": 1003,
             "count": 15,
             "sum": 1547
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/pie/ICE/benchmarks/w2.c": {
         "with_syncode_before_processing": {
@@ -3797,7 +3995,9 @@
             "max": 1006,
             "count": 15,
             "sum": 4096
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": false
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/pie/hola/01.c": {
         "with_syncode_before_processing": {
@@ -3835,7 +4035,9 @@
             "max": 1006,
             "count": 15,
             "sum": 4381
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/pie/hola/02.c": {
         "with_syncode_before_processing": {
@@ -3873,7 +4075,9 @@
             "max": 1003,
             "count": 15,
             "sum": 3934
-        }
+        },
+        "with_syncode_success": false,
+        "without_syncode_success": false
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/pie/hola/05.c": {
         "with_syncode_before_processing": {
@@ -3911,7 +4115,9 @@
             "max": 997,
             "count": 15,
             "sum": 3714
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/pie/hola/07.c": {
         "with_syncode_before_processing": {
@@ -3949,7 +4155,9 @@
             "max": 997,
             "count": 15,
             "sum": 3121
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/pie/hola/08.c": {
         "with_syncode_before_processing": {
@@ -3987,7 +4195,9 @@
             "max": 1006,
             "count": 15,
             "sum": 5244
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/pie/hola/10.c": {
         "with_syncode_before_processing": {
@@ -4025,7 +4235,9 @@
             "max": 1006,
             "count": 15,
             "sum": 6525
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/pie/hola/11.c": {
         "with_syncode_before_processing": {
@@ -4063,7 +4275,9 @@
             "max": 1005,
             "count": 15,
             "sum": 2636
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/pie/hola/13.c": {
         "with_syncode_before_processing": {
@@ -4101,7 +4315,9 @@
             "max": 1004,
             "count": 15,
             "sum": 4741
-        }
+        },
+        "with_syncode_success": false,
+        "without_syncode_success": false
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/pie/hola/14.c": {
         "with_syncode_before_processing": {
@@ -4139,7 +4355,9 @@
             "max": 1002,
             "count": 15,
             "sum": 4744
-        }
+        },
+        "with_syncode_success": false,
+        "without_syncode_success": false
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/pie/hola/15.c": {
         "with_syncode_before_processing": {
@@ -4177,7 +4395,9 @@
             "max": 1003,
             "count": 15,
             "sum": 5508
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/pie/hola/16.c": {
         "with_syncode_before_processing": {
@@ -4215,7 +4435,9 @@
             "max": 1004,
             "count": 15,
             "sum": 4714
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/pie/hola/18.c": {
         "with_syncode_before_processing": {
@@ -4253,7 +4475,9 @@
             "max": 1003,
             "count": 15,
             "sum": 4692
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/pie/hola/19.c": {
         "with_syncode_before_processing": {
@@ -4291,7 +4515,9 @@
             "max": 1004,
             "count": 15,
             "sum": 4523
-        }
+        },
+        "with_syncode_success": false,
+        "without_syncode_success": false
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/pie/hola/20.c": {
         "with_syncode_before_processing": {
@@ -4329,7 +4555,9 @@
             "max": 1005,
             "count": 15,
             "sum": 8367
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": false
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/pie/hola/23.c": {
         "with_syncode_before_processing": {
@@ -4367,7 +4595,9 @@
             "max": 996,
             "count": 15,
             "sum": 3821
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/pie/hola/30.c": {
         "with_syncode_before_processing": {
@@ -4405,7 +4635,9 @@
             "max": 124,
             "count": 15,
             "sum": 809
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/pie/hola/32.c": {
         "with_syncode_before_processing": {
@@ -4443,7 +4675,9 @@
             "max": 1005,
             "count": 15,
             "sum": 7170
-        }
+        },
+        "with_syncode_success": false,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/pie/hola/37.c": {
         "with_syncode_before_processing": {
@@ -4481,7 +4715,9 @@
             "max": 1000,
             "count": 15,
             "sum": 4407
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/pie/hola/38.c": {
         "with_syncode_before_processing": {
@@ -4519,7 +4755,9 @@
             "max": 1004,
             "count": 15,
             "sum": 3488
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/pie/hola/39.c": {
         "with_syncode_before_processing": {
@@ -4557,7 +4795,9 @@
             "max": 1005,
             "count": 15,
             "sum": 8744
-        }
+        },
+        "with_syncode_success": false,
+        "without_syncode_success": false
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/pie/hola/41.c": {
         "with_syncode_before_processing": {
@@ -4595,7 +4835,9 @@
             "max": 1005,
             "count": 15,
             "sum": 4774
-        }
+        },
+        "with_syncode_success": false,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/pie/hola/43.c": {
         "with_syncode_before_processing": {
@@ -4633,7 +4875,9 @@
             "max": 1002,
             "count": 15,
             "sum": 2617
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/pie/hola/44.c": {
         "with_syncode_before_processing": {
@@ -4671,7 +4915,9 @@
             "max": 1004,
             "count": 15,
             "sum": 5072
-        }
+        },
+        "with_syncode_success": false,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/pie/hola/46.c": {
         "with_syncode_before_processing": {
@@ -4709,7 +4955,9 @@
             "max": 1001,
             "count": 15,
             "sum": 3874
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/sharma_splitter/cav.c": {
         "with_syncode_before_processing": {
@@ -4747,7 +4995,9 @@
             "max": 1002,
             "count": 15,
             "sum": 9058
-        }
+        },
+        "with_syncode_success": false,
+        "without_syncode_success": false
     },
     "dataset/loop_invariants/LinearArbitrary-SeaHorn/sharma_splitter/popl.c": {
         "with_syncode_before_processing": {
@@ -4785,7 +5035,9 @@
             "max": 1006,
             "count": 15,
             "sum": 4626
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/accelerating_invariant_generation/cav/05.c": {
         "with_syncode_before_processing": {
@@ -4823,7 +5075,9 @@
             "max": 1006,
             "count": 15,
             "sum": 8839
-        }
+        },
+        "with_syncode_success": false,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/accelerating_invariant_generation/cav/07.c": {
         "with_syncode_before_processing": {
@@ -4861,7 +5115,9 @@
             "max": 1005,
             "count": 15,
             "sum": 1602
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/accelerating_invariant_generation/cav/19.c": {
         "with_syncode_before_processing": {
@@ -4899,7 +5155,9 @@
             "max": 1006,
             "count": 15,
             "sum": 8485
-        }
+        },
+        "with_syncode_success": false,
+        "without_syncode_success": false
     },
     "dataset/loop_invariants/accelerating_invariant_generation/cav/37.c": {
         "with_syncode_before_processing": {
@@ -4937,7 +5195,9 @@
             "max": 1006,
             "count": 15,
             "sum": 5582
-        }
+        },
+        "with_syncode_success": false,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/accelerating_invariant_generation/cav/39.c": {
         "with_syncode_before_processing": {
@@ -4975,7 +5235,9 @@
             "max": 1000,
             "count": 15,
             "sum": 7907
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/accelerating_invariant_generation/cav/gulv.c": {
         "with_syncode_before_processing": {
@@ -5013,7 +5275,9 @@
             "max": 1005,
             "count": 15,
             "sum": 6261
-        }
+        },
+        "with_syncode_success": false,
+        "without_syncode_success": false
     },
     "dataset/loop_invariants/accelerating_invariant_generation/cav/gulv_simp.c": {
         "with_syncode_before_processing": {
@@ -5051,7 +5315,9 @@
             "max": 1004,
             "count": 15,
             "sum": 3777
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/accelerating_invariant_generation/cav/pldi082_unbounded.c": {
         "with_syncode_before_processing": {
@@ -5089,7 +5355,9 @@
             "max": 1006,
             "count": 15,
             "sum": 3773
-        }
+        },
+        "with_syncode_success": false,
+        "without_syncode_success": false
     },
     "dataset/loop_invariants/accelerating_invariant_generation/cav/substring1.c": {
         "with_syncode_before_processing": {
@@ -5127,7 +5395,9 @@
             "max": 1005,
             "count": 15,
             "sum": 5181
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/accelerating_invariant_generation/cav/xy10.c": {
         "with_syncode_before_processing": {
@@ -5165,7 +5435,9 @@
             "max": 1006,
             "count": 15,
             "sum": 4367
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/accelerating_invariant_generation/crafted/const_safe1.c": {
         "with_syncode_before_processing": {
@@ -5203,7 +5475,9 @@
             "max": 999,
             "count": 15,
             "sum": 1556
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/accelerating_invariant_generation/crafted/multivar_safe1.c": {
         "with_syncode_before_processing": {
@@ -5241,7 +5515,9 @@
             "max": 1003,
             "count": 15,
             "sum": 2668
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/accelerating_invariant_generation/crafted/phases_safe1.c": {
         "with_syncode_before_processing": {
@@ -5279,7 +5555,9 @@
             "max": 1000,
             "count": 15,
             "sum": 4385
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/accelerating_invariant_generation/crafted/simple_safe1.c": {
         "with_syncode_before_processing": {
@@ -5317,7 +5595,9 @@
             "max": 1004,
             "count": 15,
             "sum": 3829
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/accelerating_invariant_generation/crafted/simple_safe2.c": {
         "with_syncode_before_processing": {
@@ -5355,7 +5635,9 @@
             "max": 1004,
             "count": 15,
             "sum": 1883
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/accelerating_invariant_generation/crafted/simple_safe3.c": {
         "with_syncode_before_processing": {
@@ -5393,7 +5675,9 @@
             "max": 1005,
             "count": 15,
             "sum": 3458
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/accelerating_invariant_generation/crafted/simple_safe4.c": {
         "with_syncode_before_processing": {
@@ -5431,7 +5715,9 @@
             "max": 1003,
             "count": 15,
             "sum": 2554
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/accelerating_invariant_generation/crafted/underapprox_safe2.c": {
         "with_syncode_before_processing": {
@@ -5469,7 +5755,9 @@
             "max": 1005,
             "count": 15,
             "sum": 2589
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/accelerating_invariant_generation/crafted/underapprox_unsafe1.c": {
         "with_syncode_before_processing": {
@@ -5507,7 +5795,9 @@
             "max": 992,
             "count": 15,
             "sum": 1566
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": false
     },
     "dataset/loop_invariants/accelerating_invariant_generation/dagger/barbr.c": {
         "with_syncode_before_processing": {
@@ -5545,7 +5835,9 @@
             "max": 1003,
             "count": 15,
             "sum": 6399
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/accelerating_invariant_generation/dagger/barbrprime.c": {
         "with_syncode_before_processing": {
@@ -5583,7 +5875,9 @@
             "max": 1005,
             "count": 15,
             "sum": 8526
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/accelerating_invariant_generation/dagger/bk-nat.c": {
         "with_syncode_before_processing": {
@@ -5621,7 +5915,9 @@
             "max": 1005,
             "count": 15,
             "sum": 7924
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/accelerating_invariant_generation/dagger/bkley.c": {
         "with_syncode_before_processing": {
@@ -5659,7 +5955,9 @@
             "max": 1006,
             "count": 15,
             "sum": 6816
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/accelerating_invariant_generation/dagger/efm.c": {
         "with_syncode_before_processing": {
@@ -5697,7 +5995,9 @@
             "max": 1005,
             "count": 15,
             "sum": 9264
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/accelerating_invariant_generation/dagger/ex1.c": {
         "with_syncode_before_processing": {
@@ -5735,7 +6035,9 @@
             "max": 1006,
             "count": 15,
             "sum": 7355
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/accelerating_invariant_generation/dagger/lifnat.c": {
         "with_syncode_before_processing": {
@@ -5773,7 +6075,9 @@
             "max": 1004,
             "count": 15,
             "sum": 9549
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/accelerating_invariant_generation/dagger/lifnatprime.c": {
         "with_syncode_before_processing": {
@@ -5811,7 +6115,9 @@
             "max": 1006,
             "count": 15,
             "sum": 10552
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/accelerating_invariant_generation/dagger/lifo.c": {
         "with_syncode_before_processing": {
@@ -5849,7 +6155,9 @@
             "max": 1006,
             "count": 15,
             "sum": 8401
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/accelerating_invariant_generation/dagger/seesaw.c": {
         "with_syncode_before_processing": {
@@ -5887,7 +6195,9 @@
             "max": 1001,
             "count": 15,
             "sum": 4343
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/accelerating_invariant_generation/dagger/substring1.c": {
         "with_syncode_before_processing": {
@@ -5925,7 +6235,9 @@
             "max": 1004,
             "count": 15,
             "sum": 3884
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/accelerating_invariant_generation/dagger/swim.c": {
         "with_syncode_before_processing": {
@@ -5963,7 +6275,9 @@
             "max": 1004,
             "count": 15,
             "sum": 8407
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/accelerating_invariant_generation/dagger/swim1.c": {
         "with_syncode_before_processing": {
@@ -6001,7 +6315,9 @@
             "max": 1005,
             "count": 15,
             "sum": 9277
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/accelerating_invariant_generation/invgen/NetBSD_g_Ctoc.c": {
         "with_syncode_before_processing": {
@@ -6039,7 +6355,9 @@
             "max": 1006,
             "count": 15,
             "sum": 7983
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/accelerating_invariant_generation/invgen/NetBSD_loop.c": {
         "with_syncode_before_processing": {
@@ -6077,7 +6395,9 @@
             "max": 1005,
             "count": 15,
             "sum": 8588
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/accelerating_invariant_generation/invgen/NetBSD_loop_int.c": {
         "with_syncode_before_processing": {
@@ -6115,7 +6435,9 @@
             "max": 1004,
             "count": 15,
             "sum": 8716
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/accelerating_invariant_generation/invgen/bind_expands_vars2.c": {
         "with_syncode_before_processing": {
@@ -6153,7 +6475,9 @@
             "max": 1005,
             "count": 15,
             "sum": 3986
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/accelerating_invariant_generation/invgen/gulwani_cegar1.c": {
         "with_syncode_before_processing": {
@@ -6191,7 +6515,9 @@
             "max": 181,
             "count": 15,
             "sum": 1250
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/accelerating_invariant_generation/invgen/gulwani_cegar2.c": {
         "with_syncode_before_processing": {
@@ -6229,7 +6555,9 @@
             "max": 1006,
             "count": 15,
             "sum": 5585
-        }
+        },
+        "with_syncode_success": false,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/accelerating_invariant_generation/invgen/ken-imp.c": {
         "with_syncode_before_processing": {
@@ -6267,7 +6595,9 @@
             "max": 1004,
             "count": 15,
             "sum": 8397
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/accelerating_invariant_generation/invgen/rajamani_1.c": {
         "with_syncode_before_processing": {
@@ -6305,7 +6635,9 @@
             "max": 1006,
             "count": 15,
             "sum": 6058
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/accelerating_invariant_generation/invgen/sendmail-close-angle.c": {
         "with_syncode_before_processing": {
@@ -6343,7 +6675,9 @@
             "max": 1005,
             "count": 15,
             "sum": 8542
-        }
+        },
+        "with_syncode_success": false,
+        "without_syncode_success": false
     },
     "dataset/loop_invariants/accelerating_invariant_generation/invgen/sendmail-mime-fromqp.c": {
         "with_syncode_before_processing": {
@@ -6381,7 +6715,9 @@
             "max": 1001,
             "count": 15,
             "sum": 7004
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/accelerating_invariant_generation/invgen/sendmail-mime7to8_arr_three_chars_no_test_ok.c": {
         "with_syncode_before_processing": {
@@ -6419,7 +6755,9 @@
             "max": 1003,
             "count": 15,
             "sum": 6107
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/accelerating_invariant_generation/invgen/simple.c": {
         "with_syncode_before_processing": {
@@ -6457,7 +6795,9 @@
             "max": 1003,
             "count": 15,
             "sum": 1438
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/accelerating_invariant_generation/invgen/simple_if.c": {
         "with_syncode_before_processing": {
@@ -6495,7 +6835,9 @@
             "max": 1004,
             "count": 15,
             "sum": 3772
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/accelerating_invariant_generation/invgen/up-nested.c": {
         "with_syncode_before_processing": {
@@ -6533,7 +6875,9 @@
             "max": 1004,
             "count": 15,
             "sum": 3659
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/accelerating_invariant_generation/svcomp/count_up_down_true.c": {
         "with_syncode_before_processing": {
@@ -6571,7 +6915,9 @@
             "max": 1004,
             "count": 15,
             "sum": 2484
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/accelerating_invariant_generation/svcomp/for_infinite_loop_1_true.c": {
         "with_syncode_before_processing": {
@@ -6609,7 +6955,9 @@
             "max": 1005,
             "count": 15,
             "sum": 5769
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/accelerating_invariant_generation/svcomp/for_infinite_loop_2_true.c": {
         "with_syncode_before_processing": {
@@ -6647,7 +6995,9 @@
             "max": 1004,
             "count": 15,
             "sum": 5480
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/accelerating_invariant_generation/svcomp/sum01_true.c": {
         "with_syncode_before_processing": {
@@ -6685,7 +7035,9 @@
             "max": 82,
             "count": 15,
             "sum": 724
-        }
+        },
+        "with_syncode_success": false,
+        "without_syncode_success": false
     },
     "dataset/loop_invariants/accelerating_invariant_generation/svcomp/sum03_true.c": {
         "with_syncode_before_processing": {
@@ -6723,7 +7075,9 @@
             "max": 1002,
             "count": 15,
             "sum": 2789
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/accelerating_invariant_generation/svcomp/sum04_true.c": {
         "with_syncode_before_processing": {
@@ -6761,7 +7115,9 @@
             "max": 1004,
             "count": 15,
             "sum": 4629
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/accelerating_invariant_generation/svcomp/terminator_02_true.c": {
         "with_syncode_before_processing": {
@@ -6799,7 +7155,9 @@
             "max": 1006,
             "count": 15,
             "sum": 5743
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/accelerating_invariant_generation/svcomp/trex03_true.c": {
         "with_syncode_before_processing": {
@@ -6837,7 +7195,9 @@
             "max": 1006,
             "count": 15,
             "sum": 7520
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/accelerating_invariant_generation/svcomp/while_infinite_loop_1_true.c": {
         "with_syncode_before_processing": {
@@ -6875,7 +7235,9 @@
             "max": 110,
             "count": 15,
             "sum": 451
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/accelerating_invariant_generation/svcomp/while_infinite_loop_2_true.c": {
         "with_syncode_before_processing": {
@@ -6913,7 +7275,9 @@
             "max": 1004,
             "count": 15,
             "sum": 1372
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/1.c": {
         "with_syncode_before_processing": {
@@ -6951,7 +7315,9 @@
             "max": 132,
             "count": 15,
             "sum": 795
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/10.c": {
         "with_syncode_before_processing": {
@@ -6989,7 +7355,9 @@
             "max": 1005,
             "count": 15,
             "sum": 1960
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/100.c": {
         "with_syncode_before_processing": {
@@ -7027,7 +7395,9 @@
             "max": 1004,
             "count": 15,
             "sum": 2523
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/102.c": {
         "with_syncode_before_processing": {
@@ -7065,7 +7435,9 @@
             "max": 1004,
             "count": 15,
             "sum": 2364
-        }
+        },
+        "with_syncode_success": false,
+        "without_syncode_success": false
     },
     "dataset/loop_invariants/code2inv/103.c": {
         "with_syncode_before_processing": {
@@ -7103,7 +7475,9 @@
             "max": 1004,
             "count": 15,
             "sum": 2409
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/107.c": {
         "with_syncode_before_processing": {
@@ -7141,7 +7515,9 @@
             "max": 1006,
             "count": 15,
             "sum": 5513
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/108.c": {
         "with_syncode_before_processing": {
@@ -7179,7 +7555,9 @@
             "max": 1006,
             "count": 15,
             "sum": 9194
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/109.c": {
         "with_syncode_before_processing": {
@@ -7217,7 +7595,9 @@
             "max": 1005,
             "count": 15,
             "sum": 3025
-        }
+        },
+        "with_syncode_success": false,
+        "without_syncode_success": false
     },
     "dataset/loop_invariants/code2inv/11.c": {
         "with_syncode_before_processing": {
@@ -7255,7 +7635,9 @@
             "max": 1006,
             "count": 15,
             "sum": 3301
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/112.c": {
         "with_syncode_before_processing": {
@@ -7293,7 +7675,9 @@
             "max": 153,
             "count": 15,
             "sum": 775
-        }
+        },
+        "with_syncode_success": false,
+        "without_syncode_success": false
     },
     "dataset/loop_invariants/code2inv/114.c": {
         "with_syncode_before_processing": {
@@ -7331,7 +7715,9 @@
             "max": 1000,
             "count": 15,
             "sum": 4461
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/115.c": {
         "with_syncode_before_processing": {
@@ -7369,7 +7755,9 @@
             "max": 1006,
             "count": 15,
             "sum": 5397
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/116.c": {
         "with_syncode_before_processing": {
@@ -7407,7 +7795,9 @@
             "max": 1003,
             "count": 15,
             "sum": 3345
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/117.c": {
         "with_syncode_before_processing": {
@@ -7445,7 +7835,9 @@
             "max": 1001,
             "count": 15,
             "sum": 1556
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/118.c": {
         "with_syncode_before_processing": {
@@ -7483,7 +7875,9 @@
             "max": 1003,
             "count": 15,
             "sum": 2695
-        }
+        },
+        "with_syncode_success": false,
+        "without_syncode_success": false
     },
     "dataset/loop_invariants/code2inv/12.c": {
         "with_syncode_before_processing": {
@@ -7521,7 +7915,9 @@
             "max": 1002,
             "count": 15,
             "sum": 2013
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/120.c": {
         "with_syncode_before_processing": {
@@ -7559,7 +7955,9 @@
             "max": 1004,
             "count": 15,
             "sum": 2535
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/121.c": {
         "with_syncode_before_processing": {
@@ -7597,7 +7995,9 @@
             "max": 1000,
             "count": 15,
             "sum": 3755
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/124.c": {
         "with_syncode_before_processing": {
@@ -7635,7 +8035,9 @@
             "max": 1004,
             "count": 15,
             "sum": 7476
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": false
     },
     "dataset/loop_invariants/code2inv/125.c": {
         "with_syncode_before_processing": {
@@ -7673,7 +8075,9 @@
             "max": 1004,
             "count": 15,
             "sum": 8186
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/126.c": {
         "with_syncode_before_processing": {
@@ -7711,7 +8115,9 @@
             "max": 1004,
             "count": 15,
             "sum": 3596
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": false
     },
     "dataset/loop_invariants/code2inv/127.c": {
         "with_syncode_before_processing": {
@@ -7749,7 +8155,9 @@
             "max": 1004,
             "count": 15,
             "sum": 3886
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": false
     },
     "dataset/loop_invariants/code2inv/128.c": {
         "with_syncode_before_processing": {
@@ -7787,7 +8195,9 @@
             "max": 1006,
             "count": 15,
             "sum": 4420
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/129.c": {
         "with_syncode_before_processing": {
@@ -7825,7 +8235,9 @@
             "max": 1003,
             "count": 15,
             "sum": 4337
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/13.c": {
         "with_syncode_before_processing": {
@@ -7863,7 +8275,9 @@
             "max": 1005,
             "count": 15,
             "sum": 2662
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/131.c": {
         "with_syncode_before_processing": {
@@ -7901,7 +8315,9 @@
             "max": 1004,
             "count": 15,
             "sum": 7036
-        }
+        },
+        "with_syncode_success": false,
+        "without_syncode_success": false
     },
     "dataset/loop_invariants/code2inv/132.c": {
         "with_syncode_before_processing": {
@@ -7939,7 +8355,9 @@
             "max": 1006,
             "count": 15,
             "sum": 6962
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/133.c": {
         "with_syncode_before_processing": {
@@ -7977,7 +8395,9 @@
             "max": 77,
             "count": 15,
             "sum": 492
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/14.c": {
         "with_syncode_before_processing": {
@@ -8015,7 +8435,9 @@
             "max": 961,
             "count": 15,
             "sum": 2079
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/15.c": {
         "with_syncode_before_processing": {
@@ -8053,7 +8475,9 @@
             "max": 1005,
             "count": 15,
             "sum": 3496
-        }
+        },
+        "with_syncode_success": false,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/16.c": {
         "with_syncode_before_processing": {
@@ -8091,7 +8515,9 @@
             "max": 1001,
             "count": 15,
             "sum": 2433
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/18.c": {
         "with_syncode_before_processing": {
@@ -8129,7 +8555,9 @@
             "max": 1004,
             "count": 15,
             "sum": 2620
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/19.c": {
         "with_syncode_before_processing": {
@@ -8167,7 +8595,9 @@
             "max": 1006,
             "count": 15,
             "sum": 3663
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/2.c": {
         "with_syncode_before_processing": {
@@ -8205,7 +8635,9 @@
             "max": 80,
             "count": 15,
             "sum": 671
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/20.c": {
         "with_syncode_before_processing": {
@@ -8243,7 +8675,9 @@
             "max": 1006,
             "count": 15,
             "sum": 6480
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/21.c": {
         "with_syncode_before_processing": {
@@ -8281,7 +8715,9 @@
             "max": 1006,
             "count": 15,
             "sum": 4674
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/22.c": {
         "with_syncode_before_processing": {
@@ -8319,7 +8755,9 @@
             "max": 1004,
             "count": 15,
             "sum": 3731
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/23.c": {
         "with_syncode_before_processing": {
@@ -8357,7 +8795,9 @@
             "max": 1003,
             "count": 15,
             "sum": 7555
-        }
+        },
+        "with_syncode_success": false,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/25.c": {
         "with_syncode_before_processing": {
@@ -8395,7 +8835,9 @@
             "max": 1004,
             "count": 15,
             "sum": 2497
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/29.c": {
         "with_syncode_before_processing": {
@@ -8433,7 +8875,9 @@
             "max": 1001,
             "count": 15,
             "sum": 4362
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": false
     },
     "dataset/loop_invariants/code2inv/3.c": {
         "with_syncode_before_processing": {
@@ -8471,7 +8915,9 @@
             "max": 1005,
             "count": 15,
             "sum": 3626
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": false
     },
     "dataset/loop_invariants/code2inv/30.c": {
         "with_syncode_before_processing": {
@@ -8509,7 +8955,9 @@
             "max": 1004,
             "count": 15,
             "sum": 3477
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/34.c": {
         "with_syncode_before_processing": {
@@ -8547,7 +8995,9 @@
             "max": 1004,
             "count": 15,
             "sum": 5429
-        }
+        },
+        "with_syncode_success": false,
+        "without_syncode_success": false
     },
     "dataset/loop_invariants/code2inv/35.c": {
         "with_syncode_before_processing": {
@@ -8585,7 +9035,9 @@
             "max": 1004,
             "count": 15,
             "sum": 4564
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/36.c": {
         "with_syncode_before_processing": {
@@ -8623,7 +9075,9 @@
             "max": 1003,
             "count": 15,
             "sum": 7653
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/37.c": {
         "with_syncode_before_processing": {
@@ -8661,7 +9115,9 @@
             "max": 1001,
             "count": 15,
             "sum": 4096
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/38.c": {
         "with_syncode_before_processing": {
@@ -8699,7 +9155,9 @@
             "max": 1002,
             "count": 15,
             "sum": 2645
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/39.c": {
         "with_syncode_before_processing": {
@@ -8737,7 +9195,9 @@
             "max": 1005,
             "count": 15,
             "sum": 6342
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/4.c": {
         "with_syncode_before_processing": {
@@ -8775,7 +9235,9 @@
             "max": 998,
             "count": 15,
             "sum": 2989
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/40.c": {
         "with_syncode_before_processing": {
@@ -8813,7 +9275,9 @@
             "max": 1001,
             "count": 15,
             "sum": 4707
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/41.c": {
         "with_syncode_before_processing": {
@@ -8851,7 +9315,9 @@
             "max": 1006,
             "count": 15,
             "sum": 8275
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/42.c": {
         "with_syncode_before_processing": {
@@ -8889,7 +9355,9 @@
             "max": 1003,
             "count": 15,
             "sum": 3417
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/43.c": {
         "with_syncode_before_processing": {
@@ -8927,7 +9395,9 @@
             "max": 1005,
             "count": 15,
             "sum": 4522
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/44.c": {
         "with_syncode_before_processing": {
@@ -8965,7 +9435,9 @@
             "max": 1006,
             "count": 15,
             "sum": 6575
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/45.c": {
         "with_syncode_before_processing": {
@@ -9003,7 +9475,9 @@
             "max": 1005,
             "count": 15,
             "sum": 5285
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/46.c": {
         "with_syncode_before_processing": {
@@ -9041,7 +9515,9 @@
             "max": 1005,
             "count": 15,
             "sum": 3538
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/47.c": {
         "with_syncode_before_processing": {
@@ -9079,7 +9555,9 @@
             "max": 1005,
             "count": 15,
             "sum": 4947
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/48.c": {
         "with_syncode_before_processing": {
@@ -9117,7 +9595,9 @@
             "max": 1002,
             "count": 15,
             "sum": 6722
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/49.c": {
         "with_syncode_before_processing": {
@@ -9155,7 +9635,9 @@
             "max": 1002,
             "count": 15,
             "sum": 7540
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/5.c": {
         "with_syncode_before_processing": {
@@ -9193,7 +9675,9 @@
             "max": 1005,
             "count": 15,
             "sum": 3763
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": false
     },
     "dataset/loop_invariants/code2inv/50.c": {
         "with_syncode_before_processing": {
@@ -9231,7 +9715,9 @@
             "max": 1005,
             "count": 15,
             "sum": 3819
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/51.c": {
         "with_syncode_before_processing": {
@@ -9269,7 +9755,9 @@
             "max": 996,
             "count": 15,
             "sum": 4632
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/52.c": {
         "with_syncode_before_processing": {
@@ -9307,7 +9795,9 @@
             "max": 1006,
             "count": 15,
             "sum": 6511
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/53.c": {
         "with_syncode_before_processing": {
@@ -9345,7 +9835,9 @@
             "max": 1005,
             "count": 15,
             "sum": 7422
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/54.c": {
         "with_syncode_before_processing": {
@@ -9383,7 +9875,9 @@
             "max": 1004,
             "count": 15,
             "sum": 6365
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/55.c": {
         "with_syncode_before_processing": {
@@ -9421,7 +9915,9 @@
             "max": 1006,
             "count": 15,
             "sum": 8607
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/56.c": {
         "with_syncode_before_processing": {
@@ -9459,7 +9955,9 @@
             "max": 1000,
             "count": 15,
             "sum": 6421
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/57.c": {
         "with_syncode_before_processing": {
@@ -9497,7 +9995,9 @@
             "max": 1006,
             "count": 15,
             "sum": 8332
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/58.c": {
         "with_syncode_before_processing": {
@@ -9535,7 +10035,9 @@
             "max": 1005,
             "count": 15,
             "sum": 6516
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/59.c": {
         "with_syncode_before_processing": {
@@ -9573,7 +10075,9 @@
             "max": 1001,
             "count": 15,
             "sum": 4411
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/6.c": {
         "with_syncode_before_processing": {
@@ -9611,7 +10115,9 @@
             "max": 80,
             "count": 15,
             "sum": 616
-        }
+        },
+        "with_syncode_success": false,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/60.c": {
         "with_syncode_before_processing": {
@@ -9649,7 +10155,9 @@
             "max": 1006,
             "count": 15,
             "sum": 8389
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/63.c": {
         "with_syncode_before_processing": {
@@ -9687,7 +10195,9 @@
             "max": 1004,
             "count": 15,
             "sum": 3710
-        }
+        },
+        "with_syncode_success": false,
+        "without_syncode_success": false
     },
     "dataset/loop_invariants/code2inv/64.c": {
         "with_syncode_before_processing": {
@@ -9725,7 +10235,9 @@
             "max": 1004,
             "count": 15,
             "sum": 2224
-        }
+        },
+        "with_syncode_success": false,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/67.c": {
         "with_syncode_before_processing": {
@@ -9763,7 +10275,9 @@
             "max": 693,
             "count": 15,
             "sum": 1656
-        }
+        },
+        "with_syncode_success": false,
+        "without_syncode_success": false
     },
     "dataset/loop_invariants/code2inv/68.c": {
         "with_syncode_before_processing": {
@@ -9801,7 +10315,9 @@
             "max": 1004,
             "count": 15,
             "sum": 4349
-        }
+        },
+        "with_syncode_success": false,
+        "without_syncode_success": false
     },
     "dataset/loop_invariants/code2inv/7.c": {
         "with_syncode_before_processing": {
@@ -9839,7 +10355,9 @@
             "max": 1006,
             "count": 15,
             "sum": 5799
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/71.c": {
         "with_syncode_before_processing": {
@@ -9877,7 +10395,9 @@
             "max": 1004,
             "count": 15,
             "sum": 6326
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/73.c": {
         "with_syncode_before_processing": {
@@ -9915,7 +10435,9 @@
             "max": 1003,
             "count": 15,
             "sum": 4754
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/74.c": {
         "with_syncode_before_processing": {
@@ -9953,7 +10475,9 @@
             "max": 1000,
             "count": 15,
             "sum": 6414
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/76.c": {
         "with_syncode_before_processing": {
@@ -9991,7 +10515,9 @@
             "max": 1005,
             "count": 15,
             "sum": 6586
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/77.c": {
         "with_syncode_before_processing": {
@@ -10029,7 +10555,9 @@
             "max": 1005,
             "count": 15,
             "sum": 4600
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/78.c": {
         "with_syncode_before_processing": {
@@ -10067,7 +10595,9 @@
             "max": 995,
             "count": 15,
             "sum": 1569
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/79.c": {
         "with_syncode_before_processing": {
@@ -10105,7 +10635,9 @@
             "max": 1005,
             "count": 15,
             "sum": 7380
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/8.c": {
         "with_syncode_before_processing": {
@@ -10143,7 +10675,9 @@
             "max": 1006,
             "count": 15,
             "sum": 4058
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/80.c": {
         "with_syncode_before_processing": {
@@ -10181,7 +10715,9 @@
             "max": 1000,
             "count": 15,
             "sum": 5401
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/81.c": {
         "with_syncode_before_processing": {
@@ -10219,7 +10755,9 @@
             "max": 1003,
             "count": 15,
             "sum": 1583
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/82.c": {
         "with_syncode_before_processing": {
@@ -10257,7 +10795,9 @@
             "max": 1003,
             "count": 15,
             "sum": 7533
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/83.c": {
         "with_syncode_before_processing": {
@@ -10295,7 +10835,9 @@
             "max": 1004,
             "count": 15,
             "sum": 3527
-        }
+        },
+        "with_syncode_success": false,
+        "without_syncode_success": false
     },
     "dataset/loop_invariants/code2inv/87.c": {
         "with_syncode_before_processing": {
@@ -10333,7 +10875,9 @@
             "max": 1006,
             "count": 15,
             "sum": 7586
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/88.c": {
         "with_syncode_before_processing": {
@@ -10371,7 +10915,9 @@
             "max": 997,
             "count": 15,
             "sum": 4631
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/89.c": {
         "with_syncode_before_processing": {
@@ -10409,7 +10955,9 @@
             "max": 1005,
             "count": 15,
             "sum": 6509
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/9.c": {
         "with_syncode_before_processing": {
@@ -10447,7 +10995,9 @@
             "max": 1005,
             "count": 15,
             "sum": 2784
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/90.c": {
         "with_syncode_before_processing": {
@@ -10485,7 +11035,9 @@
             "max": 1004,
             "count": 15,
             "sum": 6549
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/91.c": {
         "with_syncode_before_processing": {
@@ -10523,7 +11075,9 @@
             "max": 990,
             "count": 15,
             "sum": 1946
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/92.c": {
         "with_syncode_before_processing": {
@@ -10561,7 +11115,9 @@
             "max": 1003,
             "count": 15,
             "sum": 2477
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/93.c": {
         "with_syncode_before_processing": {
@@ -10599,7 +11155,9 @@
             "max": 1005,
             "count": 15,
             "sum": 8264
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/94.c": {
         "with_syncode_before_processing": {
@@ -10637,7 +11195,9 @@
             "max": 998,
             "count": 15,
             "sum": 5047
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/95.c": {
         "with_syncode_before_processing": {
@@ -10675,7 +11235,9 @@
             "max": 958,
             "count": 15,
             "sum": 2286
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/96.c": {
         "with_syncode_before_processing": {
@@ -10713,7 +11275,9 @@
             "max": 1005,
             "count": 15,
             "sum": 4691
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/97.c": {
         "with_syncode_before_processing": {
@@ -10751,7 +11315,9 @@
             "max": 1005,
             "count": 15,
             "sum": 4476
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/98.c": {
         "with_syncode_before_processing": {
@@ -10789,7 +11355,9 @@
             "max": 1006,
             "count": 15,
             "sum": 3760
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/code2inv/99.c": {
         "with_syncode_before_processing": {
@@ -10827,7 +11395,9 @@
             "max": 1004,
             "count": 15,
             "sum": 3563
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-acceleration/const_1-1.c": {
         "with_syncode_before_processing": {
@@ -10865,7 +11435,9 @@
             "max": 1000,
             "count": 15,
             "sum": 2579
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-acceleration/multivar_1-1.c": {
         "with_syncode_before_processing": {
@@ -10903,7 +11475,9 @@
             "max": 1005,
             "count": 15,
             "sum": 3710
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-acceleration/phases_1-1.c": {
         "with_syncode_before_processing": {
@@ -10941,7 +11515,9 @@
             "max": 1006,
             "count": 15,
             "sum": 5251
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-acceleration/phases_2-2.c": {
         "with_syncode_before_processing": {
@@ -10979,7 +11555,9 @@
             "max": 994,
             "count": 15,
             "sum": 1674
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-acceleration/simple_1-2.c": {
         "with_syncode_before_processing": {
@@ -11017,7 +11595,9 @@
             "max": 1004,
             "count": 15,
             "sum": 3507
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-acceleration/simple_2-1.c": {
         "with_syncode_before_processing": {
@@ -11055,7 +11635,9 @@
             "max": 1006,
             "count": 15,
             "sum": 5256
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-acceleration/simple_3-2.c": {
         "with_syncode_before_processing": {
@@ -11093,7 +11675,9 @@
             "max": 1001,
             "count": 15,
             "sum": 3515
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-acceleration/simple_4-2.c": {
         "with_syncode_before_processing": {
@@ -11131,7 +11715,9 @@
             "max": 1001,
             "count": 15,
             "sum": 1660
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-acceleration/underapprox_1-2.c": {
         "with_syncode_before_processing": {
@@ -11169,7 +11755,9 @@
             "max": 1003,
             "count": 15,
             "sum": 2634
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-acceleration/underapprox_2-2.c": {
         "with_syncode_before_processing": {
@@ -11207,7 +11795,9 @@
             "max": 1005,
             "count": 15,
             "sum": 1661
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-crafted/simple_vardep_1.c": {
         "with_syncode_before_processing": {
@@ -11245,7 +11835,9 @@
             "max": 998,
             "count": 15,
             "sum": 4833
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-crafted/simple_vardep_2.c": {
         "with_syncode_before_processing": {
@@ -11283,7 +11875,9 @@
             "max": 1005,
             "count": 15,
             "sum": 5023
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-industry-pattern/mod3.c": {
         "with_syncode_before_processing": {
@@ -11321,7 +11915,9 @@
             "max": 1004,
             "count": 15,
             "sum": 6053
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-invariants/const.c": {
         "with_syncode_before_processing": {
@@ -11359,7 +11955,9 @@
             "max": 1006,
             "count": 15,
             "sum": 2664
-        }
+        },
+        "with_syncode_success": false,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-invariants/eq1.c": {
         "with_syncode_before_processing": {
@@ -11397,7 +11995,9 @@
             "max": 1004,
             "count": 15,
             "sum": 5237
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-invariants/eq2.c": {
         "with_syncode_before_processing": {
@@ -11435,7 +12035,9 @@
             "max": 1005,
             "count": 15,
             "sum": 10364
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-invariants/linear-inequality-inv-a.c": {
         "with_syncode_before_processing": {
@@ -11473,7 +12075,9 @@
             "max": 1006,
             "count": 15,
             "sum": 8460
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-invgen/NetBSD_loop.c": {
         "with_syncode_before_processing": {
@@ -11511,7 +12115,9 @@
             "max": 1001,
             "count": 15,
             "sum": 6879
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": false
     },
     "dataset/loop_invariants/sv-benchmarks/loop-invgen/sendmail-close-angle.c": {
         "with_syncode_before_processing": {
@@ -11549,7 +12155,9 @@
             "max": 1006,
             "count": 15,
             "sum": 8274
-        }
+        },
+        "with_syncode_success": false,
+        "without_syncode_success": false
     },
     "dataset/loop_invariants/sv-benchmarks/loop-lit/afnp2014.c": {
         "with_syncode_before_processing": {
@@ -11587,7 +12195,9 @@
             "max": 1004,
             "count": 15,
             "sum": 5323
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-lit/bhmr2007.c": {
         "with_syncode_before_processing": {
@@ -11625,7 +12235,9 @@
             "max": 1002,
             "count": 15,
             "sum": 7632
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-lit/cggmp2005.c": {
         "with_syncode_before_processing": {
@@ -11663,7 +12275,9 @@
             "max": 1006,
             "count": 15,
             "sum": 6214
-        }
+        },
+        "with_syncode_success": false,
+        "without_syncode_success": false
     },
     "dataset/loop_invariants/sv-benchmarks/loop-lit/cggmp2005_variant.c": {
         "with_syncode_before_processing": {
@@ -11701,7 +12315,9 @@
             "max": 1005,
             "count": 15,
             "sum": 8425
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-lit/css2003.c": {
         "with_syncode_before_processing": {
@@ -11739,7 +12355,9 @@
             "max": 1003,
             "count": 15,
             "sum": 5575
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-lit/gj2007.c": {
         "with_syncode_before_processing": {
@@ -11777,7 +12395,9 @@
             "max": 1003,
             "count": 15,
             "sum": 5656
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-lit/gj2007b.c": {
         "with_syncode_before_processing": {
@@ -11815,7 +12435,9 @@
             "max": 1006,
             "count": 15,
             "sum": 3735
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": false
     },
     "dataset/loop_invariants/sv-benchmarks/loop-lit/gr2006.c": {
         "with_syncode_before_processing": {
@@ -11853,7 +12475,9 @@
             "max": 1006,
             "count": 15,
             "sum": 4630
-        }
+        },
+        "with_syncode_success": false,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-lit/hhk2008.c": {
         "with_syncode_before_processing": {
@@ -11891,7 +12515,9 @@
             "max": 1004,
             "count": 15,
             "sum": 5385
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-lit/jm2006.c": {
         "with_syncode_before_processing": {
@@ -11929,7 +12555,9 @@
             "max": 1006,
             "count": 15,
             "sum": 5562
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-lit/jm2006_variant.c": {
         "with_syncode_before_processing": {
@@ -11967,7 +12595,9 @@
             "max": 1005,
             "count": 15,
             "sum": 5806
-        }
+        },
+        "with_syncode_success": false,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-new/count_by_1.c": {
         "with_syncode_before_processing": {
@@ -12005,7 +12635,9 @@
             "max": 872,
             "count": 15,
             "sum": 1304
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-new/count_by_1_variant.c": {
         "with_syncode_before_processing": {
@@ -12043,7 +12675,9 @@
             "max": 1006,
             "count": 15,
             "sum": 4295
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-new/count_by_2.c": {
         "with_syncode_before_processing": {
@@ -12081,7 +12715,9 @@
             "max": 98,
             "count": 15,
             "sum": 642
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-new/count_by_k.c": {
         "with_syncode_before_processing": {
@@ -12119,7 +12755,9 @@
             "max": 1003,
             "count": 15,
             "sum": 4724
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-new/count_by_nondet.c": {
         "with_syncode_before_processing": {
@@ -12157,7 +12795,9 @@
             "max": 1005,
             "count": 15,
             "sum": 7446
-        }
+        },
+        "with_syncode_success": false,
+        "without_syncode_success": false
     },
     "dataset/loop_invariants/sv-benchmarks/loop-new/gauss_sum.c": {
         "with_syncode_before_processing": {
@@ -12195,7 +12835,9 @@
             "max": 1004,
             "count": 15,
             "sum": 6391
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": false
     },
     "dataset/loop_invariants/sv-benchmarks/loop-simple/nested_1.c": {
         "with_syncode_before_processing": {
@@ -12233,7 +12875,9 @@
             "max": 997,
             "count": 15,
             "sum": 2491
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-zilu/benchmark01_conjunctive.c": {
         "with_syncode_before_processing": {
@@ -12271,7 +12915,9 @@
             "max": 1006,
             "count": 15,
             "sum": 5728
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-zilu/benchmark02_linear.c": {
         "with_syncode_before_processing": {
@@ -12309,7 +12955,9 @@
             "max": 1002,
             "count": 15,
             "sum": 3600
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-zilu/benchmark03_linear.c": {
         "with_syncode_before_processing": {
@@ -12347,7 +12995,9 @@
             "max": 1006,
             "count": 15,
             "sum": 7632
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-zilu/benchmark04_conjunctive.c": {
         "with_syncode_before_processing": {
@@ -12385,7 +13035,9 @@
             "max": 1003,
             "count": 15,
             "sum": 2975
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-zilu/benchmark05_conjunctive.c": {
         "with_syncode_before_processing": {
@@ -12423,7 +13075,9 @@
             "max": 1005,
             "count": 15,
             "sum": 6557
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-zilu/benchmark06_conjunctive.c": {
         "with_syncode_before_processing": {
@@ -12461,7 +13115,9 @@
             "max": 1004,
             "count": 15,
             "sum": 8242
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-zilu/benchmark08_conjunctive.c": {
         "with_syncode_before_processing": {
@@ -12499,7 +13155,9 @@
             "max": 998,
             "count": 15,
             "sum": 2774
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-zilu/benchmark09_conjunctive.c": {
         "with_syncode_before_processing": {
@@ -12537,7 +13195,9 @@
             "max": 1005,
             "count": 15,
             "sum": 5521
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-zilu/benchmark10_conjunctive.c": {
         "with_syncode_before_processing": {
@@ -12575,7 +13235,9 @@
             "max": 1006,
             "count": 15,
             "sum": 4701
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-zilu/benchmark11_linear.c": {
         "with_syncode_before_processing": {
@@ -12613,7 +13275,9 @@
             "max": 1004,
             "count": 15,
             "sum": 2372
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-zilu/benchmark12_linear.c": {
         "with_syncode_before_processing": {
@@ -12651,7 +13315,9 @@
             "max": 1006,
             "count": 15,
             "sum": 5617
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-zilu/benchmark13_conjunctive.c": {
         "with_syncode_before_processing": {
@@ -12689,7 +13355,9 @@
             "max": 1005,
             "count": 15,
             "sum": 3961
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-zilu/benchmark14_linear.c": {
         "with_syncode_before_processing": {
@@ -12727,7 +13395,9 @@
             "max": 1006,
             "count": 15,
             "sum": 4615
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-zilu/benchmark15_conjunctive.c": {
         "with_syncode_before_processing": {
@@ -12765,7 +13435,9 @@
             "max": 1003,
             "count": 15,
             "sum": 3533
-        }
+        },
+        "with_syncode_success": false,
+        "without_syncode_success": false
     },
     "dataset/loop_invariants/sv-benchmarks/loop-zilu/benchmark16_conjunctive.c": {
         "with_syncode_before_processing": {
@@ -12803,7 +13475,9 @@
             "max": 1002,
             "count": 15,
             "sum": 4327
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-zilu/benchmark17_conjunctive.c": {
         "with_syncode_before_processing": {
@@ -12841,7 +13515,9 @@
             "max": 1005,
             "count": 15,
             "sum": 2711
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-zilu/benchmark18_conjunctive.c": {
         "with_syncode_before_processing": {
@@ -12879,7 +13555,9 @@
             "max": 1000,
             "count": 15,
             "sum": 3500
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-zilu/benchmark19_conjunctive.c": {
         "with_syncode_before_processing": {
@@ -12917,7 +13595,9 @@
             "max": 1006,
             "count": 15,
             "sum": 6361
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-zilu/benchmark20_conjunctive.c": {
         "with_syncode_before_processing": {
@@ -12955,7 +13635,9 @@
             "max": 998,
             "count": 15,
             "sum": 2999
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-zilu/benchmark21_disjunctive.c": {
         "with_syncode_before_processing": {
@@ -12993,7 +13675,9 @@
             "max": 1004,
             "count": 15,
             "sum": 1993
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-zilu/benchmark22_conjunctive.c": {
         "with_syncode_before_processing": {
@@ -13031,7 +13715,9 @@
             "max": 1005,
             "count": 15,
             "sum": 7094
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-zilu/benchmark23_conjunctive.c": {
         "with_syncode_before_processing": {
@@ -13069,7 +13755,9 @@
             "max": 987,
             "count": 15,
             "sum": 1679
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-zilu/benchmark25_linear.c": {
         "with_syncode_before_processing": {
@@ -13107,7 +13795,9 @@
             "max": 1003,
             "count": 15,
             "sum": 3437
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-zilu/benchmark26_linear.c": {
         "with_syncode_before_processing": {
@@ -13145,7 +13835,9 @@
             "max": 1001,
             "count": 15,
             "sum": 6272
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-zilu/benchmark27_linear.c": {
         "with_syncode_before_processing": {
@@ -13183,7 +13875,9 @@
             "max": 1004,
             "count": 15,
             "sum": 4535
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": false
     },
     "dataset/loop_invariants/sv-benchmarks/loop-zilu/benchmark29_linear.c": {
         "with_syncode_before_processing": {
@@ -13221,7 +13915,9 @@
             "max": 1006,
             "count": 15,
             "sum": 5251
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-zilu/benchmark30_conjunctive.c": {
         "with_syncode_before_processing": {
@@ -13259,7 +13955,9 @@
             "max": 999,
             "count": 15,
             "sum": 2772
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-zilu/benchmark31_disjunctive.c": {
         "with_syncode_before_processing": {
@@ -13297,7 +13995,9 @@
             "max": 1004,
             "count": 15,
             "sum": 4856
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-zilu/benchmark32_linear.c": {
         "with_syncode_before_processing": {
@@ -13335,7 +14035,9 @@
             "max": 1006,
             "count": 15,
             "sum": 4629
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-zilu/benchmark33_linear.c": {
         "with_syncode_before_processing": {
@@ -13373,7 +14075,9 @@
             "max": 1006,
             "count": 15,
             "sum": 6650
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-zilu/benchmark34_conjunctive.c": {
         "with_syncode_before_processing": {
@@ -13411,7 +14115,9 @@
             "max": 1004,
             "count": 15,
             "sum": 7318
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-zilu/benchmark35_linear.c": {
         "with_syncode_before_processing": {
@@ -13449,7 +14155,9 @@
             "max": 1006,
             "count": 15,
             "sum": 5356
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-zilu/benchmark36_conjunctive.c": {
         "with_syncode_before_processing": {
@@ -13487,7 +14195,9 @@
             "max": 1005,
             "count": 15,
             "sum": 4539
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-zilu/benchmark37_conjunctive.c": {
         "with_syncode_before_processing": {
@@ -13525,7 +14235,9 @@
             "max": 1004,
             "count": 15,
             "sum": 5356
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-zilu/benchmark38_conjunctive.c": {
         "with_syncode_before_processing": {
@@ -13563,7 +14275,9 @@
             "max": 1001,
             "count": 15,
             "sum": 2651
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-zilu/benchmark39_conjunctive.c": {
         "with_syncode_before_processing": {
@@ -13601,7 +14315,9 @@
             "max": 1005,
             "count": 15,
             "sum": 3650
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-zilu/benchmark40_polynomial.c": {
         "with_syncode_before_processing": {
@@ -13639,7 +14355,9 @@
             "max": 1003,
             "count": 15,
             "sum": 5992
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-zilu/benchmark41_conjunctive.c": {
         "with_syncode_before_processing": {
@@ -13677,7 +14395,9 @@
             "max": 1001,
             "count": 15,
             "sum": 4900
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-zilu/benchmark42_conjunctive.c": {
         "with_syncode_before_processing": {
@@ -13715,7 +14435,9 @@
             "max": 1004,
             "count": 15,
             "sum": 6082
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-zilu/benchmark43_conjunctive.c": {
         "with_syncode_before_processing": {
@@ -13753,7 +14475,9 @@
             "max": 1006,
             "count": 15,
             "sum": 6969
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-zilu/benchmark45_disjunctive.c": {
         "with_syncode_before_processing": {
@@ -13791,7 +14515,9 @@
             "max": 1001,
             "count": 15,
             "sum": 7607
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-zilu/benchmark46_disjunctive.c": {
         "with_syncode_before_processing": {
@@ -13829,7 +14555,9 @@
             "max": 1004,
             "count": 15,
             "sum": 5435
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-zilu/benchmark47_linear.c": {
         "with_syncode_before_processing": {
@@ -13867,7 +14595,9 @@
             "max": 1004,
             "count": 15,
             "sum": 9448
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-zilu/benchmark48_linear.c": {
         "with_syncode_before_processing": {
@@ -13905,7 +14635,9 @@
             "max": 976,
             "count": 15,
             "sum": 2289
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-zilu/benchmark49_linear.c": {
         "with_syncode_before_processing": {
@@ -13943,7 +14675,9 @@
             "max": 1006,
             "count": 15,
             "sum": 6503
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-zilu/benchmark50_linear.c": {
         "with_syncode_before_processing": {
@@ -13981,7 +14715,9 @@
             "max": 1004,
             "count": 15,
             "sum": 4696
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-zilu/benchmark51_polynomial.c": {
         "with_syncode_before_processing": {
@@ -14019,7 +14755,9 @@
             "max": 1004,
             "count": 15,
             "sum": 7484
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-zilu/benchmark52_polynomial.c": {
         "with_syncode_before_processing": {
@@ -14057,7 +14795,9 @@
             "max": 1001,
             "count": 15,
             "sum": 4341
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loop-zilu/benchmark53_polynomial.c": {
         "with_syncode_before_processing": {
@@ -14095,7 +14835,9 @@
             "max": 1006,
             "count": 15,
             "sum": 3497
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loops-crafted-1/Mono1_1-2.c": {
         "with_syncode_before_processing": {
@@ -14133,7 +14875,9 @@
             "max": 998,
             "count": 15,
             "sum": 3992
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loops-crafted-1/iftelse.c": {
         "with_syncode_before_processing": {
@@ -14171,7 +14915,9 @@
             "max": 997,
             "count": 15,
             "sum": 3322
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": false
     },
     "dataset/loop_invariants/sv-benchmarks/loops-crafted-1/loopv1.c": {
         "with_syncode_before_processing": {
@@ -14209,7 +14955,9 @@
             "max": 995,
             "count": 15,
             "sum": 6270
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loops-crafted-1/loopv3.c": {
         "with_syncode_before_processing": {
@@ -14247,7 +14995,9 @@
             "max": 1001,
             "count": 15,
             "sum": 4585
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loops-crafted-1/mono-crafted_10.c": {
         "with_syncode_before_processing": {
@@ -14285,7 +15035,9 @@
             "max": 999,
             "count": 15,
             "sum": 2136
-        }
+        },
+        "with_syncode_success": false,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loops-crafted-1/mono-crafted_11.c": {
         "with_syncode_before_processing": {
@@ -14323,7 +15075,9 @@
             "max": 1006,
             "count": 15,
             "sum": 4375
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loops-crafted-1/mono-crafted_12.c": {
         "with_syncode_before_processing": {
@@ -14361,7 +15115,9 @@
             "max": 113,
             "count": 15,
             "sum": 941
-        }
+        },
+        "with_syncode_success": false,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loops-crafted-1/mono-crafted_8.c": {
         "with_syncode_before_processing": {
@@ -14399,7 +15155,9 @@
             "max": 1006,
             "count": 15,
             "sum": 5986
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": false
     },
     "dataset/loop_invariants/sv-benchmarks/loops-crafted-1/mono-crafted_9.c": {
         "with_syncode_before_processing": {
@@ -14437,7 +15195,9 @@
             "max": 995,
             "count": 15,
             "sum": 3350
-        }
+        },
+        "with_syncode_success": false,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loops-crafted-1/sum_natnum.c": {
         "with_syncode_before_processing": {
@@ -14475,7 +15235,9 @@
             "max": 1006,
             "count": 15,
             "sum": 3806
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loops-crafted-1/sumt2.c": {
         "with_syncode_before_processing": {
@@ -14513,7 +15275,9 @@
             "max": 1001,
             "count": 15,
             "sum": 4197
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loops-crafted-1/sumt3.c": {
         "with_syncode_before_processing": {
@@ -14551,7 +15315,9 @@
             "max": 991,
             "count": 15,
             "sum": 3185
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loops-crafted-1/sumt4.c": {
         "with_syncode_before_processing": {
@@ -14589,7 +15355,9 @@
             "max": 1005,
             "count": 15,
             "sum": 6128
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loops-crafted-1/sumt5.c": {
         "with_syncode_before_processing": {
@@ -14627,7 +15395,9 @@
             "max": 1002,
             "count": 15,
             "sum": 6831
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loops-crafted-1/sumt6.c": {
         "with_syncode_before_processing": {
@@ -14665,7 +15435,9 @@
             "max": 1003,
             "count": 15,
             "sum": 4838
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loops-crafted-1/sumt7.c": {
         "with_syncode_before_processing": {
@@ -14703,7 +15475,9 @@
             "max": 557,
             "count": 15,
             "sum": 3345
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loops-crafted-1/sumt8.c": {
         "with_syncode_before_processing": {
@@ -14741,7 +15515,9 @@
             "max": 1004,
             "count": 15,
             "sum": 6911
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loops-crafted-1/sumt9.c": {
         "with_syncode_before_processing": {
@@ -14779,7 +15555,9 @@
             "max": 1006,
             "count": 15,
             "sum": 5748
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loops/count_up_down-1.c": {
         "with_syncode_before_processing": {
@@ -14817,7 +15595,9 @@
             "max": 1001,
             "count": 15,
             "sum": 1548
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loops/for_infinite_loop_1.c": {
         "with_syncode_before_processing": {
@@ -14855,7 +15635,9 @@
             "max": 1006,
             "count": 15,
             "sum": 4964
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loops/for_infinite_loop_2.c": {
         "with_syncode_before_processing": {
@@ -14893,7 +15675,9 @@
             "max": 1004,
             "count": 15,
             "sum": 3684
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loops/sum04-2.c": {
         "with_syncode_before_processing": {
@@ -14931,7 +15715,9 @@
             "max": 917,
             "count": 15,
             "sum": 1786
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loops/terminator_02-2.c": {
         "with_syncode_before_processing": {
@@ -14969,7 +15755,9 @@
             "max": 1004,
             "count": 15,
             "sum": 5963
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loops/terminator_03-2.c": {
         "with_syncode_before_processing": {
@@ -15007,7 +15795,9 @@
             "max": 1005,
             "count": 15,
             "sum": 3618
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loops/trex03-2.c": {
         "with_syncode_before_processing": {
@@ -15045,7 +15835,9 @@
             "max": 1001,
             "count": 15,
             "sum": 6509
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loops/while_infinite_loop_1.c": {
         "with_syncode_before_processing": {
@@ -15083,7 +15875,9 @@
             "max": 1003,
             "count": 15,
             "sum": 1428
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     },
     "dataset/loop_invariants/sv-benchmarks/loops/while_infinite_loop_2.c": {
         "with_syncode_before_processing": {
@@ -15121,6 +15915,8 @@
             "max": 1003,
             "count": 15,
             "sum": 1352
-        }
+        },
+        "with_syncode_success": true,
+        "without_syncode_success": true
     }
 }
