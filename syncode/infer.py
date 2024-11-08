@@ -143,7 +143,7 @@ class Syncode:
     def is_grammar_mode(self):
         return self.mode == 'grammar_mask' or self.mode == 'grammar_strict'
 
-    def infer(self, prompt=None, stop_words=[]):
+    def infer(self, prompt=None, stop_words=None):
         output = self.user_input(prompt, stop_words=stop_words)
         return output
 
@@ -193,7 +193,7 @@ class Syncode:
         logger.close()
         return output
 
-    def user_input(self, prompt:str, stop_words=[]):
+    def user_input(self, prompt:str, stop_words=None):
         """
         Run user input on the model with grammar mask
         """
