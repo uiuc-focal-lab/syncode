@@ -167,6 +167,9 @@ class LookupTable:
     
     def complete_case_lookup(self, dfa_state: DFAState) -> Any:
         assert isinstance(dfa_state, DFAState)
+        if dfa_state not in self._exact_lookup:
+            # FIXME: This is bit strange and need to be checked more carefully
+            return self._overapprox_lookup[dfa_state]
         return self._exact_lookup[dfa_state]
 
     def add_exact_lookup(self, dfa_state: DFAState, token):

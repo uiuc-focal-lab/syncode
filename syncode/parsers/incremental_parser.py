@@ -119,25 +119,29 @@ class IncrementalParser:
         self.cur_ac_terminals = set()
         self.next_ac_terminals = self._accepts(self.interactive)
     
-    def _store_parser_state(self, pos: int, parser_state, accepts: set, indent_levels: Optional[list] = None):
+
+    def _store_parser_state(self, pos: int, lexer_tokens: Iterable[Token], parser_state, accepts: set, indent_levels: Optional[list] = None):
         """
         Make immutable copies of the parser state and restore the parser state to the given position.
         """  
         cur_ac_terminals = self.next_ac_terminals  
         next_ac_terminals = accepts 
+
+        # Create a hash of lexer tokens till position pos
+        key = self._get_hash(lexer_tokens[:pos+1])
         
         # parser_state, cur_ac_terminals, next_ac_terminals, indent_levels, dedent_queue
-        self.cur_pos_to_parser_state[pos] = (copy.deepcopy(self.parsed_lexer_tokens), parser_state, cur_ac_terminals, next_ac_terminals, indent_levels, copy.deepcopy(self.dedent_queue), copy.deepcopy(self.symbol_pos_map))
+        self.cur_pos_to_parser_state[key] = (copy.deepcopy(self.parsed_lexer_tokens), parser_state, cur_ac_terminals, next_ac_terminals, indent_levels, copy.deepcopy(self.dedent_queue), copy.deepcopy(self.symbol_pos_map))
         # self.cur_pos_to_parser_state[pos] = (copy.deepcopy(self.parsed_lexer_tokens), parser_state, cur_ac_terminals, next_ac_terminals, indent_levels, copy.deepcopy(self.dedent_queue))
         
         self.cur_ac_terminals = copy.deepcopy(cur_ac_terminals)
         self.next_ac_terminals = copy.deepcopy(next_ac_terminals)
 
-    def _restore_parser_state(self, pos: int):
+    def _restore_parser_state(self, key: int):
         """
         Restore immutable copies of the parser state and restore the parser state to the given position.
         """
-        parsed_lexer_tokens, parser_state, cur_ac_terminals, next_ac_terminals, indent_levels, dedent_queue, symbol_pos_map = self.cur_pos_to_parser_state[pos]
+        parsed_lexer_tokens, parser_state, cur_ac_terminals, next_ac_terminals, indent_levels, dedent_queue, symbol_pos_map = self.cur_pos_to_parser_state[key]
         # parsed_lexer_tokens, parser_state, cur_ac_terminals, next_ac_terminals, indent_levels, dedent_queue = self.cur_pos_to_parser_state[pos]
         
         self.interactive.parser_state = parser_state.copy()
@@ -184,24 +188,32 @@ class IncrementalParser:
 
         return lexer_tokens, lexing_incomplete
     
+    
     def _restore_recent_parser_state(self, lexer_tokens):
         """
         Restores the parser state to the most recent prefix matching state that was stored. 
         """
-        max_matching_index = -1
-        for i in range(min(len(self.prev_lexer_tokens), len(lexer_tokens))):
-            if self.prev_lexer_tokens[i] != lexer_tokens[i]:
+        max_stored_index = -1
+        idx = len(lexer_tokens)-1
+        
+        while idx >= 0:
+            # TODO: This is not the best way to hash the lexer tokens. We should use a better hashing mechanism with some sliding window. 
+            key = self._get_hash(lexer_tokens[:idx+1])
+            if key in self.cur_pos_to_parser_state:
+                max_stored_index = idx
                 break
-            if i in self.cur_pos_to_parser_state:
-                max_matching_index = i
+            idx -= 1
 
-        if max_matching_index != -1:
-            self.cur_pos = max_matching_index + 1
-            assert (max_matching_index) in self.cur_pos_to_parser_state
-            self._restore_parser_state(max_matching_index)
+        if max_stored_index != -1:
+            self.cur_pos = max_stored_index + 1
+            key = self._get_hash(lexer_tokens[:max_stored_index+1])
+            self._restore_parser_state(key)
         else:
             self._set_initial_parser_state()
 
+    def _get_hash(self, lexer_tokens: Iterable[Token]) -> int:
+        return hash(tuple(lexer_tokens))
+    
 
     def get_acceptable_next_terminals(self, partial_code) -> ParseResult:
         """
@@ -242,6 +254,7 @@ class IncrementalParser:
                 # Store the current state of the parser
                 self._store_parser_state(
                     self.cur_pos-1, 
+                    lexer_tokens,
                     interactive.parser_state.copy(), 
                     self._accepts(interactive))
 
