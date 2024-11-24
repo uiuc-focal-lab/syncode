@@ -89,7 +89,6 @@ class IncrementalParser:
         self.logger = logger if logger is not None else common.EmptyLogger()
         self.interactive = self.base_parser.parse_interactive('')
         self.parsed_lexer_tokens: list = []
-        self.prev_lexer_tokens: list[Token] = [] # To enable going back to old state of the parser
         self.cur_pos_to_parser_state: dict[int, Tuple[Any, set, set, Optional[list], list]] = {} # parser_state, cur_ac_terminals, next_ac_terminals, indent_levels (optional), dedent_queue
 
         self.cur_ac_terminals: set = set()
@@ -100,7 +99,6 @@ class IncrementalParser:
         """
         Resets the parser to the initial state.
         """
-        self.prev_lexer_tokens = []
         self.cur_pos_to_parser_state = {}
         self.lexer_pos = 0
 
@@ -188,7 +186,7 @@ class IncrementalParser:
 
         return lexer_tokens, lexing_incomplete
     
-    
+
     def _restore_recent_parser_state(self, lexer_tokens):
         """
         Restores the parser state to the most recent prefix matching state that was stored. 
@@ -225,12 +223,9 @@ class IncrementalParser:
         self.next_ac_terminals = self._accepts(interactive)
 
         # Restore the previous state of the parser
-        if len(self.prev_lexer_tokens) > 0:
-            self._restore_recent_parser_state(lexer_tokens)
+        self._restore_recent_parser_state(lexer_tokens)
 
         self._update_symbol_pos_map_terminals(lexer_tokens)
-
-        self.prev_lexer_tokens = lexer_tokens  # Set the previous lexer tokens
 
         # Parse the tokens
         self.time_accepts = 0
@@ -323,9 +318,25 @@ class IncrementalParser:
         """
         Updates the uc_map with the current token for terminals.
         """
-        if len(lexer_tokens) > len(self.prev_lexer_tokens):
-            start_idx = max(len(self.prev_lexer_tokens)-1, 0)
+        if len(lexer_tokens) > len(self.parsed_lexer_tokens):
+            len_parsed = len(self.parsed_lexer_tokens)
+
+            # self.parsed_lexer_tokens does not contain the IGNORED tokens. So, we need to count the number of IGNORED tokens in the parsed_lexer_tokens
+            start_idx = 0
+            cnt_non_ignore = 0  # Just temporary index to iterate over lexer_tokens
+
+            # This loop should terminate since there are more non-IGNORED tokens in lexer_tokens than in all tokens in self.parsed_lexer_tokens
+            while cnt_non_ignore < len_parsed: # skip first len_parsed non IGNORED tokens
+                if lexer_tokens[start_idx].type != 'IGNORED': 
+                    cnt_non_ignore += 1
+                start_idx += 1
+            # all new terminals that are unparsed start from start_idx
+
+            # We don't add the last lexer token as it may change in the future
+            # Essntially, we don't want IterGen to stop immediatelly after generating terminal which may extend in the future
+            start_idx -= 1
             end_idx = len(lexer_tokens)-1
+
             for idx in range(start_idx, end_idx):
                 if lexer_tokens[idx].type != 'IGNORED':
                     self.symbol_pos_map.add_symbol_pos(

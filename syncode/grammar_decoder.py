@@ -59,7 +59,7 @@ class SyncodeLogitsProcessor(LogitsProcessor):
                                     )
 
         # Create parsers
-        self.inc_parsers: Iterator[IncrementalParser] = [create_parser(self.grammar, logger=self.logger, parser=parser, ignore_whitespace=self._ignore_whitespace) for _ in range(self.batch_size)]
+        self.inc_parser: Iterator[IncrementalParser] = create_parser(self.grammar, logger=self.logger, parser=parser, ignore_whitespace=self._ignore_whitespace)
 
     
     def _log_current_status(self, partial_code, r: ParseResult):
@@ -104,9 +104,8 @@ class SyncodeLogitsProcessor(LogitsProcessor):
             self.start_from = len(prompt_tokens)
         else:
             self.start_from = 0
-
-        for p in self.inc_parsers:
-            p.reset()
+        
+        self.inc_parser.reset()
 
 
     def is_valid(self, input_ids: torch.LongTensor, next_token: torch.LongTensor) -> bool:
@@ -125,7 +124,7 @@ class SyncodeLogitsProcessor(LogitsProcessor):
         partial_code = self._get_partial_codes(input_ids)[0]
 
         try:
-            r = self.inc_parsers[0].get_acceptable_next_terminals(partial_code)
+            r = self.inc_parser.get_acceptable_next_terminals(partial_code)
         except Exception as e:
             self.logger.log(f"Exception while parsing:\n {e}")
             return False
@@ -147,12 +146,11 @@ class SyncodeLogitsProcessor(LogitsProcessor):
         # start_from is used for choosing where the parsing should start
         debug = True
         partial_codes = self._get_partial_codes(input_ids)
-        assert len(partial_codes) == len(self.inc_parsers), "Number of partial codes should match the number of parsers. Make sure that the argument `num_samples` is set correctly in the SyncodeLogitsProcessor."
 
         for idx, partial_code in enumerate(partial_codes):
             ## Parsing
             try: # returns the accept sequences that are currently accepted.
-                r = self.inc_parsers[idx].get_acceptable_next_terminals(partial_code)
+                r = self.inc_parser.get_acceptable_next_terminals(partial_code)
             except Exception as e:
                 if self.dev_mode == True:
                     raise e
