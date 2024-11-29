@@ -155,7 +155,6 @@ class LookupTable:
             if dfa_state in self._exact_lookup:
                 return self._exact_lookup[dfa_state]
             else:
-                print(f"Warning: Exact lookup not found for {dfa_state} in the DFA mask store. This could be an error.", flush=True) 
                 return self._overapprox_lookup[dfa_state]
         raise ValueError(f"Invalid mode: {self._mode}")
     

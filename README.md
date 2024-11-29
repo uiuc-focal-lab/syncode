@@ -266,7 +266,7 @@ from syncode import Syncode
 model_name = "WizardLM/WizardCoder-1B-V1.0"
 
 # Load the Syncode augmented model
-syn_llm = Syncode(model=model_name, mode='grammar_strict', grammar='python')
+syn_llm = Syncode(model=model_name, mode='grammar_strict', grammar='python', parse_output_only=False)
 partial_code = "def is_prime(n):\n    '''Return if prime'''\n  "
 
 #generate a completion to the input partial code
