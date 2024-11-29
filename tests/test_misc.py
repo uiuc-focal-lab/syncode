@@ -2,7 +2,10 @@ import unittest
 import os
 import sys
 
+import torch
+
 from syncode.dfa_mask_store import DFAMaskStore
+from syncode.grammar_decoder import SyncodeLogitsProcessor
 
 # Adjusting the path so the modules can be imported correctly
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../')
@@ -69,6 +72,30 @@ class TestParserMisc(unittest.TestCase):
         dfa_mask = DFAMaskStore.load_dfa_mask_store(grammar=grammar, tokenizer=tokenizer, use_cache=False, logger=common.EmptyLogger())
         mask = dfa_mask.get_accept_mask(r, get_list=True)
         self.assertIn(' I', mask)
+    
+    def test_grammar_decoder_empty(self):
+        """
+        Make sure the grammar decoder does not accept an empty input
+        """
+        grammar = Grammar('json')
+        model = 'microsoft/Phi-3-mini-128k-instruct'
+        tokenizer = common.load_tokenizer(model)
+        grammar_decoder = SyncodeLogitsProcessor(
+                grammar, 
+                tokenizer=tokenizer, 
+                use_cache=True,
+                parse_output_only=True,
+                )
+        
+        prompt = "Generate a JSON object"
+        input_ids = tokenizer(prompt, return_tensors='pt')['input_ids']
+        grammar_decoder.reset(prompt)
+
+        # Create an empty 2D tensor
+        next_token = torch.tensor([tokenizer.eos_token_id], dtype=torch.long)
+
+        is_valid = grammar_decoder.is_valid(input_ids=input_ids, next_token=next_token)
+        self.assertFalse(is_valid)
 
     def test_parser_calc(self):
         inc_parser = create_parser(Grammar('calc'))

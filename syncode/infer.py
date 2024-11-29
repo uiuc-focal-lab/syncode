@@ -47,8 +47,12 @@ class Syncode:
         num_samples (int, optional): Number of samples. Defaults to 1.
         
         grammar (str, optional): Language. Defaults to "input". "input" is used for user input. 
-            other options currently supported are "python", "go", "calc"
-                
+            other options currently supported are "python", "go", "calc", "sql", "json", "fol".
+        
+        parser (str, optional): Parser to use. Defaults to "lalr".
+        
+        parse_output_only (bool, optional): Parse only the output. Defaults to True.
+
         new_mask_store (bool, optional): Use new DFA mask store. Defaults to False.
                 
         chat_mode (bool, optional): Parse only the (output) and not (prompt+output) in chat mode. Defaults to False.
@@ -57,7 +61,6 @@ class Syncode:
 
         log_level (int, optional): Log level. Defaults to 2. 0 for no logs, 1 for minimal logs, 2 for all logs including time.
         
-        parser (str, optional): Parser to use. Defaults to "lalr".
         opp (bool, optional): Whether to use opportunistic generation. Defaults to True.
     """
     def __init__(
@@ -68,7 +71,7 @@ class Syncode:
         device: str = "cuda",
         grammar: Optional[str] = None,
         chat_mode: bool = False,
-        parse_output_only: bool = False,
+        parse_output_only: bool = True,
         dev_mode: bool = False,
         log_level: int = 1,
         new_mask_store: bool = False,

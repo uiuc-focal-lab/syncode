@@ -27,7 +27,7 @@ class SyncodeLogitsProcessor(LogitsProcessor):
         tokenizer: PreTrainedTokenizer, 
         logger: common.Logger=common.EmptyLogger(), 
         use_cache=True,
-        parse_output_only=False, 
+        parse_output_only=True, 
         num_samples=1,
         dev_mode=False,
         parser='lalr',
@@ -122,8 +122,9 @@ class SyncodeLogitsProcessor(LogitsProcessor):
             return False
         
         if input_ids[0, -1] == self.tokenizer.eos_token_id:
-            is_valid = AcceptSequence(['$END']) in r.accept_sequences
-
+            # Do not allow the model to generate EOS token until $END in the grammar is reached
+            return AcceptSequence(['$END']) in r.accept_sequences
+        
         if r.remainder_state == RemainderState.COMPLETE or r.remainder_state == RemainderState.MAYBE_COMPLETE:
             is_valid = True
 
