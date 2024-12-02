@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 import syncode.common as common
 from transformers import LogitsProcessor, PreTrainedTokenizer
@@ -38,6 +39,9 @@ class SyncodeLogitsProcessor(LogitsProcessor):
         self.logger = logger
         self.dev_mode = dev_mode
         self.batch_size = num_samples
+
+        # For keeping the generated input_ids on the CPU
+        self.input_ids: np.ndarray = np.array([[]])
 
         # For backtracking to syntactically valid completions
         self.last_valid_state: list = []
@@ -91,9 +95,10 @@ class SyncodeLogitsProcessor(LogitsProcessor):
         self.last_valid_state = [0 for _ in range(self.batch_size)]
         self.function_ends = [None for _ in range(self.batch_size)]
 
-        prompt_tokens = self.tokenizer.encode(prompt, return_tensors='pt')[0]
+        prompt_tokens = self.tokenizer.encode(prompt, return_tensors='pt')
+        self.input_ids = prompt_tokens.numpy()
         if self.parse_output_only:
-            self.start_from = len(prompt_tokens)
+            self.start_from = len(prompt_tokens[0])
         else:
             self.start_from = 0
 
@@ -134,6 +139,10 @@ class SyncodeLogitsProcessor(LogitsProcessor):
         if is_valid:
             self.update_valid_state(partial_code, 0, r)
 
+        if not is_valid:
+            # Uncache unvalid last input_id.
+            self.input_ids = self.input_ids[:, :-1]
+
         return is_valid
     
 
@@ -173,9 +182,23 @@ class SyncodeLogitsProcessor(LogitsProcessor):
 
         return scores
 
-    def _get_partial_codes(self, input_ids: torch.LongTensor):   
-        assert self.start_from <= input_ids.size(1), "Make sure that the decoder is reset for new prompt."            
-        partial_codes = self.tokenizer.batch_decode(input_ids[:, self.start_from:], skip_special_tokens=True)
+    def _get_partial_codes(self, input_ids: torch.LongTensor):
+        """
+        Decode the input_ids into a string of what the model has generated so far.
+        Cache the input_ids on the CPU, only copying new input_ids from the GPU when necessary.
+        """
+        assert self.start_from <= input_ids.size(1), "Make sure that the decoder is reset for new prompt."
+
+        # Only cache where there are new input_ids to cache
+        # FIXME: np.append copies the entire array every time
+        newest_input_ids = input_ids[:, self.input_ids.shape[1]:].clone().cpu().T.numpy()
+        try:
+            self.input_ids = np.append(self.input_ids, newest_input_ids, axis=1)
+        except ValueError:
+            # Input array dimensions are incorrect, meaning we have no new tokens to cache
+            pass
+
+        partial_codes = self.tokenizer.batch_decode(self.input_ids[:, self.start_from:], skip_special_tokens=True)
         return partial_codes
 
     def update_valid_state(self, partial_code: str, idx: int, r: ParseResult):
