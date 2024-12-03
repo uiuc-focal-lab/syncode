@@ -67,9 +67,23 @@ class HuggingFaceModel:
         return None
 
     @torch.inference_mode()
-    def generate_batch_completion_grammar(self, prompt, batch_size, stop_words=None, return_token_ids=False) -> Iterable[str]:
+    def generate_batch_completion_grammar(
+        self, 
+        prompt, 
+        batch_size, 
+        stop_words=None, 
+        return_token_ids=False,
+        debug=False
+        ) -> Iterable[str]:
         '''
         Generates batch_size completions for the given prompt. 
+
+        Args:
+            prompt (str): The prompt for which completions are generated.
+            batch_size (int): The number of completions to generate.
+            stop_words (list): A list of stop words. If the completion ends with any of the stop words, the completion is returned.
+            return_token_ids (bool): If True, returns the token ids of the completions.
+            debug (bool): If True, prints debug information.
         '''
         # Reset the grammar decoder
         if self.grammar_decoder is not None:
@@ -99,7 +113,8 @@ class HuggingFaceModel:
                 gen_config, 
                 gen_mode, 
                 grammar_decoder=self.grammar_decoder,
-                stop_criteria=stop_criteria
+                stop_criteria=stop_criteria,
+                debug=debug
                 )
         else:
             if self.opp:
@@ -137,7 +152,8 @@ class HuggingFaceModel:
         gen_config:GenerationConfig, 
         gen_mode:GenerationMode, 
         grammar_decoder:SyncodeLogitsProcessor=None,
-        stop_criteria:StoppingCriteria=[]
+        stop_criteria:StoppingCriteria=[],
+        debug=False
         ):
         """
         We support greedy search and sampling for batch size 1 otherwise we use the generate function from transformers library.
@@ -192,7 +208,10 @@ class HuggingFaceModel:
 
             # Update attention mask
             attention_mask = torch.cat([attention_mask, torch.ones((attention_mask.size(0), 1), dtype=attention_mask.dtype).to(self.device)], dim=-1)
-            
+        
+        if debug:
+            grammar_decoder.print_debug()
+
         return token_ids
 
     def _get_next_token(self, gen_mode, token_ids, logits_processor, next_token_scores):

@@ -15,12 +15,12 @@ from syncode.evaluation.json_eval import JSONEval
 from syncode.evaluation.fol_eval import FOLEval
 
 
-def compile_and_run(model, mode="grammar_strict", quantize=True, device="cuda", grammar=None, dataset="input", num_few_shot=0, chat_mode=False, dev_mode=False, log_level=1, new_mask_store=False, parser="lalr", num_tasks=None, task_id=None, seed=None, opp=True, **kwargs):
+def compile_and_run(model, mode="grammar_strict", quantize=True, device="cuda", grammar=None, dataset="input", num_few_shot=0, chat_mode=False, dev_mode=False, log_level=1, new_mask_store=False, parser="lalr", num_tasks=None, task_id=None, seed=None, opp=True, debug=False, **kwargs):
 
     syncode = Syncode(model, mode=mode, quantize=quantize, device=device, grammar=grammar, chat_mode=chat_mode, dev_mode=dev_mode, log_level=log_level, new_mask_store=new_mask_store, parser=parser, seed=seed, opp=opp, **kwargs)
     
     if dataset == "input":
-        syncode.infer()
+        syncode.infer(debug=debug)
     else:
         # Setup output directory and logger
         num_samples = kwargs.get('num_return_sequences', 1)
@@ -146,8 +146,8 @@ class Syncode:
     def is_grammar_mode(self):
         return self.mode == 'grammar_mask' or self.mode == 'grammar_strict'
 
-    def infer(self, prompt=None, stop_words=None):
-        output = self.user_input(prompt, stop_words=stop_words)
+    def infer(self, prompt=None, stop_words=None, debug=False):
+        output = self.user_input(prompt, stop_words=stop_words, debug=debug)
         return output
 
     def evaluate(
@@ -196,17 +196,23 @@ class Syncode:
         logger.close()
         return output
 
-    def user_input(self, prompt:str, stop_words=None):
+    def user_input(self, prompt:str, stop_words=None, debug=False):
         """
         Run user input on the model with grammar mask
+
+        Args:
+            prompt (str): User input prompt
+            stop_words (list, optional): Stop words to use. Defaults to None.
+            debug (bool, optional): Debug mode. Defaults to False.
         """
         if prompt:
             if self.grammar_decoder is not None: # TODO: Remove this check
                     self.grammar_decoder.reset(prompt)
+            
             if self.chat_mode:
                 return self.model.generate_chat_completion_grammar(prompt)
             else:
-                return self.model.generate_batch_completion_grammar(prompt, self.num_samples, stop_words=stop_words)
+                return self.model.generate_batch_completion_grammar(prompt, self.num_samples, stop_words=stop_words, debug=debug)
         else:
             while True:
                 prompt = input('Enter prompt: ')

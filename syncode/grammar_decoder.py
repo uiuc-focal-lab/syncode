@@ -205,3 +205,14 @@ class SyncodeLogitsProcessor(LogitsProcessor):
         self.logger.log(f"Greedy grammar-based token: {repr(greedy_grammar_token)}")
         self._log_current_status(partial_code, r)
     
+    def print_debug(self):
+        print('-'*50)
+        print('Parsed terminals:')
+
+        name_to_pattern = {}
+        for term in self.inc_parser.base_parser.terminals:
+            name_to_pattern[term.name] = term.pattern
+
+        for token in self.inc_parser.parsed_lexer_tokens:
+            print(f"(type: {name_to_pattern[token.type]} | value: '{token.value}')")
+        print('-'*50)
