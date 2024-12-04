@@ -5,5 +5,13 @@ authors = ["Preston Firestone"]
 edition = "2021"
 description = "Implements the Syncode algorithm in Rust."
 
+[lib]
+name = "rust_syncode"
+crate-type = ["cdylib"]
+
 [dependencies]
 regex-automata = "0.4.9"
+
+[dependencies.pyo3]
+version = "0.15.1"
+features = ["extension-module"]
