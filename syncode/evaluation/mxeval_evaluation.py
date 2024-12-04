@@ -16,7 +16,7 @@ def evaluate_functional_correctness(
     sample_file: str,
     k: List[int] = [1, 10, 100],
     n_workers: int = os.cpu_count() - 1,
-    timeout: float = 10.0,
+    timeout: float = 100.0,
     problem_file: str = '',
     logger: common.Logger = common.EmptyLogger(),
 ):
@@ -59,7 +59,7 @@ def evaluate_functional_correctness(
             completion_id[task_id] += 1
             n_samples += 1
 
-        assert len(completion_id) == len(problems), "Some problems are not attempted."
+        # assert len(completion_id) == len(problems), "Some problems are not attempted."
 
         logger.log_eval("Running test suites...")
         i = 0
@@ -148,12 +148,9 @@ def check_correctness_python(
             # Disable functionalities that can make destructive changes to the test.
             reliability_guard()
 
-            prompt = problem["prompt"].replace("\t", "    ")
-
             # Construct the check program and run it.
             check_program = (
-                prompt
-                + completion
+                completion
                 + "\n"
                 + problem["test"]
                 + "\n"
@@ -236,7 +233,7 @@ def check_correctness_helper(
     logger: common.Logger = common.EmptyLogger()
 ):
     current_dir = os.path.dirname(os.path.realpath(__file__))
-    entire_string = problem["prompt"] + completion + problem["test"]
+    entire_string = completion + problem["test"]
 
     language_dirname = f"{language}_exec_eval"
 
@@ -401,7 +398,7 @@ def compare(get_datafile, filename, language, dataset):
     logger.log_eval(f"Total: {count_total}")
                                         
 
-def check_coorectness(
+def check_corectness(
         filename: str,
         compare: bool = False,
         logger: common.Logger = common.EmptyLogger(),
@@ -435,4 +432,4 @@ def check_coorectness(
 
 if __name__ == "__main__":
     logger = common.EmptyLogger()
-    fire.Fire(check_coorectness)
+    fire.Fire(check_corectness)

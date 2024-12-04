@@ -19,6 +19,29 @@ LR(1) is more powerful in terms of representing certain syntax, however common f
 In most cases, it should be possible to fix these errors by rewriting some of the grammar rules.
 However, in some rare cases it is possible that it is impossible to represent the grammar as LR(1)
 
+### Debugging Grammars
+
+SynCode provides a flag `--debug` to help debug grammars. This flag will print out the parsed terminals and their corresponding values in generation.
+(Refer to [this](../../../notebooks/tests/debug_grammar.ipynb) notebook for code example)
+
+For example, consider the following grammar:
+```ebnf
+start: "foo" "(" ident ")" ";"
+ident: [a-z]+
+```
+
+Given the output `foo(abc);`, the debug flag will print:
+```
+--------------------------------------------------
+Parsed terminals:
+(type: 'FOO', value: 'foo')
+(type: 'LPAR', value: '(')
+(type: 'IDENT', value: 'abc')
+(type: 'RPAR', value: ')')
+(type: 'SEMI', value: ';')
+--------------------------------------------------
+```
+
 ### Lexer Ambiguity 
 When defining a grammar, be cautious of lexer ambiguities that arise when one terminal is a substring of another.
 In some cases, these ambiguities can lead to unexpected behavior in the parser. 

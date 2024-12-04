@@ -9,7 +9,7 @@ class TestSyncode(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # Assuming Syncode and get_data are set up correctly in your environment
-        cls.sg_mask = Syncode(model="test", mode='grammar_mask', device='cpu', do_sample=False, max_new_tokens=200, grammar='python')
+        cls.sg_mask = Syncode(model="test", mode='grammar_mask', device='cpu', do_sample=False, max_new_tokens=200, grammar='python', parse_output_only=False)
         cls.problems = list(get_data('multi-humaneval', 'python').values())
         
         cls.sg_mask_instruct = Syncode(model="test-instruct", mode='grammar_mask', device='cpu', do_sample=False, max_new_tokens=20, grammar=cls.custom_grammar())
@@ -37,12 +37,13 @@ class TestSyncode(unittest.TestCase):
     def test_syntax_mask_humaneval_python(self):
         # Test grammar_mask does not cause functional generated code to fail
         for i in [7, 12, 28]:
-            result = check_correctness_python(self.problems[i], self.sg_mask.evaluate(dataset='humaneval', task_id=i)[0], timeout=10.0)['result']
+            output = self.sg_mask.evaluate(dataset='humaneval', task_id=i, format_tabs=True)[0]
+            result = check_correctness_python(self.problems[i], output, timeout=10.0)['result']
             self.assertEqual(result, 'passed', f"SynCode Causes Functional Generated Code to Fail for HumanEval/{i}")
         
         # Test grammar_mask eliminates syntax errors in generated code
         for i in [25, 81, 84, 105, 107]:
-            output = self.sg_mask.evaluate(dataset='humaneval', task_id=i)[0]
+            output = self.sg_mask.evaluate(dataset='humaneval', task_id=i, format_tabs=True)[0]
             error_type = check_correctness_python(self.problems[i], output, timeout=10.0)['error_type']
             self.assertNotIn('Syntax', error_type, f"Generated Code for HumanEval/{i} has a Syntax Error\n{output}")
 

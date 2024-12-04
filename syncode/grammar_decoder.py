@@ -1,14 +1,14 @@
-import time
-from typing import Iterator
 import torch
 import syncode.common as common
 from transformers import LogitsProcessor, PreTrainedTokenizer
-from syncode.parse_result import RemainderState
+from syncode.parse_result import AcceptSequence, RemainderState
 from syncode.parsers.incremental_parser import IncrementalParser, ParseResult
 from syncode.parsers import create_parser, create_base_parser
 from syncode.dfa_mask_store import DFAMaskStore
 from syncode.parsers.grammars import Grammar
 
+# Set to True for debugging
+DEBUG = False
 
 class SyncodeLogitsProcessor(LogitsProcessor):
     """
@@ -27,7 +27,7 @@ class SyncodeLogitsProcessor(LogitsProcessor):
         tokenizer: PreTrainedTokenizer, 
         logger: common.Logger=common.EmptyLogger(), 
         use_cache=True,
-        parse_output_only=False, 
+        parse_output_only=True, 
         num_samples=1,
         dev_mode=False,
         parser='lalr',
@@ -41,7 +41,7 @@ class SyncodeLogitsProcessor(LogitsProcessor):
 
         # For backtracking to syntactically valid completions
         self.last_valid_state: list = []
-        self.function_end: list = []
+        self.function_ends: list = []
 
         # We use this when only the LLM output is parsed and not (input+output)
         self.parse_output_only = parse_output_only
@@ -59,8 +59,8 @@ class SyncodeLogitsProcessor(LogitsProcessor):
                                     mode=mode,
                                     )
 
-        # Create parsers
-        self.inc_parsers: Iterator[IncrementalParser] = [create_parser(self.grammar, logger=self.logger, parser=parser, ignore_whitespace=self._ignore_whitespace) for _ in range(self.batch_size)]
+        # Create parser
+        self.inc_parser: IncrementalParser = create_parser(self.grammar, logger=self.logger, parser=parser, ignore_whitespace=self._ignore_whitespace)
 
     
     def _log_current_status(self, partial_code, r: ParseResult):
@@ -89,7 +89,7 @@ class SyncodeLogitsProcessor(LogitsProcessor):
         Resets the decoder state on every new prompt.
         """
         self.last_valid_state = [0 for _ in range(self.batch_size)]
-        self.function_end = [None for _ in range(self.batch_size)]
+        self.function_ends = [None for _ in range(self.batch_size)]
 
         prompt_tokens = self.tokenizer.encode(prompt, return_tensors='pt')[0]
         if self.parse_output_only:
@@ -97,8 +97,7 @@ class SyncodeLogitsProcessor(LogitsProcessor):
         else:
             self.start_from = 0
 
-        for p in self.inc_parsers:
-            p.reset()
+        self.inc_parser.reset()
 
 
     def is_valid(self, input_ids: torch.LongTensor, next_token: torch.LongTensor) -> bool:
@@ -117,41 +116,45 @@ class SyncodeLogitsProcessor(LogitsProcessor):
         partial_code = self._get_partial_codes(input_ids)[0]
 
         try:
-            r = self.inc_parsers[0].get_acceptable_next_terminals(partial_code)
+            r = self.inc_parser.get_acceptable_next_terminals(partial_code)
         except Exception as e:
             self.logger.log(f"Exception while parsing:\n {e}")
             return False
         
-        self.update_valid_state(input_ids, 0, r)
+        if input_ids[0, -1] == self.tokenizer.eos_token_id:
+            # Do not allow the model to generate EOS token until $END in the grammar is reached
+            return AcceptSequence(['$END']) in r.accept_sequences
+        
         if r.remainder_state == RemainderState.COMPLETE or r.remainder_state == RemainderState.MAYBE_COMPLETE:
-            return True
+            is_valid = True
 
         # Check if the remainder is a valid prefix for the last terminal
-        out = self.dfa_mask_store.is_valid_prefix(r)
-        return out
+        is_valid = self.dfa_mask_store.is_valid_prefix(r)
+
+        if is_valid:
+            self.update_valid_state(partial_code, 0, r)
+
+        return is_valid
     
 
     def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor) -> torch.FloatTensor:    
         # start_from is used for choosing where the parsing should start
-        debug = True
         partial_codes = self._get_partial_codes(input_ids)
-        assert len(partial_codes) == len(self.inc_parsers), "Number of partial codes should match the number of parsers. Make sure that the argument `num_samples` is set correctly in the SyncodeLogitsProcessor."
 
         for idx, partial_code in enumerate(partial_codes):
             ## Parsing
             try: # returns the accept sequences that are currently accepted.
-                r = self.inc_parsers[idx].get_acceptable_next_terminals(partial_code)
+                r = self.inc_parser.get_acceptable_next_terminals(partial_code)
+                self.update_valid_state(partial_code, idx, r)
             except Exception as e:
                 if self.dev_mode == True:
                     raise e
                 self.logger.log(f"Exception while parsing:\n {e}")
                 continue  # Skip altering the scores for this batch
-
-            self.update_valid_state(input_ids, idx, r)
         
             accept_mask = self.dfa_mask_store.get_accept_mask(r, logger=self.logger)
 
-            if debug: 
+            if DEBUG: 
                 self._log_current_status(partial_code, r)
                 greedy_token = self.tokenizer.decode(scores[idx].argmax(dim=-1)) 
 
@@ -166,7 +169,7 @@ class SyncodeLogitsProcessor(LogitsProcessor):
                 self._log_current_status(partial_code, r)
 
             # For debugging - remove later
-            if debug: self._debug_greedy(scores, idx, partial_code, r, greedy_token)
+            if DEBUG: self._debug_greedy(scores, idx, partial_code, r, greedy_token)
 
         return scores
 
@@ -175,20 +178,21 @@ class SyncodeLogitsProcessor(LogitsProcessor):
         partial_codes = self.tokenizer.batch_decode(input_ids[:, self.start_from:], skip_special_tokens=True)
         return partial_codes
 
-    def update_valid_state(self, input_ids, idx: int, r: ParseResult):
+    def update_valid_state(self, partial_code: str, idx: int, r: ParseResult):
         """
         This a simple heuristic to cut off the generated output at the end of the function. 
         TODO: Put this under a flag to enable/disable this heuristic.
         """
-        if idx < len(self.function_end):
-            if r.function_end and self.function_end[idx] == None: # If the function end is not None, then the last valid state is the function end
-                self.function_end[idx] = len(input_ids[idx])-1
+        if idx < len(self.function_ends):
+            if r.function_end: # If the function end is not None, then the last valid state is the function end
+                if self.function_ends[idx] is None: self.function_ends[idx] = []
+                self.function_ends[idx].append(len(partial_code) - len(r.remainder))
 
         if idx < len(self.last_valid_state):
             for accept_seq in r.accept_sequences:
                 # 'EOF' is special terminal since $END does not work with python
                 if accept_seq[0] == '$END' or accept_seq[0] == 'EOF':
-                    self.last_valid_state[idx] = len(input_ids[idx])-1
+                    self.last_valid_state[idx] = len(partial_code) - len(r.remainder)
 
     def _debug_greedy(self, scores, idx, partial_code, r, greedy_token):
         greedy_grammar_token = self.tokenizer.decode(scores[idx].argmax(dim=-1))
@@ -201,3 +205,14 @@ class SyncodeLogitsProcessor(LogitsProcessor):
         self.logger.log(f"Greedy grammar-based token: {repr(greedy_grammar_token)}")
         self._log_current_status(partial_code, r)
     
+    def print_debug(self):
+        print('-'*50)
+        print('Parsed terminals:')
+
+        name_to_pattern = {}
+        for term in self.inc_parser.base_parser.terminals:
+            name_to_pattern[term.name] = term.pattern
+
+        for token in self.inc_parser.parsed_lexer_tokens:
+            print(f"(type: {name_to_pattern[token.type]} | value: '{token.value}')")
+        print('-'*50)

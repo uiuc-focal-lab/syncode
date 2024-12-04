@@ -23,8 +23,6 @@ class GoIncrementalParser(IncrementalParser):
         # Restore the previous state of the parser
         self._restore_recent_parser_state(lexer_tokens)
         
-        self.prev_lexer_tokens = lexer_tokens  # Set the previous lexer tokens
-
         # Parse the tokens
         self.time_accepts = 0
         parse_incomplete = False
@@ -44,6 +42,7 @@ class GoIncrementalParser(IncrementalParser):
                 # Store the current state of the parser
                 self._store_parser_state(
                     self.cur_pos-1, 
+                    lexer_tokens,
                     interactive.parser_state.copy(), 
                     self._accepts(interactive)
                     )

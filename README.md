@@ -62,6 +62,14 @@ Simply install SynCode via PyPi using the following command:
 ``` bash
 pip install git+https://github.com/uiuc-focal-lab/syncode.git
 ```
+
+Note: SynCode depends on HuggingFace [transformers](https://github.com/huggingface/transformers):
+| SynCode version | Recommended transformers version |
+| -------------- | -------------------------------- |
+| `v0.1.4` (latest) | `v4.44.0`                         |
+| `v0.1.2`          | `v4.42.0`                         |
+
+
 ### Usage option 1:
 SynCode can be used as a simple logit processor with HuggingFace [transformers](https://github.com/huggingface/transformers) library interface. Check this [notebook](./notebooks/example_logits_processor.ipynb) for example.
 
@@ -258,7 +266,7 @@ from syncode import Syncode
 model_name = "WizardLM/WizardCoder-1B-V1.0"
 
 # Load the Syncode augmented model
-syn_llm = Syncode(model=model_name, mode='grammar_strict', grammar='python')
+syn_llm = Syncode(model=model_name, mode='grammar_strict', grammar='python', parse_output_only=False)
 partial_code = "def is_prime(n):\n    '''Return if prime'''\n  "
 
 #generate a completion to the input partial code
