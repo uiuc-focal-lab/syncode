@@ -1,6 +1,9 @@
 [package]
 name = "syncode"
 version = "0.1.0"
-edition = "2024"
+authors = ["Preston Firestone"]
+edition = "2021"
+description = "Implements the Syncode algorithm in Rust."
 
 [dependencies]
+regex-automata = "0.4.9"
