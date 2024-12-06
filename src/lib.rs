@@ -18,6 +18,21 @@ struct DFAState {
     state_id: StateID
 }
 
+
+impl DFAState {
+    /// Encapsulate the kluge necessary to set up the DFA correctly for Syncode's use case.
+    fn new(
+	regex: &str
+    ) -> DFAState {
+	let dfa = dense::DFA::new(regex).unwrap();
+	// We always want the DFA to match starting from the beginning of the string.
+	let config = start::Config::new().anchored(Anchored::Yes);
+	let state_id = dfa.start_state(&config).unwrap();
+	DFAState{dfa: dfa.into(), state_id}
+    }
+}
+
+
 /// Compute whether the string could match a sequence of terminals starting at a certain state in the first DFA.
 /// 
 /// Given a DFA D(Q, Σ, δ, q0, F ), a string w ∈ Σ∗, a DFA state q ∈ Q and any sequence of terminals Λ = {τf +1, τf +2 . . . τf +d}, dmatch(w, q, Λ) = true, if either of the following conditions hold:
@@ -61,14 +76,13 @@ fn dmatch(string: &str, starting_state: &DFAState, sequence_of_terminals: Vec<&s
 	    continue
 	}
 	// Compile the dfa for the next terminal.
-	let new_dfa = dense::Builder::new()
-	    .configure(dense::DFA::config().start_kind(dfa::StartKind::Anchored))
-	    .build(&sequence_of_terminals[0]).unwrap();
-	let new_starting_state = new_dfa.start_state(&start::Config::new().anchored(Anchored::Yes)).unwrap();
+	let new_dfa = DFAState::new(&sequence_of_terminals[0]);
 	// Call recursively.
-	return dmatch(&string[i..],
-		      &DFAState{dfa: new_dfa.into(), state_id: new_starting_state}, 
-		      sequence_of_terminals[1..].to_vec());
+	return dmatch(
+	    &string[i..],
+	    &new_dfa,
+	    sequence_of_terminals[1..].to_vec(),
+	);
 
     }
 
@@ -148,10 +162,7 @@ mod tests {
     #[test]
     fn test_dmatch_case1() {
 	let candidate_string = "abba";
-	let dfa = dense::DFA::new(r"[ab]*cd").unwrap();
-	let config = start::Config::new().anchored(Anchored::Yes);
-	let state_id = dfa.start_state(&config).unwrap();
-	let starting_state = DFAState{dfa: dfa.into(), state_id};
+	let starting_state = DFAState::new(r"[ab]*cd");
 	let accept_sequence: Vec<&str> = Vec::new();
 	assert!(dmatch(candidate_string, &starting_state, accept_sequence));
     }
@@ -159,10 +170,7 @@ mod tests {
     #[test]
     fn test_dmatch_case2() {
 	let candidate_string = "abbacdd";
-	let dfa = dense::DFA::new(r"[ab]*").unwrap();
-	let config = start::Config::new().anchored(Anchored::Yes);
-	let state_id = dfa.start_state(&config).unwrap();
-	let starting_state = DFAState{dfa: dfa.into(), state_id};
+	let starting_state = DFAState::new(r"[ab]*");
 	let accept_sequence: Vec<&str> = Vec::new();
 	assert!(dmatch(candidate_string, &starting_state, accept_sequence));
     }
@@ -171,10 +179,7 @@ mod tests {
     fn test_dmatch_case3() {
 	// Illustrative example from page 12 of the paper.
 	let candidate_string = "is_prime():";
-	let dfa = dense::DFA::new(r"[[a-z][A-Z]_]*").unwrap();
-	let config = start::Config::new().anchored(Anchored::Yes);
-	let state_id = dfa.start_state(&config).unwrap();
-	let starting_state = DFAState{dfa: dfa.into(), state_id};
+	let starting_state = DFAState::new(r"[a-zA-Z_]*");
 	let accept_sequence = [r"\(", r"\)"].to_vec();
 	assert!(dmatch(candidate_string, &starting_state, accept_sequence));
     }
