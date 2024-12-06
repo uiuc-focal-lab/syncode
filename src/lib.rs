@@ -56,7 +56,7 @@ fn dmatch(string: &str, starting_state: &DFAState, sequence_of_terminals: Vec<&s
 
     // Case 2: The DFA consumes a prefix of the string, leaves a non-zero
     // suffix, and there is no sequence of terminals to follow.
-    let mut state = starting_state.state_id.clone();
+    state = starting_state.state_id.clone();
     for (i, &b) in string.as_bytes().iter().enumerate() {
 	state = dfa.next_state(state, b);
 	if dfa.is_match_state(state) & sequence_of_terminals.is_empty() & (i < string.len()) {
@@ -66,7 +66,7 @@ fn dmatch(string: &str, starting_state: &DFAState, sequence_of_terminals: Vec<&s
 
     // Case 3: A prefix of the string is successfully consumed by the DFA, and
     // dmatch is true starting at the next member of sequence_of_terminals.
-    let mut state = starting_state.state_id.clone();
+    state = starting_state.state_id.clone();
     for (i, &b) in string.as_bytes().iter().enumerate() {
 	state = dfa.next_state(state, b);
 	// Look for the longest possible match --- just because this is a
