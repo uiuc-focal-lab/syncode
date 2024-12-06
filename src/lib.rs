@@ -158,6 +158,8 @@ fn dfa_mask(state: &DFAState, terminal_sequence: Vec<&str>, vocabulary: Vec<&str
 
 #[cfg(test)]
 mod tests {
+    use core::{assert_eq};
+
     use super::*;
 
     #[test]
@@ -193,5 +195,17 @@ mod tests {
 	assert!(!dmatch(candidate_string, &starting_state, accept_sequence));
     }
 
+    #[test]
+    fn test_dfa_mask_name() {
+	// Illustrative example from page 13 of the paper.
+	let mut dfa = DFAState::new(r"[a-zA-Z_]*");
+	dfa.state_id  = dfa.dfa.next_state(dfa.state_id, "i".as_bytes()[0]);
+	dfa.state_id  = dfa.dfa.next_state(dfa.state_id, "s".as_bytes()[0]);
+	let vocabulary = vec!["_prime():", ":#", "'''", " hi", "_indeed"];
+	let terminal_sequence = vec![r"\(", r"\)"];
+	assert_eq!(
+	    dfa_mask(&dfa, terminal_sequence, vocabulary),
+	    vec![true, false, false, false, true],
+	);
     }
 }
