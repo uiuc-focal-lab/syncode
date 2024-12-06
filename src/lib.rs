@@ -30,6 +30,13 @@ impl DFAState {
 	let state_id = dfa.start_state(&config).unwrap();
 	DFAState{dfa: dfa.into(), state_id}
     }
+
+    /// Convenience function to set the state how we want it.
+    fn advance(&mut self, input: &str) {
+	for &b in input.as_bytes().iter() {
+	    self.state_id = self.dfa.next_state(self.state_id, b);
+	}
+    }
 }
 
 
@@ -200,8 +207,7 @@ mod tests {
     fn test_dfa_mask_name() {
 	// Illustrative example from page 13 of the paper.
 	let mut dfa = DFAState::new(r"[a-zA-Z_]*");
-	dfa.state_id  = dfa.dfa.next_state(dfa.state_id, "i".as_bytes()[0]);
-	dfa.state_id  = dfa.dfa.next_state(dfa.state_id, "s".as_bytes()[0]);
+	dfa.advance("is");
 	let vocabulary = vec!["_prime():", ":#", "'''", " hi", "_indeed"];
 	let terminal_sequence = vec![r"\(", r"\)"];
 	assert_eq!(
