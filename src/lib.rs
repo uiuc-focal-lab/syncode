@@ -208,11 +208,11 @@ mod tests {
 	// Illustrative example from page 13 of the paper.
 	let mut dfa = DFAState::new(r"[a-zA-Z_]*");
 	dfa.advance("is");
-	let vocabulary = vec!["_prime():", ":#", "'''", " hi", "_indeed"];
+	let vocabulary = vec!["_prime():", ":#", "'''", " hi", "indeed", "n0pe"];
 	let terminal_sequence = vec![r"\(", r"\)"];
 	assert_eq!(
 	    dfa_mask(&dfa, terminal_sequence, vocabulary),
-	    vec![true, false, false, false, true],
+	    vec![true, false, false, false, true, false],
 	);
     }
 }
