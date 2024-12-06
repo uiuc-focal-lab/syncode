@@ -34,8 +34,6 @@ fn dmatch(string: &str, starting_state: &DFAState, sequence_of_terminals: Vec<&s
 	state = dfa.next_state(state, b);
     }
 
-    state = dfa.next_eoi_state(state); // Special end of input transition.
-
     // Neither dead nor quit means we could match in the future and so are live.
     if !(dfa.is_dead_state(state) | dfa.is_quit_state(state)) {
 	return true;
