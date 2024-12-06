@@ -121,6 +121,20 @@ fn all_dfa_states(terminals: Vec<&str>) -> Vec<DFAState> {
     res
 }
 
+/// Compute the mask for a terminal and 
+/// 
+/// For an integer α, the DFA mask store Mα is a function defined as Mα : QΩ ×
+/// Γα → {0, 1}|V |, where QΩ = ⋃ τ ∈Γ Qτ represents the set of all DFA states
+/// and Γα is a set of α-length terminal sequences. Then Mα(q, Λ) = m is a
+/// binary mask such that t ∈ set(m) if dmatch(t, q, Λ)
+fn dfa_mask(state: &DFAState, terminal_sequence: Vec<&str>, vocabulary: Vec<&str>) -> Vec<bool> {
+    let mut mask: Vec<bool> = Vec::new();
+    for token in vocabulary {
+	mask.push(dmatch(token, state, terminal_sequence.clone()));
+    }
+    mask
+}
+
 
 // #[pymodule]
 // fn rust_syncode(_py: Python, m: &PyModule) -> PyResult<()> {
