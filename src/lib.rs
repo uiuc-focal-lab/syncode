@@ -183,5 +183,14 @@ mod tests {
 	let accept_sequence = [r"\(", r"\)"].to_vec();
 	assert!(dmatch(candidate_string, &starting_state, accept_sequence));
     }
+
+    #[test]
+    fn test_dmatch_fails() {
+	let candidate_string = "'not an id";
+	let starting_state = DFAState::new(r"[a-zA-Z_]*");
+	let accept_sequence = [r"\(", r"\)"].to_vec();
+	assert!(!dmatch(candidate_string, &starting_state, accept_sequence));
+    }
+
     }
 }
