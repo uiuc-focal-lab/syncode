@@ -25,7 +25,7 @@ struct DFAState {
 /// 2. ∃w1 ∈ Σ∗, w2 ∈ Σ+ such that w1.w2 = w, δ∗(w1, q) ∈ F and Λ = {} or
 /// 3. ∃w1 ∈ Σ∗, w2 ∈ Σ∗ such that w1.w2 = w, δ∗(w1, q) ∈ F, and dmatch(w2, qτf +10 , {τf +2 . . . τf +d}) = true where qτf +10 is the start state corresponding to the DFA for τf +1.
 /// 
-fn dmatch(string: &str, starting_state: DFAState, sequence_of_terminals: Vec<&str>) -> bool {
+fn dmatch(string: &str, starting_state: &DFAState, sequence_of_terminals: Vec<&str>) -> bool {
     let dfa = starting_state.dfa.clone(); // Avoid taking ownership: just copy it from the heap to the stack.
 
     // Case 1: the DFA, starting at this state, consumes the entire input and is still alive.
@@ -69,7 +69,7 @@ fn dmatch(string: &str, starting_state: DFAState, sequence_of_terminals: Vec<&st
 	let new_starting_state = new_dfa.start_state(&start::Config::new().anchored(Anchored::Yes)).unwrap();
 	// Call recursively.
 	return dmatch(&string[i..],
-		      DFAState{dfa: new_dfa.into(), state_id: new_starting_state}, 
+		      &DFAState{dfa: new_dfa.into(), state_id: new_starting_state}, 
 		      sequence_of_terminals[1..].to_vec());
 
     }
@@ -142,6 +142,7 @@ mod tests {
 	let state_id = dfa.start_state(&config).unwrap();
 	let starting_state = DFAState{dfa: dfa.into(), state_id};
 	let accept_sequence = [r"\(", r"\)"].to_vec();
-	assert!(dmatch(candidate_string, starting_state, accept_sequence));
+	assert!(dmatch(candidate_string, &starting_state, accept_sequence));
+    }
     }
 }
