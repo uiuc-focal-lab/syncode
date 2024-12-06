@@ -14,7 +14,7 @@ use regex_automata::{dfa::{self, dense, Automaton}, util::{primitives::StateID, 
 struct DFAState {
     /// Pointer to the DFA on the heap.
     dfa: Box<dense::DFA<Vec<u32>>>,
-    /// The state of this DFA.
+    /// The state of this DFA. Defaults to the starting state of the DFA.
     state_id: StateID
 }
 
