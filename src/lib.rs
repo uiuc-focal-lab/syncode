@@ -34,12 +34,12 @@ impl DFAState {
 
 
 /// Compute whether the string could match a sequence of terminals starting at a certain state in the first DFA.
-/// 
+///
 /// Given a DFA D(Q, Σ, δ, q0, F ), a string w ∈ Σ∗, a DFA state q ∈ Q and any sequence of terminals Λ = {τf +1, τf +2 . . . τf +d}, dmatch(w, q, Λ) = true, if either of the following conditions hold:
 /// 1. δ∗(w, q) ∈ live(Q) or
 /// 2. ∃w1 ∈ Σ∗, w2 ∈ Σ+ such that w1.w2 = w, δ∗(w1, q) ∈ F and Λ = {} or
 /// 3. ∃w1 ∈ Σ∗, w2 ∈ Σ∗ such that w1.w2 = w, δ∗(w1, q) ∈ F, and dmatch(w2, qτf +10 , {τf +2 . . . τf +d}) = true where qτf +10 is the start state corresponding to the DFA for τf +1.
-/// 
+///
 fn dmatch(string: &str, starting_state: &DFAState, sequence_of_terminals: Vec<&str>) -> bool {
     let dfa = starting_state.dfa.clone(); // Avoid taking ownership: just copy it from the heap to the stack.
 
@@ -108,7 +108,7 @@ fn states(dfa: &dense::DFA<Vec<u32>>) -> Vec<StateID> {
 	let v = queue.pop_front().unwrap();
 	if dfa.is_dead_state(v) {
 	    continue;
-	} 
+	}
 	for letter in dfa.byte_classes().representatives(0..=255) {
 	    let next = dfa.next_state(start, letter.as_u8().unwrap());
 	    if !explored.contains(&next) {
