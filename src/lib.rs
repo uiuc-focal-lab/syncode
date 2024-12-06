@@ -146,9 +146,31 @@ fn dfa_mask(state: &DFAState, terminal_sequence: Vec<&str>, vocabulary: Vec<&str
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[test]
-    fn test_true_dmatch() {
+    fn test_dmatch_case1() {
+	let candidate_string = "abba";
+	let dfa = dense::DFA::new(r"[ab]*cd").unwrap();
+	let config = start::Config::new().anchored(Anchored::Yes);
+	let state_id = dfa.start_state(&config).unwrap();
+	let starting_state = DFAState{dfa: dfa.into(), state_id};
+	let accept_sequence: Vec<&str> = Vec::new();
+	assert!(dmatch(candidate_string, &starting_state, accept_sequence));
+    }
+
+    #[test]
+    fn test_dmatch_case2() {
+	let candidate_string = "abbacdd";
+	let dfa = dense::DFA::new(r"[ab]*").unwrap();
+	let config = start::Config::new().anchored(Anchored::Yes);
+	let state_id = dfa.start_state(&config).unwrap();
+	let starting_state = DFAState{dfa: dfa.into(), state_id};
+	let accept_sequence: Vec<&str> = Vec::new();
+	assert!(dmatch(candidate_string, &starting_state, accept_sequence));
+    }
+
+    #[test]
+    fn test_dmatch_case3() {
 	// Illustrative example from page 12 of the paper.
 	let candidate_string = "is_prime():";
 	let dfa = dense::DFA::new(r"[[a-z][A-Z]_]*").unwrap();
