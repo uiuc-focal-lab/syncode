@@ -134,8 +134,9 @@ fn all_dfa_states(terminals: Vec<&str>) -> Vec<DFAState> {
     res
 }
 
-/// Compute the mask for a terminal and 
-/// 
+
+/// Compute the mask for a given DFA state, terminal sequence, and vocabulary.
+///
 /// For an integer α, the DFA mask store Mα is a function defined as Mα : QΩ ×
 /// Γα → {0, 1}|V |, where QΩ = ⋃ τ ∈Γ Qτ represents the set of all DFA states
 /// and Γα is a set of α-length terminal sequences. Then Mα(q, Λ) = m is a
