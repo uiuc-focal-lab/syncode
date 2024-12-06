@@ -75,15 +75,16 @@ fn dmatch(string: &str, starting_state: &DFAState, sequence_of_terminals: Vec<&s
 	    // Consume input so long as we are matching it.
 	    continue
 	}
-	// Compile the dfa for the next terminal.
-	let new_dfa = DFAState::new(&sequence_of_terminals[0]);
-	// Call recursively.
-	return dmatch(
-	    &string[i..],
-	    &new_dfa,
-	    sequence_of_terminals[1..].to_vec(),
-	);
-
+	// Compile the dfa for the next terminal, if there are terminals left.
+	if !sequence_of_terminals.is_empty() {
+	    let new_dfa = DFAState::new(&sequence_of_terminals[0]);
+	    // Call recursively.
+	    return dmatch(
+		&string[i..],
+		&new_dfa,
+		sequence_of_terminals[1..].to_vec(),
+	    );
+	}
     }
 
     // None of the previous cases succeeded, so dmatch is false.
