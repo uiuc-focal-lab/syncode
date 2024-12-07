@@ -71,7 +71,7 @@ impl Hash for DFAState {
 /// 2. ∃w1 ∈ Σ∗, w2 ∈ Σ+ such that w1.w2 = w, δ∗(w1, q) ∈ F and Λ = {} or
 /// 3. ∃w1 ∈ Σ∗, w2 ∈ Σ∗ such that w1.w2 = w, δ∗(w1, q) ∈ F, and dmatch(w2, qτf +10 , {τf +2 . . . τf +d}) = true where qτf +10 is the start state corresponding to the DFA for τf +1.
 ///
-fn dmatch(string: String, starting_state: &DFAState, sequence_of_terminals: Vec<String>) -> bool {
+fn dmatch(string: &str, starting_state: &DFAState, sequence_of_terminals: Vec<&str>) -> bool {
     let dfa = &starting_state.dfa; // Avoid taking ownership: just copy it from the heap to the stack.
 
     // Case 1: the DFA, starting at this state, consumes the entire input and is still alive.
@@ -110,11 +110,7 @@ fn dmatch(string: String, starting_state: &DFAState, sequence_of_terminals: Vec<
         if !sequence_of_terminals.is_empty() {
             let new_dfa = DFAState::new(&sequence_of_terminals[0]);
             // Call recursively.
-            return dmatch(
-                string[i..].to_string(),
-                &new_dfa,
-                sequence_of_terminals[1..].to_vec(),
-            );
+            return dmatch(&string[i..], &new_dfa, sequence_of_terminals[1..].to_vec());
         }
     }
 
@@ -164,14 +160,10 @@ fn all_dfa_states(terminals: &Vec<String>) -> Vec<DFAState> {
 /// Mα(q, Λ) = m is a binary mask such that t ∈ set(m) if dmatch(t, q, Λ),
 /// where t is a string (token in the LLM's vocabulary), q is a DFA state, and
 /// Λ is an accept sequence.
-fn dfa_mask(
-    state: &DFAState,
-    terminal_sequence: &Vec<String>,
-    vocabulary: &Vec<String>,
-) -> Vec<bool> {
+fn dfa_mask(state: &DFAState, terminal_sequence: &Vec<&str>, vocabulary: &Vec<&str>) -> Vec<bool> {
     let mut mask: Vec<bool> = Vec::new();
     for token in vocabulary {
-        mask.push(dmatch(token.to_string(), state, terminal_sequence.clone()));
+        mask.push(dmatch(token, state, terminal_sequence.clone()));
     }
     mask
 }
@@ -218,34 +210,34 @@ mod tests {
 
     #[test]
     fn test_dmatch_case1() {
-        let candidate_string = String::from("abba");
+        let candidate_string = "abba";
         let starting_state = DFAState::new(r"[ab]*cd");
-        let accept_sequence: Vec<String> = Vec::new();
+        let accept_sequence: Vec<&str> = Vec::new();
         assert!(dmatch(candidate_string, &starting_state, accept_sequence));
     }
 
     #[test]
     fn test_dmatch_case2() {
-        let candidate_string = String::from("abbacdd");
+        let candidate_string = "abbacdd";
         let starting_state = DFAState::new(r"[ab]*");
-        let accept_sequence: Vec<String> = Vec::new();
+        let accept_sequence: Vec<&str> = Vec::new();
         assert!(dmatch(candidate_string, &starting_state, accept_sequence));
     }
 
     #[test]
     fn test_dmatch_case3() {
         // Illustrative example from page 12 of the paper.
-        let candidate_string = String::from("is_prime():");
+        let candidate_string = "is_prime():";
         let starting_state = DFAState::new(r"[a-zA-Z_]*");
-        let accept_sequence = vec![String::from(r"\("), String::from(r"\)")];
+        let accept_sequence = vec![r"\(", r"\)"];
         assert!(dmatch(candidate_string, &starting_state, accept_sequence));
     }
 
     #[test]
     fn test_dmatch_fails() {
-        let candidate_string = String::from("'not an id");
+        let candidate_string = "'not an id";
         let starting_state = DFAState::new(r"[a-zA-Z_]*");
-        let accept_sequence = vec![String::from(r"\("), String::from(r"\)")];
+        let accept_sequence = vec![r"\(", r"\)"];
         assert!(!dmatch(candidate_string, &starting_state, accept_sequence));
     }
 
@@ -254,15 +246,8 @@ mod tests {
         // Illustrative example from page 13 of the paper.
         let mut dfa = DFAState::new(r"[a-zA-Z_]*");
         dfa.advance("is");
-        let vocabulary = vec![
-            String::from("_prime():"),
-            String::from(":#"),
-            String::from("'''"),
-            String::from(" hi"),
-            String::from("indeed"),
-            String::from("n0pe"),
-        ];
-        let terminal_sequence = vec![String::from(r"\("), String::from(r"\)")];
+        let vocabulary = vec!["_prime():", ":#", "'''", " hi", "indeed", "n0pe"];
+        let terminal_sequence = vec![r"\(", r"\)"];
         assert_eq!(
             dfa_mask(&dfa, &terminal_sequence, &vocabulary),
             vec![true, false, false, false, true, false],
