@@ -1,44 +1,68 @@
 use core::iter::Iterator;
-use std::vec::Vec;
+use itertools::Itertools;
+use regex_automata::{
+    dfa::{dense, Automaton},
+    util::{primitives::StateID, start},
+    Anchored,
+};
 use std::collections::VecDeque;
-use regex_automata::{dfa::{self, dense, Automaton}, util::{primitives::StateID, start}, Anchored};
+use std::hash::{Hash, Hasher};
+use std::{collections::HashMap, vec::Vec};
 //use pyo3::prelude::*;
-
 
 /// We represent a terminal as a str representing the regex matching that
 /// terminal. This choice is temporary to facilitate inter-language calling.
 /// An accept sequence is then a list of str, each a regex.
 
-
-/// A DFA along with its state.
+/// A DFA along with its state. Generic to facilitate experiementation with
+/// different implementations of DFA.
 struct DFAState {
+    /// The regex representing this dfa.
+    regex: Box<str>,
     /// Pointer to the DFA on the heap.
     dfa: Box<dense::DFA<Vec<u32>>>,
     /// The state of this DFA. Defaults to the starting state of the DFA.
-    state_id: StateID
+    state_id: StateID,
 }
 
-
+/// A dense implementation of the DFAState abstraction.
 impl DFAState {
     /// Encapsulate the kluge necessary to set up the DFA correctly for Syncode's use case.
-    fn new(
-	regex: &str
-    ) -> DFAState {
-	let dfa = dense::DFA::new(regex).unwrap();
-	// We always want the DFA to match starting from the beginning of the string.
-	let config = start::Config::new().anchored(Anchored::Yes);
-	let state_id = dfa.start_state(&config).unwrap();
-	DFAState{dfa: dfa.into(), state_id}
+    fn new(regex: &str) -> DFAState {
+        let dfa = dense::DFA::new(regex).unwrap();
+        // We always want the DFA to match starting from the beginning of the string.
+        let config = start::Config::new().anchored(Anchored::Yes);
+        let state_id = dfa.start_state(&config).unwrap();
+        DFAState {
+            regex: regex.into(),
+            dfa: dfa.into(),
+            state_id,
+        }
     }
 
     /// Convenience function to set the state how we want it.
     fn advance(&mut self, input: &str) {
-	for &b in input.as_bytes().iter() {
-	    self.state_id = self.dfa.next_state(self.state_id, b);
-	}
+        for &b in input.as_bytes().iter() {
+            self.state_id = self.dfa.next_state(self.state_id, b);
+        }
     }
 }
 
+impl PartialEq for DFAState {
+    //! Avoid comparing the actual DFAs: the state and regex are enough to establish equality.
+    fn eq(&self, other: &Self) -> bool {
+        (self.regex == other.regex) & (self.state_id == other.state_id)
+    }
+}
+
+impl Eq for DFAState {}
+
+impl Hash for DFAState {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.regex.hash(state);
+        self.state_id.hash(state);
+    }
+}
 
 /// Compute whether the string could match a sequence of terminals starting at a certain state in the first DFA.
 ///
@@ -47,57 +71,56 @@ impl DFAState {
 /// 2. ∃w1 ∈ Σ∗, w2 ∈ Σ+ such that w1.w2 = w, δ∗(w1, q) ∈ F and Λ = {} or
 /// 3. ∃w1 ∈ Σ∗, w2 ∈ Σ∗ such that w1.w2 = w, δ∗(w1, q) ∈ F, and dmatch(w2, qτf +10 , {τf +2 . . . τf +d}) = true where qτf +10 is the start state corresponding to the DFA for τf +1.
 ///
-fn dmatch(string: &str, starting_state: &DFAState, sequence_of_terminals: Vec<&str>) -> bool {
-    let dfa = starting_state.dfa.clone(); // Avoid taking ownership: just copy it from the heap to the stack.
+fn dmatch(string: String, starting_state: &DFAState, sequence_of_terminals: Vec<String>) -> bool {
+    let dfa = &starting_state.dfa; // Avoid taking ownership: just copy it from the heap to the stack.
 
     // Case 1: the DFA, starting at this state, consumes the entire input and is still alive.
     let mut state = starting_state.state_id.clone();
     for &b in string.as_bytes().iter() {
-	state = dfa.next_state(state, b);
+        state = dfa.next_state(state, b);
     }
 
     // Neither dead nor quit means we could match in the future and so are live.
     if !(dfa.is_dead_state(state) | dfa.is_quit_state(state)) {
-	return true;
+        return true;
     }
 
     // Case 2: The DFA consumes a prefix of the string, leaves a non-zero
     // suffix, and there is no sequence of terminals to follow.
     state = starting_state.state_id.clone();
     for (i, &b) in string.as_bytes().iter().enumerate() {
-	state = dfa.next_state(state, b);
-	if dfa.is_match_state(state) & sequence_of_terminals.is_empty() & (i < string.len()) {
-	    return true;
-	}
+        state = dfa.next_state(state, b);
+        if dfa.is_match_state(state) & sequence_of_terminals.is_empty() & (i < string.len()) {
+            return true;
+        }
     }
 
     // Case 3: A prefix of the string is successfully consumed by the DFA, and
     // dmatch is true starting at the next member of sequence_of_terminals.
     state = starting_state.state_id.clone();
     for (i, &b) in string.as_bytes().iter().enumerate() {
-	state = dfa.next_state(state, b);
-	// Look for the longest possible match --- just because this is a
-	// matching state doesn't mean we should recur quite yet.
-	if dfa.is_match_state(state) {
-	    // Consume input so long as we are matching it.
-	    continue
-	}
-	// Compile the dfa for the next terminal, if there are terminals left.
-	if !sequence_of_terminals.is_empty() {
-	    let new_dfa = DFAState::new(&sequence_of_terminals[0]);
-	    // Call recursively.
-	    return dmatch(
-		&string[i..],
-		&new_dfa,
-		sequence_of_terminals[1..].to_vec(),
-	    );
-	}
+        state = dfa.next_state(state, b);
+        // Look for the longest possible match --- just because this is a
+        // matching state doesn't mean we should recur quite yet.
+        if dfa.is_match_state(state) {
+            // Consume input so long as we are matching it.
+            continue;
+        }
+        // Compile the dfa for the next terminal, if there are terminals left.
+        if !sequence_of_terminals.is_empty() {
+            let new_dfa = DFAState::new(&sequence_of_terminals[0]);
+            // Call recursively.
+            return dmatch(
+                string[i..].to_string(),
+                &new_dfa,
+                sequence_of_terminals[1..].to_vec(),
+            );
+        }
     }
 
     // None of the previous cases succeeded, so dmatch is false.
     false
 }
-
 
 /// Return all states of a dfa by breadth-first search. There exists a private
 /// method that returns an iterator over all states. The suggested alternative
@@ -112,50 +135,73 @@ fn states(dfa: &dense::DFA<Vec<u32>>) -> Vec<StateID> {
     explored.push(start);
     queue.push_back(start);
     while !queue.is_empty() {
-	let v = queue.pop_front().unwrap();
-	if dfa.is_dead_state(v) {
-	    continue;
-	}
-	for letter in dfa.byte_classes().representatives(0..=255) {
-	    let next = dfa.next_state(start, letter.as_u8().unwrap());
-	    if !explored.contains(&next) {
-		explored.push(next);
-	    }
-	    queue.push_back(next);
-	}
+        let v = queue.pop_front().unwrap();
+        if dfa.is_dead_state(v) {
+            continue;
+        }
+        for letter in dfa.byte_classes().representatives(0..=255) {
+            let next = dfa.next_state(start, letter.as_u8().unwrap());
+            if !explored.contains(&next) {
+                explored.push(next);
+                queue.push_back(next);
+            }
+        }
     }
     explored
 }
 
-
 /// Compute the union of all states of a list of regexes.
-fn all_dfa_states(terminals: Vec<&str>) -> Vec<DFAState> {
-    let mut res: Vec<DFAState> = Vec::new();
-    for terminal in terminals {
-	let dfa = dense::DFA::new(terminal).unwrap();
-	let states = states(&dfa);
-	for state in states {
-	    res.push(DFAState{dfa: dfa.clone().into(), state_id: state});
-	}
+fn all_dfa_states(terminals: &Vec<String>) -> Vec<DFAState> {
+    let mut res = Vec::new();
+    for terminal in terminals.into_iter() {
+        res.push(DFAState::new(&terminal));
     }
     res
 }
 
-
 /// Compute the mask for a given DFA state, terminal sequence, and vocabulary.
 ///
-/// For an integer α, the DFA mask store Mα is a function defined as Mα : QΩ ×
-/// Γα → {0, 1}|V |, where QΩ = ⋃ τ ∈Γ Qτ represents the set of all DFA states
-/// and Γα is a set of α-length terminal sequences. Then Mα(q, Λ) = m is a
-/// binary mask such that t ∈ set(m) if dmatch(t, q, Λ)
-fn dfa_mask(state: &DFAState, terminal_sequence: Vec<&str>, vocabulary: Vec<&str>) -> Vec<bool> {
+/// Mα(q, Λ) = m is a binary mask such that t ∈ set(m) if dmatch(t, q, Λ),
+/// where t is a string (token in the LLM's vocabulary), q is a DFA state, and
+/// Λ is an accept sequence.
+fn dfa_mask(
+    state: &DFAState,
+    terminal_sequence: &Vec<String>,
+    vocabulary: &Vec<String>,
+) -> Vec<bool> {
     let mut mask: Vec<bool> = Vec::new();
     for token in vocabulary {
-	mask.push(dmatch(token, state, terminal_sequence.clone()));
+        mask.push(dmatch(token.to_string(), state, terminal_sequence.clone()));
     }
     mask
 }
 
+/// Compute the grammar mask store.
+///
+/// The mask store is constructed offline by enumerating all DFA states QΩ,
+/// considering all possible terminals in Γ, and all tokens in V. The DFA mask
+/// store depends on the set of terminals Γ and the model’s vocabulary V. As a
+/// result, a unique mask store is created for each grammar and tokenizer
+/// combination, and to enhance efficiency, we cache and reuse this table for
+/// future inferences.
+// fn dfa_mask_store<'a, T: Automaton>(
+//     lexical_terminals: Vec<String>,
+//     model_vocabulary: Vec<String>,
+//     length_of_terminal_sequences: usize,
+// ) -> HashMap<(DFAState, Vec<String>), Vec<bool>> {
+//     let all_states = all_dfa_states(&lexical_terminals);
+//     let mut store: HashMap<(DFAState, Vec<String>), Vec<bool>> = HashMap::new();
+//     // Temporary ugly hack to get all terminal sequences of length 2.
+//     for first_terminal in &lexical_terminals[..] {
+// 	for second_terminal in &lexical_terminals[..] {
+// 	    for state in all_states.iter() {
+// 		let terminal_sequence = vec![first_terminal.to_string(), second_terminal.to_string()];
+// 		store.insert((state, terminal_sequence), dfa_mask(&state, &terminal_sequence, &model_vocabulary));
+// 	    }
+// 	}
+//     }
+//     store
+// }
 
 // #[pymodule]
 // fn rust_syncode(_py: Python, m: &PyModule) -> PyResult<()> {
@@ -166,53 +212,60 @@ fn dfa_mask(state: &DFAState, terminal_sequence: Vec<&str>, vocabulary: Vec<&str
 
 #[cfg(test)]
 mod tests {
-    use core::{assert_eq};
+    use core::assert_eq;
 
     use super::*;
 
     #[test]
     fn test_dmatch_case1() {
-	let candidate_string = "abba";
-	let starting_state = DFAState::new(r"[ab]*cd");
-	let accept_sequence: Vec<&str> = Vec::new();
-	assert!(dmatch(candidate_string, &starting_state, accept_sequence));
+        let candidate_string = String::from("abba");
+        let starting_state = DFAState::new(r"[ab]*cd");
+        let accept_sequence: Vec<String> = Vec::new();
+        assert!(dmatch(candidate_string, &starting_state, accept_sequence));
     }
 
     #[test]
     fn test_dmatch_case2() {
-	let candidate_string = "abbacdd";
-	let starting_state = DFAState::new(r"[ab]*");
-	let accept_sequence: Vec<&str> = Vec::new();
-	assert!(dmatch(candidate_string, &starting_state, accept_sequence));
+        let candidate_string = String::from("abbacdd");
+        let starting_state = DFAState::new(r"[ab]*");
+        let accept_sequence: Vec<String> = Vec::new();
+        assert!(dmatch(candidate_string, &starting_state, accept_sequence));
     }
 
     #[test]
     fn test_dmatch_case3() {
-	// Illustrative example from page 12 of the paper.
-	let candidate_string = "is_prime():";
-	let starting_state = DFAState::new(r"[a-zA-Z_]*");
-	let accept_sequence = [r"\(", r"\)"].to_vec();
-	assert!(dmatch(candidate_string, &starting_state, accept_sequence));
+        // Illustrative example from page 12 of the paper.
+        let candidate_string = String::from("is_prime():");
+        let starting_state = DFAState::new(r"[a-zA-Z_]*");
+        let accept_sequence = vec![String::from(r"\("), String::from(r"\)")];
+        assert!(dmatch(candidate_string, &starting_state, accept_sequence));
     }
 
     #[test]
     fn test_dmatch_fails() {
-	let candidate_string = "'not an id";
-	let starting_state = DFAState::new(r"[a-zA-Z_]*");
-	let accept_sequence = [r"\(", r"\)"].to_vec();
-	assert!(!dmatch(candidate_string, &starting_state, accept_sequence));
+        let candidate_string = String::from("'not an id");
+        let starting_state = DFAState::new(r"[a-zA-Z_]*");
+        let accept_sequence = vec![String::from(r"\("), String::from(r"\)")];
+        assert!(!dmatch(candidate_string, &starting_state, accept_sequence));
     }
 
     #[test]
     fn test_dfa_mask_name() {
-	// Illustrative example from page 13 of the paper.
-	let mut dfa = DFAState::new(r"[a-zA-Z_]*");
-	dfa.advance("is");
-	let vocabulary = vec!["_prime():", ":#", "'''", " hi", "indeed", "n0pe"];
-	let terminal_sequence = vec![r"\(", r"\)"];
-	assert_eq!(
-	    dfa_mask(&dfa, terminal_sequence, vocabulary),
-	    vec![true, false, false, false, true, false],
-	);
+        // Illustrative example from page 13 of the paper.
+        let mut dfa = DFAState::new(r"[a-zA-Z_]*");
+        dfa.advance("is");
+        let vocabulary = vec![
+            String::from("_prime():"),
+            String::from(":#"),
+            String::from("'''"),
+            String::from(" hi"),
+            String::from("indeed"),
+            String::from("n0pe"),
+        ];
+        let terminal_sequence = vec![String::from(r"\("), String::from(r"\)")];
+        assert_eq!(
+            dfa_mask(&dfa, &terminal_sequence, &vocabulary),
+            vec![true, false, false, false, true, false],
+        );
     }
 }
