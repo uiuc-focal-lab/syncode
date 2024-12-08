@@ -55,7 +55,7 @@ class TestTokenizer:
         return {v: i for i, v in enumerate(self.vocab)}
 
 class TestHuggingFaceModel(unittest.TestCase):
-    def test_generate_batch_completion_grammar(self):
+    def test_generate_grammar_constrained_completion(self):
         torch.manual_seed(0)
         model = TestModel()
         tokenizer = TestTokenizer()
@@ -65,7 +65,7 @@ class TestHuggingFaceModel(unittest.TestCase):
         output = lm.generate_grammar_constrained_completion(prompt, 1)
         self.assertEqual(len(output[0]), 15, "The output length does not match the expected value.")
     
-    def test_generate_batch_completion_grammar2(self):
+    def test_generate_grammar_constrained_completion2(self):
         torch.manual_seed(0)
         model = TestModel()
         tokenizer = TestTokenizer()

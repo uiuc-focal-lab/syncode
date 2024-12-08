@@ -70,7 +70,7 @@ class JSONEval:
 
         prompt = syncode.model.tokenizer.apply_chat_template(problem["prompt"], tokenize = False)
 
-        batch_completions = syncode.model.generate_batch_completion_grammar(prompt, num_samples_per_task)
+        batch_completions = syncode.model.generate_grammar_constrained_completion(prompt, num_samples_per_task)
         for completion_id, completion in enumerate(batch_completions):
             result = dict(
                     task_id = task_id, 
