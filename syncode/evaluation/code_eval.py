@@ -68,7 +68,7 @@ class CodeEval:
         else:
             prompt = problems[task_id]["prompt"]
 
-        batch_completions = syncode.model.generate_batch_completion_grammar(prompt, num_samples_per_task, stop_words=stop_words, return_token_ids=True)
+        batch_completions = syncode.model.generate_grammar_constrained_completion(prompt, num_samples_per_task, stop_words=stop_words, return_token_ids=True)
         batch_size = len(batch_completions)
         all_completions = []
 

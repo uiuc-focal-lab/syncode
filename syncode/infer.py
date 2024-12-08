@@ -5,7 +5,7 @@ import syncode.common as common
 import torch
 from syncode.language_model import HuggingFaceModel
 from syncode.grammar_decoder import SyncodeLogitsProcessor
-from typing import Optional, Literal
+from typing import Optional, Literal, Union
 from syncode.parsers.grammars import Grammar
 from syncode.dataset import Dataset
 from syncode.evaluation.code_eval import CodeEval
@@ -15,9 +15,9 @@ from syncode.evaluation.json_eval import JSONEval
 from syncode.evaluation.fol_eval import FOLEval
 
 
-def compile_and_run(model, mode="grammar_strict", quantize=True, device="cuda", grammar=None, dataset="input", num_few_shot=0, chat_mode=False, dev_mode=False, log_level=1, new_mask_store=False, parser="lalr", num_tasks=None, task_id=None, seed=None, opp=True, debug=False, **kwargs):
+def compile_and_run(model, mode="grammar_strict", quantize=True, device="cuda", grammar=None, dataset="input", num_few_shot=0, dev_mode=False, log_level=1, new_mask_store=False, parser="lalr", num_tasks=None, task_id=None, seed=None, opp=True, debug=False, **kwargs):
 
-    syncode = Syncode(model, mode=mode, quantize=quantize, device=device, grammar=grammar, chat_mode=chat_mode, dev_mode=dev_mode, log_level=log_level, new_mask_store=new_mask_store, parser=parser, seed=seed, opp=opp, **kwargs)
+    syncode = Syncode(model, mode=mode, quantize=quantize, device=device, grammar=grammar, dev_mode=dev_mode, log_level=log_level, new_mask_store=new_mask_store, parser=parser, seed=seed, opp=opp, **kwargs)
     
     if dataset == "input":
         syncode.infer(debug=debug)
@@ -54,8 +54,6 @@ class Syncode:
         parse_output_only (bool, optional): Parse only the output. Defaults to True.
 
         new_mask_store (bool, optional): Use new DFA mask store. Defaults to False.
-                
-        chat_mode (bool, optional): Parse only the (output) and not (prompt+output) in chat mode. Defaults to False.
         
         dev_mode (bool, optional): Development mode. Defaults to False.
 
@@ -70,7 +68,6 @@ class Syncode:
         quantize: bool = True,
         device: str = "cuda",
         grammar: Optional[str] = None,
-        chat_mode: bool = False,
         parse_output_only: bool = True,
         dev_mode: bool = False,
         log_level: int = 1,
@@ -94,17 +91,13 @@ class Syncode:
         self.num_samples = kwargs.get('num_return_sequences', 1)
         self.new_mask_store = new_mask_store
         self.parser = parser
-        self.chat_mode = chat_mode
         self.log_level = log_level
 
         # Set seed
         if seed is not None:
             torch.manual_seed(seed)
 
-        if self.chat_mode:
-            self.parse_output_only = True
-        else:
-            self.parse_output_only = parse_output_only
+        self.parse_output_only = parse_output_only
 
         # Set the grammar
         self.language = grammar
@@ -196,7 +189,7 @@ class Syncode:
         logger.close()
         return output
 
-    def user_input(self, prompt:str, stop_words=None, debug=False):
+    def user_input(self, prompt:Union[str, list], stop_words=None, debug=False):
         """
         Run user input on the model with grammar mask
 
@@ -205,14 +198,11 @@ class Syncode:
             stop_words (list, optional): Stop words to use. Defaults to None.
             debug (bool, optional): Debug mode. Defaults to False.
         """
-        if prompt:
-            if self.grammar_decoder is not None: # TODO: Remove this check
-                    self.grammar_decoder.reset(prompt)
-            
-            if self.chat_mode:
-                return self.model.generate_chat_completion_grammar(prompt)
-            else:
-                return self.model.generate_batch_completion_grammar(prompt, self.num_samples, stop_words=stop_words, debug=debug)
+        if prompt:      
+            if isinstance(prompt, list):
+                assert self.parse_output_only == True, "Prompt must be a string for input+output parsing"
+
+            return self.model.generate_grammar_constrained_completion(prompt, self.num_samples, stop_words=stop_words, debug=debug)
         else:
             while True:
                 prompt = input('Enter prompt: ')
@@ -220,7 +210,7 @@ class Syncode:
                 if prompt == "exit":
                     break
 
-                batch_completions = self.model.generate_batch_completion_grammar(prompt, self.num_samples)
+                batch_completions = self.model.generate_grammar_constrained_completion(prompt, self.num_samples)
                 for i, completion in enumerate(batch_completions):
                     print(prompt + completion)
 

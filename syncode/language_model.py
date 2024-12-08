@@ -1,3 +1,4 @@
+from ast import Tuple
 import time
 import torch
 import syncode.common as common
@@ -5,7 +6,7 @@ from syncode.grammar_decoder import SyncodeLogitsProcessor
 from transformers import LogitsProcessorList, StoppingCriteriaList, StoppingCriteria
 from syncode.parsers.grammars import Grammar
 from syncode.utils.generation import filter_code, fix_indents
-from typing import Callable, Iterable
+from typing import Callable, Iterable, Union
 from transformers.generation.utils import GenerationMode
 from transformers.generation.configuration_utils import GenerationConfig
 
@@ -67,9 +68,9 @@ class HuggingFaceModel:
         return None
 
     @torch.inference_mode()
-    def generate_batch_completion_grammar(
+    def generate_grammar_constrained_completion(
         self, 
-        prompt, 
+        prompt: Union[str, list], 
         batch_size, 
         stop_words=None, 
         return_token_ids=False,
@@ -84,13 +85,13 @@ class HuggingFaceModel:
             stop_words (list): A list of stop words. If the completion ends with any of the stop words, the completion is returned.
             return_token_ids (bool): If True, returns the token ids of the completions.
             debug (bool): If True, prints debug information.
-        '''
+        '''        
+        inputs, prompt_str = self.get_tokenized_input(prompt, batch_size)
+
         # Reset the grammar decoder
         if self.grammar_decoder is not None:
-            self.grammar_decoder.reset(prompt)
+            self.grammar_decoder.reset(prompt_str)
 
-        input_batch = [prompt for _ in range(batch_size)]
-        inputs = self.tokenizer(input_batch, return_tensors="pt").to(self.model.device)
         input_ids_cutoff = inputs.input_ids.size(dim=1)
         
         # Get the generation config
@@ -134,6 +135,8 @@ class HuggingFaceModel:
 
         # Total tokens generated
         self.total_tokens = 0
+
+        # Decode the completions
         for i in range(batch_size):
             self.total_tokens += len(generated_ids[i])-input_ids_cutoff+1
             completion = self.tokenizer.decode(generated_ids[i][input_ids_cutoff:len(generated_ids[i])], skip_special_tokens=True)
@@ -144,6 +147,29 @@ class HuggingFaceModel:
                 batch_completions.append(completion)
         
         return batch_completions
+
+
+    def get_tokenized_input(self, prompt: Union[str, list], batch_size: int):
+        """
+        Tokenizes the input prompt and returns the input dictionary for the model.
+        """            
+        if isinstance(prompt, list):
+            assert 'apply_chat_template' in dir(self.tokenizer), "Tokenizer does not support chat completion"
+            prompt_str = self.tokenizer.apply_chat_template(
+                prompt, 
+                add_generation_prompt=True, 
+                return_tensors="pt",
+                tokenize=False
+                )
+        elif isinstance(prompt, str):
+            prompt_str = prompt
+        else:
+            raise ValueError("Prompt should be either a string or a list! It is currently of type: "+str(type(prompt)))
+
+        input_batch = [prompt_str for _ in range(batch_size)]
+        inputs = self.tokenizer(input_batch, return_tensors="pt").to(self.model.device)
+
+        return inputs, prompt_str
 
     @torch.inference_mode()
     def _generate(
@@ -252,37 +278,6 @@ class HuggingFaceModel:
             else:
                 generation_mode = GenerationMode.BEAM_SEARCH
         return generation_mode
-
-    @torch.inference_mode()
-    def generate_chat_completion_grammar(self, prompt) -> str:
-        '''
-        Generates chat completion for the given prompt. 
-        '''
-        assert 'apply_chat_template' in dir(self.tokenizer), "Tokenizer does not support chat completion"
-
-        message = [{"role": "user", "content": prompt}]
-        inputs = self.tokenizer.apply_chat_template(
-            message, 
-            add_generation_prompt=True, 
-            return_tensors="pt"
-            ).to(self.model.device)
-        
-        input_ids_cutoff = inputs.size(dim=1)
-
-        # input_ids_cutoff = inputs.input_ids.size(dim=1)
-        start_time = time.time()
-
-        generated_ids = self.model.generate(
-            inputs,
-            logits_processor=self.grammar_processor,
-            **self.gen_args
-        )
-        completion = self.tokenizer.decode(
-            generated_ids[0][input_ids_cutoff:len(generated_ids[0])], 
-            skip_special_tokens=True)
-
-        return completion
-
     
     def tokenize(self, s: str) -> 'Iterable[int]':
         return self.tokenizer.encode(s, add_special_tokens=False)

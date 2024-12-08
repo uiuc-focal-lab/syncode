@@ -148,6 +148,20 @@ print(f"SynCode output:\n{output}")
 Check more examples of using Python, Go, and other grammars in <a href="#-example-usage">Notebooks</a> and a quick example at 
 &nbsp; [<img align="center" src="https://colab.research.google.com/assets/colab-badge.svg" />](https://colab.research.google.com/drive/1rYm8iehx_qYdtgWmqLkmhIjizhUVTb9E?usp=sharing)
 
+#### Instuct-tuned Models
+SynCode can also be used with Instruct-tuned models. For example, the following code snippet shows how to use SynCode with the Instruct-tuned LLM model.
+
+``` python
+messages = [
+    {"role": "system", "content": "You are a chatbot who always returns a JSON object."},
+    {"role": "user", "content": "can you give me a JSON object describing University of Illinois at Urbana-Champaign?"},
+]
+
+out = syn_llm.infer(messages)
+```
+
+ See the [notebook](./notebooks/example_instruct_model.ipynb) for example.
+
 ### Environment Variables
 Optionally, you can set the directories for cache by exporting the following environment variables. Add the following lines to your .bashrc or .zshrc file:
 ```
@@ -179,8 +193,6 @@ export HF_ACCESS_TOKEN="your_huggingface_api_key"
 - `dataset` (str, optional): Dataset. Defaults to "input". "input" indicates that the user can provide input via CLI or by passing in a prompt as a string. 
    
 - `num_few_shot` (int, optional): Number of examples for few-shot prompting. Defaults to 0.
-    
-- `chat_mode` (bool, optional): True if using a Chat/Instruct LLM. False otherwise. Defaults to False. 
   
 - `dev_mode` (bool, optional): Development mode where we do not fail silently with parser errors. Defaults to False.
   
@@ -217,7 +229,6 @@ python3 syncode/infer.py
     --dataset [mbxp, humaneval, mathqa-x, input]
     --few_shot [True, False]
     --num_fs_examples [num_fs_examples]
-    --chat_mode [True, False]
     --dev_mode [True, False]
     --log_level [0, 1, 2]
     --new_mask_store [True, False]
