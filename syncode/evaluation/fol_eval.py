@@ -98,7 +98,7 @@ class FOLEval:
         for task_id, problem in enumerate(problems):
             results[task_id] = []
             full_prompt = FOLEval._prompt_folio(problem)
-            completion = syncode.model.generate_batch_completion_grammar(
+            completion = syncode.model.generate_grammar_constrained_completion(
                 full_prompt, 
                 syncode.num_samples,
                 stop_words=['\n\n', '------']
