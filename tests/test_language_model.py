@@ -62,7 +62,7 @@ class TestHuggingFaceModel(unittest.TestCase):
         logger = common.EmptyLogger()
         lm = HuggingFaceModel(model, Grammar('calc'), tokenizer, mode='original', max_new_tokens=15, device='cpu')
         prompt = "113 + 235 + 17"
-        output = lm.generate_batch_completion_grammar(prompt, 1)
+        output = lm.generate_grammar_constrained_completion(prompt, 1)
         self.assertEqual(len(output[0]), 15, "The output length does not match the expected value.")
     
     def test_generate_batch_completion_grammar2(self):
@@ -72,7 +72,7 @@ class TestHuggingFaceModel(unittest.TestCase):
         logger = common.EmptyLogger()
         lm = HuggingFaceModel(model, Grammar('calc'), tokenizer, mode='original', max_new_tokens=15, device='cpu')
         prompt = "113 + 235 + 17"
-        output = lm.generate_batch_completion_grammar(prompt, 2)
+        output = lm.generate_grammar_constrained_completion(prompt, 2)
         self.assertEqual(len(output[0]), 15, "The output length does not match the expected value.")
         self.assertEqual(len(output[1]), 15, "The output length does not match the expected value.")
     
