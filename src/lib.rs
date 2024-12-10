@@ -172,12 +172,15 @@ fn dfa_mask(state: &DFAState, terminal_sequence: &Vec<&str>, vocabulary: &Vec<&s
 
 /// Compute the grammar mask store.
 ///
-/// The mask store is constructed offline by enumerating all DFA states QΩ,
-/// considering all possible terminals in Γ, and all tokens in V. The DFA mask
-/// store depends on the set of terminals Γ and the model’s vocabulary V. As a
-/// result, a unique mask store is created for each grammar and tokenizer
-/// combination, and to enhance efficiency, we cache and reuse this table for
-/// future inferences.
+/// For an integer α, the DFA mask store Mα is a function defined as Mα : QΩ ×
+/// Γα → {0, 1}|V |, where QΩ = ⋃ τ ∈Γ Qτ represents the set of all DFA states
+/// and Γα is a set of α-length terminal sequences. Then Mα(q, Λ) = m is a
+/// binary mask such that t ∈ set(m) if dmatch(t, q, Λ)The mask store is
+/// constructed offline by enumerating all DFA states QΩ considering all
+/// possible terminals in Γ, and all tokens in V. The DFA mask store depends on
+/// the set of terminals Γ and the model’s vocabulary V. As a result, a unique
+/// mask store is created for each grammar and tokenizer combination, and to
+/// enhance efficiency, we cache and reuse this table for future inferences.
 fn dfa_mask_store<'a>(
     lexical_terminals: Vec<&'a str>,
     model_vocabulary: Vec<&'a str>,
