@@ -128,17 +128,19 @@ fn states(dfa: &dense::DFA<Vec<u32>>) -> Vec<StateID> {
     let mut queue: VecDeque<StateID> = VecDeque::new();
     let mut explored: Vec<StateID> = Vec::new();
 
-    let start = dfa.start_state(&start::Config::new()).unwrap();
+    let start = dfa
+        .start_state(&start::Config::new().anchored(Anchored::Yes))
+        .unwrap();
 
     explored.push(start);
     queue.push_back(start);
     while !queue.is_empty() {
-        let v = queue.pop_front().unwrap();
-        if dfa.is_dead_state(v) {
-            continue;
-        }
         for letter in dfa.byte_classes().representatives(0..=255) {
             let next = dfa.next_state(queue.pop_front().unwrap(), letter.as_u8().unwrap());
+            if dfa.is_dead_state(next) {
+                explored.push(next);
+                continue;
+            }
             if !explored.contains(&next) {
                 explored.push(next);
                 queue.push_back(next);
@@ -151,8 +153,15 @@ fn states(dfa: &dense::DFA<Vec<u32>>) -> Vec<StateID> {
 /// Compute the union of all states of a list of regexes.
 fn all_dfa_states(terminals: &Vec<&str>) -> Vec<DFAState> {
     let mut res = Vec::new();
-    for terminal in terminals.into_iter() {
-        res.push(DFAState::new(&terminal));
+    for terminal in terminals.iter() {
+        let dfa = DFAState::new(&terminal);
+        for state in states(&dfa.dfa) {
+            res.push(DFAState {
+                regex: terminal.to_string().into(),
+                dfa: dfa.dfa.clone(),
+                state_id: state,
+            });
+        }
     }
     res
 }
