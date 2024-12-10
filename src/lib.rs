@@ -1,5 +1,4 @@
 use core::iter::Iterator;
-use itertools::Itertools;
 use regex_automata::{
     dfa::{dense, Automaton},
     util::{primitives::StateID, start},
@@ -76,7 +75,7 @@ fn dmatch(string: &str, starting_state: &DFAState, sequence_of_terminals: Vec<&s
     let dfa = &starting_state.dfa; // Avoid taking ownership: just copy it from the heap to the stack.
 
     // Case 1: the DFA, starting at this state, consumes the entire input and is still alive.
-    let mut state = starting_state.state_id.clone();
+    let mut state = starting_state.state_id;
     for &b in string.as_bytes().iter() {
         state = dfa.next_state(state, b);
     }
@@ -88,7 +87,7 @@ fn dmatch(string: &str, starting_state: &DFAState, sequence_of_terminals: Vec<&s
 
     // Case 2: The DFA consumes a prefix of the string, leaves a non-zero
     // suffix, and there is no sequence of terminals to follow.
-    state = starting_state.state_id.clone();
+    state = starting_state.state_id;
     for (i, &b) in string.as_bytes().iter().enumerate() {
         state = dfa.next_state(state, b);
         if dfa.is_match_state(state) & sequence_of_terminals.is_empty() & (i < string.len()) {
@@ -99,7 +98,7 @@ fn dmatch(string: &str, starting_state: &DFAState, sequence_of_terminals: Vec<&s
 
     // Case 3: A prefix of the string is successfully consumed by the DFA, and
     // dmatch is true starting at the next member of sequence_of_terminals.
-    state = starting_state.state_id.clone();
+    state = starting_state.state_id;
     for (i, &b) in string.as_bytes().iter().enumerate() {
         state = dfa.next_state(state, b);
         // Look for the longest possible match --- just because this is a
@@ -110,7 +109,7 @@ fn dmatch(string: &str, starting_state: &DFAState, sequence_of_terminals: Vec<&s
         }
         // Compile the dfa for the next terminal, if there are terminals left.
         if !sequence_of_terminals.is_empty() {
-            let new_dfa = DFAState::new(&sequence_of_terminals[0]);
+            let new_dfa = DFAState::new(sequence_of_terminals[0]);
             // Call recursively.
             return dmatch(&string[i..], &new_dfa, sequence_of_terminals[1..].to_vec());
         }
@@ -154,7 +153,7 @@ fn states(dfa: &dense::DFA<Vec<u32>>) -> Vec<StateID> {
 fn all_dfa_states(terminals: &Vec<&str>) -> Vec<DFAState> {
     let mut res = Vec::new();
     for terminal in terminals.iter() {
-        let dfa = DFAState::new(&terminal);
+        let dfa = DFAState::new(terminal);
         for state in states(&dfa.dfa) {
             res.push(DFAState {
                 regex: terminal.to_string().into(),
