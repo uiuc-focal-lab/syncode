@@ -92,6 +92,7 @@ fn dmatch(string: &str, starting_state: &DFAState, sequence_of_terminals: Vec<&s
     for (i, &b) in string.as_bytes().iter().enumerate() {
         state = dfa.next_state(state, b);
         if dfa.is_match_state(state) & sequence_of_terminals.is_empty() & (i < string.len()) {
+            // Return false here for grammar strict mode.
             return true;
         }
     }
@@ -225,6 +226,7 @@ mod tests {
 
     #[test]
     fn test_dmatch_case2() {
+        // False in strict mode, true in overapproximation mode (grammar mask).
         let candidate_string = "abbacdd";
         let starting_state = DFAState::new(r"[ab]*");
         let accept_sequence: Vec<&str> = Vec::new();
