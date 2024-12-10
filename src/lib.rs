@@ -16,6 +16,7 @@ use std::{collections::HashMap, vec::Vec};
 
 /// A DFA along with its state. Generic to facilitate experiementation with
 /// different implementations of DFA.
+#[derive(Clone)]
 struct DFAState {
     /// The regex representing this dfa.
     regex: Box<str>,
@@ -147,7 +148,7 @@ fn states(dfa: &dense::DFA<Vec<u32>>) -> Vec<StateID> {
 }
 
 /// Compute the union of all states of a list of regexes.
-fn all_dfa_states(terminals: &Vec<String>) -> Vec<DFAState> {
+fn all_dfa_states(terminals: &Vec<&str>) -> Vec<DFAState> {
     let mut res = Vec::new();
     for terminal in terminals.into_iter() {
         res.push(DFAState::new(&terminal));
@@ -176,24 +177,30 @@ fn dfa_mask(state: &DFAState, terminal_sequence: &Vec<&str>, vocabulary: &Vec<&s
 /// result, a unique mask store is created for each grammar and tokenizer
 /// combination, and to enhance efficiency, we cache and reuse this table for
 /// future inferences.
-// fn dfa_mask_store<'a, T: Automaton>(
-//     lexical_terminals: Vec<String>,
-//     model_vocabulary: Vec<String>,
-//     length_of_terminal_sequences: usize,
-// ) -> HashMap<(DFAState, Vec<String>), Vec<bool>> {
-//     let all_states = all_dfa_states(&lexical_terminals);
-//     let mut store: HashMap<(DFAState, Vec<String>), Vec<bool>> = HashMap::new();
-//     // Temporary ugly hack to get all terminal sequences of length 2.
-//     for first_terminal in &lexical_terminals[..] {
-// 	for second_terminal in &lexical_terminals[..] {
-// 	    for state in all_states.iter() {
-// 		let terminal_sequence = vec![first_terminal.to_string(), second_terminal.to_string()];
-// 		store.insert((state, terminal_sequence), dfa_mask(&state, &terminal_sequence, &model_vocabulary));
-// 	    }
-// 	}
-//     }
-//     store
-// }
+fn dfa_mask_store<'a>(
+    lexical_terminals: Vec<&'a str>,
+    model_vocabulary: Vec<&'a str>,
+    length_of_terminal_sequences: usize,
+) -> HashMap<(DFAState, Vec<&'a str>), Vec<bool>> {
+    let all_states = all_dfa_states(&lexical_terminals);
+    let mut store: HashMap<(DFAState, Vec<&str>), Vec<bool>> = HashMap::new();
+    for state in all_states {
+        for first_terminal in lexical_terminals.iter() {
+            for second_terminal in lexical_terminals.iter() {
+                store.insert(
+                    (state.clone(), vec![first_terminal, second_terminal]),
+                    dfa_mask(
+                        &state,
+                        &vec![first_terminal, second_terminal],
+                        &model_vocabulary,
+                    ),
+                );
+            }
+        }
+    }
+
+    store
+}
 
 // #[pymodule]
 // fn rust_syncode(_py: Python, m: &PyModule) -> PyResult<()> {
