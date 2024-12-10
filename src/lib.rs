@@ -260,4 +260,18 @@ mod tests {
             vec![true, false, false, false, true, false],
         );
     }
+
+    #[test]
+    fn test_dfa_mask_store() {
+        let model_vocabulary = vec!["_prime():", ":#", "'''", " hi", "indeed", "n0pe"];
+	let lexical_terminals = vec![r"\(", r"\)", r"[a-zA-Z_]*"];
+	let store = dfa_mask_store(model_vocabulary, lexical_terminals, 2);
+	let mut dfa = DFAState::new(r"[a-zA-Z_]*");
+	let candidate_string = "is";
+	dfa.advance(&candidate_string);
+	assert_eq!(
+	    store.get(&(dfa, vec![r"\(", r"\)"])).unwrap(),
+	    &vec![true, false, false, false, true, false]
+	);
+    }
 }
