@@ -137,7 +137,7 @@ fn states(dfa: &dense::DFA<Vec<u32>>) -> Vec<StateID> {
             continue;
         }
         for letter in dfa.byte_classes().representatives(0..=255) {
-            let next = dfa.next_state(start, letter.as_u8().unwrap());
+            let next = dfa.next_state(queue.pop_front().unwrap(), letter.as_u8().unwrap());
             if !explored.contains(&next) {
                 explored.push(next);
                 queue.push_back(next);
