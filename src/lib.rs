@@ -16,7 +16,7 @@ use std::{collections::HashMap, vec::Vec};
 
 /// A DFA along with its state. Generic to facilitate experiementation with
 /// different implementations of DFA.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 struct DFAState {
     /// The regex representing this dfa.
     regex: Box<str>,
