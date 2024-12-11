@@ -1,5 +1,4 @@
 use core::iter::Iterator;
-use std::iter::zip;
 use regex_automata::{
     dfa::{dense, Automaton},
     util::{primitives::StateID, start},
@@ -7,6 +6,7 @@ use regex_automata::{
 };
 use std::collections::VecDeque;
 use std::hash::{Hash, Hasher};
+use std::iter::zip;
 use std::{collections::HashMap, vec::Vec};
 //use pyo3::prelude::*;
 
@@ -64,21 +64,17 @@ impl DFAState {
         explored.push(start);
         queue.push_back(start);
         while !queue.is_empty() {
-	    let current_state = queue.pop_front().unwrap();
-	    // Iterate over whole alphabet.
+            let current_state = queue.pop_front().unwrap();
+            // Iterate over whole alphabet.
             for letter in self.dfa.byte_classes().representatives(0..=255) {
-                let next = self
-                    .dfa
-                    .next_state(current_state, letter.as_u8().unwrap());
+                let next = self.dfa.next_state(current_state, letter.as_u8().unwrap());
                 if !explored.contains(&next) {
                     explored.push(next);
                     queue.push_back(next);
                 }
             }
-	    // Special end-of-input transition.
-            let next = self
-                    .dfa
-                    .next_eoi_state(current_state);
+            // Special end-of-input transition.
+            let next = self.dfa.next_eoi_state(current_state);
             if !explored.contains(&next) {
                 explored.push(next);
                 queue.push_back(next);
@@ -225,15 +221,19 @@ fn dfa_mask_store<'a>(
 }
 
 /// Implement algorithm 2 from the paper.
-fn grammar_mask(accept_sequences: Vec<Vec<&str>>, remainder: &str, model_vocabulary: Vec<&str>) -> Vec<bool> {
+fn grammar_mask(
+    accept_sequences: Vec<Vec<&str>>,
+    remainder: &str,
+    model_vocabulary: Vec<&str>,
+) -> Vec<bool> {
     let mut res_mask: Vec<bool> = vec![];
     for accept_sequence in accept_sequences {
-	let mut dfa = DFAState::new(accept_sequence[0]);
-	dfa.advance(remainder);
-	let mask = dfa_mask(&dfa, &accept_sequence[1..].to_vec(), &model_vocabulary);
-	for (i, (cur, new)) in zip(res_mask.clone(), mask.clone()).enumerate() {
-	    res_mask[i] = cur | new;
-	}
+        let mut dfa = DFAState::new(accept_sequence[0]);
+        dfa.advance(remainder);
+        let mask = dfa_mask(&dfa, &accept_sequence[1..].to_vec(), &model_vocabulary);
+        for (i, (cur, new)) in zip(res_mask.clone(), mask.clone()).enumerate() {
+            res_mask[i] = cur | new;
+        }
     }
     res_mask
 }
