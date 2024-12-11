@@ -185,6 +185,16 @@ mod tests {
     }
 
     #[test]
+    fn test_dmatch_supports_unicode() {
+	// Make sure dmatch works on tokens that are multiple bytes in UTF-8.
+        let candidate_string = "¡";
+        let starting_state = DFAState::new(r"[a-zA-Z_]*");
+        let accept_sequence = vec![r"\(", r"\)"];
+        assert!(!dmatch(candidate_string, &starting_state, accept_sequence));
+    }
+
+
+    #[test]
     fn test_dmatch_fails() {
         let candidate_string = "'not an id";
         let starting_state = DFAState::new(r"[a-zA-Z_]*");
@@ -197,7 +207,7 @@ mod tests {
         // Illustrative example from page 13 of the paper.
         let mut dfa = DFAState::new(r"[a-zA-Z_]*");
         dfa.advance("is");
-        let vocabulary = vec!["_prime():", ":#", "'''", " hi", "indeed", "n0pe"];
+        let vocabulary = vec!["_prime():", ":#", "¡", " hi", "indeed", "n0pe"];
         let terminal_sequence = vec![r"\(", r"\)"];
         assert_eq!(
             dfa_mask(&dfa, &terminal_sequence, &vocabulary),
