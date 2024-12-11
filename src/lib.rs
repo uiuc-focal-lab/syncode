@@ -221,6 +221,7 @@ fn dfa_mask_store<'a>(
 }
 
 /// Implement algorithm 2 from the paper.
+#[pyfunction]
 fn grammar_mask(
     accept_sequences: Vec<Vec<&str>>,
     remainder: &str,
@@ -238,12 +239,12 @@ fn grammar_mask(
     res_mask
 }
 
-// #[pymodule]
-// fn rust_syncode(_py: Python, m: &PyModule) -> PyResult<()> {
-//     m.add_function(wrap_pyfunction!(consume_prefix, m)?)?;
+#[pymodule]
+fn rust_syncode(_py: Python, m: &PyModule) -> PyResult<()> {
+    m.add_function(wrap_pyfunction!(grammar_mask, m)?)?;
 
-//     Ok(())
-// }
+    Ok(())
+}
 
 #[cfg(test)]
 mod tests {

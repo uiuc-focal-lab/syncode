@@ -12,3 +12,7 @@ crate-type = ["cdylib"]
 [dependencies]
 regex-automata = "0.4.9"
 itertools = "0.8.2"
+
+[dependencies.pyo3]
+version = "0.15.1"
+features = ["extension-module"]
