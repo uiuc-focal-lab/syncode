@@ -41,8 +41,38 @@ fn dmatch(string: &str, starting_state: &DFAState, sequence_of_terminals: Vec<&s
     // Case 3: A prefix of the string is successfully consumed by the DFA, and
     // dmatch is true starting at the next member of sequence_of_terminals.
     state = starting_state.state_id;
-    for (i, &b) in string.as_bytes().iter().enumerate() {
-        state = dfa.next_state(state, b);
+
+
+    let mut buf = [0; 4]; // Buffer to store character as bytes.
+
+    for (i, c) in string.char_indices() {
+    // Iterate over the string one character at a time. Strings are encoded as
+    // UTF-8. A UTF-8 character can be 1 to 4 bytes. regex_automata's DFAs work
+    // with individual bytes, so we have to feed the character 1 byte at a time
+    // into the DFA, regardless of how many bytes the character is actually
+    // encoded as. However, when we recur, we need to slice the string at a
+    // character boundary, so we have to keep track of character boundaries as
+    // well as individual bytes; this way we slice the string at the last
+    // character before the one we failed to accept on. Yes, this is a
+    // hellacious nightmare: I blame R. Pike and K. Thompson directly for
+    // having caused me this pain in this moment.
+
+
+	// Break the character down into bytes, storing them in buf.
+	c.encode_utf8(&mut buf);
+	let char_len = c.len_utf8();
+	// Iterate over the bytes in the individual character.
+	for (i, &b) in buf.iter().enumerate() {
+	    // The number of bytes per character is variable: we only need to
+	    // feed the number of bytes that the character actually is into the
+	    // DFA; any more would be incorrect. Break the loop once we've gone
+	    // past the end of the character. FIXME: does this branch have to
+	    // be here, or is there a way to avoid branching?
+	    if i >= char_len {
+		break;
+	    }
+	    state = dfa.next_state(state, b);
+	}
         // Look for the longest possible match --- just because this is a
         // matching state doesn't mean we should recur quite yet.
         if dfa.is_match_state(state) {
@@ -178,8 +208,9 @@ mod tests {
     #[test]
     fn test_dmatch_case3() {
         // Illustrative example from page 12 of the paper.
-        let candidate_string = "is_prime():";
-        let starting_state = DFAState::new(r"[a-zA-Z_]*");
+        let candidate_string = "_prime():";
+        let mut starting_state = DFAState::new(r"[a-zA-Z_]*");
+	starting_state.advance("is");
         let accept_sequence = vec![r"\(", r"\)"];
         assert!(dmatch(candidate_string, &starting_state, accept_sequence));
     }
