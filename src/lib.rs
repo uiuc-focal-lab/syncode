@@ -41,7 +41,7 @@ impl DFAState {
     }
 
     /// Convenience function to set the state how we want it.
-    fn advance(&mut self, input: &str) {
+    pub fn advance(&mut self, input: &str) {
         for &b in input.as_bytes().iter() {
             self.state_id = self.dfa.next_state(self.state_id, b);
         }
