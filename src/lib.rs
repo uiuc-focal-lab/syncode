@@ -281,7 +281,7 @@ mod tests {
     fn test_dfa_mask_store() {
         let model_vocabulary = vec!["_prime():", ":#", "'''", " hi", "indeed", "n0pe"];
         let lexical_terminals = vec![r"\(", r"\)", r"[a-zA-Z_]*"];
-        let store = dfa_mask_store(model_vocabulary, lexical_terminals, 2);
+        let store = dfa_mask_store(lexical_terminals, model_vocabulary, 2);
         let mut dfa = DFAState::new(r"[a-zA-Z_]*");
         let candidate_string = "is";
         dfa.advance(&candidate_string);
