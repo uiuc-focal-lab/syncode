@@ -63,18 +63,24 @@ impl DFAState {
         explored.push(start);
         queue.push_back(start);
         while !queue.is_empty() {
+	    let current_state = queue.pop_front().unwrap();
+	    // Iterate over whole alphabet.
             for letter in self.dfa.byte_classes().representatives(0..=255) {
                 let next = self
                     .dfa
-                    .next_state(queue.pop_front().unwrap(), letter.as_u8().unwrap());
-                if self.dfa.is_dead_state(next) {
-                    explored.push(next);
-                    continue;
-                }
+                    .next_state(current_state, letter.as_u8().unwrap());
                 if !explored.contains(&next) {
                     explored.push(next);
                     queue.push_back(next);
                 }
+            }
+	    // Special end-of-input transition.
+            let next = self
+                    .dfa
+                    .next_eoi_state(current_state);
+            if !explored.contains(&next) {
+                explored.push(next);
+                queue.push_back(next);
             }
         }
         explored
