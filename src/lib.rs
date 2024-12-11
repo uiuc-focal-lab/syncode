@@ -46,6 +46,39 @@ impl DFAState {
             self.state_id = self.dfa.next_state(self.state_id, b);
         }
     }
+
+    /// Return all states of a dfa by breadth-first search. There exists a private
+    /// method that returns an iterator over all states. The suggested alternative
+    /// is to traverse the graph manually. See
+    /// https://github.com/rust-lang/regex/discussions/1223.
+    pub fn states(&self) -> Vec<StateID> {
+        let mut queue: VecDeque<StateID> = VecDeque::new();
+        let mut explored: Vec<StateID> = Vec::new();
+
+        let start = self
+            .dfa
+            .start_state(&start::Config::new().anchored(Anchored::Yes))
+            .unwrap();
+
+        explored.push(start);
+        queue.push_back(start);
+        while !queue.is_empty() {
+            for letter in self.dfa.byte_classes().representatives(0..=255) {
+                let next = self
+                    .dfa
+                    .next_state(queue.pop_front().unwrap(), letter.as_u8().unwrap());
+                if self.dfa.is_dead_state(next) {
+                    explored.push(next);
+                    continue;
+                }
+                if !explored.contains(&next) {
+                    explored.push(next);
+                    queue.push_back(next);
+                }
+            }
+        }
+        explored
+    }
 }
 
 impl PartialEq for DFAState {
@@ -119,42 +152,12 @@ fn dmatch(string: &str, starting_state: &DFAState, sequence_of_terminals: Vec<&s
     false
 }
 
-/// Return all states of a dfa by breadth-first search. There exists a private
-/// method that returns an iterator over all states. The suggested alternative
-/// is to traverse the graph manually. See
-/// https://github.com/rust-lang/regex/discussions/1223.
-fn states(dfa: &dense::DFA<Vec<u32>>) -> Vec<StateID> {
-    let mut queue: VecDeque<StateID> = VecDeque::new();
-    let mut explored: Vec<StateID> = Vec::new();
-
-    let start = dfa
-        .start_state(&start::Config::new().anchored(Anchored::Yes))
-        .unwrap();
-
-    explored.push(start);
-    queue.push_back(start);
-    while !queue.is_empty() {
-        for letter in dfa.byte_classes().representatives(0..=255) {
-            let next = dfa.next_state(queue.pop_front().unwrap(), letter.as_u8().unwrap());
-            if dfa.is_dead_state(next) {
-                explored.push(next);
-                continue;
-            }
-            if !explored.contains(&next) {
-                explored.push(next);
-                queue.push_back(next);
-            }
-        }
-    }
-    explored
-}
-
 /// Compute the union of all states of a list of regexes.
 fn all_dfa_states(terminals: &Vec<&str>) -> Vec<DFAState> {
     let mut res = Vec::new();
     for terminal in terminals.iter() {
         let dfa = DFAState::new(terminal);
-        for state in states(&dfa.dfa) {
+        for state in dfa.states() {
             res.push(DFAState {
                 regex: terminal.to_string().into(),
                 dfa: dfa.dfa.clone(),
