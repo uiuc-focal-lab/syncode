@@ -133,7 +133,7 @@ fn grammar_mask(
     remainder: &str,
     model_vocabulary: Vec<&str>,
 ) -> Vec<bool> {
-    let mut res_mask: Vec<bool> = vec![];
+    let mut res_mask: Vec<bool> = vec![false; model_vocabulary.len()];
     for accept_sequence in accept_sequences {
         let mut dfa = DFAState::new(accept_sequence[0]);
         dfa.advance(remainder);
