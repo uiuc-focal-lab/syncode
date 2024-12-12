@@ -82,18 +82,20 @@ impl Masker {
 		}
 		state = dfa.next_state(state, b);
 	    }
+
             // Look for the longest possible match --- just because this is a
             // matching state doesn't mean we should recur quite yet.
             if dfa.is_match_state(state) {
 		// Consume input so long as we are matching it.
 		continue;
             }
-            // Fetch the dfa for the next terminal, if there are terminals left.
-            if !sequence_of_terminals.is_empty() {
+
+	    // Handle case where we consume one character too many.
+	    if dfa.is_dead_state(state) && i > 0 && !sequence_of_terminals.is_empty() {
 		let new_dfa = self.dfa_builder.build_dfa(sequence_of_terminals[0]);
 		// Call recursively.
-		return self.dmatch(&string[i..], &new_dfa, sequence_of_terminals[1..].to_vec());
-            }
+		return self.dmatch(&string[(i-1)..], &new_dfa, sequence_of_terminals[1..].to_vec());
+	    }
 	}
 
 	// None of the previous cases succeeded, so dmatch is false.
@@ -215,6 +217,17 @@ mod tests {
         let accept_sequence: Vec<&str> = Vec::new();
 	let mut matcher = Masker{dfa_builder: DFABuilder::new()};
         assert!(matcher.dmatch(candidate_string, &starting_state, accept_sequence));
+    }
+
+    #[test]
+    fn test_dmatch_case3a() {
+	// Consuming next terminal leaves residual string.
+	let candidate_string = "abbacde";
+	let mut starting_state = DFAState::new(r"[ab]*");
+	starting_state.advance("ab");
+	let accept_sequence = vec![r"c"];
+	let mut matcher = Masker{dfa_builder: DFABuilder::new()};
+	assert!(matcher.dmatch(candidate_string, &starting_state, accept_sequence));
     }
 
     #[test]
