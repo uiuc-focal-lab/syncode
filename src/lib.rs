@@ -88,11 +88,8 @@ impl Masker {
 		// Consume input so long as we are matching it.
 		continue;
             }
-            // Compile the dfa for the next terminal, if there are terminals left.
+            // Fetch the dfa for the next terminal, if there are terminals left.
             if !sequence_of_terminals.is_empty() {
-		// FIXME: This constructor gets called a lot, and is strictly
-		// speaking never necessary: by the time we've reached this point
-		// in the code, we already have in hand all the possible terminals.
 		let new_dfa = self.dfa_builder.build_dfa(sequence_of_terminals[0]);
 		// Call recursively.
 		return self.dmatch(&string[i..], &new_dfa, sequence_of_terminals[1..].to_vec());
