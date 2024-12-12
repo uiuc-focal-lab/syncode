@@ -2,6 +2,7 @@ use core::iter::Iterator;
 use std::iter::zip;
 use std::{collections::HashMap, vec::Vec};
 use pyo3::prelude::*;
+use pyo3::pybacked::PyBackedStr;
 use regex_automata::dfa::Automaton;
 mod dfa;
 use dfa::{DFABuilder, DFAState, all_dfa_states};
@@ -187,30 +188,24 @@ fn all_dfa_states(terminals: &Vec<&str>) -> Vec<DFAState> {
 
 }
 
+
 #[pyfunction]
-fn grammar_mask(
-    accept_sequences: Vec<Vec<&str>>,
-    remainder: &str,
-    model_vocabulary: Vec<&str>,
-) -> Vec<bool> {
-    let mut res_mask: Vec<bool> = vec![false; model_vocabulary.len()];
-    for accept_sequence in accept_sequences {
-        let mut dfa = DFAState::new(accept_sequence[0]);
-        dfa.advance(remainder);
-        let mask = dfa_mask(&dfa, &accept_sequence[1..].to_vec(), &model_vocabulary);
-        for (i, (cur, new)) in zip(res_mask.clone(), mask.clone()).enumerate() {
-            res_mask[i] = cur | new;
-        }
-    }
-    res_mask
+fn dfa_mask_store_py<'py>(
+    lexical_terminals: Vec<PyBackedStr>,
+    model_vocabulary: Vec<PyBackedStr>,
+) {
+    let mut matcher = Masker{dfa_builder: DFABuilder::new()};
+    // Nonsense casts to make the compiler happy.
+    let terms: Vec<&str> = lexical_terminals.iter().map(|s| s.get(..).unwrap()).collect();
+    let vocab: Vec<&str> = model_vocabulary.iter().map(|s| s.get(..).unwrap()).collect();
+    matcher.dfa_mask_store(terms, vocab, 2);
 }
 
 #[pymodule]
-fn rust_syncode(_py: Python, m: &PyModule) -> PyResult<()> {
-    m.add_function(wrap_pyfunction!(grammar_mask, m)?)?;
-
-    Ok(())
+fn rust_syncode(m: &Bound<'_, PyModule>) -> PyResult<()> {
+    m.add_function(wrap_pyfunction!(dfa_mask_store_py, m)?)
 }
+
 
 #[cfg(test)]
 mod tests {
