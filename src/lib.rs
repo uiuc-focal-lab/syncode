@@ -155,24 +155,24 @@ impl Masker {
 	store
     }
 
-    /// Implement algorithm 2 from the paper.
-    fn grammar_mask(
-	&mut self,
-	accept_sequences: Vec<Vec<&str>>,
-	remainder: &str,
-	model_vocabulary: Vec<&str>,
-    ) -> Vec<bool> {
-	let mut res_mask: Vec<bool> = vec![false; model_vocabulary.len()];
-	for accept_sequence in accept_sequences {
-            let mut dfa = self.dfa_builder.build_dfa(accept_sequence[0]);
-            dfa.advance(remainder);
-            let mask = self.dfa_mask(&dfa, &accept_sequence[1..].to_vec(), &model_vocabulary);
-            for (i, (cur, new)) in zip(res_mask.clone(), mask.clone()).enumerate() {
-		res_mask[i] = cur | new;
-            }
-	}
-	res_mask
-    }
+    // /// Implement algorithm 2 from the paper.
+    // fn grammar_mask(
+    // 	&mut self,
+    // 	accept_sequences: Vec<Vec<&str>>,
+    // 	remainder: &str,
+    // 	model_vocabulary: Vec<&str>,
+    // ) -> Vec<bool> {
+    // 	let mut res_mask: Vec<bool> = vec![false; model_vocabulary.len()];
+    // 	for accept_sequence in accept_sequences {
+    //         let dfa = self.dfa_builder.build_dfa(accept_sequence[0]);
+    //         dfa.advance(remainder);
+    //         let mask = self.dfa_mask(&dfa, &accept_sequence[1..].to_vec(), &model_vocabulary);
+    //         for (i, (cur, new)) in zip(res_mask.clone(), mask.clone()).enumerate() {
+    // 		res_mask[i] = cur | new;
+    //         }
+    // 	}
+    // 	res_mask
+    // }
 
 }
 
