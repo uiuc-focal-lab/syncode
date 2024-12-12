@@ -4,8 +4,7 @@ use regex_automata::{
     Anchored,
 };
 use std::hash::{Hash, Hasher};
-use std::collections::VecDeque;
-
+use std::collections::{VecDeque, HashMap};
 
 /// We represent a terminal as a str representing the regex matching that
 /// terminal. This choice is temporary to facilitate inter-language calling.
@@ -21,6 +20,32 @@ pub struct DFAState {
     pub dfa: dense::DFA<Vec<u32>>,
     /// The state of this DFA. Defaults to the starting state of the DFA.
     pub state_id: StateID,
+}
+
+type DFACache = HashMap<String, DFAState>;
+
+/// Construct DFAs with caching. Only one of these should be instantiated in
+/// the lifetime of the program.
+pub struct DFABuilder {
+    cache: DFACache
+}
+
+impl DFABuilder {
+    /// Initialize with an empty cache.
+    pub fn new() -> DFABuilder {
+	DFABuilder{cache: HashMap::new()}
+    }
+
+    /// Return a DFAState, either from the cache or building a new one from scratch.
+    pub fn build_dfa(&mut self, regex: &str) -> DFAState {
+	if self.cache.contains_key(regex) {
+	    return self.cache.get(regex).unwrap().clone();
+	} else {
+	    let new_dfa = DFAState::new(regex);
+	    self.cache.insert(String::from(regex), new_dfa.clone());
+	    return new_dfa;
+	}
+    }
 }
 
 /// A dense implementation of the DFAState abstraction.
