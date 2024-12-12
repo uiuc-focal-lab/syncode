@@ -37,6 +37,17 @@ impl DFABuilder {
     }
 
     /// Return a DFAState, either from the cache or building a new one from scratch.
+    // FIXME: This function can be drastically accelerated by removing the call
+    // to contains_key and the two clones. The clones account for about 60% of
+    // the total time spent in this procedure, contains_key about 20% of the
+    // total time, getting the value out of the cache about 20% of the total
+    // time, and the construction of the DFAs basically none of the total
+    // time. This is because the cache almost always hits, since the number of
+    // unique terminals is very small compared to the number of times this
+    // procedure is called. I'm sure there's a way to eliminate these clones
+    // and the extra check for the key's presence in the cache, but it's not
+    // obvious to me how to do so; in particular, the clones are present now to
+    // make the compiler's ownership checker happy.
     pub fn build_dfa(&mut self, regex: &str) -> DFAState {
 	if self.cache.contains_key(regex) {
 	    return self.cache.get(regex).unwrap().clone();
