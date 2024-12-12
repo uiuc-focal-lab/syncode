@@ -138,16 +138,18 @@ impl Masker {
 	let mut store: HashMap<(DFAState, Vec<&str>), Vec<bool>> = HashMap::new();
 	for state in all_states {
             for first_terminal in lexical_terminals.iter() {
-		for second_terminal in lexical_terminals.iter() {
+//		for second_terminal in lexical_terminals.iter() {
                     store.insert(
-			(state.clone(), vec![first_terminal, second_terminal]),
+			(state.clone(), vec![first_terminal, // second_terminal
+			]),
 			self.dfa_mask(
                             &state,
-                            &vec![first_terminal, second_terminal],
+                            &vec![first_terminal, // second_terminal
+			    ],
                             &model_vocabulary,
 			),
                     );
-		}
+//		}
             }
 	}
 
@@ -285,7 +287,8 @@ mod tests {
         let candidate_string = "is";
         dfa.advance(&candidate_string);
         assert_eq!(
-            store.get(&(dfa, vec![r"\(", r"\)"])).unwrap(),
+            store.get(&(dfa, vec![r"\("// , r"\)"
+	    ])).unwrap(),
             &vec![true, false, false, false, true, false],
         );
     }
