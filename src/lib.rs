@@ -90,11 +90,14 @@ impl Masker {
 		continue;
             }
 
-	    // Handle case where we consume one character too many.
+	    // Handle case where we consume one character too many by slicing
+	    // the string before the character we just saw, but only if at
+	    // least one character was matched.
 	    if dfa.is_dead_state(state) && i > 0 && !sequence_of_terminals.is_empty() {
 		let new_dfa = self.dfa_builder.build_dfa(sequence_of_terminals[0]);
-		// Call recursively.
-		return self.dmatch(&string[(i-1)..], &new_dfa, sequence_of_terminals[1..].to_vec());
+		// Call recursively. i indexes the string by bytes, so move
+		// back the correct number of bytes to get the last character.
+		return self.dmatch(&string[(i-char_len)..], &new_dfa, sequence_of_terminals[1..].to_vec());
 	    }
 	}
 
@@ -246,7 +249,7 @@ mod tests {
     #[test]
     fn test_dmatch_supports_unicode() {
 	// Make sure dmatch works on tokens that are multiple bytes in UTF-8.
-        let candidate_string = "¡";
+        let candidate_string = "ĠĠhoo";
         let starting_state = DFAState::new(r"[a-zA-Z_]*");
         let accept_sequence = vec![r"\(", r"\)"];
 	let mut matcher = Masker{dfa_builder: DFABuilder::new()};
