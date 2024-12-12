@@ -121,3 +121,19 @@ impl Hash for DFAState {
         self.state_id.hash(state);
     }
 }
+
+/// Compute the union of all states of a list of regexes.
+pub fn all_dfa_states(terminals: &Vec<&str>) -> Vec<DFAState> {
+    let mut res = Vec::new();
+    for terminal in terminals.iter() {
+        let dfa = DFAState::new(terminal);
+        for state in dfa.states() {
+            res.push(DFAState {
+                regex: terminal.to_string().into(),
+                dfa: dfa.dfa.clone(),
+                state_id: state,
+            });
+        }
+    }
+    res
+}
