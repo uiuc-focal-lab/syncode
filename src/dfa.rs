@@ -216,8 +216,7 @@ mod tests {
     #[test]
     fn test_advance() {
 	let mut dfa_state = DFABuilder::new().build_dfa(r"[a-zA-Z_]*");
-	let mut state = dfa_state.advance("indeed");
-//	state = dfa_state.next_eoi_state(state);
+	let state = dfa_state.advance("indeed");
 	assert!(dfa_state.is_match_state(state));
     }
 }

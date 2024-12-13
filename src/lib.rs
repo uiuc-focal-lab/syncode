@@ -2,7 +2,7 @@ use core::iter::Iterator;
 use pyo3::prelude::*;
 use pyo3::pybacked::PyBackedStr;
 use regex_automata::{dfa::Automaton, util::primitives::StateID};
-use std::iter::zip;
+//use std::iter::zip;
 use std::{collections::HashMap, vec::Vec};
 mod dfa;
 use dfa::{all_dfa_states, DFABuilder, DFAState};
@@ -125,7 +125,7 @@ impl Masker {
         &mut self,
         lexical_terminals: Vec<&'a str>,
         model_vocabulary: Vec<&'a str>,
-        length_of_terminal_sequences: usize,
+        _length_of_terminal_sequences: usize,
     ) -> HashMap<(DFAState, Vec<&'a str>), Vec<bool>> {
         let all_states = all_dfa_states(&lexical_terminals);
         let mut store: HashMap<(DFAState, Vec<&str>), Vec<bool>> = HashMap::new();
