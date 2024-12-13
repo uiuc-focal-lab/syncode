@@ -154,6 +154,10 @@ impl Masker {
         store
     }
 
+    fn new() -> Masker {
+        Masker{dfa_builder: DFABuilder::new()}
+    }
+
     // /// Implement algorithm 2 from the paper.
     // fn grammar_mask(
     // 	&mut self,
