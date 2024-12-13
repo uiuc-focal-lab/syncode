@@ -27,14 +27,12 @@ impl Masker {
         starting_state: &mut DFAState,
         sequence_of_terminals: Vec<&str>,
     ) -> bool {
-	println!("{} {}", string, starting_state.regex);
-
 	// We'll need this later.
         let initial_state = starting_state.state_id.clone();
         let mut state: StateID;
+
         // Case 1: the DFA, starting at this state, consumes the entire input and is still alive.
         state = starting_state.advance(string);
-//	println!("{:?}", state);
         // Neither dead nor quit means we could match in the future and so are live.
         if !(starting_state.dfa.is_dead_state(state) || starting_state.dfa.is_quit_state(state)) {
             return true;
