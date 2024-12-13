@@ -71,6 +71,11 @@ impl Masker {
 		continue;
 	    }
 
+	    if starting_state.dfa.is_dead_state(state) && i == 0 {
+		// We failed on the first character.
+		break;
+	    }
+
             // Handle case where we consume one character too many by slicing
             // the string before the character we just saw, but only if we
             // ended up matching at least one character.
