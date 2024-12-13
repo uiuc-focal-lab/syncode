@@ -262,6 +262,14 @@ mod tests {
     }
 
     #[test]
+    fn test_dmatch_ugly_unicode_thing() {
+	// This is a nasty token from an actual LLM. They've played us for fools.
+	let mut masker = Masker::new();
+	let mut starting_state = masker.dfa_builder.build_dfa(r"(?i:0|[1-9]\d*)");
+	assert!(!masker.dmatch("ĠĠ", &mut starting_state, vec![]));
+    }
+
+    #[test]
     fn test_dmatch_supports_unicode_fails() {
         // Make sure dmatch works on tokens that are multiple bytes in UTF-8,
         // even when the match should fail.
@@ -338,7 +346,7 @@ mod tests {
 
     #[test]
     fn test_dfa_mask_store() {
-        let model_vocabulary = vec!["_prime():", ":#", "'''", " hi", "indeed", "n0pe"];
+        let model_vocabulary = vec!["_prime():", "ĠĠ", "'''", " hi", "indeed", "n0pe"];
         let lexical_terminals = vec![r"\(", r"\)", r"[a-zA-Z_]*"];
         let mut matcher = Masker {
             dfa_builder: DFABuilder::new(),
