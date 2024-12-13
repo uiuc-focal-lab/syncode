@@ -67,7 +67,8 @@ impl Masker {
         for (i, c) in string.char_indices() {
             state = starting_state.consume_character(c);
 
-	    if starting_state.dfa.is_match_state(state) || !starting_state.dfa.is_dead_state(state) {
+	    if !starting_state.dfa.is_dead_state(state) {
+		// Keep munching as long as we're alive.
 		continue;
 	    }
 
