@@ -64,15 +64,6 @@ impl DFAState {
         }
     }
 
-    /// Forward methods from inner DFA to this struct.
-    pub fn next_eoi_state(&self, current: StateID) -> StateID {
-	self.dfa.next_eoi_state(current)
-    }
-
-    pub fn is_match_state(&self, id: StateID) -> bool {
-	self.dfa.is_match_state(id)
-    }
-
     /// Convenience function to set the state how we want it.
     pub fn advance(&mut self, input: &str) -> StateID {
 	for c in input.chars() {
@@ -179,44 +170,44 @@ pub fn all_dfa_states(terminals: &Vec<&str>) -> Vec<DFAState> {
 
 #[cfg(test)]
 mod tests {
-    use super::DFABuilder;
+    use super::*;
 
     #[test]
     fn test_consume_character_match() {
 	let mut dfa_state = DFABuilder::new().build_dfa("a");
 	let mut state = dfa_state.consume_character('a');
-	state = dfa_state.next_eoi_state(state);
-	assert!(dfa_state.is_match_state(state));
+	state = dfa_state.dfa.next_eoi_state(state);
+	assert!(dfa_state.dfa.is_match_state(state));
     }
 
     #[test]
     fn test_consume_character_fails_to_match() {
 	let mut dfa_state = DFABuilder::new().build_dfa("a");
 	let mut state = dfa_state.consume_character('b');
-	state = dfa_state.next_eoi_state(state);
-	assert!(!dfa_state.is_match_state(state));
+	state = dfa_state.dfa.next_eoi_state(state);
+	assert!(!dfa_state.dfa.is_match_state(state));
     }
 
     #[test]
     fn test_advance_match() {
 	let mut dfa_state = DFABuilder::new().build_dfa("[ab¥]*");
 	let mut state = dfa_state.advance("aabb¥aab");
-	state = dfa_state.next_eoi_state(state);
-	assert!(dfa_state.is_match_state(state));
+	state = dfa_state.dfa.next_eoi_state(state);
+	assert!(dfa_state.dfa.is_match_state(state));
     }
 
     #[test]
     fn test_advance_fails_to_match() {
 	let mut dfa_state = DFABuilder::new().build_dfa("[ab]*");
 	let mut state = dfa_state.advance("aabba¥ab");
-	state = dfa_state.next_eoi_state(state);
-	assert!(!dfa_state.is_match_state(state));
+	state = dfa_state.dfa.next_eoi_state(state);
+	assert!(!dfa_state.dfa.is_match_state(state));
     }
 
     #[test]
     fn test_advance() {
 	let mut dfa_state = DFABuilder::new().build_dfa(r"[a-zA-Z_]*");
 	let state = dfa_state.advance("indeed");
-	assert!(dfa_state.is_match_state(state));
+	assert!(dfa_state.dfa.is_match_state(state));
     }
 }

@@ -52,7 +52,7 @@ impl Masker {
 		break;
 	    }
 
-	    if starting_state.is_match_state(state) {
+	    if starting_state.dfa.is_match_state(state) {
 		index_reached = i;
 	    }
         }
