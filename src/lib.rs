@@ -84,7 +84,7 @@ impl Masker {
             {
                 let mut new_dfa = self.dfa_builder.build_dfa(sequence_of_terminals[0]);
                 return self.dmatch(
-                    &string.chars().collect::<String>()[(i-1)..],
+                    &string.chars().skip(i-1).collect::<String>(),
                     &mut new_dfa,
                     sequence_of_terminals[1..].to_vec(),
                 );
