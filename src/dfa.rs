@@ -3,8 +3,8 @@ use regex_automata::{
     util::{primitives::StateID, start},
     Anchored,
 };
+use std::collections::{HashMap, VecDeque};
 use std::hash::{Hash, Hasher};
-use std::collections::{VecDeque, HashMap};
 use std::rc::Rc;
 
 type DFACache = HashMap<String, Rc<DFA>>;
@@ -22,31 +22,31 @@ pub struct DFAState {
     pub state_id: StateID,
 }
 
-
-
 /// Construct DFAs with caching. Only one of these should be instantiated in
 /// the lifetime of the program.
 pub struct DFABuilder {
-    cache: DFACache
+    cache: DFACache,
 }
 
 impl DFABuilder {
     /// Initialize with an empty cache.
     pub fn new() -> DFABuilder {
-	DFABuilder{cache: HashMap::new()}
+        DFABuilder {
+            cache: HashMap::new(),
+        }
     }
 
     /// Return a DFAState, either from the cache or building a new one from scratch.
     // FIXME: Remove the clones from this function to accelerate it further.
     pub fn build_dfa(&mut self, regex: &str) -> DFAState {
-	match self.cache.get(regex) {
-	    Some(dfa) => return DFAState::new(regex, dfa.clone()),
-	    None => {
-		let new_dfa = Rc::new(DFA::new(regex).unwrap());
-		self.cache.insert(String::from(regex), new_dfa.clone());
-		return DFAState::new(regex, new_dfa);
-	    }
-	}
+        match self.cache.get(regex) {
+            Some(dfa) => return DFAState::new(regex, dfa.clone()),
+            None => {
+                let new_dfa = Rc::new(DFA::new(regex).unwrap());
+                self.cache.insert(String::from(regex), new_dfa.clone());
+                return DFAState::new(regex, new_dfa);
+            }
+        }
     }
 }
 
@@ -66,10 +66,10 @@ impl DFAState {
 
     /// Convenience function to set the state how we want it.
     pub fn advance(&mut self, input: &str) -> StateID {
-	for c in input.chars() {
-	    self.consume_character(c);
-	}
-	self.state_id
+        for c in input.chars() {
+            self.consume_character(c);
+        }
+        self.state_id
     }
 
     /// Consume a character, starting at the current state, setting and
@@ -79,23 +79,23 @@ impl DFAState {
     /// number of bytes long, and the underlying DFA has bytes as its input
     /// alphabet.
     pub fn consume_character(&mut self, c: char) -> StateID {
-	let char_len = c.len_utf8();
-	// Buffer to store character as bytes. UFT-8 characters are at most 4
-	// bytes long, so allocate a buffer big enough to store the whole
-	// character regardless of how long it turns out to be.
-	let mut buf = [0; 4];
-	c.encode_utf8(&mut buf);
-	for (i, &b) in buf.iter().enumerate() {
-		// The number of bytes per character is variable: we only need to
-		// feed the number of bytes that the character actually is into the
-		// DFA; any more would be incorrect. Break the loop once we've gone
-		// past the end of the character.
-		if i >= char_len {
-		    break;
-		}
-		self.state_id = self.dfa.next_state(self.state_id, b);
-	}
-	self.state_id
+        let char_len = c.len_utf8();
+        // Buffer to store character as bytes. UFT-8 characters are at most 4
+        // bytes long, so allocate a buffer big enough to store the whole
+        // character regardless of how long it turns out to be.
+        let mut buf = [0; 4];
+        c.encode_utf8(&mut buf);
+        for (i, &b) in buf.iter().enumerate() {
+            // The number of bytes per character is variable: we only need to
+            // feed the number of bytes that the character actually is into the
+            // DFA; any more would be incorrect. Break the loop once we've gone
+            // past the end of the character.
+            if i >= char_len {
+                break;
+            }
+            self.state_id = self.dfa.next_state(self.state_id, b);
+        }
+        self.state_id
     }
 
     /// Return all states of a dfa by breadth-first search. There exists a private
@@ -167,47 +167,46 @@ pub fn all_dfa_states(terminals: &Vec<&str>) -> Vec<DFAState> {
     res
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
     fn test_consume_character_match() {
-	let mut dfa_state = DFABuilder::new().build_dfa("a");
-	let mut state = dfa_state.consume_character('a');
-	state = dfa_state.dfa.next_eoi_state(state);
-	assert!(dfa_state.dfa.is_match_state(state));
+        let mut dfa_state = DFABuilder::new().build_dfa("a");
+        let mut state = dfa_state.consume_character('a');
+        state = dfa_state.dfa.next_eoi_state(state);
+        assert!(dfa_state.dfa.is_match_state(state));
     }
 
     #[test]
     fn test_consume_character_fails_to_match() {
-	let mut dfa_state = DFABuilder::new().build_dfa("a");
-	let mut state = dfa_state.consume_character('b');
-	state = dfa_state.dfa.next_eoi_state(state);
-	assert!(!dfa_state.dfa.is_match_state(state));
+        let mut dfa_state = DFABuilder::new().build_dfa("a");
+        let mut state = dfa_state.consume_character('b');
+        state = dfa_state.dfa.next_eoi_state(state);
+        assert!(!dfa_state.dfa.is_match_state(state));
     }
 
     #[test]
     fn test_advance_match() {
-	let mut dfa_state = DFABuilder::new().build_dfa("[ab¥]*");
-	let mut state = dfa_state.advance("aabb¥aab");
-	state = dfa_state.dfa.next_eoi_state(state);
-	assert!(dfa_state.dfa.is_match_state(state));
+        let mut dfa_state = DFABuilder::new().build_dfa("[ab¥]*");
+        let mut state = dfa_state.advance("aabb¥aab");
+        state = dfa_state.dfa.next_eoi_state(state);
+        assert!(dfa_state.dfa.is_match_state(state));
     }
 
     #[test]
     fn test_advance_fails_to_match() {
-	let mut dfa_state = DFABuilder::new().build_dfa("[ab]*");
-	let mut state = dfa_state.advance("aabba¥ab");
-	state = dfa_state.dfa.next_eoi_state(state);
-	assert!(!dfa_state.dfa.is_match_state(state));
+        let mut dfa_state = DFABuilder::new().build_dfa("[ab]*");
+        let mut state = dfa_state.advance("aabba¥ab");
+        state = dfa_state.dfa.next_eoi_state(state);
+        assert!(!dfa_state.dfa.is_match_state(state));
     }
 
     #[test]
     fn test_advance() {
-	let mut dfa_state = DFABuilder::new().build_dfa(r"[a-zA-Z_]*");
-	let state = dfa_state.advance("indeed");
-	assert!(dfa_state.dfa.is_match_state(state));
+        let mut dfa_state = DFABuilder::new().build_dfa(r"[a-zA-Z_]*");
+        let state = dfa_state.advance("indeed");
+        assert!(dfa_state.dfa.is_match_state(state));
     }
 }

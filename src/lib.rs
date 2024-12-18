@@ -27,9 +27,9 @@ impl Masker {
         starting_state: &mut DFAState,
         sequence_of_terminals: Vec<&str>,
     ) -> bool {
-//	println!("{} {}", string, starting_state.regex);
+        //	println!("{} {}", string, starting_state.regex);
 
-	// We'll need this later.
+        // We'll need this later.
         let initial_state = starting_state.state_id.clone();
         let mut state: StateID;
 
@@ -45,37 +45,37 @@ impl Masker {
         // grammars respect the maximum munch principle, so w1 is the maximal
         // matching prefix.
         starting_state.state_id = initial_state; // Reset to initial state.
-	let mut index_reached: usize = 0;
+        let mut index_reached: usize = 0;
         for (i, c) in string.char_indices() {
             state = starting_state.consume_character(c);
-	    if starting_state.dfa.is_dead_state(state) | starting_state.dfa.is_quit_state(state) {
-		break;
-	    }
+            if starting_state.dfa.is_dead_state(state) | starting_state.dfa.is_quit_state(state) {
+                break;
+            }
 
-	    if starting_state.dfa.is_match_state(state) {
-		index_reached = i;
-	    }
+            if starting_state.dfa.is_match_state(state) {
+                index_reached = i;
+            }
         }
 
-	if index_reached > 0 && sequence_of_terminals.is_empty() {
-	    return true;
-	}
-	
+        if index_reached > 0 && sequence_of_terminals.is_empty() {
+            return true;
+        }
+
         // Case 3: A prefix of the string is successfully consumed by the DFA, and
         // dmatch is true starting at the next member of sequence_of_terminals.
         starting_state.state_id = initial_state;
         for (i, c) in string.char_indices() {
             state = starting_state.consume_character(c);
 
-	    if !starting_state.dfa.is_dead_state(state) {
-		// Keep munching as long as we're alive.
-		continue;
-	    }
+            if !starting_state.dfa.is_dead_state(state) {
+                // Keep munching as long as we're alive.
+                continue;
+            }
 
-	    if starting_state.dfa.is_dead_state(state) && i == 0 {
-		// We failed on the first character.
-		break;
-	    }
+            if starting_state.dfa.is_dead_state(state) && i == 0 {
+                // We failed on the first character.
+                break;
+            }
 
             // Handle case where we consume one character too many by slicing
             // the string before the character we just saw, but only if we
@@ -84,7 +84,7 @@ impl Masker {
             {
                 let mut new_dfa = self.dfa_builder.build_dfa(sequence_of_terminals[0]);
                 return self.dmatch(
-                    &string.chars().skip(i-1).collect::<String>(),
+                    &string.chars().skip(i - 1).collect::<String>(),
                     &mut new_dfa,
                     sequence_of_terminals[1..].to_vec(),
                 );
@@ -108,9 +108,9 @@ impl Masker {
     ) -> Vec<bool> {
         let mut mask: Vec<bool> = Vec::new();
         for token in vocabulary {
-	    // Since the state is mutated by dmatch (potentially bad API design
-	    // on my part), make a new one each time we try to match a token.
-	    let mut starting_state = state.clone();
+            // Since the state is mutated by dmatch (potentially bad API design
+            // on my part), make a new one each time we try to match a token.
+            let mut starting_state = state.clone();
             mask.push(self.dmatch(token, &mut starting_state, terminal_sequence.clone()));
         }
         mask
@@ -161,7 +161,9 @@ impl Masker {
     }
 
     fn new() -> Masker {
-        Masker{dfa_builder: DFABuilder::new()}
+        Masker {
+            dfa_builder: DFABuilder::new(),
+        }
     }
 
     // /// Implement algorithm 2 from the paper.
@@ -269,10 +271,10 @@ mod tests {
 
     #[test]
     fn test_dmatch_ugly_unicode_thing() {
-	// This is a nasty token from an actual LLM. They've played us for fools.
-	let mut masker = Masker::new();
-	let mut starting_state = masker.dfa_builder.build_dfa(r"(?i:0|[1-9]\d*)");
-	assert!(!masker.dmatch("ĠĠ", &mut starting_state, vec![]));
+        // This is a nasty token from an actual LLM. They've played us for fools.
+        let mut masker = Masker::new();
+        let mut starting_state = masker.dfa_builder.build_dfa(r"(?i:0|[1-9]\d*)");
+        assert!(!masker.dmatch("ĠĠ", &mut starting_state, vec![]));
     }
 
     #[test]
@@ -314,13 +316,13 @@ mod tests {
 
     #[test]
     fn test_dmatch_accepts_matching_input() {
-	let candidate_string = "indeed";
-	let accept_sequence = vec![r"\(", r"\)"];
+        let candidate_string = "indeed";
+        let accept_sequence = vec![r"\(", r"\)"];
         let mut matcher = Masker {
             dfa_builder: DFABuilder::new(),
         };
         let mut starting_state = matcher.dfa_builder.build_dfa(r"[a-zA-Z_]*");
-	assert!(matcher.dmatch(candidate_string, &mut starting_state, accept_sequence));
+        assert!(matcher.dmatch(candidate_string, &mut starting_state, accept_sequence));
     }
 
     #[test]
