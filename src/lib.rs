@@ -27,6 +27,8 @@ impl Masker {
         starting_state: &mut DFAState,
         sequence_of_terminals: Vec<&str>,
     ) -> bool {
+//	println!("{} {}", string, starting_state.regex);
+
 	// We'll need this later.
         let initial_state = starting_state.state_id.clone();
         let mut state: StateID;
