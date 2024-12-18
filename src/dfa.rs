@@ -40,11 +40,11 @@ impl DFABuilder {
     // FIXME: Remove the clones from this function to accelerate it further.
     pub fn build_dfa(&mut self, regex: &str) -> DFAState {
         match self.cache.get(regex) {
-            Some(dfa) => return DFAState::new(regex, dfa.clone()),
+            Some(dfa) => DFAState::new(regex, dfa.clone()),
             None => {
                 let new_dfa = Rc::new(DFA::new(regex).unwrap());
                 self.cache.insert(String::from(regex), new_dfa.clone());
-                return DFAState::new(regex, new_dfa);
+                DFAState::new(regex, new_dfa)
             }
         }
     }
@@ -59,7 +59,7 @@ impl DFAState {
         let state_id = dfa.start_state(&config).unwrap();
         DFAState {
             regex: regex.into(),
-            dfa: dfa.into(),
+            dfa,
             state_id,
         }
     }

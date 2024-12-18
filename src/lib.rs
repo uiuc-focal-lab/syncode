@@ -30,7 +30,7 @@ impl Masker {
         //	println!("{} {}", string, starting_state.regex);
 
         // We'll need this later.
-        let initial_state = starting_state.state_id.clone();
+        let initial_state = starting_state.state_id;
         let mut state: StateID;
 
         // Case 1: the DFA, starting at this state, consumes the entire input and is still alive.
@@ -362,7 +362,7 @@ mod tests {
         let store = matcher.dfa_mask_store(lexical_terminals, model_vocabulary, 2);
         let candidate_string = "is";
         let mut starting_state = matcher.dfa_builder.build_dfa(r"[a-zA-Z_]*");
-        starting_state.advance(&candidate_string);
+        starting_state.advance(candidate_string);
         assert_eq!(
             store
                 .get(&(
