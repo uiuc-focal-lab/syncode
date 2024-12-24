@@ -7,7 +7,7 @@ from syncode.parsers.grammars.grammar import Grammar
 from syncode.parse_result import AcceptSequence, RemainderState
 
 go_grammar = Grammar('go')
-inc_parser = create_parser(go_grammar)
+inc_parser = create_parser(go_grammar, ignore_whitespace=True)
 
 class TestGoParser(unittest.TestCase):
 

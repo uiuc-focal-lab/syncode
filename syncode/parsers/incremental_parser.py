@@ -154,7 +154,7 @@ class IncrementalParser:
 
         except lark.exceptions.UnexpectedToken as e:
             parse_incomplete = True
-            self._handle_parsing_error(lexer_tokens, token)
+            self._handle_parsing_error(lexer_tokens, token, e)
 
         # Compute current terminal string
         remainder_state, current_term_str, final_terminal = self._get_remainder(partial_code, lexing_incomplete=lexing_incomplete, parse_incomplete=parse_incomplete)            
@@ -175,10 +175,12 @@ class IncrementalParser:
                 remainder_state = RemainderState.INCOMPLETE
                 self.cur_ac_terminals = self.next_ac_terminals
                 self.next_ac_terminals = set()
+
         elif parse_incomplete: # Parsing is incomplete
             remainder_state = RemainderState.INCOMPLETE
             current_term_str = self.parsed_lexer_tokens[-1].value
             final_terminal = self.parsed_lexer_tokens[-1].type
+            
         elif len(self.parsed_lexer_tokens) > 0:
             if self.lexer_pos < len(code): # In this case the final lexical tokens are ignored by the parser
                 remainder_state = RemainderState.COMPLETE
@@ -199,14 +201,14 @@ class IncrementalParser:
         accepts = interactive_parser.accepts()
         return accepts
     
-    def _handle_parsing_error(self, lexer_tokens, token):
+    def _handle_parsing_error(self, lexer_tokens, token, error):
         """
         Handles the error that occurs when the lexer token is not parsed correctly.
         1. If the final token is not parsed correctly, then it is okay.
         2. If a non-final token is not parsed correctly, then it is an issue. We log the warning in that case. 
         """
         if token != lexer_tokens[-1]:
-            self.logger.log_error(f'Error in parsing the token: {token} which is not the last token in the lexer_tokens: {lexer_tokens}')
+            raise error
         else:
             # If it is the final token that gave the error, then it is okay
             self.cur_ac_terminals = self.next_ac_terminals

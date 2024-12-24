@@ -47,7 +47,7 @@ class GoIncrementalParser(IncrementalParser):
                     self._accepts(interactive)
                     )
         except lark.exceptions.UnexpectedToken as e:
-            self._handle_parsing_error(lexer_tokens, token)
+            self._handle_parsing_error(lexer_tokens, token, e)
             parse_incomplete = True
                 
         # Compute current terminal string
