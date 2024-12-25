@@ -8,7 +8,7 @@ from syncode.dfa_mask_store import DFAMaskStore
 from syncode.parsers.grammars import Grammar
 
 # Set to True for debugging
-DEBUG = False
+DEBUG = True
 
 class SyncodeLogitsProcessor(LogitsProcessor):
     """
@@ -38,6 +38,7 @@ class SyncodeLogitsProcessor(LogitsProcessor):
         self.logger = logger
         self.dev_mode = dev_mode
         self.batch_size = num_samples
+        self.parse_failed = False
 
         # For backtracking to syntactically valid completions
         self.last_valid_state: list = []
@@ -90,6 +91,7 @@ class SyncodeLogitsProcessor(LogitsProcessor):
         """
         self.last_valid_state = [0 for _ in range(self.batch_size)]
         self.function_ends = [None for _ in range(self.batch_size)]
+        self.parse_failed = False
 
         prompt_tokens = self.tokenizer.encode(prompt, return_tensors='pt')[0]
         if self.parse_output_only:
@@ -149,7 +151,11 @@ class SyncodeLogitsProcessor(LogitsProcessor):
             except Exception as e:
                 if self.dev_mode == True:
                     raise e
-                self.logger.log(f"Exception while parsing:\n {e}")
+                elif self.parse_failed == False:
+                    self.parse_failed = True
+                    print("-"*50)
+                    print(f"Parsing failed! Falling back to unconstrained decoding.\nException: {e}\nPartial code: {partial_code}\nParsed lexical tokens: {self.inc_parser.parsed_lexer_tokens}")
+                    print("-"*50)
                 continue  # Skip altering the scores for this batch
         
             accept_mask = self.dfa_mask_store.get_accept_mask(r, logger=self.logger)

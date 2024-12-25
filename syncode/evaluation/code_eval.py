@@ -27,6 +27,8 @@ class CodeEval:
         samples = []
         outputs = []
 
+        assert syncode.mode == 'original' or syncode.parse_output_only == False, "The SynCode flag parse_output_only should be False for code evaluation with grammar mode"
+
         if syncode.language == "python":
             stop_words = ["\n\n\n"]
         elif syncode.language == "go":
@@ -49,7 +51,7 @@ class CodeEval:
             logger.log(f"Functional result: {functional_result}")
 
             # Also log these results in a separate file
-            CodeEval.write_results(syncode, out_path, avg_time, functional_result)
+            CodeEval.write_results(syncode, out_path, avg_time, functional_result, num_tasks)
         else: # Debugging a specific task
             debug_task_id = list(problems.keys())[debug_task_id]
             return CodeEval.run_eval_for_task(syncode, num_samples_per_task, format_tabs, problems, samples, pbar, debug_task_id, logger=logger, stop_words=stop_words)
@@ -100,14 +102,15 @@ class CodeEval:
         torch.cuda.empty_cache()
         return all_completions
 
-    def write_results(self, out_path, avg_time, functional_result):
+    def write_results(syncode, out_path, avg_time, functional_result, num_tasks=1):
         """
         Write results to a separate file
         """
         file_path = "results/syncode_results.txt"
         os.makedirs("results", exist_ok=True)
         with open(file_path, "a") as f:
-            f.write(f"{self.model_name} | {self.grammar} | {self.dataset} | {self.parser} | {self.num_samples} | {self.mode}\n")
+            f.write(f"{syncode.model_name} | {syncode.grammar} | {syncode.dataset} | {syncode.parser} | {syncode.num_samples} | {syncode.mode} | num tasks: {num_tasks}\n")
+            f.write(f"Generation args: {syncode.model.gen_args}\n")
             f.write(f"Functional result: {functional_result}\n")
             f.write(f"Output path: {out_path}\n")
             f.write(f"Averge time taken for each task: {avg_time:.2f}s\n")
@@ -136,15 +139,18 @@ class CodeEval:
         return completion
 
     def compute_backup_completion(hf_model, grammar_decoder, function_incomplete, i, raw_completion):
-        fn_ends = sorted(list(set(grammar_decoder.function_ends[i])))
-        if grammar_decoder.function_ends[i] is not None and len(fn_ends) > 1:
-            # if the function end is not None, then the last valid state is the function end
-            last_valid_state = fn_ends[1]
-        else:
-            # otherwise, the last valid state is the last valid state
-            function_incomplete[i] = True
-            last_valid_state = grammar_decoder.last_valid_state[i]
+        if grammar_decoder.function_ends[i] is not None:
+            fn_ends = sorted(list(set(grammar_decoder.function_ends[i])))
+            if len(fn_ends) > 1:
+                # if the function end is not None, then the last valid state is the function end
+                last_valid_state = fn_ends[1]
+                return raw_completion[:last_valid_state]
+        
+        # otherwise, the last valid state is the last valid state
+        function_incomplete[i] = True
+        last_valid_state = grammar_decoder.last_valid_state[i]
 
         # Use when the stop word does not exist in the completion
         backup_completion = raw_completion[:last_valid_state]
         return backup_completion
+    
