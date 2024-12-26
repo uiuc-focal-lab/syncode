@@ -58,12 +58,13 @@ class PythonIncrementalParser(IncrementalParser):
                     self.dedent_queue.append(token)
                     continue
                 else:
-                    self.parsed_lexer_tokens.append(token) # parser_token_seq holds all tokens except _INDENT and _DEDENT
+                    self.parsed_lexer_tokens.append(token) # parsed_token_seq holds all tokens except _INDENT and _DEDENT
 
                     while not len(self.dedent_queue)==0: # Shoot all the dedent tokens that are in the queue
                         self.indent_level.pop()
                         dedent_token = self.dedent_queue.pop()
                         interactive.feed_token(dedent_token)
+                        self.cur_ac_terminals, self.next_ac_terminals = self.next_ac_terminals, self._accepts(interactive)
                 
                 interactive.feed_token(token)
 
@@ -83,8 +84,11 @@ class PythonIncrementalParser(IncrementalParser):
         
         # Compute current terminal string
         remainder_state, current_term_str, final_terminal = self._get_remainder(partial_code, lexing_incomplete=lexing_incomplete, parse_incomplete=parse_incomplete)  
-
+        
+        cur_ac_terminals = self.cur_ac_terminals
+        next_ac_terminals = self.next_ac_terminals
         next_ac_indents = None
+
         if remainder_state == RemainderState.MAYBE_COMPLETE or remainder_state == RemainderState.COMPLETE:
             if len(self.parsed_lexer_tokens) > 0 and self.parsed_lexer_tokens[-1].type == '_NL':
                 last_indent_str = self.parsed_lexer_tokens[-1].value.split('\n')[-1]
@@ -99,10 +103,19 @@ class PythonIncrementalParser(IncrementalParser):
                     next_ac_indents = IndentationConstraint(accept_indents=next_ac_indents)  
 
                 # '_NL' is always accepted in this case
-                self.cur_ac_terminals.add('_NL')
-                self.next_ac_terminals.add('_NL') 
+                cur_ac_terminals.add('_NL')
+                next_ac_terminals.add('_NL') 
 
-        return ParseResult.from_accept_terminals(self.cur_ac_terminals, self.next_ac_terminals, current_term_str, remainder_state, next_ac_indents=next_ac_indents, final_terminal=final_terminal, ignore_terminals=self.base_parser.lexer_conf.ignore)
+                # feed _DEDENT tokens in the interactive parser
+                # See test_grammar_python.test_parser25
+                while not len(self.dedent_queue)==0 and '_DEDENT' in self.next_ac_terminals:
+                    dedent_token = self.dedent_queue.pop()
+                    interactive.feed_token(dedent_token)
+                    self.cur_ac_terminals = self.next_ac_terminals
+                    self.next_ac_terminals = self._accepts(interactive)
+                    next_ac_terminals |= self.next_ac_terminals
+
+        return ParseResult.from_accept_terminals(cur_ac_terminals, next_ac_terminals, current_term_str, remainder_state, next_ac_indents=next_ac_indents, final_terminal=final_terminal, ignore_terminals=self.base_parser.lexer_conf.ignore)
 
     def _update_indent_levels(self, indent_level, indent):
         # if self.cur_pos != len(lexer_tokens): # Store previous indentation levels except the last one
