@@ -47,6 +47,12 @@ class SymbolPosMap:
         """
         return self._pos_map[symbol][idx][1]
 
+    def get_symbol_pos(self, symbol:str, idx:int) -> Tuple[int, int]:
+        """
+        Returns the k-th position of the symbol in the code.
+        """
+        return self._pos_map[symbol][idx]
+
     def get_symbol_pos_all(self, symbol:str) -> list:
         """
         Returns all the positions of the symbol in the code.

@@ -9,72 +9,72 @@ from tqdm import tqdm
 import signal
 from syncode.parsers import create_base_parser
 from syncode.parsers.grammars.grammar import Grammar
-
-prompt_template = """Given a problem description and a question. The task is to parse the problem and the question into first-order logic formulars.
-The grammar of the first-order logic formular is defined as follows:
-1) logical conjunction of expr1 and expr2: expr1 ∧ expr2
-2) logical disjunction of expr1 and expr2: expr1 ∨ expr2
-3) logical exclusive disjunction of expr1 and expr2: expr1 ⊕ expr2
-4) logical negation of expr1: ¬expr1
-5) expr1 implies expr2: expr1 → expr2
-6) expr1 if and only if expr2: expr1 ↔ expr2
-7) logical universal quantification: ∀x
-8) logical existential quantification: ∃x
-------
-Problem:
-All people who regularly drink coffee are dependent on caffeine. People either regularly drink coffee or joke about being addicted to caffeine. No one who jokes about being addicted to caffeine is unaware that caffeine is a drug. Rina is either a student and unaware that caffeine is a drug, or neither a student nor unaware that caffeine is a drug. If Rina is not a person dependent on caffeine and a student, then Rina is either a person dependent on caffeine and a student, or neither a person dependent on caffeine nor a student.
-Question:
-Based on the above information, is the following statement true, false, or uncertain? Rina is either a person who jokes about being addicted to caffeine or is unaware that caffeine is a drug.
-Based on the above information, is the following statement true, false, or uncertain? If Rina is either a person who jokes about being addicted to caffeine and a person who is unaware that caffeine is a drug, or neither a person who jokes about being addicted to caffeine nor a person who is unaware that caffeine is a drug, then Rina jokes about being addicted to caffeine and regularly drinks coffee.
-###
-Predicates:
-Dependent(x) ::: x is a person dependent on caffeine.
-Drinks(x) ::: x regularly drinks coffee.
-Jokes(x) ::: x jokes about being addicted to caffeine.
-Unaware(x) ::: x is unaware that caffeine is a drug.
-Student(x) ::: x is a student.
-Premises:
-∀x (Drinks(x) → Dependent(x)) ::: All people who regularly drink coffee are dependent on caffeine.
-∀x (Drinks(x) ⊕ Jokes(x)) ::: People either regularly drink coffee or joke about being addicted to caffeine.
-∀x (Jokes(x) → ¬Unaware(x)) ::: No one who jokes about being addicted to caffeine is unaware that caffeine is a drug. 
-(Student(rina) ∧ Unaware(rina)) ⊕ ¬(Student(rina) ∨ Unaware(rina)) ::: Rina is either a student and unaware that caffeine is a drug, or neither a student nor unaware that caffeine is a drug. 
-¬(Dependent(rina) ∧ Student(rina)) → (Dependent(rina) ∧ Student(rina)) ⊕ ¬(Dependent(rina) ∨ Student(rina)) ::: If Rina is not a person dependent on caffeine and a student, then Rina is either a person dependent on caffeine and a student, or neither a person dependent on caffeine nor a student.
-Conclusion:
-Jokes(rina) ⊕ Unaware(rina) ::: Rina is either a person who jokes about being addicted to caffeine or is unaware that caffeine is a drug.
-((Jokes(rina) ∧ Unaware(rina)) ⊕ ¬(Jokes(rina) ∨ Unaware(rina))) → (Jokes(rina) ∧ Drinks(rina)) ::: If Rina is either a person who jokes about being addicted to caffeine and a person who is unaware that caffeine is a drug, or neither a person who jokes about being addicted to caffeine nor a person who is unaware that caffeine is a drug, then Rina jokes about being addicted to caffeine and regularly drinks coffee.
-------
-Problem:
-Miroslav Venhoda was a Czech choral conductor who specialized in the performance of Renaissance and Baroque music. Any choral conductor is a musician. Some musicians love music. Miroslav Venhoda published a book in 1946 called Method of Studying Gregorian Chant.
-Question:
-Based on the above information, is the following statement true, false, or uncertain? Miroslav Venhoda loved music.
-Based on the above information, is the following statement true, false, or uncertain? A Czech person wrote a book in 1946.
-Based on the above information, is the following statement true, false, or uncertain? No choral conductor specialized in the performance of Renaissance.
-###
-Predicates:
-Czech(x) ::: x is a Czech person.
-ChoralConductor(x) ::: x is a choral conductor.
-Musician(x) ::: x is a musician.
-Love(x, y) ::: x loves y.
-Author(x, y) ::: x is the author of y.
-Book(x) ::: x is a book.
-Publish(x, y) ::: x is published in year y.
-Specialize(x, y) ::: x specializes in y.
-Premises:
-Czech(miroslav) ∧ ChoralConductor(miroslav) ∧ Specialize(miroslav, renaissance) ∧ Specialize(miroslav, baroque) ::: Miroslav Venhoda was a Czech choral conductor who specialized in the performance of Renaissance and Baroque music.
-∀x (ChoralConductor(x) → Musician(x)) ::: Any choral conductor is a musician.
-∃x (Musician(x) ∧ Love(x, music)) ::: Some musicians love music.
-Book(methodOfStudyingGregorianChant) ∧ Author(miroslav, methodOfStudyingGregorianChant) ∧ Publish(methodOfStudyingGregorianChant, year1946) ::: Miroslav Venhoda published a book in 1946 called Method of Studying Gregorian Chant.
-Conclusion:
-Love(miroslav, music) ::: Miroslav Venhoda loved music.
-∃y (∃x (Czech(x) ∧ Author(x, y) ∧ Book(y) ∧ Publish(y, year1946))) ::: A Czech person wrote a book in 1946.
-¬∃x (ChoralConductor(x) ∧ Specialize(x, renaissance)) ::: No choral conductor specialized in the performance of Renaissance.
-------
-Problem:
-[[PROBLEM]]
-Question:
-[[QUESTION]]
-###
-"""
+import syncode.evaluation.prompt_fol as prompt_fol
+# prompt_template = """Given a problem description and a question. The task is to parse the problem and the question into first-order logic formulars.
+# The grammar of the first-order logic formular is defined as follows:
+# 1) logical conjunction of expr1 and expr2: expr1 ∧ expr2
+# 2) logical disjunction of expr1 and expr2: expr1 ∨ expr2
+# 3) logical exclusive disjunction of expr1 and expr2: expr1 ⊕ expr2
+# 4) logical negation of expr1: ¬expr1
+# 5) expr1 implies expr2: expr1 → expr2
+# 6) expr1 if and only if expr2: expr1 ↔ expr2
+# 7) logical universal quantification: ∀x
+# 8) logical existential quantification: ∃x
+# ------
+# Problem:
+# All people who regularly drink coffee are dependent on caffeine. People either regularly drink coffee or joke about being addicted to caffeine. No one who jokes about being addicted to caffeine is unaware that caffeine is a drug. Rina is either a student and unaware that caffeine is a drug, or neither a student nor unaware that caffeine is a drug. If Rina is not a person dependent on caffeine and a student, then Rina is either a person dependent on caffeine and a student, or neither a person dependent on caffeine nor a student.
+# Question:
+# Based on the above information, is the following statement true, false, or uncertain? Rina is either a person who jokes about being addicted to caffeine or is unaware that caffeine is a drug.
+# Based on the above information, is the following statement true, false, or uncertain? If Rina is either a person who jokes about being addicted to caffeine and a person who is unaware that caffeine is a drug, or neither a person who jokes about being addicted to caffeine nor a person who is unaware that caffeine is a drug, then Rina jokes about being addicted to caffeine and regularly drinks coffee.
+# ###
+# Predicates:
+# Dependent(x) ::: x is a person dependent on caffeine.
+# Drinks(x) ::: x regularly drinks coffee.
+# Jokes(x) ::: x jokes about being addicted to caffeine.
+# Unaware(x) ::: x is unaware that caffeine is a drug.
+# Student(x) ::: x is a student.
+# Premises:
+# ∀x (Drinks(x) → Dependent(x)) ::: All people who regularly drink coffee are dependent on caffeine.
+# ∀x (Drinks(x) ⊕ Jokes(x)) ::: People either regularly drink coffee or joke about being addicted to caffeine.
+# ∀x (Jokes(x) → ¬Unaware(x)) ::: No one who jokes about being addicted to caffeine is unaware that caffeine is a drug. 
+# (Student(rina) ∧ Unaware(rina)) ⊕ ¬(Student(rina) ∨ Unaware(rina)) ::: Rina is either a student and unaware that caffeine is a drug, or neither a student nor unaware that caffeine is a drug. 
+# ¬(Dependent(rina) ∧ Student(rina)) → (Dependent(rina) ∧ Student(rina)) ⊕ ¬(Dependent(rina) ∨ Student(rina)) ::: If Rina is not a person dependent on caffeine and a student, then Rina is either a person dependent on caffeine and a student, or neither a person dependent on caffeine nor a student.
+# Conclusion:
+# Jokes(rina) ⊕ Unaware(rina) ::: Rina is either a person who jokes about being addicted to caffeine or is unaware that caffeine is a drug.
+# ((Jokes(rina) ∧ Unaware(rina)) ⊕ ¬(Jokes(rina) ∨ Unaware(rina))) → (Jokes(rina) ∧ Drinks(rina)) ::: If Rina is either a person who jokes about being addicted to caffeine and a person who is unaware that caffeine is a drug, or neither a person who jokes about being addicted to caffeine nor a person who is unaware that caffeine is a drug, then Rina jokes about being addicted to caffeine and regularly drinks coffee.
+# ------
+# Problem:
+# Miroslav Venhoda was a Czech choral conductor who specialized in the performance of Renaissance and Baroque music. Any choral conductor is a musician. Some musicians love music. Miroslav Venhoda published a book in 1946 called Method of Studying Gregorian Chant.
+# Question:
+# Based on the above information, is the following statement true, false, or uncertain? Miroslav Venhoda loved music.
+# Based on the above information, is the following statement true, false, or uncertain? A Czech person wrote a book in 1946.
+# Based on the above information, is the following statement true, false, or uncertain? No choral conductor specialized in the performance of Renaissance.
+# ###
+# Predicates:
+# Czech(x) ::: x is a Czech person.
+# ChoralConductor(x) ::: x is a choral conductor.
+# Musician(x) ::: x is a musician.
+# Love(x, y) ::: x loves y.
+# Author(x, y) ::: x is the author of y.
+# Book(x) ::: x is a book.
+# Publish(x, y) ::: x is published in year y.
+# Specialize(x, y) ::: x specializes in y.
+# Premises:
+# Czech(miroslav) ∧ ChoralConductor(miroslav) ∧ Specialize(miroslav, renaissance) ∧ Specialize(miroslav, baroque) ::: Miroslav Venhoda was a Czech choral conductor who specialized in the performance of Renaissance and Baroque music.
+# ∀x (ChoralConductor(x) → Musician(x)) ::: Any choral conductor is a musician.
+# ∃x (Musician(x) ∧ Love(x, music)) ::: Some musicians love music.
+# Book(methodOfStudyingGregorianChant) ∧ Author(miroslav, methodOfStudyingGregorianChant) ∧ Publish(methodOfStudyingGregorianChant, year1946) ::: Miroslav Venhoda published a book in 1946 called Method of Studying Gregorian Chant.
+# Conclusion:
+# Love(miroslav, music) ::: Miroslav Venhoda loved music.
+# ∃y (∃x (Czech(x) ∧ Author(x, y) ∧ Book(y) ∧ Publish(y, year1946))) ::: A Czech person wrote a book in 1946.
+# ¬∃x (ChoralConductor(x) ∧ Specialize(x, renaissance)) ::: No choral conductor specialized in the performance of Renaissance.
+# ------
+# Problem:
+# [[PROBLEM]]
+# Question:
+# [[QUESTION]]
+# ###
+# """
 
 class FOLEval:
     @staticmethod
@@ -87,12 +87,8 @@ class FOLEval:
             syncode.grammar_decoder.parse_output_only = True # Do not parse input+output
 
         pbar = tqdm(total=len(problems) * syncode.num_samples)
-        results = {}
-        samples = []
-        count_pass = 0
-        count_compile_error = 0
-        count_syn_error = 0
-        count_exec_error = 0
+        results, samples = {}, []
+        count_pass, count_compile_error, count_syn_error, count_exec_error  = 0, 0, 0, 0
         fol_parser = create_base_parser(Grammar('prover9'))
         
         for task_id, problem in enumerate(problems):
@@ -106,51 +102,13 @@ class FOLEval:
             logic_program = completion.split('------')[0]
             
             # Execute the logic program
-            answer = None
-            compiles = False
-            rand_ans = False
-            error_message = None
+            res = FOLEval.evaluate_output(fol_parser, task_id, problem, logic_program)
 
-            try:
-                fol_parser.parse(logic_program)
-                is_parsed = True
-            except:
-                is_parsed = False
+            count_pass += (res['answer'] == res['ground_truth'])
+            count_compile_error += (not res['compiles'])
+            count_syn_error += (not res['is_parsed'])
+            count_exec_error += res['exec_error']
 
-            try:
-                program = FOL_Prover9_Program(logic_program)
-                if program.compiles:
-                    compiles = True
-                else:
-                    raise Exception("Failed to compile logic program")
-                answer, error_message = program.execute_program()
-                answer = program.answer_mapping(answer)
-            except Exception as e:
-                count_exec_error += 1
-                print(e)
-                error_message = str(e)
-
-            if answer is None:
-                answer = random.choice(['A', 'B', 'C'])
-                rand_ans = True
-
-            map_label_to_answer = {'True': 'A', 'False': 'B', 'Uncertain': 'C'}
-            ground_truth = map_label_to_answer[problem['label']]
-
-            res = dict(
-                task_id=task_id,
-                passed=(answer == ground_truth),
-                compiles=compiles,
-                is_parsed=is_parsed,
-                random=(rand_ans),
-                logic_program=logic_program,
-                answer=answer,  
-                ground_truth=ground_truth,
-                error_message=error_message,
-            )
-            count_pass += (answer == ground_truth)
-            count_compile_error += (not compiles)
-            count_syn_error += (not is_parsed)
             samples += [res]
             pbar.update(syncode.num_samples)
         
@@ -162,11 +120,61 @@ class FOLEval:
         print(f"Syntax error rate: {count_syn_error}/{len(problems)}")
         pbar.close()
 
+
+    @staticmethod
+    def evaluate_output(fol_parser, task_id, problem, logic_program):
+        answer = None
+        compiles = False
+        rand_ans = False
+        error_message = None
+        exec_error = False
+
+        try:
+            fol_parser.parse(logic_program)
+            is_parsed = True
+        except:
+            is_parsed = False
+
+        try:
+            program = FOL_Prover9_Program(logic_program)
+            if program.compiles:
+                compiles = True
+            else:
+                error_message = program.error_message
+                raise Exception("Compilation error")
+            answer, error_message = program.execute_program()
+            answer = program.answer_mapping(answer)
+        except Exception as e:
+            exec_error = True
+
+        if answer is None:
+            answer = random.choice(['A', 'B', 'C'])
+            rand_ans = True
+
+        map_label_to_answer = {'True': 'A', 'False': 'B', 'Uncertain': 'C'}
+        ground_truth = map_label_to_answer[problem['label']]
+
+        res = dict(
+                task_id=task_id,
+                problem=problem['context'],
+                passed=(answer == ground_truth),
+                random=(rand_ans),
+                logic_program=logic_program,
+                answer=answer,  
+                ground_truth=ground_truth,
+                error_message=error_message,
+                is_parsed=is_parsed,
+                compiles=compiles,
+                exec_error=exec_error,
+            )
+        
+        return res
+
     @staticmethod
     def _prompt_folio(test_data):
         problem = test_data['context']
         question = test_data['question'].strip()
-        full_prompt = prompt_template.replace('[[PROBLEM]]', problem).replace('[[QUESTION]]', question)
+        full_prompt = prompt_fol.prompt_template.replace('[[PROBLEM]]', problem).replace('[[QUESTION]]', question)
         return full_prompt
 
 class FOL_Parser:
@@ -324,7 +332,7 @@ class FOL_Formula:
 
         try:
             self.parser = FOL_Parser()
-            tree = parse_with_timeout(str_fol, 10)
+            tree = parse_with_timeout(str_fol, 30)
             self.tree = tree
             self.is_valid = tree is not None
             if self.is_valid:
@@ -522,12 +530,14 @@ class FOL_Prover9_Program:
             for premise in self.logic_premises:
                 fol_rule = FOL_Formula(premise)
                 if fol_rule.is_valid == False:
+                    self.error_message = f"Premise {premise} is not a valid FOL formula"
                     return False
                 prover9_rule = Prover9_FOL_Formula(fol_rule)
                 self.prover9_premises.append(prover9_rule.formula)
 
             fol_conclusion = FOL_Formula(self.logic_conclusion)
             if fol_conclusion.is_valid == False:
+                self.error_message = f"Conclusion {self.logic_conclusion} is not a valid FOL formula"
                 return False
             self.prover9_conclusion = Prover9_FOL_Formula(fol_conclusion).formula
             return True
