@@ -173,7 +173,7 @@ func main() {{
         partial_code = 'package main\n\nimport (\n\t"encoding/json"\n\t"reflect"\n)\nfunc numerical_letter_grade (grades []interface{}) []string {\n\tletter_grades := make([]string, len(grades))\n\tfor i, grade := range grades {\n\t\tswitch grade.('
         res = inc_parser.get_acceptable_next_terminals(partial_code)
         self.assertIn(AcceptSequence(['LPAR', 'TYPE']), res.accept_sequences)
-        self.assertIn(AcceptSequence(['LPAR', '__IGNORE_0']), res.accept_sequences)
+        self.assertIn(AcceptSequence(['LPAR', '__IGNORE_0', 'NAME']), res.accept_sequences)
 
     def test_go_parser16(self):
         inc_parser.reset()
