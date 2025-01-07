@@ -63,12 +63,6 @@ class ParseResult:
                         accept_sequences.add(AcceptSequence([final_terminal, t2]))
                     
                     if ignore_terminals is not None:
-                        # Since ignore terminals are allowed anywhere in the code (final terminal, ignore terminal) is also a valid accept sequence
-                        for tignore in ignore_terminals:
-                            accept_sequences.add(AcceptSequence([final_terminal, tignore]))
-                        
-                        # These 3 length accept sequences are useful in under-approximating 
-                        # `grammar_strict` mode as they help improve the precision of SynCode
                         for tignore in ignore_terminals:
                             for t2 in next_accept_terminals:
                                 accept_sequences.add(AcceptSequence([final_terminal, tignore, t2]))

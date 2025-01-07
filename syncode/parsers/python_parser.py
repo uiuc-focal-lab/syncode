@@ -32,10 +32,10 @@ class PythonIncrementalParser(IncrementalParser):
             tab_len = indent_type.count(' ')
         return tab_len
 
-    def get_acceptable_next_terminals(self, code) -> ParseResult:
+    def get_acceptable_next_terminals(self, partial_code) -> ParseResult:
         # Stores the sequence of tokens that the parser has seen in the order  
         interactive = self.interactive
-        lexer_tokens = self._lex_code(code)
+        lexer_tokens, lexing_incomplete = self._lex_code(partial_code)
 
         # Restore the previous state of the parser
         self._restore_recent_parser_state(lexer_tokens)
@@ -44,6 +44,7 @@ class PythonIncrementalParser(IncrementalParser):
 
         # Parse the tokens
         self.time_accepts = 0
+        parse_incomplete = False
         
         try:
             while self.cur_pos < len(lexer_tokens):
@@ -57,12 +58,13 @@ class PythonIncrementalParser(IncrementalParser):
                     self.dedent_queue.append(token)
                     continue
                 else:
-                    self.parsed_lexer_tokens.append(token) # parser_token_seq holds all tokens except _INDENT and _DEDENT
+                    self.parsed_lexer_tokens.append(token) # parsed_token_seq holds all tokens except _INDENT and _DEDENT
 
                     while not len(self.dedent_queue)==0: # Shoot all the dedent tokens that are in the queue
                         self.indent_level.pop()
                         dedent_token = self.dedent_queue.pop()
                         interactive.feed_token(dedent_token)
+                        self.cur_ac_terminals, self.next_ac_terminals = self.next_ac_terminals, self._accepts(interactive)
                 
                 interactive.feed_token(token)
 
@@ -75,27 +77,20 @@ class PythonIncrementalParser(IncrementalParser):
                     indent_levels=copy.copy(self.indent_level)
                 )
         except lark.exceptions.UnexpectedToken as e:
-            self._handle_parsing_error(lexer_tokens, token)
+            parse_incomplete = True
+            self._handle_parsing_error(lexer_tokens, token, e)
 
         remainder_state, final_terminal = None, None
+        
         # Compute current terminal string
-        if self.lexer_pos < len(code):
-            remainder_state = RemainderState.INCOMPLETE
-            current_term_str = code[self.lexer_pos:]
-
-            current_term_str = current_term_str.lstrip(' ') # Remove space from the beginning
-            if current_term_str == '':
-                remainder_state = RemainderState.COMPLETE
-        else:
-            # Although this is a complete terminal, it may happen that this may be just prefix of some other terminal
-            # e.g., 'de' may seem like a variable name that is complete, but it may be just a prefix of 'def'
-            current_term_str = self.parsed_lexer_tokens[-1].value
-            remainder_state = RemainderState.MAYBE_COMPLETE
-            final_terminal = self.parsed_lexer_tokens[-1].type
-
+        remainder_state, current_term_str, final_terminal = self._get_remainder(partial_code, lexing_incomplete=lexing_incomplete, parse_incomplete=parse_incomplete)  
+        
+        cur_ac_terminals = self.cur_ac_terminals
+        next_ac_terminals = self.next_ac_terminals
         next_ac_indents = None
+
         if remainder_state == RemainderState.MAYBE_COMPLETE or remainder_state == RemainderState.COMPLETE:
-            if self.parsed_lexer_tokens[-1].type == '_NL':
+            if len(self.parsed_lexer_tokens) > 0 and self.parsed_lexer_tokens[-1].type == '_NL':
                 last_indent_str = self.parsed_lexer_tokens[-1].value.split('\n')[-1]
                 last_indent = last_indent_str.count(' ') + last_indent_str.count('\t') * self.tab_len
                 next_ac_indents = [indent-last_indent for indent in self.indent_level if indent >= last_indent]
@@ -108,14 +103,19 @@ class PythonIncrementalParser(IncrementalParser):
                     next_ac_indents = IndentationConstraint(accept_indents=next_ac_indents)  
 
                 # '_NL' is always accepted in this case
-                self.cur_ac_terminals.add('_NL')
-                self.next_ac_terminals.add('_NL') 
+                cur_ac_terminals.add('_NL')
+                next_ac_terminals.add('_NL') 
 
-        else: # Since current terminal is incomplete, next token should add to current terminal
-            self.cur_ac_terminals = self.next_ac_terminals
-            self.next_ac_terminals = set()
+                # feed _DEDENT tokens in the interactive parser
+                # See test_grammar_python.test_parser25
+                while not len(self.dedent_queue)==0 and '_DEDENT' in self.next_ac_terminals:
+                    dedent_token = self.dedent_queue.pop()
+                    interactive.feed_token(dedent_token)
+                    self.cur_ac_terminals = self.next_ac_terminals
+                    self.next_ac_terminals = self._accepts(interactive)
+                    next_ac_terminals |= self.next_ac_terminals
 
-        return ParseResult.from_accept_terminals(self.cur_ac_terminals, self.next_ac_terminals, current_term_str, remainder_state, next_ac_indents=next_ac_indents, final_terminal=final_terminal, ignore_terminals=self.base_parser.lexer_conf.ignore)
+        return ParseResult.from_accept_terminals(cur_ac_terminals, next_ac_terminals, current_term_str, remainder_state, next_ac_indents=next_ac_indents, final_terminal=final_terminal, ignore_terminals=self.base_parser.lexer_conf.ignore)
 
     def _update_indent_levels(self, indent_level, indent):
         # if self.cur_pos != len(lexer_tokens): # Store previous indentation levels except the last one
@@ -131,6 +131,7 @@ class PythonIncrementalParser(IncrementalParser):
         interactive = self.base_parser.parse_interactive(code)
         lexer_state = interactive.lexer_thread.state
         indenter: PythonIndenter = self.base_parser.lexer_conf.postlex
+        lexing_incomplete = False
 
         # Reset the indentation level
         indenter.indent_level, indenter.paren_level = [0], 0
@@ -154,11 +155,12 @@ class PythonIncrementalParser(IncrementalParser):
                         indenter.paren_level -= 1
                         assert indenter.paren_level >= 0
         except lark.exceptions.UnexpectedCharacters as e: 
+            lexing_incomplete = True
             pass # This may happen when the partial code has an ignore terminal
         except EOFError as e:
             pass
 
-        return lexer_tokens
+        return lexer_tokens, lexing_incomplete
 
 
 class PythonIndenter(Indenter):

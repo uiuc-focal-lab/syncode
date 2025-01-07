@@ -1,9 +1,7 @@
 import unittest
 import sys, os
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../')
-from syncode.parsers.python_parser import PythonIncrementalParser
 from syncode.parsers import create_parser
-import syncode.common
 from transformers import (
     LlamaTokenizer,
 )
@@ -11,7 +9,7 @@ from syncode.parse_result import AcceptSequence, RemainderState
 from syncode.parsers.grammars.grammar import Grammar
 
 python_grammar = Grammar('python')
-inc_parser = create_parser(python_grammar)
+inc_parser = create_parser(python_grammar, ignore_whitespace=True)
 
 class TestPythonParser(unittest.TestCase):
     @unittest.skip("Skipping the correctness comparison test.")
@@ -132,6 +130,7 @@ def foo():
         inc_parser.reset()
         partial_code = 'from typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n\tpar = []\n\tfor i in par:\n\t\tif i == \'Hello'
         r = inc_parser.get_acceptable_next_terminals(partial_code)
+        print(inc_parser._ignore_whitespace)
         self.assertEqual(r.remainder, "'Hello")
 
     def test_parser10(self):
@@ -313,10 +312,34 @@ def cat():
         inc_parser.reset()
         partial_code = "def make_palindrome(string: str):\n\tfor i i"
         r = inc_parser.get_acceptable_next_terminals(partial_code)
+        print(r)
         assert r.remainder == 'i'
         assert AcceptSequence(['IN']) in r.accept_sequences
-        # TODO: FIX THIS TEST. 
-        # assert r.remainder_state == RemainderState.INCOMPLETE
+    
+    def test_parser25(self):
+        inc_parser.reset()
+        partial_code = "def foo(string: str):\n\tif string == 'hello':\n\t\treturn 'world'\n\t"
+        r = inc_parser.get_acceptable_next_terminals(partial_code)
+        assert AcceptSequence(['_NL', 'ELSE']) in r.accept_sequences
+        assert AcceptSequence(['_NL', 'ELIF']) in r.accept_sequences
+        
+        inc_parser.reset()
+        partial_code = "def foo(string1: str, string2: str):\n\tif string1 == 'hello':\n\t\tif string2 == 'world':\n\t\t\treturn 'world'\n\t\t"
+        r = inc_parser.get_acceptable_next_terminals(partial_code)
+        assert AcceptSequence(['_NL', 'ELSE']) in r.accept_sequences
+        assert AcceptSequence(['_NL', 'ELIF']) in r.accept_sequences
+
+        inc_parser.reset()
+        partial_code = "def foo(string1: str, string2: str):\n\tif string1 == 'hello':\n\t\tif string2 == 'world':\n\t\t\treturn 'world'\n\t\t\t"
+        r = inc_parser.get_acceptable_next_terminals(partial_code)
+        assert not AcceptSequence(['_NL', 'ELSE']) in r.accept_sequences
+        assert not AcceptSequence(['_NL', 'ELIF']) in r.accept_sequences
+
+        inc_parser.reset()
+        partial_code = "def foo(string1: str, string2: str):\n\tif string1 == 'hello':\n\t\tif string2 == 'world':\n\t\t\treturn 'world'\n\t\telse"
+        r = inc_parser.get_acceptable_next_terminals(partial_code)
+        assert AcceptSequence(['ELSE', 'COLON']) in r.accept_sequences
+
 
 if __name__ == "__main__":
     unittest.main()
