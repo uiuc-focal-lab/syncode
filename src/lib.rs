@@ -7,6 +7,8 @@ use std::{collections::HashMap, vec::Vec};
 mod dfa;
 use dfa::{all_dfa_states, DFABuilder, DFAState};
 
+mod parse;
+
 /// A struct to encapsulate a cache for building DFAs. This has too many layers
 /// of indirection; for now it's just proof of concept.
 struct Masker {
