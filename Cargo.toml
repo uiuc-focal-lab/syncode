@@ -11,10 +11,6 @@ crate-type = ["cdylib"]
 
 [dependencies]
 regex-automata = "0.4.9"
-lrtable = "0.13.8"
-lrlex = "0.13.8"
-lrpar = "0.13.8"
-cfgrammar = "0.13.8"
 regex = "1.11.1"
 
 [profile.release]
