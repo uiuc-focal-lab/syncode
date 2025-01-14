@@ -1,3 +1,4 @@
+use pyo3::prelude::*;
 use regex_automata::{
     dfa::{dense, Automaton},
     util::{primitives::StateID, start},
@@ -5,31 +6,35 @@ use regex_automata::{
 };
 use std::collections::{HashMap, VecDeque};
 use std::hash::{Hash, Hasher};
-use std::rc::Rc;
+use std::sync::Arc;
 
-type DFACache = HashMap<String, Rc<DFA>>;
+type DFACache = HashMap<String, Arc<DFA>>;
 type DFA = dense::DFA<Vec<u32>>;
 
 /// A DFA along with its state. Generic to facilitate experiementation with
 /// different implementations of DFA.
+#[pyclass(eq, hash, frozen)]
 #[derive(Clone, Debug)]
 pub struct DFAState {
     /// The regex representing this dfa.
     pub regex: Box<str>,
     /// The actual DFA implementation from the library.
-    pub dfa: Rc<DFA>,
+    pub dfa: Arc<DFA>,
     /// The state of this DFA. Defaults to the starting state of the DFA.
     pub state_id: StateID,
 }
 
 /// Construct DFAs with caching. Only one of these should be instantiated in
 /// the lifetime of the program.
+#[pyclass]
 pub struct DFABuilder {
     cache: DFACache,
 }
 
+#[pymethods]
 impl DFABuilder {
     /// Initialize with an empty cache.
+    #[new]
     pub fn new() -> DFABuilder {
         DFABuilder {
             cache: HashMap::new(),
@@ -38,22 +43,46 @@ impl DFABuilder {
 
     /// Return a DFAState, either from the cache or building a new one from scratch.
     // FIXME: Remove the clones from this function to accelerate it further.
-    pub fn build_dfa(&mut self, regex: &str) -> DFAState {
-        match self.cache.get(regex) {
+    pub fn build_dfa(&mut self, regex: String) -> DFAState {
+        match self.cache.get(&regex) {
             Some(dfa) => DFAState::new(regex, dfa.clone()),
             None => {
-                let new_dfa = Rc::new(DFA::new(regex).unwrap());
-                self.cache.insert(String::from(regex), new_dfa.clone());
+                let new_dfa = Arc::new(DFA::new(&regex).unwrap());
+                self.cache.insert(regex.clone(), new_dfa.clone());
                 DFAState::new(regex, new_dfa)
             }
         }
     }
 }
 
+#[pymethods]
+impl DFAState {
+    /// For the Python interface, make advance return the whole DFAState rather than the StateID.
+    /// TODO: This is probably a better way to do it than returning the StateID.
+    #[pyo3(name="advance")]
+    pub fn py_advance(&self, input: String) -> DFAState {
+        let mut dfa = self.clone();
+        for c in input.chars() {
+            dfa.consume_character(c);
+        }
+        dfa.clone()
+    }
+
+    #[getter(state_id)]
+    fn state_id(&self) -> u32 {
+	self.state_id.as_u32()
+    }
+
+    #[getter(regex)]
+    fn regex(&self) -> String {
+	self.regex.to_string()
+    }
+}
+
 /// A dense implementation of the DFAState abstraction.
 impl DFAState {
     /// Encapsulate the kluge necessary to set up the DFA correctly for Syncode's use case.
-    fn new(regex: &str, dfa: Rc<DFA>) -> DFAState {
+    fn new(regex: String, dfa: Arc<DFA>) -> DFAState {
         // We always want the DFA to match starting from the beginning of the string.
         let config = start::Config::new().anchored(Anchored::Yes);
         let state_id = dfa.start_state(&config).unwrap();
@@ -65,7 +94,7 @@ impl DFAState {
     }
 
     /// Convenience function to set the state how we want it.
-    pub fn advance(&mut self, input: &str) -> StateID {
+    pub fn advance(&mut self, input: String) -> StateID {
         for c in input.chars() {
             self.consume_character(c);
         }
@@ -149,13 +178,12 @@ impl Hash for DFAState {
         self.state_id.hash(state);
     }
 }
-
 /// Compute the union of all states of a list of regexes.
-pub fn all_dfa_states(terminals: &Vec<&str>) -> Vec<DFAState> {
+pub fn all_dfa_states(terminals: &Vec<String>) -> Vec<DFAState> {
     let mut res = Vec::new();
     let mut builder = DFABuilder::new();
     for terminal in terminals.iter() {
-        let dfa = builder.build_dfa(terminal);
+        let dfa = builder.build_dfa(terminal.clone());
         for state in dfa.states() {
             res.push(DFAState {
                 regex: terminal.to_string().into(),
@@ -173,7 +201,7 @@ mod tests {
 
     #[test]
     fn test_consume_character_match() {
-        let mut dfa_state = DFABuilder::new().build_dfa("a");
+        let mut dfa_state = DFABuilder::new().build_dfa("a".to_string());
         let mut state = dfa_state.consume_character('a');
         state = dfa_state.dfa.next_eoi_state(state);
         assert!(dfa_state.dfa.is_match_state(state));
@@ -181,7 +209,7 @@ mod tests {
 
     #[test]
     fn test_consume_character_fails_to_match() {
-        let mut dfa_state = DFABuilder::new().build_dfa("a");
+        let mut dfa_state = DFABuilder::new().build_dfa("a".to_string());
         let mut state = dfa_state.consume_character('b');
         state = dfa_state.dfa.next_eoi_state(state);
         assert!(!dfa_state.dfa.is_match_state(state));
@@ -189,24 +217,24 @@ mod tests {
 
     #[test]
     fn test_advance_match() {
-        let mut dfa_state = DFABuilder::new().build_dfa("[ab¥]*");
-        let mut state = dfa_state.advance("aabb¥aab");
+        let mut dfa_state = DFABuilder::new().build_dfa("[ab¥]*".to_string());
+        let mut state = dfa_state.advance("aabb¥aab".to_string());
         state = dfa_state.dfa.next_eoi_state(state);
         assert!(dfa_state.dfa.is_match_state(state));
     }
 
     #[test]
     fn test_advance_fails_to_match() {
-        let mut dfa_state = DFABuilder::new().build_dfa("[ab]*");
-        let mut state = dfa_state.advance("aabba¥ab");
+        let mut dfa_state = DFABuilder::new().build_dfa("[ab]*".to_string());
+        let mut state = dfa_state.advance("aabba¥ab".to_string());
         state = dfa_state.dfa.next_eoi_state(state);
         assert!(!dfa_state.dfa.is_match_state(state));
     }
 
     #[test]
     fn test_advance() {
-        let mut dfa_state = DFABuilder::new().build_dfa(r"[a-zA-Z_]*");
-        let state = dfa_state.advance("indeed");
+        let mut dfa_state = DFABuilder::new().build_dfa(r"[a-zA-Z_]*".to_string());
+        let state = dfa_state.advance("indeed".to_string());
         assert!(dfa_state.dfa.is_match_state(state));
     }
 }
