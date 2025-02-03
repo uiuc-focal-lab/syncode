@@ -3,25 +3,25 @@ Computers deal with numbers, but humans deal with text. The tokenizer is the com
 
 # Characters, graphemes, codepoints, encodings, bytes, oh my!
 
-This section introduces <a href="#org5725d5a">code point</a>​s, <a href="#orgafb63af">character</a>​s, and <a href="#orge2a8879">character encoding scheme</a>​s. I include the relevant concepts from the Unicode Standard&rsquo;s glossary (Commitee 2025) in a footnote.<sup><a id="fnr.1" class="footref" href="#fn.1" role="doc-backlink">1</a></sup> I will attempt to use these terms assiduously as they are defined in the Unicode Standard, even though these meanings are not always intuitive. An <a href="#org52b13fa">abstract character</a> is a unit of information used for the storage and manipulation of text. A <a href="#org5725d5a">code point</a> is a number. An <a href="#org74dc706">encoded character</a> is a mapping between an <a href="#org52b13fa">abstract character</a> and a <a href="#org5725d5a">code point</a>. I will represent <a href="#org5725d5a">code point</a>​s as hexidecimal numbers preceded by &ldquo;U+&rdquo;.
+This section introduces <a href="#org40825ad">code point</a>​s, <a href="#orgfcac13b">character</a>​s, and <a href="#orgcd29793">character encoding scheme</a>​s. I include the relevant concepts from the Unicode Standard&rsquo;s glossary (Commitee 2025) in a footnote.<sup><a id="fnr.1" class="footref" href="#fn.1" role="doc-backlink">1</a></sup> I will attempt to use these terms assiduously as they are defined in the Unicode Standard, even though these meanings are not always intuitive. An <a href="#org45b30fd">abstract character</a> is a unit of information used for the storage and manipulation of text. A <a href="#org40825ad">code point</a> is a number. An <a href="#org7f8c1fe">encoded character</a> is a mapping between an <a href="#org45b30fd">abstract character</a> and a <a href="#org40825ad">code point</a>. I will represent <a href="#org40825ad">code point</a>​s as hexidecimal numbers preceded by &ldquo;U+&rdquo;.
 
-> 你 is an <a href="#org52b13fa">abstract character</a>, pronounced *nǐ* and meaning &ldquo;you&rdquo;.
+> 你 is an <a href="#org45b30fd">abstract character</a>, pronounced *nǐ* and meaning &ldquo;you&rdquo;.
 > 
-> U+4F60 is a <a href="#org5725d5a">code point</a>, a number whose decimal value is 20320.
+> U+4F60 is a <a href="#org40825ad">code point</a>, a number whose decimal value is 20320.
 > 
-> The mapping 你 ↔ U+4F60 is an <a href="#org74dc706">encoded character</a>, indicating that under the Unicode Standard, the <a href="#org52b13fa">abstract character</a> 你 is uniquely associated with the <a href="#org5725d5a">code point</a> U+4F60.
+> The mapping 你 ↔ U+4F60 is an <a href="#org7f8c1fe">encoded character</a>, indicating that under the Unicode Standard, the <a href="#org45b30fd">abstract character</a> 你 is uniquely associated with the <a href="#org40825ad">code point</a> U+4F60.
 
-We can represent these <a href="#org5725d5a">code point</a>​s in the computer in many different ways. A system of mapping from <a href="#org5725d5a">code point</a>​s to a binary representation in memory is called a <a href="#orge2a8879">character encoding scheme</a>. For a number of practical and historical reasons, the dominant <a href="#orge2a8879">character encoding scheme</a> is UTF-8,<sup><a id="fnr.2" class="footref" href="#fn.2" role="doc-backlink">2</a></sup> which, as of 2025, is used by 98.5% of all websites.<sup><a id="fnr.3" class="footref" href="#fn.3" role="doc-backlink">3</a></sup>
+We can represent these <a href="#org40825ad">code point</a>​s in the computer in many different ways. A system of mapping from <a href="#org40825ad">code point</a>​s to a binary representation in memory is called a <a href="#orgcd29793">character encoding scheme</a>. For a number of practical and historical reasons, the dominant <a href="#orgcd29793">character encoding scheme</a> is UTF-8,<sup><a id="fnr.2" class="footref" href="#fn.2" role="doc-backlink">2</a></sup> which, as of 2025, is used by 98.5% of all websites.<sup><a id="fnr.3" class="footref" href="#fn.3" role="doc-backlink">3</a></sup>
 
 Here is a worked example:
 
-> <a href="#org52b13fa">Abstract character</a> sequence: <span style="color: red"> 你</span><span style="color: green"> 好</span><span style="color: blue"> 吗</span>？
+> <a href="#org45b30fd">Abstract character</a> sequence: <span style="color: red"> 你</span><span style="color: green"> 好</span><span style="color: blue"> 吗</span>？
 > 
-> <a href="#org5725d5a">Code point</a>​s: <span style="color: red"> U+4F60</span> <span style="color: green"> U+597D</span> <span style="color: blue"> U+5417</span> U+FF1F
+> <a href="#org40825ad">Code point</a>​s: <span style="color: red"> U+4F60</span> <span style="color: green"> U+597D</span> <span style="color: blue"> U+5417</span> U+FF1F
 > 
 > UTF-8: <span style="color: red"> E4 BD A0</span> <span style="color: green"> E5 A5 BD</span> <span style="color: blue"> E5 90 97</span> EF BC 9F
 
-In the computer, the bytes represented on the last row will be stored in the file. When the user opens the file, the program used will recognize the encoding as UTF-8, map the bytes to the <a href="#org5725d5a">code point</a>​s, then render the <a href="#org5725d5a">code point</a>​s using the user&rsquo;s selected font.
+In the computer, the bytes represented on the last row will be stored in the file. When the user opens the file, the program used will recognize the encoding as UTF-8, map the bytes to the <a href="#org40825ad">code point</a>​s, then render the <a href="#org40825ad">code point</a>​s using the user&rsquo;s selected font.
 
 
 # Tokenization<sup><a id="fnr.4" class="footref" href="#fn.4" role="doc-backlink">4</a></sup>
@@ -75,7 +75,7 @@ $$
 We get the whole string back. This example satisfies our homomorphism property described above, since concatenating strings and concatenating lists of input ids are equivalent.
 
 $$
-detokenize([15496, 11, 11241] ⊙ [528, 278, 995, 0]) \eq detokenize([15496, 11, 11241]) ⊕ detokenize([528, 278, 995, 0])
+detokenize([15496, 11, 11241] ⊙ [528, 278, 995, 0]) = detokenize([15496, 11, 11241]) ⊕ detokenize([528, 278, 995, 0])
 $$
 
 Let&rsquo;s try a naughtier example to see whether detokenization is always homomorphic for this tokenizer.
@@ -85,7 +85,7 @@ Let&rsquo;s try a naughtier example to see whether detokenization is always homo
 [24861, 222]
 ```
 
-We&rsquo;re already getting into strange territory: this is a single <a href="#orgafb63af">character</a>, but we get two input ids. This seems counter-intuitive, since we&rsquo;d expect an input id to be at least one <a href="#orgafb63af">character</a> big. When we detokenize the pair we get back what we expect.
+We&rsquo;re already getting into strange territory: this is a single <a href="#orgfcac13b">character</a>, but we get two input ids. This seems counter-intuitive, since we&rsquo;d expect an input id to be at least one <a href="#orgfcac13b">character</a> big. When we detokenize the pair we get back what we expect.
 
 ```python
 >>> tokenizer.decode([24861, 222])
@@ -118,7 +118,7 @@ What&rsquo;s going wrong? Why does this particular example break the homomorphis
 
 # Everything you&rsquo;ve been told is a lie
 
-So far I have elided the conversion from <a href="#orgafb63af">character</a> sequences to input ids by saying that the tokenizer maps from one to the other. This isn&rsquo;t quite true: in practice, many tokenizers break the text into chunks of characters, then turn those chunks into input ids. Those chunks are tokens properly speaking, and they&rsquo;re what&rsquo;s learned by Byte Pair Encoding.
+So far I have elided the conversion from <a href="#orgfcac13b">character</a> sequences to input ids by saying that the tokenizer maps from one to the other. This isn&rsquo;t quite true: in practice, many tokenizers break the text into chunks of characters, then turn those chunks into input ids. Those chunks are tokens properly speaking, and they&rsquo;re what&rsquo;s learned by Byte Pair Encoding.
 
 Let&rsquo;s revisit our devilish ∀ example, using some APIs from Huggingface we haven&rsquo;t had the opportunity to use yet: in addition to mapping between characters and input ids, we can map between input ids and the characters they represent.
 
@@ -154,7 +154,7 @@ What happens if we try to convert these tokens to strings?
 "�"
 ```
 
-We get back the same nonsense characters we had before, with no ∀ in sight. This is exceedingly bizarre. Where are these strange characters coming from? Astonishingly, the tokenizer is able to reconstruct the <a href="#orgafb63af">character</a> from the concatenated tokens&#x2026;
+We get back the same nonsense characters we had before, with no ∀ in sight. This is exceedingly bizarre. Where are these strange characters coming from? Astonishingly, the tokenizer is able to reconstruct the <a href="#orgfcac13b">character</a> from the concatenated tokens&#x2026;
 
 ```python
 >>> tokenizer.convert_tokens_to_string(['âĪ'] + ['Ģ'])
@@ -171,7 +171,7 @@ even if we cut the tokens apart into single characters.
 Where is this strange behavior coming from? We&rsquo;ve chased it down to these weird mappings between input ids, tokens, and strings, but where doe these odd characters that make up the tokens come from?
 
 
-# Bytes to <a href="#org5725d5a">Code Point</a>​s
+# Bytes to <a href="#org40825ad">Code Point</a>​s
 
 The ultimate explanation is found in the following code, which comes from the GPT-2 repository.<sup><a id="fnr.7" class="footref" href="#fn.7" role="doc-backlink">7</a></sup> A Rust translation appears HuggingFace&rsquo;s tokenizer library.<sup><a id="fnr.8" class="footref" href="#fn.8" role="doc-backlink">8</a></sup>
 
@@ -201,7 +201,7 @@ The GPT-2 paper does not mention this (Radford et al. 2019), nor are the commit 
 
 There are two questions to answer at this point: why do we do this, and what does this do? It is easier to begin by answering the &ldquo;what&rdquo; question; once we know what is happening we will be able to explain why we are doing it by referencing what the result of this transformation is.
 
-Simply, this is a one-to-one map from byte values to unicode code points. This is a devilish hack that makes many of the tokens in the vocabulary look like random noise and is the source of the strange behavior we observed in the previous section. When the tokenizer receives a series of bytes in UTF-8, it passes each byte through this dictionary. The bytes that represent visible characters of ASCII, 21<sub>16</sub> through 7E<sub>16</sub>, are mapped to themselves. The other bytes, both those that represent invisible ASCII characters (whitespace and control characters) are mapped to other <a href="#org5725d5a">code point</a>​s in the Unicode codespace.
+Simply, this is a one-to-one map from byte values to unicode code points. This is a devilish hack that makes many of the tokens in the vocabulary look like random noise and is the source of the strange behavior we observed in the previous section. When the tokenizer receives a series of bytes in UTF-8, it passes each byte through this dictionary. The bytes that represent visible characters of ASCII, 21<sub>16</sub> through 7E<sub>16</sub>, are mapped to themselves. The other bytes, both those that represent invisible ASCII characters (whitespace and control characters) are mapped to other <a href="#org40825ad">code point</a>​s in the Unicode codespace.
 
 For readability, I define the forward and backward dictionaries like so:
 
@@ -210,7 +210,7 @@ byte_dict = bytes_to_unicode()
 dict_byte = {v: k for k, v in byte_dict.items()} # Inverse mapping.
 ```
 
-Now we can begin to explore the case we examined above. Let&rsquo;s begin by getting the <a href="#org5725d5a">code point</a> representing each of the bytes in the UTF-8 encoding of ∀.
+Now we can begin to explore the case we examined above. Let&rsquo;s begin by getting the <a href="#org40825ad">code point</a> representing each of the bytes in the UTF-8 encoding of ∀.
 
 ```python
 >>> [byte_dict[byte] for byte in '∀'.encode()]
@@ -231,14 +231,14 @@ This is exactly the three bytes of the UTF-8 encoding of ∀:
 b'\xe2\x88\x80'
 ```
 
-This trick turns each byte of the input into the corresponding <a href="#org5725d5a">code point</a>. That way we can represent the input as Unicode code points and work with it as a string in the space of the <a href="#orgafb63af">character</a> abstraction. We can learn the byte pair encodings beginning with a 256-member vocabulary, since we have one for each byte.
+This trick turns each byte of the input into the corresponding <a href="#org40825ad">code point</a>. That way we can represent the input as Unicode code points and work with it as a string in the space of the <a href="#orgfcac13b">character</a> abstraction. We can learn the byte pair encodings beginning with a 256-member vocabulary, since we have one for each byte.
 
 
 # BPE
 
 Byte pair encoding is a compression algorithm. It finds most-frequently appearing pairs of adjacent bytes in the input data with a byte that was not in the original data. Along with the compressed data, the algorithm writes out a table of pair substitutions (Gage 1994).
 
-(Sennrich, Haddow, and Birch 2016) introduced byte pair encoding to natural language processing as a way to represent an open vocabulary of a language through a fixed-size vocabulary of <a href="#orgafb63af">character</a> sequences, avoiding out-of-vocabulary errors while efficiently representing the input text. (Berglund and van der Merwe 2023) provides a formal analysis of the algorithm and the problem it solves. The current fastest implementation of the algorithm scales linearly in the length of its input (Van Antwerpen and Neubeck 2024).
+(Sennrich, Haddow, and Birch 2016) introduced byte pair encoding to natural language processing as a way to represent an open vocabulary of a language through a fixed-size vocabulary of <a href="#orgfcac13b">character</a> sequences, avoiding out-of-vocabulary errors while efficiently representing the input text. (Berglund and van der Merwe 2023) provides a formal analysis of the algorithm and the problem it solves. The current fastest implementation of the algorithm scales linearly in the length of its input (Van Antwerpen and Neubeck 2024).
 
 
 # Bibliography
@@ -264,29 +264,29 @@ Sennrich, Rico, Barry Haddow, and Alexandra Birch. 2016. “Neural Machine Trans
 
 # Footnotes
 
-<sup><a id="fn.1" href="#fnr.1">1</a></sup> > *<a id="org52b13fa">Abstract Character</a>.* A unit of information used for the organization, control, or representation of textual data.
+<sup><a id="fn.1" href="#fnr.1">1</a></sup> > *<a id="org45b30fd">Abstract Character</a>.* A unit of information used for the organization, control, or representation of textual data.
 > 
-> *<a id="orgafb63af">Character</a>*. (1) The smallest component of written language that has semantic value; refers to the abstract meaning and/or shape, rather than a specific shape (see also <a href="#org9c0fd46">glyph</a>), though in code tables some form of visual representation is essential for the reader’s understanding. (2) Synonym for <a href="#org52b13fa">abstract character</a>. (3) The basic unit of encoding for the Unicode <a href="#orgafb63af">character</a> encoding.
+> *<a id="orgfcac13b">Character</a>*. (1) The smallest component of written language that has semantic value; refers to the abstract meaning and/or shape, rather than a specific shape (see also <a href="#org30d58b1">glyph</a>), though in code tables some form of visual representation is essential for the reader’s understanding. (2) Synonym for <a href="#org45b30fd">abstract character</a>. (3) The basic unit of encoding for the Unicode <a href="#orgfcac13b">character</a> encoding.
 > 
-> *<a id="org637b473">Character Encoding Form</a>.* Mapping from a <a href="#org9a7ee57">character set</a> definition to the actual code units used to represent the data.
+> *<a id="org27ba595">Character Encoding Form</a>.* Mapping from a <a href="#org3c4c418">character set</a> definition to the actual code units used to represent the data.
 > 
-> *<a id="orge2a8879">Character Encoding Scheme</a>.* A <a href="#org637b473">character encoding form</a> plus byte serialization. There are seven <a href="#orgafb63af">character</a> encoding schemes in Unicode: UTF-8, UTF-16, UTF-16BE, UTF-16LE, UTF-32, UTF-32BE, and UTF-32LE.
+> *<a id="orgcd29793">Character Encoding Scheme</a>.* A <a href="#org27ba595">character encoding form</a> plus byte serialization. There are seven <a href="#orgfcac13b">character</a> encoding schemes in Unicode: UTF-8, UTF-16, UTF-16BE, UTF-16LE, UTF-32, UTF-32BE, and UTF-32LE.
 > 
-> *<a id="org9a7ee57">Character Set</a>.* A collection of elements used to represent textual information.
+> *<a id="org3c4c418">Character Set</a>.* A collection of elements used to represent textual information.
 > 
-> *<a id="org5725d5a">Code Point</a>.* (1) Any value in the Unicode codespace; that is, the range of integers from 0 to 10FFFF16. (See definition D10 in Section 3.4, Characters and Encoding.) Not all code points are assigned to encoded characters. See <a href="#org5725d5a">code point</a> type. (2) A value, or position, for a <a href="#orgafb63af">character</a>, in any coded <a href="#org9a7ee57">character set</a>.
+> *<a id="org40825ad">Code Point</a>.* (1) Any value in the Unicode codespace; that is, the range of integers from 0 to 10FFFF16. (See definition D10 in Section 3.4, Characters and Encoding.) Not all code points are assigned to encoded characters. See <a href="#org40825ad">code point</a> type. (2) A value, or position, for a <a href="#orgfcac13b">character</a>, in any coded <a href="#org3c4c418">character set</a>.
 > 
-> *<a id="org74dc706">Encoded character</a>*. An association (or mapping) between an <a href="#org52b13fa">abstract character</a> and a <a href="#org5725d5a">code point</a>. 
+> *<a id="org7f8c1fe">Encoded character</a>*. An association (or mapping) between an <a href="#org45b30fd">abstract character</a> and a <a href="#org40825ad">code point</a>. 
 > 
-> *<a id="org9c0fd46">Glyph</a>.* (1) An abstract form that represents one or more <a href="#org9c0fd46">glyph</a> images. (2) A synonym for <a href="#org4d1bb26">glyph image</a>. In displaying Unicode <a href="#orgafb63af">character</a> data, one or more glyphs may be selected to depict a particular <a href="#orgafb63af">character</a>. These glyphs are selected by a rendering engine during composition and layout processing.
+> *<a id="org30d58b1">Glyph</a>.* (1) An abstract form that represents one or more <a href="#org30d58b1">glyph</a> images. (2) A synonym for <a href="#org64c2a05">glyph image</a>. In displaying Unicode <a href="#orgfcac13b">character</a> data, one or more glyphs may be selected to depict a particular <a href="#orgfcac13b">character</a>. These glyphs are selected by a rendering engine during composition and layout processing.
 > 
-> *<a id="org4d1bb26">Glyph Image</a>.* The actual, concrete image of a <a href="#org9c0fd46">glyph</a> representation having been rasterized or otherwise imaged onto some display surface.
+> *<a id="org64c2a05">Glyph Image</a>.* The actual, concrete image of a <a href="#org30d58b1">glyph</a> representation having been rasterized or otherwise imaged onto some display surface.
 > 
-> *<a id="org7b0bd5c">Grapheme</a>.* (1) A minimally distinctive unit of writing in the context of a particular writing system. For example, ‹b› and ‹d› are distinct graphemes in English writing systems because there exist distinct words like big and dig. Conversely, a lowercase italiform letter a and a lowercase Roman letter a are not distinct graphemes because no word is distinguished on the basis of these two different forms. (2) What a user thinks of as a <a href="#orgafb63af">character</a>.
+> *<a id="org06e6197">Grapheme</a>.* (1) A minimally distinctive unit of writing in the context of a particular writing system. For example, ‹b› and ‹d› are distinct graphemes in English writing systems because there exist distinct words like big and dig. Conversely, a lowercase italiform letter a and a lowercase Roman letter a are not distinct graphemes because no word is distinguished on the basis of these two different forms. (2) What a user thinks of as a <a href="#orgfcac13b">character</a>.
 
 <https://www.unicode.org/glossary/index.html>
 
-<sup><a id="fn.2" href="#fnr.2">2</a></sup> The details of how UTF-8 encodings are computed for a given <a href="#org5725d5a">code point</a> are not significant to this blog post. The interested reader is directed to (Commitee 2025, 3 .) for details and (Pike and Thompson 1993) for an early account of the encoding scheme. As always, the [relevant Wikipedia page](https://en.wikipedia.org/wiki/UTF-8) is also excellent.
+<sup><a id="fn.2" href="#fnr.2">2</a></sup> The details of how UTF-8 encodings are computed for a given <a href="#org40825ad">code point</a> are not significant to this blog post. The interested reader is directed to (Commitee 2025, 3 .) for details and (Pike and Thompson 1993) for an early account of the encoding scheme. As always, the [relevant Wikipedia page](https://en.wikipedia.org/wiki/UTF-8) is also excellent.
 
 <sup><a id="fn.3" href="#fnr.3">3</a></sup> <https://w3techs.com/technologies/cross/character_encoding/ranking>
 
