@@ -263,26 +263,26 @@ Sennrich, Rico, Barry Haddow, and Alexandra Birch. 2016. “Neural Machine Trans
 
 # Footnotes
 
-[^1]: <https://www.unicode.org/glossary/index.html>
-> *<a id="org18ea2ee">Abstract Character</a>.* A unit of information used for the organization, control, or representation of textual data.
-> 
-> *<a id="org816fad7">Character</a>*. (1) The smallest component of written language that has semantic value; refers to the abstract meaning and/or shape, rather than a specific shape (see also <a href="#org224b976">glyph</a>), though in code tables some form of visual representation is essential for the reader’s understanding. (2) Synonym for <a href="#org18ea2ee">abstract character</a>. (3) The basic unit of encoding for the Unicode <a href="#org816fad7">character</a> encoding.
-> 
-> *<a id="org92871f3">Character Encoding Form</a>.* Mapping from a <a href="#orga7073fd">character set</a> definition to the actual code units used to represent the data.
-> 
-> *<a id="org93aaf4f">Character Encoding Scheme</a>.* A <a href="#org92871f3">character encoding form</a> plus byte serialization. There are seven <a href="#org816fad7">character</a> encoding schemes in Unicode: UTF-8, UTF-16, UTF-16BE, UTF-16LE, UTF-32, UTF-32BE, and UTF-32LE.
-> 
-> *<a id="orga7073fd">Character Set</a>.* A collection of elements used to represent textual information.
-> 
-> *<a id="orgbc9aeac">Code Point</a>.* (1) Any value in the Unicode codespace; that is, the range of integers from 0 to 10FFFF16. (See definition D10 in Section 3.4, Characters and Encoding.) Not all code points are assigned to encoded characters. See <a href="#orgbc9aeac">code point</a> type. (2) A value, or position, for a <a href="#org816fad7">character</a>, in any coded <a href="#orga7073fd">character set</a>.
-> 
-> *<a id="orgda6772d">Encoded character</a>*. An association (or mapping) between an <a href="#org18ea2ee">abstract character</a> and a <a href="#orgbc9aeac">code point</a>. 
-> 
-> *<a id="org224b976">Glyph</a>.* (1) An abstract form that represents one or more <a href="#org224b976">glyph</a> images. (2) A synonym for <a href="#org0f74265">glyph image</a>. In displaying Unicode <a href="#org816fad7">character</a> data, one or more glyphs may be selected to depict a particular <a href="#org816fad7">character</a>. These glyphs are selected by a rendering engine during composition and layout processing.
-> 
-> *<a id="org0f74265">Glyph Image</a>.* The actual, concrete image of a <a href="#org224b976">glyph</a> representation having been rasterized or otherwise imaged onto some display surface.
-> 
-> *<a id="org8300249">Grapheme</a>.* (1) A minimally distinctive unit of writing in the context of a particular writing system. For example, ‹b› and ‹d› are distinct graphemes in English writing systems because there exist distinct words like big and dig. Conversely, a lowercase italiform letter a and a lowercase Roman letter a are not distinct graphemes because no word is distinguished on the basis of these two different forms. (2) What a user thinks of as a <a href="#org816fad7">character</a>.
+[^1]:
+	> *<a id="org18ea2ee">Abstract Character</a>.* A unit of information used for the organization, control, or representation of textual data.
+	> 
+	> *<a id="org816fad7">Character</a>*. (1) The smallest component of written language that has semantic value; refers to the abstract meaning and/or shape, rather than a specific shape (see also <a href="#org224b976">glyph</a>), though in code tables some form of visual representation is essential for the reader’s understanding. (2) Synonym for <a href="#org18ea2ee">abstract character</a>. (3) The basic unit of encoding for the Unicode <a href="#org816fad7">character</a> encoding.
+	> 
+	> *<a id="org92871f3">Character Encoding Form</a>.* Mapping from a <a href="#orga7073fd">character set</a> definition to the actual code units used to represent the data.
+	> 
+	> *<a id="org93aaf4f">Character Encoding Scheme</a>.* A <a href="#org92871f3">character encoding form</a> plus byte serialization. There are seven <a href="#org816fad7">character</a> encoding schemes in Unicode: UTF-8, UTF-16, UTF-16BE, UTF-16LE, UTF-32, UTF-32BE, and UTF-32LE.
+	> 
+	> *<a id="orga7073fd">Character Set</a>.* A collection of elements used to represent textual information.
+	> 
+	> *<a id="orgbc9aeac">Code Point</a>.* (1) Any value in the Unicode codespace; that is, the range of integers from 0 to 10FFFF16. (See definition D10 in Section 3.4, Characters and Encoding.) Not all code points are assigned to encoded characters. See <a href="#orgbc9aeac">code point</a> type. (2) A value, or position, for a <a href="#org816fad7">character</a>, in any coded <a href="#orga7073fd">character set</a>.
+	> 
+	> *<a id="orgda6772d">Encoded character</a>*. An association (or mapping) between an <a href="#org18ea2ee">abstract character</a> and a <a href="#orgbc9aeac">code point</a>. 
+	> 
+	> *<a id="org224b976">Glyph</a>.* (1) An abstract form that represents one or more <a href="#org224b976">glyph</a> images. (2) A synonym for <a href="#org0f74265">glyph image</a>. In displaying Unicode <a href="#org816fad7">character</a> data, one or more glyphs may be selected to depict a particular <a href="#org816fad7">character</a>. These glyphs are selected by a rendering engine during composition and layout processing.
+	> 
+	> *<a id="org0f74265">Glyph Image</a>.* The actual, concrete image of a <a href="#org224b976">glyph</a> representation having been rasterized or otherwise imaged onto some display surface.
+	> 
+	> *<a id="org8300249">Grapheme</a>.* (1) A minimally distinctive unit of writing in the context of a particular writing system. For example, ‹b› and ‹d› are distinct graphemes in English writing systems because there exist distinct words like big and dig. Conversely, a lowercase italiform letter a and a lowercase Roman letter a are not distinct graphemes because no word is distinguished on the basis of these two different forms. (2) What a user thinks of as a <a href="#org816fad7">character</a>. <https://www.unicode.org/glossary/index.html>
 
 [^2]: The details of how UTF-8 encodings are computed for a given <a href="#orgbc9aeac">code point</a> are not significant to this blog post. The interested reader is directed to (Commitee 2025, 3 .) for details and (Pike and Thompson 1993) for an early account of the encoding scheme. As always, the [relevant Wikipedia page](https://en.wikipedia.org/wiki/UTF-8) is also excellent.
 
