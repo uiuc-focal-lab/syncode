@@ -263,7 +263,7 @@ Sennrich, Rico, Barry Haddow, and Alexandra Birch. 2016. “Neural Machine Trans
 
 # Footnotes
 
-[^1]:
+[^1]: <https://www.unicode.org/glossary/index.html>
 > *<a id="org18ea2ee">Abstract Character</a>.* A unit of information used for the organization, control, or representation of textual data.
 > 
 > *<a id="org816fad7">Character</a>*. (1) The smallest component of written language that has semantic value; refers to the abstract meaning and/or shape, rather than a specific shape (see also <a href="#org224b976">glyph</a>), though in code tables some form of visual representation is essential for the reader’s understanding. (2) Synonym for <a href="#org18ea2ee">abstract character</a>. (3) The basic unit of encoding for the Unicode <a href="#org816fad7">character</a> encoding.
@@ -283,8 +283,6 @@ Sennrich, Rico, Barry Haddow, and Alexandra Birch. 2016. “Neural Machine Trans
 > *<a id="org0f74265">Glyph Image</a>.* The actual, concrete image of a <a href="#org224b976">glyph</a> representation having been rasterized or otherwise imaged onto some display surface.
 > 
 > *<a id="org8300249">Grapheme</a>.* (1) A minimally distinctive unit of writing in the context of a particular writing system. For example, ‹b› and ‹d› are distinct graphemes in English writing systems because there exist distinct words like big and dig. Conversely, a lowercase italiform letter a and a lowercase Roman letter a are not distinct graphemes because no word is distinguished on the basis of these two different forms. (2) What a user thinks of as a <a href="#org816fad7">character</a>.
-
-<https://www.unicode.org/glossary/index.html>
 
 [^2]: The details of how UTF-8 encodings are computed for a given <a href="#orgbc9aeac">code point</a> are not significant to this blog post. The interested reader is directed to (Commitee 2025, 3 .) for details and (Pike and Thompson 1993) for an early account of the encoding scheme. As always, the [relevant Wikipedia page](https://en.wikipedia.org/wiki/UTF-8) is also excellent.
 
