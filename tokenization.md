@@ -1,9 +1,8 @@
 Computers deal with numbers, but humans deal with text. The tokenizer is the component of an LLM that converts between the numbers the model interacts with and the text the humans interact with. This blog post explains a peculiar corner of some really-existing tokenizers.
 
-
 # Characters, graphemes, codepoints, encodings, bytes, oh my!
 
-This section introduces code point​s, character​s, and character encoding scheme​s. I include the relevant concepts from the Unicode Standard&rsquo;s glossary (Commitee 2025) in a footnote.[^1] I will attempt to use these terms assiduously as they are defined in the Unicode Standard, even though these meanings are not always intuitive. An abstract character is a unit of information used for the storage and manipulation of text. A code point is a number. An encoded character is a mapping between an abstract character and a code point. I will represent code point​s as hexidecimal numbers preceded by &ldquo;U+&rdquo;.
+This section introduces code point​s, character​s, and character encoding scheme​s. I include the relevant concepts from the Unicode Standard&rsquo;s glossary (Commitee 2025) in a footnote.[^1] I will attempt to use these terms  as they are defined in the Unicode Standard, even though these meanings are not always intuitive. An abstract character is a unit of information used for the storage and manipulation of text. A code point is a number. An encoded character is a mapping between an abstract character and a code point. I will represent code point​s as hexidecimal numbers preceded by &ldquo;U+&rdquo;.
 
 > 你 is an abstract character, pronounced *nǐ* and meaning &ldquo;you&rdquo;.
 > 
@@ -11,26 +10,26 @@ This section introduces code point​s, character​s, and character encoding sc
 > 
 > The mapping 你 ↔ U+4F60 is an encoded character, indicating that under the Unicode Standard, the abstract character 你 is uniquely associated with the code point U+4F60.
 
-We can represent these code point​s in the computer in many different ways. A system of mapping from code point​s to a binary representation in memory is called a character encoding scheme. For a number of practical and historical reasons, the dominant character encoding scheme is UTF-8,[^2] which, as of 2025, is used by 98.5% of all websites.[^3]
-
-Here is a worked example:
+We can represent these code point​s in the computer in many different ways. A system of mapping from code point​s to a binary representation in memory is called a character encoding scheme. For a number of practical and historical reasons, the dominant character encoding scheme is UTF-8,[^2] which, as of 2025, is used by 98.5% of all websites.[^3] Here is an example:
 
 |                              | 1        | 2        | 3        | 4        |
 |------------------------------|----------|----------|----------|----------|
 | Abstract character sequence: | 你       | 好       | 吗       | ？       |
 | Code point​s:                 | U+4F60   | U+597D   | U+5417   | U+FF1F   |
-| UTF-8:                       | E4 BD A0 | E5 A5 BD | E5 90 97 | EF BC 9F |
+| UTF-8 (encoded form):        | E4 BD A0 | E5 A5 BD | E5 90 97 | EF BC 9F |
 
 In the computer, the bytes represented on the last row will be stored in the file. When the user opens the file, the program used will recognize the encoding as UTF-8, map the bytes to the code point​s, then render the code point​s using the user&rsquo;s selected font.
 
+The concept of "character" is intentionally left vague. The unicode standard says that what the user thinks of as a character is actually a grapheme, a minimally-distinctive unit of writing in the context of a given writing system. This is a concept from linguistics that does not necessarily map exactly on to our concept of a character. 
+
+For the remainder of this blog post, I will be speaking of code points and their byte-encoded form. When I show a code point, I will often use the associated abstract character to visualize it. This will, in turn, be displayed to you as a certain glyph, depending on the font you are using. "Chraracter" will be used to refer to what the Unicode Standard calls an "abstract character," the basic unit of information in text. Each chraracter is identified with a unique code point.
+
 # Tokenization[^4]
 
-Humans interact with text, which is built out of characters. As we have seen above, the internal representation of these characters is not trivial or obvious, but the layers of abstraction used to display text to the user and to take it in from them are well understood. Transformer-based language models, on the other hand, interact with embedding vectors. Typically these are encapsulated as input ids, or token indices.[^5] An input id is an integer drawn from a bounded range, usually from about 30k to 120k unique integers. These integers index a lookup table of embedding vectors, one per input id.
+Humans interact with text, which is built out of (abstract) characters. As we have seen, however, these characters are represented in the computer's memory as a sequence of bytes, often more than one byte per character. Transformer-based language models take as their input as sequence of input ids, non-negative integers in a bounded range, and put out a probability distribution across their vocabulary of input ids. The tokenizer is the component that maps between text the user sees and input ids the model sees. Tokenization is the process of converting text into input ids, and detokenization is the inverse conversion from input ids to text.[^6]
 
-The tokenizer is the component that maps between text the user sees and input ids the model sees. Tokenization is the process of converting text into input ids, and detokenization is the inverse conversion from input ids to text.[^6] In principle, this operation is homomorphic, which (Geng et al. 2024) define as follows:
-
+Each input id, further, is associated with a sequence of characters known as a token. In principle, the tokenizer works by breaking the input string into tokens according to its vocabulary and then turning those tokens into their proper input ids. The first token in the vocabulary is input id 0, the second is 1, and so on. In principle, this operation is homomorphic, which (Geng et al. 2024) define as follows:
 > Given two operations ⊕ and ⊙ on two alphabets Σ∗ and N∗ respectively, a function h : Σ∗ → N∗ is a string homomorphism if ∀u, v ∈ Σ∗, h(u ⊕ v) = h(u) ⊙ h(v).
-
 Consider ⊕ to be string concatenation and ⊙ to be the concatenation of sequences of integers. This means, intuitively, that cutting a string in two, tokenizing its two parts, and appending the resulting lists of input ids will always get you the same thing you would have gotten if you had tokenized the string all at once. Similarly, the inverse homomorphism holds that if you detokenize two lists of input ids and concatenate the resulting string, then the string you get will be the same as if you had concatenated the lists of input ids and detokenized.
 
 To clarify this, let us take some examples. Here we&rsquo;re using GPT-2&rsquo;s tokenizer (Radford et al. 2019). Let&rsquo;s begin by looking at the input ids you get from this string.
@@ -114,6 +113,86 @@ that don&rsquo;t behave the way we want them to.
 
 What&rsquo;s going wrong? Why does this particular example break the homomorphism of detokenization? Are there other examples that behave a similar way? To answer this we&rsquo;ll have to go deeper into what&rsquo;s going on under the hood.
 
+# Clustering characters and byte-pair encoding
+You might have noticed that the number of input ids produced by the tokenizer is often far smaller than the number of abstract characters (i.e. code points) that the tokenizer takes in. This is because, in an auto-regressive model, the time it takes to generate a token is constant, regardless of the number of characters the token represents. We can speed up generation by simply making each token represent more characters, because the cost of supporting a larger vocabulary is memory, which we can easily trade for time. The question becomes: given a corpus, how do we efficiently cluster its characters into tokens that will most efficiently represent the text?
+
+One common approach is to use byte pair encoding, which is a compression algorithm. It finds most-frequently appearing pairs of adjacent bytes in the input data with a byte that was not in the original data. Along with the compressed data, the algorithm writes out a table of pair substitutions (Gage 1994). (Sennrich, Haddow, and Birch 2016) introduced byte pair encoding to natural language processing as a way to represent an open vocabulary of a language through a fixed-size vocabulary of character sequences, avoiding out-of-vocabulary errors while efficiently representing the input text. (Berglund and van der Merwe 2023) provides a formal analysis of the algorithm and the problem it solves. The current fastest implementation of the algorithm scales linearly in the length of its input (Van Antwerpen and Neubeck 2024) when working with a pre-computed vocabulary.
+
+Vocabularies computed with byte pair encoding have the property that all of their tokens are either initial tokens provided by the user or concatenations of other tokens. This means that an initial vocabulary of 256 tokens, one for each byte, is adequate to represent all text. Remember that UTF-8 (and for that matter all other character encoding schemes) represent all code points as a sequence of bytes. By learning how to cluster these bytes, we can produce a vocabulary that both efficiently encodes texts from an identical, independent distribution (in the sense that the number of tokens needed is minimized) and avoids any unknown characters (since any input can always be tokenized as a sequence of bytes, and we know that the vocabulary will at least contain bytes).
+
+# Bytes to Code Point​s
+The challenge with byte pair encoding is that the tokens that result are not guarateed to be valid UTF-8. Consider our initial example:
+
+|                              | *nǐ*     |
+|------------------------------|----------|
+| Abstract character sequence: | 你       |
+| Code point​s:                 | U+4F60   |
+| UTF-8 (encoded form):        | E4 BD A0 |
+
+There is no reason our vocabulary shouldn't include the tokens E4BD and A0, neither of which are valid utf-8 (remember, it's one of the properties of utf-8 that a sequence of bytes either is or isn't valid utf-8, and cutting a single code point's encoding always results in invalid utf-8). This would make it difficult for code that expected the input to be a valid utf-8 string to cope with the output of the model: if the model were cut off in its generation, say, the result might end with dangling bytes that don't make up a complete utf-8 encoded form of a code point; worse, a token might be ragged on both ends, in the sense that neither end of the token is the end of a code point
+
+A hacky solution is to turn each byte in the input into a Unicode Code Point.[^hacky]
+
+is found in the following code, which comes from the GPT-2 repository.[^7] A Rust translation appears HuggingFace&rsquo;s tokenizer library.[^8] The GPT-2 paper does not mention this (Radford et al. 2019), nor are the commit messages that add the code to GPT-2 or tokenizers very informative. A form of this code is included in tiktoken to provide legacy support for GPT-2.[^9] As far as I can tell, none of the other tokenizers for newer OpenAI models use this hack. However, several popular models still do  use this behavior: the Codegen series, the Llama series, and DeepSeek AI&rsquo;s models (including DeepSeek-R1) all act this way. This behavior is documented in tokenizer&rsquo;s repository.[^10][^11]
+
+```python
+def bytes_to_unicode():
+  """
+  Returns list of utf-8 byte and a corresponding list of unicode strings.
+  The reversible bpe codes work on unicode strings.
+  This means you need a large # of unicode characters in your vocab if you want to avoid UNKs.
+  When you're at something like a 10B token dataset you end up needing around 5K for decent coverage.
+  To avoid that, we want lookup tables between utf-8 bytes and unicode strings.
+  And avoids mapping to whitespace/control characters the bpe code barfs on.
+  """
+  bs = list(range(ord("!"), ord("~")+1))+list(range(ord("¡"), ord("¬")+1))+list(range(ord("®"), ord("ÿ")+1))
+  cs = bs[:]
+  n = 0
+  for b in range(2**8):
+      if b not in bs:
+          bs.append(b)
+          cs.append(2**8+n)
+          n += 1
+  cs = [chr(n) for n in cs]
+  return dict(zip(bs, cs))
+```
+
+What this code does is generate a dictionary mapping bytes to Unicode Code Points. Th
+
+There are two questions to answer at this point: why do we do this, and what does this do? It is easier to begin by answering the &ldquo;what&rdquo; question; once we know what is happening we will be able to explain why we are doing it by referencing what the result of this transformation is.
+
+Simply, this is a one-to-one map from byte values to unicode code points. This is a devilish hack that makes many of the tokens in the vocabulary look like random noise and is the source of the strange behavior we observed in the previous section. When the tokenizer receives a series of bytes in UTF-8, it passes each byte through this dictionary. The bytes that represent visible characters of ASCII, 21<sub>16</sub> through 7E<sub>16</sub>, are mapped to themselves. The other bytes, both those that represent invisible ASCII characters (whitespace and control characters) are mapped to other code point​s in the Unicode codespace.
+
+For readability, I define the forward and backward dictionaries like so:
+
+```python
+byte_dict = bytes_to_unicode()
+dict_byte = {v: k for k, v in byte_dict.items()} # Inverse mapping.
+```
+
+Now we can begin to explore the case we examined above. Let&rsquo;s begin by getting the code point representing each of the bytes in the UTF-8 encoding of ∀.
+
+```python
+>>> [byte_dict[byte] for byte in '∀'.encode()]
+['â', 'Ī', 'Ģ']
+```
+
+We can confirm by passing these characters through the inverse mapping and representing them as hexadecimal bytes.
+
+```python
+>>> [bytes([dict_byte[char]]) for char in ['â', 'Ī', 'Ģ']]
+[b'\xe2', b'\x88', b'\x80']
+```
+
+This is exactly the three bytes of the UTF-8 encoding of ∀:
+
+```python
+>>> '∀'.encode()
+b'\xe2\x88\x80'
+```
+
+This trick turns each byte of the input into the corresponding code point. That way we can represent the input as Unicode code points and work with it as a string in the space of the character abstraction. We can learn the byte pair encodings beginning with a 256-member vocabulary, since we have one for each byte.
+
 
 # Everything you&rsquo;ve been told is a lie
 
@@ -170,74 +249,6 @@ even if we cut the tokens apart into single characters.
 Where is this strange behavior coming from? We&rsquo;ve chased it down to these weird mappings between input ids, tokens, and strings, but where doe these odd characters that make up the tokens come from?
 
 
-# Bytes to Code Point​s
-
-The ultimate explanation is found in the following code, which comes from the GPT-2 repository.[^7] A Rust translation appears HuggingFace&rsquo;s tokenizer library.[^8]
-
-```python
-def bytes_to_unicode():
-  """
-  Returns list of utf-8 byte and a corresponding list of unicode strings.
-  The reversible bpe codes work on unicode strings.
-  This means you need a large # of unicode characters in your vocab if you want to avoid UNKs.
-  When you're at something like a 10B token dataset you end up needing around 5K for decent coverage.
-  To avoid that, we want lookup tables between utf-8 bytes and unicode strings.
-  And avoids mapping to whitespace/control characters the bpe code barfs on.
-  """
-  bs = list(range(ord("!"), ord("~")+1))+list(range(ord("¡"), ord("¬")+1))+list(range(ord("®"), ord("ÿ")+1))
-  cs = bs[:]
-  n = 0
-  for b in range(2**8):
-      if b not in bs:
-          bs.append(b)
-          cs.append(2**8+n)
-          n += 1
-  cs = [chr(n) for n in cs]
-  return dict(zip(bs, cs))
-```
-
-The GPT-2 paper does not mention this (Radford et al. 2019), nor are the commit messages that add the code to GPT-2 or tokenizers very informative. A form of this code is included in tiktoken to provide legacy support for GPT-2.[^9] As far as I can tell, none of the other tokenizers for newer OpenAI models have this behavior. However, several models still display this behavior: the Codegen series, the Llama series, and DeepSeek AI&rsquo;s models (including DeepSeek-R1) all act this way. This behavior is documented in tokenizer&rsquo;s repository.[^10][^11]
-
-There are two questions to answer at this point: why do we do this, and what does this do? It is easier to begin by answering the &ldquo;what&rdquo; question; once we know what is happening we will be able to explain why we are doing it by referencing what the result of this transformation is.
-
-Simply, this is a one-to-one map from byte values to unicode code points. This is a devilish hack that makes many of the tokens in the vocabulary look like random noise and is the source of the strange behavior we observed in the previous section. When the tokenizer receives a series of bytes in UTF-8, it passes each byte through this dictionary. The bytes that represent visible characters of ASCII, 21<sub>16</sub> through 7E<sub>16</sub>, are mapped to themselves. The other bytes, both those that represent invisible ASCII characters (whitespace and control characters) are mapped to other code point​s in the Unicode codespace.
-
-For readability, I define the forward and backward dictionaries like so:
-
-```python
-byte_dict = bytes_to_unicode()
-dict_byte = {v: k for k, v in byte_dict.items()} # Inverse mapping.
-```
-
-Now we can begin to explore the case we examined above. Let&rsquo;s begin by getting the code point representing each of the bytes in the UTF-8 encoding of ∀.
-
-```python
->>> [byte_dict[byte] for byte in '∀'.encode()]
-['â', 'Ī', 'Ģ']
-```
-
-We can confirm by passing these characters through the inverse mapping and representing them as hexadecimal bytes.
-
-```python
->>> [bytes([dict_byte[char]]) for char in ['â', 'Ī', 'Ģ']]
-[b'\xe2', b'\x88', b'\x80']
-```
-
-This is exactly the three bytes of the UTF-8 encoding of ∀:
-
-```python
->>> '∀'.encode()
-b'\xe2\x88\x80'
-```
-
-This trick turns each byte of the input into the corresponding code point. That way we can represent the input as Unicode code points and work with it as a string in the space of the character abstraction. We can learn the byte pair encodings beginning with a 256-member vocabulary, since we have one for each byte.
-
-
-# BPE
-
-Byte pair encoding is a compression algorithm. It finds most-frequently appearing pairs of adjacent bytes in the input data with a byte that was not in the original data. Along with the compressed data, the algorithm writes out a table of pair substitutions (Gage 1994).
-
-(Sennrich, Haddow, and Birch 2016) introduced byte pair encoding to natural language processing as a way to represent an open vocabulary of a language through a fixed-size vocabulary of character sequences, avoiding out-of-vocabulary errors while efficiently representing the input text. (Berglund and van der Merwe 2023) provides a formal analysis of the algorithm and the problem it solves. The current fastest implementation of the algorithm scales linearly in the length of its input (Van Antwerpen and Neubeck 2024).
 
 
 # Bibliography
@@ -303,3 +314,5 @@ Sennrich, Rico, Barry Haddow, and Alexandra Birch. 2016. “Neural Machine Trans
 [^10]: <https://github.com/huggingface/tokenizers/blob/c45aebd1029acfbe9e5dfe64e8b8441d9fae727a/docs/source/components.rst>
 
 [^11]: The bpe crate released by GitHub works with pre-trained vocabulary lists; it does not use merges and cannot train a new byte pair encoding from a corpus: it relies on existing vocabulary lists (Van Antwerpen and Neubeck 2024). It also works directly on the underlying bytes, unlike the BPE implementation used here. Therefore it does not show this behavior.
+
+[^hacky]: This should feel promiscuous and dirty, since we are mixing levels of abstraction. We are turning the bytes we use to encode code points back into code points, which themselves will be encoded by bytes. This is made especially confusing by the appearance of the abstract characters involved, as we shall see.
