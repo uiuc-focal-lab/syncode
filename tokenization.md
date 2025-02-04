@@ -123,17 +123,15 @@ Vocabularies computed with byte pair encoding have the property that all of thei
 # Bytes to Code Point​s
 The challenge with byte pair encoding is that the tokens that result are not guarateed to be valid UTF-8. Consider our initial example:
 
-|                              | *nǐ*     |
-|------------------------------|----------|
-| Abstract character sequence: | 你       |
-| Code point​s:                 | U+4F60   |
-| UTF-8 (encoded form):        | E4 BD A0 |
+|                              | 1        | 2        | 3        | 4        |
+|------------------------------|----------|----------|----------|----------|
+| Abstract character sequence: | 你       | 好       | 吗       | ？       |
+| Code point​s:                 | U+4F60   | U+597D   | U+5417   | U+FF1F   |
+| UTF-8 (encoded form):        | E4 BD A0 | E5 A5 BD | E5 90 97 | EF BC 9F |
 
-There is no reason our vocabulary shouldn't include the tokens E4BD and A0, neither of which are valid utf-8 (remember, it's one of the properties of utf-8 that a sequence of bytes either is or isn't valid utf-8, and cutting a single code point's encoding always results in invalid utf-8). This would make it difficult for code that expected the input to be a valid utf-8 string to cope with the output of the model: if the model were cut off in its generation, say, the result might end with dangling bytes that don't make up a complete utf-8 encoded form of a code point; worse, a token might be ragged on both ends, in the sense that neither end of the token is the end of a code point
+There is no reason our vocabulary shouldn't include the tokens E4BD and A0E5, neither of which are valid utf-8 (remember, it's one of the properties of utf-8 that a sequence of bytes either is or isn't valid utf-8, and cutting a single code point's encoding always results in invalid utf-8). This would make it difficult for code that expected the input to be a valid utf-8 string to cope with the output of the model: if the model were cut off in its generation, say, the result might end with dangling bytes that don't make up a complete utf-8 encoded form of a code point (e.g. the model generated something ending with the token E4BD); worse, a token might be ragged on both ends, in the sense that neither end of the token is the end of a code point (e.g. A0A5DBE5).
 
-A hacky solution is to turn each byte in the input into a Unicode Code Point.[^hacky]
-
-is found in the following code, which comes from the GPT-2 repository.[^7] A Rust translation appears HuggingFace&rsquo;s tokenizer library.[^8] The GPT-2 paper does not mention this (Radford et al. 2019), nor are the commit messages that add the code to GPT-2 or tokenizers very informative. A form of this code is included in tiktoken to provide legacy support for GPT-2.[^9] As far as I can tell, none of the other tokenizers for newer OpenAI models use this hack. However, several popular models still do  use this behavior: the Codegen series, the Llama series, and DeepSeek AI&rsquo;s models (including DeepSeek-R1) all act this way. This behavior is documented in tokenizer&rsquo;s repository.[^10][^11]
+A hacky solution is to turn each byte in the input into a Unicode Code Point.[^hacky] This way, we can treat each token in the vocabulary as a valid utf-8 string while still getting the efficiency advantages from byte-level byte pair encoding. The reference implementation of this dictionary is found in the following code, which comes from the GPT-2 repository.[^7] A Rust translation appears HuggingFace&rsquo;s tokenizer library.[^8] The GPT-2 paper does not mention this (Radford et al. 2019), nor are the commit messages that add the code to GPT-2 or tokenizers very informative. A form of this code is included in tiktoken to provide legacy support for GPT-2.[^9] As far as I can tell, none of the other tokenizers for newer OpenAI models use this hack. However, several popular models still do  use this behavior: the Codegen series, the Llama series, and DeepSeek AI&rsquo;s models (including DeepSeek-R1) all act this way. This behavior is documented in tokenizer&rsquo;s repository.[^10][^11]
 
 ```python
 def bytes_to_unicode():
@@ -157,27 +155,23 @@ def bytes_to_unicode():
   return dict(zip(bs, cs))
 ```
 
-What this code does is generate a dictionary mapping bytes to Unicode Code Points. Th
+This code generates a dictionary mapping bytes to Unicode Code Points. The dictionary maps the bytes that name printable, non-whitespace ASCII characters (21<sub>16</sub> through 7E<sub>16</sub>) to that ASCII character's code point[^ascii] and all other bytes to some arbitrary non-whitespace code point. This allows us to transform a sequence of bytes into a sequence of code points, which we can, in turn, encode as utf-8 bytes. 
 
-There are two questions to answer at this point: why do we do this, and what does this do? It is easier to begin by answering the &ldquo;what&rdquo; question; once we know what is happening we will be able to explain why we are doing it by referencing what the result of this transformation is.
-
-Simply, this is a one-to-one map from byte values to unicode code points. This is a devilish hack that makes many of the tokens in the vocabulary look like random noise and is the source of the strange behavior we observed in the previous section. When the tokenizer receives a series of bytes in UTF-8, it passes each byte through this dictionary. The bytes that represent visible characters of ASCII, 21<sub>16</sub> through 7E<sub>16</sub>, are mapped to themselves. The other bytes, both those that represent invisible ASCII characters (whitespace and control characters) are mapped to other code point​s in the Unicode codespace.
-
-For readability, I define the forward and backward dictionaries like so:
+Let's get an intuition for how this behaves with some examples. For readability, I define a dictionary `byte_dict` that maps from bytes to code points, and a dictionary `dict_byte` that maps from code points to bytes, like so:
 
 ```python
 byte_dict = bytes_to_unicode()
 dict_byte = {v: k for k, v in byte_dict.items()} # Inverse mapping.
 ```
 
-Now we can begin to explore the case we examined above. Let&rsquo;s begin by getting the code point representing each of the bytes in the UTF-8 encoding of ∀.
+Let&rsquo;s begin by getting the code point representing each of the bytes in the UTF-8 encoding of ∀.
 
 ```python
 >>> [byte_dict[byte] for byte in '∀'.encode()]
 ['â', 'Ī', 'Ģ']
 ```
 
-We can confirm by passing these characters through the inverse mapping and representing them as hexadecimal bytes.
+We can confirm that we are getting what we expect by passing these characters through the inverse mapping and representing them as hexadecimal bytes.
 
 ```python
 >>> [bytes([dict_byte[char]]) for char in ['â', 'Ī', 'Ģ']]
@@ -191,65 +185,35 @@ This is exactly the three bytes of the UTF-8 encoding of ∀:
 b'\xe2\x88\x80'
 ```
 
-This trick turns each byte of the input into the corresponding code point. That way we can represent the input as Unicode code points and work with it as a string in the space of the character abstraction. We can learn the byte pair encodings beginning with a 256-member vocabulary, since we have one for each byte.
+This trick turns each byte of the input into the corresponding code point. That way we can represent the input as Unicode code points and work with it as a string in the space of the character abstraction. We can learn the byte pair encodings beginning with a 256-member vocabulary of code points, since we have one for each byte.
 
+Because we have so many overloaded terms ("encode", "tokenize",...) I will coin some neologisms for this transformation: turning the bytes into code points I will call `debyte`ing, and turning the code points back into bytes I will call `enbyte`ing. All of the tokens in the model's vocabulary are already `debyte`d, which explains the presence of tokens like "çļĦæĦŁåıĹ" in GPT2's vocabulary (which `enbyte`s to "的感受", meaning, roughly, "'s feelings"[^mandarin]).
 
-# Everything you&rsquo;ve been told is a lie
+# Tricky corners of the huggingface tokenizer API
 
-So far I have elided the conversion from character sequences to input ids by saying that the tokenizer maps from one to the other. This isn&rsquo;t quite true: in practice, many tokenizers break the text into chunks of characters, then turn those chunks into input ids. Those chunks are tokens properly speaking, and they&rsquo;re what&rsquo;s learned by Byte Pair Encoding.
+This transformation, converting the bytes of the input string to code points that represent those bytes, is handled tacitly by those tokenizers that do it. The `encode` and `decode` methods of huggingface's tokenizers do this for the user, turning the string into input ids and back without revealing this underlying hack. 
 
-Let&rsquo;s revisit our devilish ∀ example, using some APIs from Huggingface we haven&rsquo;t had the opportunity to use yet: in addition to mapping between characters and input ids, we can map between input ids and the characters they represent.
+Secretly, however, the tokenizer first `debyte`s the input string before breaking it into tokens. This internal representation is accessible through the series of methods `convert_ids_to_tokens`, `convert_tokens_to_ids`, and `convert_tokens_to_string`. The last, `convert_tokens_to_string`, is equivalent to what I have called `enbyte`, above. The methods that convert ids to tokens and back map between the `debyte`d token and its index in the vocabulary.
 
+Here are some examples using the input ids we got from ∀:
 ```python
 >> tokenizer.convert_ids_to_tokens([24861])
 ['âĪ']
-```
-
-```python
->>> tokenizer.onvert_ids_to_tokens([222])
+>>> tokenizer.convert_ids_to_tokens([222])
 ['Ģ']
-```
-
-```python
 >>> tokenizer.convert_ids_to_tokens([24861, 222])
 ['âĪ', 'Ģ']
-```
-
-```python
 >>> tokenizer.convert_ids_to_tokens([24861])+ tokenizer.convert_ids_to_tokens([222])
 ['âĪ', 'Ģ']
 ```
-
-What happens if we try to convert these tokens to strings?
-
+This example shows that `convert_ids_to_tokens` is, infact, homomorphic: in the space of `debyte`d tokens, concatenating input ids then detokenizing (`convert_ids_to_tokens`ing) is equivalent to detokenizing then concatenating. Then we can use the method `convert_tokens_to_string` to recover the `enbyte`d string we'd like to show the user:
 ```python
->>> tokenizer.convert_tokens_to_string(['âĪ'])
-"�"
+>>> tokenizer.convert_tokens_to_string(['âĪ', 'Ģ'])
+'∀'
 ```
 
-```python
->>> tokenizer.convert_tokens_to_string(['Ģ'])
-"�"
-```
-
-We get back the same nonsense characters we had before, with no ∀ in sight. This is exceedingly bizarre. Where are these strange characters coming from? Astonishingly, the tokenizer is able to reconstruct the character from the concatenated tokens&#x2026;
-
-```python
->>> tokenizer.convert_tokens_to_string(['âĪ'] + ['Ģ'])
-"∀"
-```
-
-even if we cut the tokens apart into single characters.
-
-```python
->>> tokenizer.convert_tokens_to_string(['â'] + ['Ī'] + ['Ģ'])
-"∀"
-```
-
-Where is this strange behavior coming from? We&rsquo;ve chased it down to these weird mappings between input ids, tokens, and strings, but where doe these odd characters that make up the tokens come from?
-
-
-
+# Conclusion
+We have seen an unintuitive aspect of several really-existing tokenizers that breaks the property of homomorphism. We discussed the reason for this behavior, explored why it is done this way, and showed how to see what the tokenizer is doing under the hood. This explains the presence of strange characters in models' vocabularies. This will be useful, in particular, for those implementing constrained generation for models whose vocabularies are `debyte`d: in order to correctly match the restriction the user provides, implementors will have to either `debyte` the user's constraints or `enbyte` the model's vocabulary.
 
 # Bibliography
 
@@ -316,3 +280,7 @@ Sennrich, Rico, Barry Haddow, and Alexandra Birch. 2016. “Neural Machine Trans
 [^11]: The bpe crate released by GitHub works with pre-trained vocabulary lists; it does not use merges and cannot train a new byte pair encoding from a corpus: it relies on existing vocabulary lists (Van Antwerpen and Neubeck 2024). It also works directly on the underlying bytes, unlike the BPE implementation used here. Therefore it does not show this behavior.
 
 [^hacky]: This should feel promiscuous and dirty, since we are mixing levels of abstraction. We are turning the bytes we use to encode code points back into code points, which themselves will be encoded by bytes. This is made especially confusing by the appearance of the abstract characters involved, as we shall see.
+
+[^ascii]: US cultural imperialism means that the ASCII character codes are the same as the equivalent Unicode code point (e.g. the abstract character "a" is 0x61 in ASCII and U+61 in Unicode. In utf-8, the code point U+61 is encoded as the byte 61). This is all baked into the Unicode Standard and the utf-8 encoding scheme in a way that privileges ASCII texts by giving them the most efficient encodings.
+
+[^mandarin]: Any Mandarin speakers, please correct me. I am basing this translation off of mdbg.net and google translate!
