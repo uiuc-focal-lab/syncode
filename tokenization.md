@@ -1,5 +1,8 @@
 Computers deal with numbers, but humans deal with text. The tokenizer is the component of an LLM that converts between the numbers the model interacts with and the text the humans interact with. This blog post explains a peculiar corner of some really-existing tokenizers.
 
+# Incremental tokenization as a downstream application
+We want to implement homomorphic detokenization as an efficiency boost. If we're doing constrained decoding, we would like to be able to detokenize one input id at a time, rather than re-detokenizing the entire string.
+
 # Characters, graphemes, codepoints, encodings, bytes, oh my!
 
 This section introduces code point​s, character​s, and character encoding scheme​s. I include the relevant concepts from the Unicode Standard&rsquo;s glossary (Commitee 2025) in a footnote.[^1] I will attempt to use these terms  as they are defined in the Unicode Standard, even though these meanings are not always intuitive. An abstract character is a unit of information used for the storage and manipulation of text. A code point is a number. An encoded character is a mapping between an abstract character and a code point. I will represent code point​s as hexidecimal numbers preceded by &ldquo;U+&rdquo;.
@@ -203,7 +206,7 @@ Here are some examples using the input ids we got from ∀:
 ['Ģ']
 >>> tokenizer.convert_ids_to_tokens([24861, 222])
 ['âĪ', 'Ģ']
->>> tokenizer.convert_ids_to_tokens([24861])+ tokenizer.convert_ids_to_tokens([222])
+>>> tokenizer.convert_ids_to_tokens([24861]) + tokenizer.convert_ids_to_tokens([222])
 ['âĪ', 'Ģ']
 ```
 This example shows that `convert_ids_to_tokens` is, infact, homomorphic: in the space of `debyte`d tokens, concatenating input ids then detokenizing (`convert_ids_to_tokens`ing) is equivalent to detokenizing then concatenating. Then we can use the method `convert_tokens_to_string` to recover the `enbyte`d string we'd like to show the user:
@@ -211,6 +214,11 @@ This example shows that `convert_ids_to_tokens` is, infact, homomorphic: in the 
 >>> tokenizer.convert_tokens_to_string(['âĪ', 'Ģ'])
 '∀'
 ```
+
+# Huggingface tokenizer's cobwebby corners
+Many of the models on the huggingface hub use a tokenizer implemented using huggingface's tokenizers library, or a tokenizer implemented directly in their transformers library as a fallback, and tend to use the ByteLevel pre-tokenizer and associated decoder in their stack.[^13] This is the component of a huggingface tokenizer object that implements the transformation described in the previous section. In particular, the component implements the operations that I have called `enbyte` and `debyte`.
+
+When the user passes a string in to the tokenizer, the `ByteLevel` pre-tokenizer `debyte`s that string before passing it to the rest of the tokenizer.[^pretoken] When the tokenizer returns a string to the user, it is `enbyte`d, and all unknown bytes are turned to the Unicode code point U+FFFD, called REPLACEMENT CHARACTER, which appears as � to the user.[^12] This is what we got back when we attempted to detokenize the fragments of the ∀ character earlier and is what breaks homomorphism in detokenization.
 
 # Conclusion
 We have seen an unintuitive aspect of several really-existing tokenizers that breaks the property of homomorphism. We discussed the reason for this behavior, explored why it is done this way, and showed how to see what the tokenizer is doing under the hood. This explains the presence of strange characters in models' vocabularies. This will be useful, in particular, for those implementing constrained generation for models whose vocabularies are `debyte`d: in order to correctly match the restriction the user provides, implementors will have to either `debyte` the user's constraints or `enbyte` the model's vocabulary.
@@ -281,6 +289,12 @@ Sennrich, Rico, Barry Haddow, and Alexandra Birch. 2016. “Neural Machine Trans
 
 [^hacky]: This should feel promiscuous and dirty, since we are mixing levels of abstraction. We are turning the bytes we use to encode code points back into code points, which themselves will be encoded by bytes. This is made especially confusing by the appearance of the abstract characters involved, as we shall see.
 
-[^ascii]: US cultural imperialism means that the ASCII character codes are the same as the equivalent Unicode code point (e.g. the abstract character "a" is 0x61 in ASCII and U+61 in Unicode. In utf-8, the code point U+61 is encoded as the byte 61). This is all baked into the Unicode Standard and the utf-8 encoding scheme in a way that privileges ASCII texts by giving them the most efficient encodings.
+[^Ascii]: US cultural imperialism means that the ASCII character codes are the same as the equivalent Unicode code point (e.g. the abstract character "a" is 0x61 in ASCII and U+61 in Unicode. In utf-8, the code point U+61 is encoded as the byte 61). This is all baked into the Unicode Standard and the utf-8 encoding scheme in a way that privileges ASCII texts by giving them the most efficient encodings.
 
 [^mandarin]: Any Mandarin speakers, please correct me. I am basing this translation off of mdbg.net and google translate!
+
+[^pretoken]: This is implemented at https://github.com/huggingface/tokenizers/blob/c45aebd1029acfbe9e5dfe64e8b8441d9fae727a/tokenizers/src/pre_tokenizers/byte_level.rs#L145.
+
+[^12]: The `enbyte`-ing happens at [this](https://github.com/huggingface/tokenizers/blob/c45aebd1029acfbe9e5dfe64e8b8441d9fae727a/tokenizers/src/pre_tokenizers/byte_level.rs#L166) spot in the tokenizers source, and the replacement with U+FFFD happens during [this](https://github.com/huggingface/tokenizers/blob/c45aebd1029acfbe9e5dfe64e8b8441d9fae727a/tokenizers/src/pre_tokenizers/byte_level.rs#L174) call to the Rust standard library's String function `from_utf8_lossy` https://doc.rust-lang.org/std/string/struct.String.html#method.from_utf8_lossy.
+
+[^13]: TODO: design a script to check which of the models on the huggingface hub use this component. So far I've manually confirmed that deepseek-ai/DeepSeek-R1, mistralai/Mistral-Small-24B-Instruct-2501, meta-llama/Llama-3.3-70B-Instruct, and Qwen/Qwen2.5-VL-7B-Instruct do it.
