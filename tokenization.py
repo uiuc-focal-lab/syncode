@@ -76,12 +76,12 @@ class ByteTokenizer(AutoTokenizer):
 
         Examples:
         ---------
-        >>> tok = ByteTokenizer.from_pretrained('gpt2')n
-        >>> tok.decode(tok, [19526, 254, 25001, 121, 28938, 245, 171, 120, 253]).decode()
+        >>> tok = ByteTokenizer.from_pretrained('gpt2')
+        >>> tok.decode([19526, 254, 25001, 121, 28938, 245, 171, 120, 253]).decode()
         '你好吗？'
 
         >>> tok = ByteTokenizer.from_pretrained('gpt2')
-        >>> tok.decode(tok, [121, 254, 25001, 121, 28938, 245, 171])
+        >>> tok.decode([121, 254, 25001, 121, 28938, 245, 171])
         b'\xbd\xa0\xe5\xa5\xbd\xe5\x90\x97\xef'
         >>> '你好吗？'.encode()[1:-2]
         b'\xbd\xa0\xe5\xa5\xbd\xe5\x90\x97\xef'
@@ -96,11 +96,11 @@ class ByteTokenizer(AutoTokenizer):
         Examples:
         ---------
         >>> tok = ByteTokenizer.from_pretrained('gpt2')
-        >>> tok.encode(tok, '你好吗？'.encode())
-        [19526, 254, 25001, 121, 28938, 245, 171, 120]
+        >>> tok.encode('你好吗？'.encode())
+        [19526, 254, 25001, 121, 28938, 245, 171, 120, 253]
 
         >>> tok = ByteTokenizer.from_pretrained('gpt2')
-        >>> tok.encode(tok, '你好吗？'.encode()[1:-2])
+        >>> tok.encode('你好吗？'.encode()[1:-2])
         [121, 254, 25001, 121, 28938, 245, 171]
         """
         prefix, text, postfix = self.split_bytes(byte_text)
@@ -117,7 +117,8 @@ class ByteTokenizer(AutoTokenizer):
 
         Examples:
         ---------
-        >>> split_bytes('你好吗？'.encode()[1:-2])
+        >>> tok = ByteTokenizer.from_pretrained('gpt2')
+        >>> tok.split_bytes('你好吗？'.encode()[1:-2])
         (b'\xbd\xa0', '好吗', b'\xef')
         """
         # FIXME: This implementation isn't terribly readable, but it takes
