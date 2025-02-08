@@ -156,6 +156,10 @@ class ByteTokenizer(AutoTokenizer):
             postfix = byte_text[err.start :]
             text = byte_text[: err.start].decode()
 
+        # If at the end we only got bytes in the prefix, treat it as the postfix.
+        if prefix and not text and not postfix:
+            return b"", "", prefix
+
         return prefix, text, postfix
 
     def iterative_lookup(self, key: str) -> list[int]:
