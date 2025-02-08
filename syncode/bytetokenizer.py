@@ -1,4 +1,4 @@
-"""tokenization.py: an example of a shim to turn bytelevel encoded strings to bytes and back. See tokenization.md for details.
+"""bytetokenizer.py: an example of a shim to turn bytelevel encoded strings to bytes and back. See tokenization.md for details.
 
 
 The `ByteTokenizer` class implements a homomorphic wrapper raound a Huggingface tokenizer.
