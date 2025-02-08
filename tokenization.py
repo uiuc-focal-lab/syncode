@@ -1,8 +1,6 @@
 """tokenization.py: an example of a shim to turn bytelevel encoded strings to bytes and back. See tokenization.md for details."""
 
-from huggingface_hub import HfApi
 from transformers import AutoTokenizer
-from joblib import delayed, Parallel
 from functools import reduce, cache
 
 
@@ -178,22 +176,3 @@ class ByteTokenizer(AutoTokenizer):
                 break
 
         return items
-
-
-api = HfApi()
-
-
-def check(model):
-    if not model.gated:
-        try:
-            tok = AutoTokenizer.from_pretrained(model.id)
-            return (model.id, "ByteLevel" in repr(tok.backend_tokenizer.pre_tokenizer))
-        except:
-            return (model.id, "failed")
-
-        else:
-            return (model.id, "gated")
-
-
-# byte_level =
-# Parallel(n_jobs=16)(delayed(check)(model) for model in api.list_models(task='text-generation'))
