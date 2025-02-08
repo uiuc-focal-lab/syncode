@@ -59,17 +59,17 @@ def debyte(array: bytes) -> list[str]:
 class ByteTokenizer(AutoTokenizer):
     """A class to convert a tokenizer that works on code points to one that works on bytes. Expects a tokenizer that has a ByteLevel preprocessor."""
 
-    def __init__(self):
-        pass
-
-    @classmethod
-    def from_pretrained(self, model_id):
-        self.tokenizer = super().from_pretrained(model_id)
+    def __init__(self, tokenizer):
+        self.tokenizer = tokenizer
         self.byte_vocab = dict(
             map(lambda p: (enbyte(p[0]), p[1]), self.tokenizer.vocab.items())
         )
         self.vocab_byte = {v: k for k, v in self.byte_vocab.items()}
-        return self
+
+    @classmethod
+    def from_pretrained(cls, model_id):
+        tokenizer = super().from_pretrained(model_id)
+        return cls(tokenizer)
 
     def decode(self, token_ids: list[int]) -> bytes:
         """Decode token_ids as bytes.
@@ -105,12 +105,12 @@ class ByteTokenizer(AutoTokenizer):
         """
         prefix, text, postfix = self.split_bytes(byte_text)
         return (
-            self.iterative_lookup(self, prefix)
+            self.iterative_lookup(prefix)
             + self.tokenizer.encode(text)
-            + self.iterative_lookup(self, postfix)
+            + self.iterative_lookup(postfix)
         )
 
-    def split_bytes(byte_text: bytes) -> (bytes, str, bytes):
+    def split_bytes(self, byte_text: bytes) -> (bytes, str, bytes):
         """Break the text into valid and invalid UTF-8.
 
         Returns: (prefix, text, postfix) where text is the encoded valid text and prefix and postfix are invalid bytes.
