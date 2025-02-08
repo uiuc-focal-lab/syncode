@@ -144,7 +144,7 @@ class ByteTokenizer(AutoTokenizer):
             if err.start == 0:
                 # Failure began at first byte.
                 i = 0
-                while bin(err.object[i])[2:4] == "10":
+                while i < len(err.object) and bin(err.object[i])[2:4] == "10":
                     # Scan forward to the next uft-8 start byte (doesn't begin with '10').
                     i += 1
                 prefix = byte_text[:i]
