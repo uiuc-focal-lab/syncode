@@ -1,4 +1,4 @@
-"""bytetokenizer.py: an example of a shim to turn bytelevel encoded strings to bytes and back. See tokenization.md for details.
+"""bytetokenizerr.py: an example of a shim to turn bytelevel encoded strings to bytes and back. See tokenization.md for details.
 
 
 The `ByteTokenizer` class implements a homomorphic wrapper raound a Huggingface tokenizer.
@@ -136,68 +136,18 @@ class ByteTokenizer(AutoTokenizer):
         >>> tok.encode('你好吗？'.encode()[1:-2])
         [121, 254, 25001, 121, 28938, 245, 171]
         """
-        prefix, text, postfix = self.split_bytes(byte_text)
-        return (
-            self.iterative_lookup(prefix)
-            + self.tokenizer.encode(text, add_special_tokens=False)
-            + self.iterative_lookup(postfix)
-        )
-
-    def split_bytes(self, byte_text: bytes) -> (bytes, str, bytes):
-        """Break the text into valid and invalid UTF-8.
-
-        Returns: (prefix, text, postfix) where text is the encoded valid text and prefix and postfix are invalid bytes.
-
-        Examples:
-        ---------
-        >>> tok = ByteTokenizer.from_pretrained('gpt2')
-        >>> tok.split_bytes('你好吗？'.encode()[1:-2])
-        (b'\xbd\xa0', '好吗', b'\xef')
-        """
-        # FIXME: This implementation isn't terribly readable, but it takes
-        # advantage of python's builtin utf-8 capabilities. Unfortunately we
-        # have to handle broken utf-8 strings, detecting where they break, and
-        # the way to access that information is through the exception
-        # system. An alternative interface would make it easier to deal with
-        # partially-valid utf-8 strings. which would let this function be
-        # rewritten more readably.
-        prefix = b""
-        postfix = b""
-        text = ""
-
-        try:
-            text = byte_text.decode()
-        except UnicodeDecodeError as err:
-            if err.start == 0:
-                # Failure began at first byte.
-                i = 0
-                while i < len(err.object) and bin(err.object[i])[2:4] == "10":
-                    # Scan forward to the next uft-8 start byte (doesn't begin with '10').
-                    i += 1
-                prefix = byte_text[:i]
-                byte_text = byte_text[i:]
-
-        try:
-            text = byte_text.decode()
-        except UnicodeDecodeError as err:
-            postfix = byte_text[err.start :]
-            text = byte_text[: err.start].decode()
-
-        return prefix, text, postfix
-
-    def iterative_lookup(self, key: str) -> list[int]:
         """Return the item or sequence of items key indexes in byte_vocab."""
-        items = []
-        while key:
-            # Repeat until key has become an empty string.
-            for i in range(len(key), 0, -1):
+        input_ids = []
+        while byte_text:
+            # Repeat until text has become an empty string.
+            for i in range(len(byte_text), 0, -1):
                 # Find largest prefix in dictionary.
                 try:
-                    items.append(self.byte_vocab[key[:i]])
+                    input_ids.append(self.byte_vocab[byte_text[:i]])
                 except KeyError:
                     continue
-                # If all went well, truncate key from the beginning.
-                key = key[i:]
+                # If all went well, truncate text from the beginning.
+                byte_text = byte_text[i:]
                 break
 
-        return items
+        return input_ids
