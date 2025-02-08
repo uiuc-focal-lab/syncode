@@ -1,5 +1,34 @@
-"""tokenization.py: an example of a shim to turn bytelevel encoded strings to bytes and back. See tokenization.md for details."""
+"""tokenization.py: an example of a shim to turn bytelevel encoded strings to bytes and back. See tokenization.md for details.
 
+
+The `ByteTokenizer` class implements a homomorphic wrapper raound a Huggingface tokenizer.
+
+Examples:
+---------
+
+We purposely do not decode the byte representation into the character
+representation in this example. Python's str datatype is an array of code
+points. This array is encoded by utf-8 bytes for storage. Since `ByteTokenizer`
+operates at the byte level, the behavior is more explicit when representing the
+output at the byte level.
+
+>>> '你好吗？'.encode()
+b'\xe4\xbd\xa0\xe5\xa5\xbd\xe5\x90\x97\xef\xbc\x9f'
+>>> b'\xe4\xbd\xa0\xe5\xa5\xbd\xe5\x90\x97\xef\xbc\x9f'.decode()
+'你好吗？'
+>>> tok = ByteTokenizer.from_pretrained('deepseek-ai/deepseek-r1')
+>>> tok.encode(b'\xe4\xbd\xa0\xe5\xa5\xbd\xe5\x90\x97\xef\xbc\x9f')
+[30594, 3467, 1148]
+>>> tok.encode(b'\xe4\xbd\xa0\xe5\xa5\xbd\xe5\x90\x97\xef\xbc\x9f'[:7])
+[30594, 164]
+>>> tok.encode(b'\xe4\xbd\xa0\xe5\xa5\xbd\xe5\x90\x97\xef\xbc\x9f'[7:])
+[241, 248, 1148]
+>>> tok.decode([30594, 164] + [241, 248, 1148])
+b'\xe4\xbd\xa0\xe5\xa5\xbd\xe5\x90\x97\xef\xbc\x9f'
+>>> (tok.decode([30594, 164]) + tok.decode([241, 248, 1148])).decode('utf-8')
+b'\xe4\xbd\xa0\xe5\xa5\xbd\xe5\x90\x97\xef\xbc\x9f'
+
+"""
 from transformers import AutoTokenizer
 from functools import reduce, cache
 
