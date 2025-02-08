@@ -112,7 +112,7 @@ class ByteTokenizer(AutoTokenizer):
         prefix, text, postfix = self.split_bytes(byte_text)
         return (
             self.iterative_lookup(prefix)
-            + self.tokenizer.encode(text)
+            + self.tokenizer.encode(text, add_special_tokens=False)
             + self.iterative_lookup(postfix)
         )
 
