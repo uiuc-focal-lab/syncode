@@ -140,7 +140,7 @@ class ByteTokenizer(AutoTokenizer):
                 while bin(err.object[i])[2:4] == "10":
                     # Scan forward to the next uft-8 start byte (doesn't begin with '10').
                     i += 1
-                Prefix = byte_text[:i]
+                prefix = byte_text[:i]
                 byte_text = byte_text[i:]
 
         try:
