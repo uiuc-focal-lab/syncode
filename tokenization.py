@@ -120,6 +120,13 @@ class ByteTokenizer(AutoTokenizer):
         >>> split_bytes('你好吗？'.encode()[1:-2])
         (b'\xbd\xa0', '好吗', b'\xef')
         """
+        # FIXME: This implementation isn't terribly readable, but it takes
+        # advantage of python's builtin utf-8 capabilities. Unfortunately we
+        # have to handle broken utf-8 strings, detecting where they break, and
+        # the way to access that information is through the exception
+        # system. An alternative interface would make it easier to deal with
+        # partially-valid utf-8 strings. which would let this function be
+        # rewritten more readably.
         prefix = b""
         postfix = b""
         text = ""
