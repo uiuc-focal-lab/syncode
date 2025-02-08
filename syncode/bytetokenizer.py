@@ -137,6 +137,8 @@ class ByteTokenizer(AutoTokenizer):
         [121, 254, 25001, 121, 28938, 245, 171]
         """
         """Return the item or sequence of items key indexes in byte_vocab."""
+        # FIXME: This is a very naive implementation of tokenization. There are
+        # probably ways to speed this up.
         input_ids = []
         while byte_text:
             # Repeat until text has become an empty string.
