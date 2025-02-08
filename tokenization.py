@@ -41,6 +41,12 @@ def enbyte(token: str) -> bytes:
     b'\xe2\x88'
     """
     dict_bytes = {v: k for k, v in bytes_to_unicode().items()}
+    # Deepseek-ai uses U+FF5C ｜ FULLWIDTH VERTICAL LINE and U+2581 ▁ LOWER ONE
+    # EIGHTH BLOCKin their special tokens (<｜begin▁of▁sentence｜> and the
+    # like) rather than the ASCII equivalents U+007C | VERTICAL LINE and U+005F
+    # _ LOW LINE. With apologies to the Deepseek team, replace the characters
+    # with their ASCII equivalents to improve compatibility.
+    token = token.replace('｜', '|').replace('▁', '_')
     return bytes([dict_bytes[c] for c in token])
 
 
