@@ -28,7 +28,6 @@ class IncrementalParser:
 
         self.cur_ac_terminals: set = set()
         self.next_ac_terminals: set = self._accepts(self.interactive)
-        self.symbol_pos_map: SymbolPosMap = SymbolPosMap()
 
     def reset(self):
         """
@@ -36,9 +35,6 @@ class IncrementalParser:
         """
         self.cur_pos_to_parser_state = {}
         self.lexer_pos = 0
-
-        # Reset maps used to mark units 
-        self.symbol_pos_map = SymbolPosMap()
 
         # Reset the parser state
         self._set_initial_parser_state()
@@ -53,7 +49,15 @@ class IncrementalParser:
         self.next_ac_terminals = self._accepts(self.interactive)
     
 
-    def _store_parser_state(self, pos: int, lexer_tokens: Iterable[Token], parser_state, accepts: set, indent_levels: Optional[list] = None):
+    def _store_parser_state(
+            self, 
+            pos: int, 
+            lexer_tokens: Iterable[Token], 
+            parser_state, 
+            accepts: set, 
+            symbol_pos_map:Optional[SymbolPosMap]=None, 
+            indent_levels: Optional[list] = None
+        ):
         """
         Make immutable copies of the parser state and restore the parser state to the given position.
         """  
@@ -64,17 +68,17 @@ class IncrementalParser:
         key = self._get_hash(lexer_tokens[:pos+1])
         
         # parser_state, cur_ac_terminals, next_ac_terminals, indent_levels, dedent_queue
-        self.cur_pos_to_parser_state[key] = (copy.deepcopy(self.parsed_lexer_tokens), parser_state, cur_ac_terminals, next_ac_terminals, indent_levels, copy.deepcopy(self.dedent_queue), copy.deepcopy(self.symbol_pos_map))
+        self.cur_pos_to_parser_state[key] = (copy.deepcopy(self.parsed_lexer_tokens), parser_state, cur_ac_terminals, next_ac_terminals, indent_levels, copy.deepcopy(self.dedent_queue), copy.deepcopy(symbol_pos_map))
         # self.cur_pos_to_parser_state[pos] = (copy.deepcopy(self.parsed_lexer_tokens), parser_state, cur_ac_terminals, next_ac_terminals, indent_levels, copy.deepcopy(self.dedent_queue))
         
         self.cur_ac_terminals = copy.deepcopy(cur_ac_terminals)
         self.next_ac_terminals = copy.deepcopy(next_ac_terminals)
 
-    def _restore_parser_state(self, key: int):
+    def _restore_parser_state(self, key: int, symbol_pos_map:Optional[SymbolPosMap]=None):
         """
         Restore immutable copies of the parser state and restore the parser state to the given position.
         """
-        parsed_lexer_tokens, parser_state, cur_ac_terminals, next_ac_terminals, indent_levels, dedent_queue, symbol_pos_map = self.cur_pos_to_parser_state[key]
+        parsed_lexer_tokens, parser_state, cur_ac_terminals, next_ac_terminals, indent_levels, dedent_queue, symbol_pos_map_stored = self.cur_pos_to_parser_state[key]
         # parsed_lexer_tokens, parser_state, cur_ac_terminals, next_ac_terminals, indent_levels, dedent_queue = self.cur_pos_to_parser_state[pos]
         
         self.interactive.parser_state = parser_state.copy()
@@ -82,7 +86,9 @@ class IncrementalParser:
         self.dedent_queue = copy.deepcopy(dedent_queue)
         self.cur_ac_terminals = copy.deepcopy(cur_ac_terminals)
         self.next_ac_terminals = copy.deepcopy(next_ac_terminals)
-        self.symbol_pos_map = copy.deepcopy(symbol_pos_map)
+
+        if symbol_pos_map is not None and symbol_pos_map_stored is not None:
+            symbol_pos_map._pos_map = copy.deepcopy(symbol_pos_map_stored._pos_map)
 
         if indent_levels is not None:
             self.indent_level = copy.deepcopy(indent_levels)
@@ -122,7 +128,7 @@ class IncrementalParser:
         return lexer_tokens, lexing_incomplete
     
 
-    def _restore_recent_parser_state(self, lexer_tokens):
+    def _restore_recent_parser_state(self, lexer_tokens, symbol_pos_map:Optional[SymbolPosMap]=None):
         """
         Restores the parser state to the most recent prefix matching state that was stored. 
         """
@@ -140,7 +146,7 @@ class IncrementalParser:
         if max_stored_index != -1:
             self.cur_pos = max_stored_index + 1
             key = self._get_hash(lexer_tokens[:max_stored_index+1])
-            self._restore_parser_state(key)
+            self._restore_parser_state(key, symbol_pos_map=symbol_pos_map)
         else:
             self._set_initial_parser_state()
 
@@ -148,7 +154,7 @@ class IncrementalParser:
         return hash(tuple(lexer_tokens))
     
 
-    def get_acceptable_next_terminals(self, partial_code) -> ParseResult:
+    def get_acceptable_next_terminals(self, partial_code, symbol_pos_map:Optional[SymbolPosMap]=None) -> ParseResult:
         """
         Returns the set of acceptable terminals at the current partial code position.
         """
@@ -158,9 +164,10 @@ class IncrementalParser:
         self.next_ac_terminals = self._accepts(interactive)
 
         # Restore the previous state of the parser
-        self._restore_recent_parser_state(lexer_tokens)
+        self._restore_recent_parser_state(lexer_tokens, symbol_pos_map=symbol_pos_map)
 
-        self.symbol_pos_map._update_symbol_pos_map_terminals(lexer_tokens, self.parsed_lexer_tokens)
+        if symbol_pos_map is not None:
+            symbol_pos_map._update_symbol_pos_map_terminals(lexer_tokens, self.parsed_lexer_tokens)
 
         # Parse the tokens
         self.time_accepts = 0
@@ -172,7 +179,8 @@ class IncrementalParser:
                 self.cur_pos += 1
                 
                 # Update the symbol position map. This should be called before updating the parser state
-                self.symbol_pos_map._update_symbol_pos_map_nonterminals(interactive.parser_state, token)
+                if symbol_pos_map is not None:
+                    symbol_pos_map._update_symbol_pos_map_nonterminals(interactive.parser_state, token)
 
                 # Compute the number of characters in the input before the token
                 if token.type != 'IGNORED':
@@ -186,7 +194,9 @@ class IncrementalParser:
                     self.cur_pos-1, 
                     lexer_tokens,
                     interactive.parser_state.copy(), 
-                    self._accepts(interactive))
+                    self._accepts(interactive),
+                    symbol_pos_map=symbol_pos_map
+                    )
 
         except lark.exceptions.UnexpectedToken as e:
             parse_incomplete = True
