@@ -1,5 +1,6 @@
 from collections import defaultdict
 import copy, os, pickle
+import time
 import interegular
 import torch
 import regex
@@ -290,7 +291,8 @@ class DFAMaskStore:
                  special_token_ids: Iterable=[], 
                  indentation: bool=True,
                  mode='grammar_strict', # 'grammar_strict' or 'grammar_mask'
-                 ignore_terminals: Iterable[str]=[]
+                 ignore_terminals: Iterable[str]=[],
+                 parse_table=None
                  ):
         self._vocab = vocab
         self.special_token_ids = special_token_ids  
@@ -304,7 +306,11 @@ class DFAMaskStore:
         # Iterate through each pair of DFA state and next terminals and store the overapproximate tokens
         self._lookup_table = LookupTable(vocab, special_token_ids, indentation=indentation, mode=mode)
         terminal_names = [terminal.name for terminal in terminals]
-        self._store_overapproximate_tokens(terminal_names, vocab)
+
+        followings_terminas_map = None
+        if parse_table is not None:
+            followings_terminas_map = self._compute_following_terminals_map(terminal_names, parse_table)
+        self._store_overapproximate_tokens(terminal_names, vocab, followings_terminas_map)
 
         self.indentation = indentation       
 
@@ -321,7 +327,14 @@ class DFAMaskStore:
         return ignore_whitespace
 
     @staticmethod
-    def load_dfa_mask_store(grammar: Grammar, tokenizer, use_cache=True, logger=None, mode='grammar_strict'):
+    def load_dfa_mask_store(
+        grammar: Grammar, 
+        tokenizer, 
+        use_cache=True, 
+        logger=None, 
+        mode='grammar_strict',
+        parse_table=None
+    ):
         '''
         Loads the dfa for the given language and tokenizer. If the dfa is not cached, it is created and cached. 
         '''
@@ -347,7 +360,17 @@ class DFAMaskStore:
         simplifications = grammar.simplifications()
         os.makedirs(dfa_dir, exist_ok=True)
 
-        mask_store = DFAMaskStore(base_parser.terminals, vocab, simplifications=simplifications, special_token_ids=[tokenizer.eos_token_id], mode=mode, ignore_terminals=base_parser.ignore_tokens)
+        start_time = time.time()
+        mask_store = DFAMaskStore(
+            base_parser.terminals, 
+            vocab, 
+            simplifications=simplifications, 
+            special_token_ids=[tokenizer.eos_token_id], 
+            mode=mode, 
+            ignore_terminals=base_parser.ignore_tokens, 
+            parse_table=parse_table
+            )
+        print(f"Time taken to create DFA mask store: {time.time() - start_time} seconds", flush=True)
 
         pickle.dump(mask_store, open(dfa_path, 'wb'))
         return mask_store
@@ -356,12 +379,42 @@ class DFAMaskStore:
         mask = torch.zeros(len(self._vocab), dtype=torch.bool)
         return mask
 
-    def _store_overapproximate_tokens(self, terminals: Iterable[str], vocab: Iterable[str]):
+    def _compute_following_terminals_map(self, terminals: Iterable[str], parse_table) -> defaultdict:
+        """
+        From terminals, filter out terminals that cannot follow the current terminal
+        according to the grammar.
+
+        If in the parsing table Action[cur_terminal, parser_state] = 'shift, new_parser_state' then next terminals
+        are the terminals that are legal in new_parser_state.
+        """
+        following_terminals_map = defaultdict(set)
+        terminals_set = set(terminals)
+
+        # We iterate through each cur_terminal:    
+        for cur_terminal in terminals:
+            # We iterate through each parser_state:
+            for _, row in parse_table.states.items():
+                if cur_terminal in row:
+                    action = row[cur_terminal]
+                    # -> If we see a shift action to new_parser_state
+                    if str(action[0]) == 'Shift':
+                        new_parser_state = action[1]
+                        for next_terminal in parse_table.states[new_parser_state]:
+                            # Lark parse_table stores non-terminals and terminals together
+                            if next_terminal in terminals_set:
+                                # -> -> we add the terminals that are legal in new_parser_state
+                                following_terminals_map[cur_terminal].add(next_terminal)
+        
+        return following_terminals_map
+
+
+    def _store_overapproximate_tokens(self, terminals: Iterable[str], vocab: Iterable[str], followings_terminas_map: dict=None):
         """
         Stores the overapproximate tokens for each dfa state and next terminals
         """
         all_dfa_states = self._dfas.states()
         pbar = tqdm(total=len(all_dfa_states))
+
         for dfa_state in all_dfa_states:
             for token_idx, token in enumerate(vocab):
                 is_special_token = token_idx in self.special_token_ids
@@ -371,12 +424,18 @@ class DFAMaskStore:
                         self._lookup_table.dfa_state_and_next_terminal_to_tokens_add(
                             dfa_state, '$END', token_idx)
                 else:
-                    self._process_regular_tokens(terminals, dfa_state, token_idx, token)
+                    if followings_terminas_map is not None and dfa_state.terminal in followings_terminas_map:
+                        following_terminals = followings_terminas_map[dfa_state.terminal]
+                    else:
+                        following_terminals = terminals
+
+                    self._process_regular_tokens(following_terminals, dfa_state, token_idx, token)
             
             pbar.update(1)
 
     def _process_regular_tokens(self, terminals, dfa_state, token_idx, token):
         remainder = token.replace('\t', '    ')
+
         is_valid, remainder = self._dfas.consume_prefix(dfa_state, remainder)
         if is_valid:
             if remainder == '':
