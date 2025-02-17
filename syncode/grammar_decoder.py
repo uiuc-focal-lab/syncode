@@ -49,6 +49,9 @@ class SyncodeLogitsProcessor(LogitsProcessor):
         # Ignore whitespace tokens
         self._ignore_whitespace = self._get_ignore_whitespace(self.grammar)
 
+        # Create parsers
+        self.inc_parser: Iterator[IncrementalParser] = create_parser(self.grammar, logger=self.logger, parser=parser, ignore_whitespace=self._ignore_whitespace)
+
         # Load dfa mask store
         self.dfa_mask_store = DFAMaskStore.load_dfa_mask_store(
                                     grammar=self.grammar, 
@@ -56,10 +59,8 @@ class SyncodeLogitsProcessor(LogitsProcessor):
                                     use_cache=use_cache, 
                                     logger=self.logger,
                                     mode=mode,
+                                    parse_table=self.inc_parser.base_parser.parser.parser._parse_table
                                     )
-
-        # Create parsers
-        self.inc_parser: Iterator[IncrementalParser] = create_parser(self.grammar, logger=self.logger, parser=parser, ignore_whitespace=self._ignore_whitespace)
 
     
     def _log_current_status(self, partial_code, r: ParseResult):
