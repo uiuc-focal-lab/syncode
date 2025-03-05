@@ -86,20 +86,14 @@ class SyncodeLogitsProcessor(LogitsProcessor):
                         ignore_whitespace = True # convert to boolean tensor mask. This is useful for fast union operations
         return ignore_whitespace
 
-    def reset(self, prompt: str):
+    def reset(self):
         """
         Resets the decoder state on every new prompt.
         """
         self.last_valid_state = [0 for _ in range(self.batch_size)]
         self.function_ends = [None for _ in range(self.batch_size)]
         self.parse_failed = False
-
-        prompt_tokens = self.tokenizer.encode(prompt, return_tensors='pt')[0]
-        if self.parse_output_only:
-            self.start_from = len(prompt_tokens)
-        else:
-            self.start_from = 0
-
+        self.start_from = None
         self.inc_parser.reset()
 
 
@@ -142,6 +136,11 @@ class SyncodeLogitsProcessor(LogitsProcessor):
 
     def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor) -> torch.FloatTensor:    
         # start_from is used for choosing where the parsing should start
+        if self.start_from is None:
+            if self.parse_output_only:
+                self.start_from = input_ids.size(1)
+            else:
+                self.start_from = 0
         partial_codes = self._get_partial_codes(input_ids)
 
         for idx, partial_code in enumerate(partial_codes):
@@ -166,10 +165,11 @@ class SyncodeLogitsProcessor(LogitsProcessor):
                 greedy_token = self.tokenizer.decode(scores[idx].argmax(dim=-1)) 
 
             if torch.sum(accept_mask) != 0: # If there are acceptable tokens for the current partial code 
-                if len(scores[idx]) != len(accept_mask):
+                if len(scores[idx]) > len(accept_mask):
                     # Pad accept_mask with 0 values. Since scores[i] may be longer than tokenizer vocab size, we need to pad accept_mask with 0 values
                     accept_mask = torch.cat((accept_mask, torch.zeros(len(scores[idx]) - len(accept_mask), dtype=torch.bool)))
-                    
+                elif len(scores[idx]) < len(accept_mask):
+                    accept_mask = accept_mask[: len(scores[idx])]
                 scores[idx] = scores[idx].masked_fill(~accept_mask.to(scores.device), -float("inf"))
             else: # Otherwise, report the error and mask no tokens
                 self.logger.log('No acceptable tokens for the current partial code!')
