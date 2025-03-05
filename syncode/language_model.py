@@ -86,11 +86,11 @@ class HuggingFaceModel:
             return_token_ids (bool): If True, returns the token ids of the completions.
             debug (bool): If True, prints debug information.
         '''        
-        inputs, prompt_str = self.get_tokenized_input(prompt, batch_size)
+        inputs = self.get_tokenized_input(prompt, batch_size)
 
         # Reset the grammar decoder
         if self.grammar_decoder is not None:
-            self.grammar_decoder.reset(prompt_str)
+            self.grammar_decoder.reset()
 
         input_ids_cutoff = inputs.input_ids.size(dim=1)
         
@@ -169,7 +169,7 @@ class HuggingFaceModel:
         input_batch = [prompt_str for _ in range(batch_size)]
         inputs = self.tokenizer(input_batch, return_tensors="pt").to(self.model.device)
 
-        return inputs, prompt_str
+        return inputs
 
     @torch.inference_mode()
     def _generate(
