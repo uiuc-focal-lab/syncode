@@ -89,7 +89,7 @@ class TestParserMisc(unittest.TestCase):
         
         prompt = "Generate a JSON object"
         input_ids = tokenizer(prompt, return_tensors='pt')['input_ids']
-        grammar_decoder.reset(prompt)
+        grammar_decoder.reset()
 
         # Create an empty 2D tensor
         next_token = torch.tensor([tokenizer.eos_token_id], dtype=torch.long)
