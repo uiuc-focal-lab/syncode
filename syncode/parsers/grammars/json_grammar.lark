@@ -3,7 +3,7 @@
 
 ?value: object
 | array
-| UNESCAPED_STRING
+| EMPTY_STRING
 | NONEMPTY_STRING
 | SIGNED_NUMBER      -> number
 | "true"             -> true
@@ -15,7 +15,7 @@ object : "{" [pair ("," pair)*] "}"
 pair   : NONEMPTY_STRING ":" value
 
 NONEMPTY_STRING: /\"[^"]+\"/
-UNESCAPED_STRING: /\"[^"]*\"/
+EMPTY_STRING: /\"\"/
 
 DIGIT: "0".."9"
 HEXDIGIT: "a".."f"|"A".."F"|DIGIT
