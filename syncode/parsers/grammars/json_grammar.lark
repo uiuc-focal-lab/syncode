@@ -4,6 +4,7 @@
 ?value: object
 | array
 | UNESCAPED_STRING
+| NONEMPTY_STRING
 | SIGNED_NUMBER      -> number
 | "true"             -> true
 | "false"            -> false
