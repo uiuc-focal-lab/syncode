@@ -11,8 +11,9 @@
 
 array  : "[" [value ("," value)*] "]"
 object : "{" [pair ("," pair)*] "}"
-pair   : UNESCAPED_STRING ":" value
+pair   : NONEMPTY_STRING ":" value
 
+NONEMPTY_STRING: /\"[^"]+\"/
 UNESCAPED_STRING: /\"[^"]*\"/
 
 DIGIT: "0".."9"
