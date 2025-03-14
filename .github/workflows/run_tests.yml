@@ -23,7 +23,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-    - name: Cache DFA mask store
+    - name: Cache mask store
       uses: actions/cache@v3
       with:
           path: /home/runner/work/syncode/syncode/cache/mask_stores/
@@ -39,3 +39,6 @@ jobs:
           python3 -m unittest tests.test_language_model
           python3 -m unittest tests.test_lr_parser
           python3 -m unittest tests.test_syncode
+          python3 -m unittest tests.mask_store.test_byte_fsm
+          python3 -m unittest tests.mask_store.test_fsm_set
+          python3 -m unittest tests.mask_store.test_byte_tokenizer

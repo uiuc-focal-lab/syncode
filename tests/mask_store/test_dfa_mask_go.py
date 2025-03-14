@@ -2,18 +2,18 @@ import sys
 import os
 import time
 import unittest
-sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../')
+sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../..')
 import syncode.common as common
 from syncode.parsers.incremental_parser import ParseResult
 from syncode.parse_result import AcceptSequence, RemainderState
-from syncode.dfa_mask_store import DFAMaskStore
+from syncode.mask_store.mask_store import MaskStore
 from syncode.parsers.grammars.grammar import Grammar
 
 # Initialize these outside the test class if they're shared across tests
 model = 'deepseek-ai/deepseek-coder-6.7b-instruct'
 # model = 'Llama-7b'
 tokenizer = common.load_tokenizer(model)
-dfa_mask = DFAMaskStore.load_dfa_mask_store(grammar=Grammar('go'), tokenizer=tokenizer, use_cache=True, logger=common.EmptyLogger())
+dfa_mask = MaskStore.init_mask_store(grammar=Grammar('go'), tokenizer=tokenizer, use_cache=True, logger=common.EmptyLogger())
 
 class TestDFAMask(unittest.TestCase):
     def test_dfa_mask(self):
