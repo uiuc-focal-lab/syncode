@@ -8,23 +8,6 @@ HF_CACHE = os.environ['HF_CACHE'] if 'HF_CACHE' in os.environ else 'cache/'
 SYNCODE_CACHE = os.environ['SYNCODE_CACHE'] if 'SYNCODE_CACHE' in os.environ else 'cache/'
 HF_ACCESS_TOKEN = os.environ['HF_ACCESS_TOKEN'] if 'HF_ACCESS_TOKEN' in os.environ else None
 
-def get_vocab_from_tokenizer(tokenizer):
-    # self.vocab is a list of readable token strings (e.g., ' hello' and '\n')
-    # sorted by their token IDs (so self.vocab[0] is the first token, etc).
-    vocab = [v for k, v in
-                    sorted([(t_id, tokenizer.decode([t_id]))
-                            for _, t_id in tokenizer.get_vocab().items()])]
-
-    # HACK: Is there a better way to know if a token has a prefix space?
-    if 'Llama' in tokenizer.__class__.__name__:
-        for i in range(len(vocab)):
-            t = vocab[i]
-            if 2*len(t) != len(tokenizer.decode([i, i], add_special_tokens=False)):
-                vocab[i] = ' ' + t
-            if t == '':
-                vocab[i] = ' '
-    
-    return vocab
 
 def load_model(model_name, device, quantize):
         if model_name == 'test':

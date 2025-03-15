@@ -58,7 +58,6 @@ class HuggingFaceModel:
 
         self.mode = mode
         self.grammar = grammar
-        self.vocab = common.get_vocab_from_tokenizer(self.tokenizer)
         self.gen_args = kwargs
         self.opp = opp
 
