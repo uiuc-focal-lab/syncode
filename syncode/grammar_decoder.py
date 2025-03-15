@@ -117,10 +117,14 @@ class SyncodeLogitsProcessor(LogitsProcessor):
         input_ids = torch.cat((input_ids, next_token.unsqueeze(0)), dim=-1)
         partial_code, remainder_bytes = self._get_partial_codes(input_ids)[0]
 
-        res, skip = self._parse_partial_code(partial_code, remainder_bytes, 0, accepted_generation=False)
+        res, skip = self._parse_partial_code(
+            idx=0, 
+            partial_code=partial_code, 
+            remainder_bytes=remainder_bytes, 
+            accepted_generation=False
+            )
         
-        if skip:
-            return False
+        if skip: return False
         
         if input_ids[0, -1] == self.tokenizer.eos_token_id:
             # Do not allow the model to generate EOS token until $END in the grammar is reached

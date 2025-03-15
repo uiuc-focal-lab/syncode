@@ -42,6 +42,11 @@ class TestByteTokenizer(unittest.TestCase):
         def mock_encode(text, **kwargs):
             # Simplified encoding - just matching exact tokens
             result = []
+
+            if vocab_type == VocabType.RAW:
+                # For RAW tokenizers, we need to encode the text as bytes
+                text = text.encode('utf-8')
+                
             remaining = text
             while remaining:
                 matched = False

@@ -33,12 +33,13 @@ class MaskStore:
                  tokenizer: PreTrainedTokenizer, 
                  simplifications: dict={}, 
                  special_token_ids: Iterable=[], 
-                 indentation: bool=True,
+                 indentation: bool=False,
                  mode='grammar_strict', # 'grammar_strict' or 'grammar_mask'
                  ignore_terminals: Iterable[str]=[],
                  parse_table=None
                  ):
-        self._vocab = tokenizer.get_vocab()
+        self._vocab = MaskStore._get_vocab_from_tokenizer(tokenizer)
+
         self.byte_tokenizer = ByteTokenizer(tokenizer)
         self.special_token_ids = special_token_ids  
         self._mode = mode
@@ -57,7 +58,7 @@ class MaskStore:
         followings_terminas_map = None
         if parse_table is not None:
             followings_terminas_map = self._compute_following_terminals_map(terminal_names, parse_table)
-        self._store_overapproximate_tokens(terminal_names, self._vocab, followings_terminas_map)
+        self._store_overapproximate_tokens(terminal_names, len(self._vocab), followings_terminas_map)
 
         self.indentation = indentation       
 
@@ -100,8 +101,6 @@ class MaskStore:
                 pass
     
         print(f"Creating DFA mask store for {tokenizer_name} and {grammar}, may take more than 10 minutes. Caching at {os.path.abspath(fsm_path)}.", flush=True)
-        vocab = MaskStore._get_vocab_from_tokenizer(tokenizer)
-
         base_parser = create_base_parser(grammar)
         simplifications = grammar.simplifications()
         os.makedirs(fsm_dir, exist_ok=True)
@@ -154,7 +153,7 @@ class MaskStore:
         return following_terminals_map
 
 
-    def _store_overapproximate_tokens(self, terminals: Iterable[str], vocab: Iterable[str], followings_terminas_map: dict=None):
+    def _store_overapproximate_tokens(self, terminals: Iterable[str], vocab_size: int, followings_terminas_map: dict=None):
         """
         Stores the overapproximate tokens for each fsm state and next terminals
         """
@@ -162,7 +161,7 @@ class MaskStore:
         pbar = tqdm(total=len(all_fsm_states))
 
         for fsm_state in all_fsm_states:
-            for token, token_idx in vocab.items():
+            for token_idx in range(vocab_size):
                 is_special_token = token_idx in self.special_token_ids
 
                 if is_special_token:
@@ -175,11 +174,11 @@ class MaskStore:
                     else:
                         following_terminals = terminals
 
-                    self._process_regular_tokens(following_terminals, fsm_state, token_idx, token)
+                    self._process_regular_tokens(following_terminals, fsm_state, token_idx)
             
             pbar.update(1)
 
-    def _process_regular_tokens(self, terminals, fsm_state, token_idx, token: str):
+    def _process_regular_tokens(self, terminals, fsm_state, token_idx):
         # Convert the token to bytes
         # There are two types of tokens: some that convert into a valid utf-8 string. We can just use Python to convert them to bytes. For others, we need to use the byte_tokenizer
         token_bytes = self.byte_tokenizer.decode([token_idx])
@@ -352,7 +351,7 @@ class MaskStore:
         """
         Check if r.remainder is a valid prefix for accept sequences in r
         """
-        cur_incomplete_string = r.remainder.encode('utf-8')
+        cur_incomplete_string = r.remainder
 
         cur_fsm_states = self._fsms.compute_fsm_states(cur_incomplete_string)
         for accept_sequence in r.accept_sequences:

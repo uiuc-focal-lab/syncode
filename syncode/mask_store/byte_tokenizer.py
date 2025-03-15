@@ -95,15 +95,15 @@ def enbyte_bytefallback(token: str) -> bytes:
 
 
 @cache
-def enbyte_raw(token: str) -> bytes:
+def enbyte_raw(token: bytes) -> bytes:
     """Turn a raw token directly into bytes.
     
     Example:
     --------
-    >>> enbyte_raw('hello')
+    >>> enbyte_raw(b'hello')
     b'hello'
     """
-    return token.encode('utf-8')
+    return token
 
 
 def debyte_bytelevel(array: bytes) -> list[str]:
@@ -233,7 +233,7 @@ class ByteTokenizer:
         
         # Use a mutable bytearray for faster concatenation
         result = bytearray()
-        vocab_byte = self.vocab_byte  # Local reference for faster lookup
+        vocab_byte = self.vocab_byte
         
         # Fast path: no special token handling needed
         if not skip_special_tokens or not self.special_token_ids:
