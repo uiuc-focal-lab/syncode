@@ -29,7 +29,7 @@ class LookupTable:
         self.indent = indent
 
         # In the default mask, add all tokens that are special tokens except the EOS token
-        self._default_mask = torch.zeros(len(vocab), dtype=torch.bool)
+        self._default_mask: torch.IntTensor = torch.zeros(len(vocab), dtype=torch.bool)
         for token_id in special_token_ids:
             if token_id != eos_token_id:
                 self._default_mask[token_id] = 1
@@ -106,7 +106,7 @@ class LookupTable:
                 self._indentation_to_tokens_map[key] = self._list_to_mask(val)
 
     def _get_default_mask(self) -> torch.Tensor:
-        return copy.deepcopy(self._default_mask)
+        return self._default_mask.clone()
 
     def _create_indentation_to_tokens_map(self):
         """

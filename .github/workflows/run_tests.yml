@@ -42,3 +42,4 @@ jobs:
           python3 -m unittest tests.mask_store.test_byte_fsm
           python3 -m unittest tests.mask_store.test_fsm_set
           python3 -m unittest tests.mask_store.test_byte_tokenizer
+          python3 -m unittest tests.mask_store.test_lookup_table

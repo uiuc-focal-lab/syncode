@@ -9,7 +9,7 @@ class JointFSMState:
     """
     Represents the state of the FSM. It consists of the current terminal and the FSM state for the current terminal.
     """
-    def __init__(self, terminal, state_id):
+    def __init__(self, terminal: str, state_id: int):
         self.terminal = terminal
         self.state_id = state_id
 

@@ -106,7 +106,7 @@ class MaskStore:
                 return mask_store
             except: # If we cannot load the file, we will create the fsm from scratch
                 pass
-    
+        logger.info(f"Using cache: {use_cache} and fsm path {fsm_path} exist: {os.path.exists(fsm_path)}")
         logger.info(f"Creating DFA mask store for {tokenizer_name} and {grammar}, may take more than 10 minutes. Caching at {os.path.abspath(fsm_path)}.")
         base_parser = create_base_parser(grammar)
         simplifications = grammar.simplifications()

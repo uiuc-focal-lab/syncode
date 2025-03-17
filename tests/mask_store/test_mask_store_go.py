@@ -14,7 +14,7 @@ from tests.test_utils import CustomAssertMixin
 # Initialize these outside the test class if they're shared across tests
 model = 'Qwen/Qwen2.5-1.5B-Instruct'
 tokenizer = common.load_tokenizer(model)
-mask_store = MaskStore.init_mask_store(grammar=Grammar('go'), tokenizer=tokenizer, use_cache=True, mode='grammar_mask')
+mask_store = MaskStore.init_mask_store(grammar=Grammar('go'), tokenizer=tokenizer, use_cache=False, mode='grammar_mask')
 
 class TestDFAMask(unittest.TestCase, CustomAssertMixin):
     def test_dfa_mask(self):
