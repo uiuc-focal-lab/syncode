@@ -145,6 +145,11 @@ class MaskStore:
 
         # We iterate through each cur_terminal:    
         for cur_terminal in terminals:
+            # Add all ignore terminals to the following terminals
+            for next_terminal in terminals:
+                if 'IGNORE' in next_terminal:
+                    following_terminals_map[cur_terminal].add(next_terminal)
+
             # We iterate through each parser_state:
             for _, row in parse_table.states.items():
                 if cur_terminal in row:
@@ -185,8 +190,9 @@ class MaskStore:
                         following_terminals = terminals
 
                     self._process_regular_tokens(following_terminals, fsm_state, token_idx)
-            
             pbar.update(1)
+        pbar.close()
+
 
     def _process_regular_tokens(self, terminals, fsm_state: JointFSMState, token_idx: int):
         # There are two types of tokens: some that convert into a valid utf-8 string. We can just use Python to convert them to bytes. For others, we need to use the byte_tokenizer
@@ -226,7 +232,7 @@ class MaskStore:
                             self._lookup_table.fsm_state_and_next_terminal_to_tokens_add(fsm_state, next_terminal, token_idx)
                     else:
                         raise ValueError(f"Invalid mode: {self._mode}")
-                    
+
 
     def _process_complete_case(self, fsm_state, token_idx, token_bytes):
         remainder = token_bytes.replace(b'\t', b'    ')
@@ -237,19 +243,21 @@ class MaskStore:
             self._lookup_table.add_exact_lookup(fsm_state, token_idx)
 
     def _remove_left_whitespace(
-            self, 
-            fsm_state, 
-            remainder: Union[str, bytes]
-        ) -> Union[str, bytes]:
+        self, 
+        fsm_state, 
+        remainder: Union[str, bytes]
+    ) -> Union[str, bytes]:
         """
-        Ignore left space at the start of the terminal. This only helps the efficiency
-        e.g. without this say if the model wants to generate ' def' then syncode will force it to generate ' ' and 'def' seperately
+        Ignore all left whitespace at the start of the terminal. This improves efficiency
+        e.g. without this say if the model wants to generate '   def' then syncode will force it to generate '   ' and 'def' separately
         """
         if (self._fsms.initial(fsm_state.terminal) == fsm_state or self._fsms.is_final(fsm_state)) and self._ignore_whitespace:
-            if isinstance(remainder, bytes) and remainder.startswith(b' '):
-                remainder = remainder[1:]
-            elif isinstance(remainder, str) and remainder.startswith(' '):
-                remainder = remainder[1:]
+            if isinstance(remainder, bytes):
+                # For bytes, use lstrip() to remove all leading whitespace
+                remainder = remainder.lstrip()
+            elif isinstance(remainder, str):
+                # For strings, use lstrip() to remove all leading whitespace
+                remainder = remainder.lstrip()
         return remainder
 
     def _lookup_next_tokens_for_fsm_state(self, fsm_state: JointFSMState, next_terminal) -> torch.Tensor:
@@ -315,7 +323,9 @@ class MaskStore:
                     
                     if remainder_state == RemainderState.MAYBE_COMPLETE:
                             if len(accept_sequence) == 1:
-                                accept_token_mask |= self._lookup_table.complete_case_lookup(fsm_state)
+                                # mode='grammar_strict': incomplete_case_lookup is the same as complete_case_lookup
+                                # mode='grammar_mask': incomplete_case_lookup is the overapproximate lookup
+                                accept_token_mask |= self._lookup_table.incomplete_case_lookup(fsm_state)
                             elif len(accept_sequence) == 2:
                                 accept_token_mask |= self._lookup_next_tokens_for_fsm_state(fsm_state, accept_sequence[1])
                             elif len(accept_sequence) == 3:

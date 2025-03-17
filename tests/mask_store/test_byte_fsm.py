@@ -33,14 +33,22 @@ class TestByteFSM(unittest.TestCase):
                 ("dog", True),
                 ("bat", False)
             ],
-            "😊": [
-                ("😊", True),
-                ("a", False)
-            ],
             "hello[0-9]+": [
                 ("hello123", True),
                 ("hello", False)
-            ]
+            ],
+            "(?:(?:(?:\\/\\/[^\n]*|(\r?\n[\t ]*)+))+|/\\*'\\ \\.\\*\\?\\ '\\*/|;)":
+            [
+                ("//comment", True),
+                # ("/*comment*/", True), TODO: this should be fixed in GO grammar
+                (";", True),
+                ("\n //comment", True),
+                ("/*comment", False),
+            ],
+                "😊": [
+                ("😊", True),
+                ("a", False)
+            ],
         }
         
         for pattern, test_cases in test_patterns.items():

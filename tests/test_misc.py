@@ -32,6 +32,7 @@ class TestParserMisc(unittest.TestCase):
         tokenizer = common.load_tokenizer(model)
         inc_parser = create_parser(grammar)
         r = inc_parser.get_acceptable_next_terminals("234 * 327 = 76518")
+        r.remainder = r.remainder.encode('utf-8')
         mask_store = MaskStore.init_mask_store(grammar=grammar, tokenizer=tokenizer, use_cache=False)
         mask = mask_store.get_accept_mask(r, get_list=True)
         self.assertNotIn(' (', mask)

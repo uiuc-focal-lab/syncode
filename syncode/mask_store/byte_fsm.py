@@ -83,12 +83,7 @@ class ByteFSM:
         # Copy the transitions from the regex FSM to our byte FSM
         for state, category_transitions in regex_fsm.map.items():
             for category, target in category_transitions.items():
-                if category is None:
-                    # Epsilon transition
-                    self.transitions[state][None] = target
-                else:
-                    # Normal transition on a category
-                    self.transitions[state][category] = target
+                self.transitions[state][category] = target
         
         # Handle multi-byte Unicode characters separately
         # This is needed because a multi-byte character might need special handling
@@ -110,14 +105,19 @@ class ByteFSM:
                     # Create intermediate states for the multi-byte character
                     current = state
                     for i, byte in enumerate(char_bytes):
+                        if byte not in self.alphabet:
+                            # Add the byte to the alphabet with a new category
+                            byte_category = f"{byte}_{i}"
+                            self.byte_to_category[byte] = byte_category
+
                         if i < len(char_bytes) - 1:
                             next_state = f"{current}_{byte}_{i}_{char}"
                             if next_state not in self.transitions:
                                 self.transitions[next_state] = {}
-                            self.transitions[current][byte] = next_state
+                            self.transitions[current][byte_category] = next_state
                             current = next_state
                         else:
-                            self.transitions[current][byte] = target
+                            self.transitions[current][byte_category] = target
     
     def _get_category(self, byte_val: int) -> Any:
         """
@@ -174,10 +174,6 @@ class ByteFSM:
         if current is None or current not in self.transitions:
             return None
         
-        # First check if there's a direct transition on this byte
-        if byte_val in self.transitions[current]:
-            return self.transitions[current][byte_val]
-        
         # If not, get the category for this byte and check if there's a transition on that category
         category = self._get_category(byte_val)
         if category is not None and category in self.transitions[current]:
@@ -204,7 +200,9 @@ class ByteFSM:
         
         # Process each byte
         for byte in data:
+            # print(current, byte)
             current = self.get_next_state(current, byte)
+            # print(current)
             if current is None:
                 return False
         

@@ -17,7 +17,7 @@ from syncode.evaluation.fol_eval import FOLEval
 
 def compile_and_run(model, mode="grammar_strict", quantize=True, device="cuda", grammar=None, dataset="input", num_few_shot=0, dev_mode=False, log_level=1, new_mask_store=False, parser="lalr", num_tasks=None, task_id=None, seed=None, opp=True, debug=False, **kwargs):
 
-    syncode = Syncode(model, mode=mode, quantize=quantize, device=device, grammar=grammar, dev_mode=dev_mode, log_level=log_level, new_mask_store=new_mask_store, parser=parser, seed=seed, opp=opp, **kwargs)
+    syncode = Syncode(model, mode=mode, quantize=quantize, device=device, grammar=grammar, dev_mode=dev_mode, new_mask_store=new_mask_store, parser=parser, seed=seed, opp=opp, **kwargs)
     
     if dataset == "input":
         syncode.infer(debug=debug)

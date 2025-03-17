@@ -2,6 +2,7 @@ import unittest
 import sys, os
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../..')
 import time
+from tests.test_utils import CustomAssertMixin
 import syncode.common as common
 from syncode.parsers.incremental_parser import ParseResult
 from syncode.parse_result import AcceptSequence, IndentationConstraint, RemainderState
@@ -11,35 +12,6 @@ from syncode.parsers.grammars.grammar import Grammar
 import logging
 logger = logging.getLogger(__name__)
 
-
-# Custom assertion methods to handle long lists
-class CustomAssertMixin:
-    def assertInWithLimit(self, member, container, msg=None):
-        """Assert that member is in container, with limited output if container is too long."""
-        if member not in container:
-            if len(container) <= 50:
-                self.assertIn(member, container, msg)
-            else:
-                sample = list(container)[:10]
-                self.fail(f"{repr(member)} not found in list with {len(container)} items. First 10 items: {sample}")
-    
-    def assertTrueWithLimit(self, expr, items, container, msg=None):
-        """Assert that expression is true, with limited output for long containers."""
-        if not expr:
-            if len(container) <= 50:
-                self.assertTrue(expr, msg)
-            else:
-                sample = list(container)[:10]
-                self.fail(f"Assertion failed for items {items}. List has {len(container)} items. First 10 items: {sample}")
-                
-    def assertGreaterWithLimit(self, a, b, container, msg=None):
-        """Assert a > b with limited output for the container."""
-        if not (a > b):
-            if len(container) <= 50:
-                self.assertGreater(a, b, msg)
-            else:
-                sample = list(container)[:10]
-                self.fail(f"{a} not greater than {b}. List has {len(container)} items. First 10 items: {sample}")
 
 class TestDFAMaskLlama(unittest.TestCase, CustomAssertMixin):
     model = 'meta-llama/Llama-2-7b-hf'
@@ -238,7 +210,7 @@ class TestDFAMaskCodegen(unittest.TestCase, CustomAssertMixin):
     mask_store = MaskStore.init_mask_store(
         grammar=Grammar('python'), 
         tokenizer=tokenizer, 
-        use_cache=False, 
+        use_cache=True, 
         indent=True, 
         mode="grammar_mask"
         )
