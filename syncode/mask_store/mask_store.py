@@ -195,7 +195,6 @@ class MaskStore:
 
 
     def _process_regular_tokens(self, terminals, fsm_state: JointFSMState, token_idx: int):
-        # There are two types of tokens: some that convert into a valid utf-8 string. We can just use Python to convert them to bytes. For others, we need to use the byte_tokenizer
         token_bytes = self.byte_tokenizer.decode([token_idx])
 
         # For COMPLETE case:

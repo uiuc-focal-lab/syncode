@@ -12,12 +12,13 @@ class JointFSMState:
     def __init__(self, terminal: str, state_id: int):
         self.terminal = terminal
         self.state_id = state_id
+        self._hash = hash((self.terminal, self.state_id)) # Pre-compute hash on creation
 
     def __eq__(self, other: 'JointFSMState'):
         return self.terminal == other.terminal and self.state_id == other.state_id
 
     def __hash__(self):
-        return hash((self.terminal, self.state_id))
+        return self._hash
 
     def __repr__(self):
         return f"({self.terminal}, {self.state_id})"

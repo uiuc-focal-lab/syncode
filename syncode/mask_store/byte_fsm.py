@@ -1,3 +1,4 @@
+from functools import lru_cache
 import interegular
 from typing import Tuple, Optional, Any, Union
 
@@ -119,6 +120,7 @@ class ByteFSM:
                         else:
                             self.transitions[current][byte_category] = target
     
+    @lru_cache(maxsize=100000)
     def _get_category(self, byte_val: int) -> Any:
         """
         Get the category for a byte value.
@@ -293,35 +295,56 @@ class ByteFSM:
             - success is True if an accept state was reached or if we ended in a live state
             - remainder is the remaining bytes after the consumed prefix, or None if no valid prefix was found
         """
-        # Convert to bytes if not already
+        # Convert to bytes if not already - only happens once per call
         if isinstance(data, str):
             data = data.encode('utf-8')
         
         # Use the provided state or the initial state
         cur_state = self.initial if current_state is None else current_state
         
-        longest_accept_index = -1
-        if cur_state in self.finals:
-            longest_accept_index = 0
-            
-        for i, byte in enumerate(data):
-            # Get category for this byte
-            category = self._get_category(byte)
-            
-            # Check if we have a direct transition on this byte
-            if byte in self.transitions.get(cur_state, {}):
-                cur_state = self.transitions[cur_state][byte]
-            # Check if we have a transition on this category
-            elif category is not None and category in self.transitions.get(cur_state, {}):
-                cur_state = self.transitions[cur_state][category]
+        # Pre-check if we're already in a final state
+        longest_accept_index = 0 if cur_state in self.finals else -1
+        
+        # Cache membership checking methods
+        is_final = self.finals.__contains__  # Direct method access is faster than 'in'
+        
+        # Pre-compute length to avoid repeated len() calls
+        data_len = len(data)
+        if data_len == 0:
+            # Early return for empty data - fixed conditional return
+            if cur_state is not None and self.islive(cur_state):
+                return True, b""
             else:
-                # No valid transition - we've reached a "dead" state
-                cur_state = None
+                return False, None
+        
+        # Main byte processing loop
+        i = 0
+        while i < data_len:
+            byte = data[i]
+            
+            # Get transitions for current state only once
+            state_transitions = self.transitions.get(cur_state, {})
+            if not state_transitions:  # No transitions - dead state
                 break
-                
-            # Check if we're in a final state
-            if cur_state in self.finals:
+            
+            # Direct byte transition - most common case first
+            if byte in state_transitions:
+                cur_state = state_transitions[byte]
+            else:
+                # Only get category if needed - reduces _get_category calls
+                category = self._get_category(byte)
+                if category is not None and category in state_transitions:
+                    cur_state = state_transitions[category]
+                else:
+                    # No valid transition - we've reached a "dead" state
+                    cur_state = None
+                    break
+            
+            # Check if we're in a final state - using cached method
+            if is_final(cur_state):
                 longest_accept_index = i + 1
+            
+            i += 1
         
         if longest_accept_index != -1:  # Reached accept state at some point
             return True, data[longest_accept_index:]
