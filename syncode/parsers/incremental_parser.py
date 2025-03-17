@@ -5,12 +5,15 @@ from syncode.larkm.parsers.lalr_interactive_parser import InteractiveParser
 from syncode.parse_result import ParseResult, RemainderState
 from syncode.larkm.lexer import Token
 from typing import Optional, Any, Tuple, Iterable
+import logging
+logger = logging.getLogger(__name__)
+
 
 class IncrementalParser:    
     """
     This is the base class for all incremental parsers.
     """
-    def __init__(self, base_parser, logger: Optional[common.Logger]=None, ignore_whitespace=False) -> None:
+    def __init__(self, base_parser, ignore_whitespace=False) -> None:
         self.cur_pos = 0 # Current cursor position in the lexer tokens list
         self.lexer_pos = 0 # Current lexer position in the code
         self.dedent_queue: list = []
@@ -19,7 +22,6 @@ class IncrementalParser:
         # Initialize the parser
         self.base_parser = base_parser
 
-        self.logger = logger if logger is not None else common.EmptyLogger()
         self.interactive = self.base_parser.parse_interactive('')
         self.parsed_lexer_tokens: list = []
 

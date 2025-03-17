@@ -4,7 +4,7 @@ import sys
 
 import torch
 
-from syncode.dfa_mask_store import DFAMaskStore
+from syncode.mask_store.mask_store import MaskStore
 from syncode.grammar_decoder import SyncodeLogitsProcessor
 
 # Adjusting the path so the modules can be imported correctly
@@ -32,8 +32,9 @@ class TestParserMisc(unittest.TestCase):
         tokenizer = common.load_tokenizer(model)
         inc_parser = create_parser(grammar)
         r = inc_parser.get_acceptable_next_terminals("234 * 327 = 76518")
-        dfa_mask = DFAMaskStore.load_dfa_mask_store(grammar=grammar, tokenizer=tokenizer, use_cache=False, logger=common.EmptyLogger())
-        mask = dfa_mask.get_accept_mask(r, get_list=True)
+        r.remainder = r.remainder.encode('utf-8')
+        mask_store = MaskStore.init_mask_store(grammar=grammar, tokenizer=tokenizer, use_cache=False)
+        mask = mask_store.get_accept_mask(r, get_list=True)
         self.assertNotIn(' (', mask)
     
     @staticmethod
@@ -59,8 +60,9 @@ class TestParserMisc(unittest.TestCase):
         tokenizer = common.load_tokenizer(model)
         inc_parser = create_parser(grammar)
         r = inc_parser.get_acceptable_next_terminals("I")
-        dfa_mask = DFAMaskStore.load_dfa_mask_store(grammar=grammar, tokenizer=tokenizer, use_cache=False, logger=common.EmptyLogger())
-        mask = dfa_mask.get_accept_mask(r, get_list=True)
+        r.remainder = r.remainder.encode('utf-8')
+        mask_store = MaskStore.init_mask_store(grammar=grammar, tokenizer=tokenizer, use_cache=False)
+        mask = mask_store.get_accept_mask(r, get_list=True)
         self.assertIn(' have', mask)
     
     def test_mask_store_misc3(self):
@@ -69,8 +71,9 @@ class TestParserMisc(unittest.TestCase):
         tokenizer = common.load_tokenizer(model)
         inc_parser = create_parser(grammar)
         r = inc_parser.get_acceptable_next_terminals("I have been working there for 5 years.")
-        dfa_mask = DFAMaskStore.load_dfa_mask_store(grammar=grammar, tokenizer=tokenizer, use_cache=False, logger=common.EmptyLogger())
-        mask = dfa_mask.get_accept_mask(r, get_list=True)
+        r.remainder = r.remainder.encode('utf-8')
+        mask_store = MaskStore.init_mask_store(grammar=grammar, tokenizer=tokenizer, use_cache=False)
+        mask = mask_store.get_accept_mask(r, get_list=True)
         self.assertIn(' I', mask)
     
     def test_grammar_decoder_empty(self):

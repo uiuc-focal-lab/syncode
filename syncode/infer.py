@@ -17,7 +17,7 @@ from syncode.evaluation.fol_eval import FOLEval
 
 def compile_and_run(model, mode="grammar_strict", quantize=True, device="cuda", grammar=None, dataset="input", num_few_shot=0, dev_mode=False, log_level=1, new_mask_store=False, parser="lalr", num_tasks=None, task_id=None, seed=None, opp=True, debug=False, **kwargs):
 
-    syncode = Syncode(model, mode=mode, quantize=quantize, device=device, grammar=grammar, dev_mode=dev_mode, log_level=log_level, new_mask_store=new_mask_store, parser=parser, seed=seed, opp=opp, **kwargs)
+    syncode = Syncode(model, mode=mode, quantize=quantize, device=device, grammar=grammar, dev_mode=dev_mode, new_mask_store=new_mask_store, parser=parser, seed=seed, opp=opp, **kwargs)
     
     if dataset == "input":
         syncode.infer(debug=debug)
@@ -56,8 +56,6 @@ class Syncode:
         new_mask_store (bool, optional): Use new DFA mask store. Defaults to False.
         
         dev_mode (bool, optional): Development mode. Defaults to False.
-
-        log_level (int, optional): Log level. Defaults to 2. 0 for no logs, 1 for minimal logs, 2 for all logs including time.
         
         opp (bool, optional): Whether to use opportunistic generation. Defaults to True.
     """
@@ -70,7 +68,6 @@ class Syncode:
         grammar: Optional[str] = None,
         parse_output_only: bool = True,
         dev_mode: bool = False,
-        log_level: int = 1,
         new_mask_store: bool = False,
         parser: Literal["lr", "lalr"] = "lalr",
         seed: Optional[int] = None,
@@ -91,7 +88,6 @@ class Syncode:
         self.num_samples = kwargs.get('num_return_sequences', 1)
         self.new_mask_store = new_mask_store
         self.parser = parser
-        self.log_level = log_level
 
         # Set seed
         if seed is not None:
