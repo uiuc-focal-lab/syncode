@@ -7,6 +7,9 @@ from syncode.parsers.incremental_parser import IncrementalParser, ParseResult
 from syncode.parsers import create_parser, create_base_parser
 from syncode.mask_store.mask_store import MaskStore
 from syncode.parsers.grammars import Grammar
+import logging
+logger = logging.getLogger(__name__)
+
 
 # Set to True for debugging
 DEBUG = True
@@ -18,15 +21,16 @@ class SyncodeLogitsProcessor(LogitsProcessor):
     Args:
         grammar (str): The grammar to use for parsing e.g. "python".
         tokenizer (PreTrainedTokenizer): The tokenizer to use for decoding.
-        logger (common.Logger): The logger to use for logging.
         use_cache (bool, optional): Whether to use the cache. Defaults to True.
         parse_output_only (bool, optional): Whether to parse the prompt. Defaults to False.
+        num_samples (int, optional): The number of sequences to generate. Defaults to 1.
         dev_mode (bool, optional): Whether to run in development mode. Defaults to False.
+        parser (str, optional): The parser to use. Defaults to 'lalr'.
+        mode (str, optional): The mode to use. Defaults to 'grammar_mask'.
     """
     def __init__(self, 
         grammar: Grammar, 
         tokenizer: PreTrainedTokenizer, 
-        logger: common.Logger=common.EmptyLogger(), 
         use_cache=True,
         parse_output_only=True, 
         num_samples=1,
@@ -38,7 +42,6 @@ class SyncodeLogitsProcessor(LogitsProcessor):
         self.byte_tokenizer = ByteTokenizer(tokenizer)
 
         self.grammar = grammar
-        self.logger = logger
         self.dev_mode = dev_mode
         self.batch_size = num_samples
         self.parse_failed = False
@@ -55,23 +58,17 @@ class SyncodeLogitsProcessor(LogitsProcessor):
         self._ignore_whitespace = self._get_ignore_whitespace(self.grammar)
 
         # Create parser
-        self.inc_parser: IncrementalParser = create_parser(self.grammar, logger=self.logger, parser=parser, ignore_whitespace=self._ignore_whitespace)
+        self.inc_parser: IncrementalParser = create_parser(self.grammar, parser=parser, ignore_whitespace=self._ignore_whitespace)
 
         # Load dfa mask store
         self.dfa_mask_store = MaskStore.init_mask_store(
                                     grammar=self.grammar, 
                                     tokenizer=self.tokenizer, 
                                     use_cache=use_cache, 
-                                    logger=self.logger,
                                     mode=mode,
-                                    parse_table=self.inc_parser.base_parser.parser.parser._parse_table,
                                     )
-
+        
     
-    def _log_current_status(self, partial_code, r: ParseResult):
-        self.logger.log_code('Partial code', partial_code)
-        self.logger.log(repr(r))
-
     def _get_ignore_whitespace(self, grammar):
         """
         Check if the grammar allows whitespace tokens to be ignored.
@@ -158,11 +155,7 @@ class SyncodeLogitsProcessor(LogitsProcessor):
             res, skip = self._parse_partial_code(idx, partial_code, remainder_bytes, accepted_generation=True)
             if skip: continue
 
-            accept_mask = self.dfa_mask_store.get_accept_mask(res, logger=self.logger)
-
-            if DEBUG: 
-                self._log_current_status(partial_code, res)
-                greedy_token = self.tokenizer.decode(scores[idx].argmax(dim=-1)) 
+            accept_mask = self.dfa_mask_store.get_accept_mask(res)
 
             if torch.sum(accept_mask) != 0: # If there are acceptable tokens for the current partial code 
                 if len(scores[idx]) > len(accept_mask):
@@ -172,11 +165,8 @@ class SyncodeLogitsProcessor(LogitsProcessor):
                     accept_mask = accept_mask[: len(scores[idx])]
                 scores[idx] = scores[idx].masked_fill(~accept_mask.to(scores.device), -float("inf"))
             else: # Otherwise, report the error and mask no tokens
-                self.logger.log('No acceptable tokens for the current partial code!')
-                self._log_current_status(partial_code, res)
-
-            # For debugging - remove later
-            if DEBUG: self._debug_greedy(scores, idx, partial_code, res, greedy_token)
+                logger.debug('No acceptable tokens for the current partial code!')
+                logger.debug(repr(res))
 
         return scores
 
@@ -239,28 +229,6 @@ class SyncodeLogitsProcessor(LogitsProcessor):
                 if accept_seq[0] == '$END' or accept_seq[0] == 'EOF':
                     self.last_valid_state[idx] = len(partial_code) - len(r.remainder)
 
-    def _debug_greedy(self, scores, idx, partial_code, r, greedy_token):
-        greedy_grammar_token = self.tokenizer.decode(scores[idx].argmax(dim=-1))
-        if greedy_token != greedy_grammar_token:
-            self._log_greedy_difference(greedy_grammar_token, partial_code, r, greedy_token)
-
-    def _log_greedy_difference(self, greedy_grammar_token, partial_code, r, greedy_token):
-        self.logger.log_check(f"Greedy token and greedy grammar-based token do not match!")
-        self.logger.log(f"Greedy token: {repr(greedy_token)}")
-        self.logger.log(f"Greedy grammar-based token: {repr(greedy_grammar_token)}")
-        self._log_current_status(partial_code, r)
-    
-    def print_debug(self):
-        print('-'*50)
-        print('Parsed terminals:')
-
-        name_to_pattern = {}
-        for term in self.inc_parser.base_parser.terminals:
-            name_to_pattern[term.name] = term.pattern
-
-        for token in self.inc_parser.parsed_lexer_tokens:
-            print(f"(type: {name_to_pattern[token.type]} | value: '{token.value}')")
-        print('-'*50)
     
     @staticmethod
     def _bytes_to_string(byte_sequence: bytes) -> tuple[str, bytes]:

@@ -7,13 +7,15 @@ from syncode.larkm.indenter import Indenter
 from syncode.parsers.incremental_parser import IncrementalParser
 from syncode.parse_result import IndentationConstraint, ParseResult, RemainderState
 from typing import Optional, Iterable
+import logging
+logger = logging.getLogger(__name__)
 
 class PythonIncrementalParser(IncrementalParser):
     """
     This class implements an incremental parser for Python code.
     """
-    def __init__(self, base_parser, indenter, logger:Optional[common.Logger]=None, partial_code=None,**kwargs):
-        super().__init__(base_parser, logger=logger, **kwargs)
+    def __init__(self, base_parser, indenter, partial_code=None,**kwargs):
+        super().__init__(base_parser, **kwargs)
 
         if partial_code is not None: # extract indentation type from partial code
             indenter.tab_len = self._get_indentation(partial_code)  # NOTE: tab_len is useful when \t and spaces are used for indentation in same code
@@ -146,7 +148,7 @@ class PythonIncrementalParser(IncrementalParser):
                 
                 # Perform postlexing indentation
                 if token.type == indenter.NL_type:
-                    lexer_tokens += indenter._handle_NL(token, self.logger)
+                    lexer_tokens += indenter._handle_NL(token)
                 else:
                     lexer_tokens.append(token)
                 if token.type in indenter.OPEN_PAREN_types:
@@ -174,7 +176,7 @@ class PythonIndenter(Indenter):
         DEDENT_type = "_DEDENT"
         tab_len = 4
 
-        def _handle_NL(self, token: Token, logger=None) -> Iterator[Token]:
+        def _handle_NL(self, token: Token) -> Iterator[Token]:
             '''
             This is taken from Lark library and modified to handle the case when there is a LONG_STRING comment in the _NL token.
             '''
@@ -186,8 +188,7 @@ class PythonIndenter(Indenter):
                 try:
                     indent_str = m.group(1).rsplit('\n', 1)[1] # Tabs and spaces
                 except IndexError:
-                    if logger is not None:
-                        logger.log(f'Could not find the indentation for LONG_STRING comment in the token: {token}')
+                    logger.error(f'Could not find the indentation for LONG_STRING comment in the token: {token}')
                     indent_str = ''
 
                 indent = indent_str.count(' ') + indent_str.count('\t') * self.tab_len

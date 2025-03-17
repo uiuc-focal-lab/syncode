@@ -14,6 +14,8 @@ from syncode.parse_result import RemainderState, ParseResult
 from syncode.parsers.grammars.grammar import Grammar
 from typing import Iterable, Union
 from transformers import PreTrainedTokenizer
+import logging
+logger = logging.getLogger(__name__)
 
 
 class MaskStore:
@@ -32,35 +34,41 @@ class MaskStore:
                  terminals: Iterable[TerminalDef], 
                  tokenizer: PreTrainedTokenizer, 
                  simplifications: dict={}, 
-                 special_token_ids: Iterable=[], 
-                 indentation: bool=False,
+                 indent: bool=False,
                  mode='grammar_strict', # 'grammar_strict' or 'grammar_mask'
                  ignore_terminals: Iterable[str]=[],
                  parse_table=None
                  ):
         self._vocab = MaskStore._get_vocab_from_tokenizer(tokenizer)
-
-        self.byte_tokenizer = ByteTokenizer(tokenizer)
-        self.special_token_ids = special_token_ids  
         self._mode = mode
+
+        # Tokenizer for byte tokens
+        self.byte_tokenizer = ByteTokenizer(tokenizer)
+        self.special_token_ids = tokenizer.all_special_ids 
+        self.eos_token_id = tokenizer.eos_token_id
 
         # Create the FSMs for each terminal
         self._fsms = FSMSet(terminals, simplifications)
 
         # Check if whitespace is in ignore terminals
         self._ignore_whitespace = self.set_ignore_whitespace(terminals, ignore_terminals)
-        print(f"Ignore whitespace tokens is {self._ignore_whitespace}", flush=True)
+        logger.info(f"Ignore whitespace is {self._ignore_whitespace}")
         
         # Iterate through each pair of DFA state and next terminals and store the overapproximate tokens
-        self._lookup_table = LookupTable(self._vocab, special_token_ids, indentation=indentation, mode=mode)
+        self._lookup_table = LookupTable(
+            self._vocab, 
+            eos_token_id=self.eos_token_id,
+            special_token_ids=self.special_token_ids, 
+            indent=indent, mode=mode
+            )
         terminal_names = [terminal.name for terminal in terminals]
 
         followings_terminas_map = None
         if parse_table is not None:
             followings_terminas_map = self._compute_following_terminals_map(terminal_names, parse_table)
-        self._store_overapproximate_tokens(terminal_names, len(self._vocab), followings_terminas_map)
+        self._store_token_masks(terminal_names, len(self._vocab), followings_terminas_map)
 
-        self.indentation = indentation       
+        self.indentation = indent       
 
         # NOTE: This should be called at the end of the constructor
         self._lookup_table.convert_lookups_from_list_to_mask() 
@@ -79,9 +87,8 @@ class MaskStore:
         grammar: Grammar, 
         tokenizer, 
         use_cache=True, 
-        logger=None, 
         mode='grammar_strict',
-        parse_table=None
+        indent=False
     ):
         '''
         Loads the fsm for the given language and tokenizer. If the fsm is not cached, it is created and cached. 
@@ -100,7 +107,7 @@ class MaskStore:
             except: # If we cannot load the file, we will create the fsm from scratch
                 pass
     
-        print(f"Creating DFA mask store for {tokenizer_name} and {grammar}, may take more than 10 minutes. Caching at {os.path.abspath(fsm_path)}.", flush=True)
+        logger.info(f"Creating DFA mask store for {tokenizer_name} and {grammar}, may take more than 10 minutes. Caching at {os.path.abspath(fsm_path)}.")
         base_parser = create_base_parser(grammar)
         simplifications = grammar.simplifications()
         os.makedirs(fsm_dir, exist_ok=True)
@@ -110,21 +117,21 @@ class MaskStore:
             base_parser.terminals, 
             tokenizer, 
             simplifications=simplifications, 
-            special_token_ids=[tokenizer.eos_token_id], 
             mode=mode, 
             ignore_terminals=base_parser.ignore_tokens, 
-            parse_table=parse_table
+            parse_table=base_parser.parser.parser._parse_table,
+            indent=indent
             )
-        print(f"Time taken to create mask store: {time.time() - start_time} seconds", flush=True)
+        logger.info(f"Time taken to create mask store: {time.time() - start_time} seconds")
 
         pickle.dump(mask_store, open(fsm_path, 'wb'))
         return mask_store
 
-    def _get_default_mask(self) -> torch.Tensor:
-        mask = torch.zeros(len(self._vocab), dtype=torch.bool)
-        return mask
-
-    def _compute_following_terminals_map(self, terminals: Iterable[str], parse_table) -> defaultdict:
+    def _compute_following_terminals_map(
+            self, 
+            terminals: Iterable[str], 
+            parse_table
+        ) -> defaultdict:
         """
         From terminals, filter out terminals that cannot follow the current terminal
         according to the grammar.
@@ -134,6 +141,7 @@ class MaskStore:
         """
         following_terminals_map = defaultdict(set)
         terminals_set = set(terminals)
+        cnt_seq_two_terms = 0
 
         # We iterate through each cur_terminal:    
         for cur_terminal in terminals:
@@ -149,22 +157,24 @@ class MaskStore:
                             if next_terminal in terminals_set:
                                 # -> -> we add the terminals that are legal in new_parser_state
                                 following_terminals_map[cur_terminal].add(next_terminal)
-        
+            cnt_seq_two_terms += len(following_terminals_map[cur_terminal])
+
+        logger.info(f"Number of 2 length terminal sequences reduced from {len(terminals)*len(terminals)} to {cnt_seq_two_terms}")
         return following_terminals_map
 
 
-    def _store_overapproximate_tokens(self, terminals: Iterable[str], vocab_size: int, followings_terminas_map: dict=None):
+    def _store_token_masks(self, terminals: Iterable[str], vocab_size: int, followings_terminas_map: dict=None):
         """
-        Stores the overapproximate tokens for each fsm state and next terminals
+        Stores the token masks for each fsm state and next terminals
         """
         all_fsm_states = self._fsms.states()
         pbar = tqdm(total=len(all_fsm_states))
 
         for fsm_state in all_fsm_states:
-            for token_idx in range(vocab_size):
-                is_special_token = token_idx in self.special_token_ids
-
-                if is_special_token:
+            for token_idx in range(vocab_size): 
+                # If the token is EOS token, we add it to the final state with the terminal '$END'
+                if token_idx == self.eos_token_id: 
+                    # Add 2 length terminal sequences where the second terminal is '$END'
                     if self._fsms.is_final(fsm_state):
                         self._lookup_table.fsm_state_and_next_terminal_to_tokens_add(
                             fsm_state, '$END', token_idx)
@@ -178,22 +188,26 @@ class MaskStore:
             
             pbar.update(1)
 
-    def _process_regular_tokens(self, terminals, fsm_state, token_idx):
-        # Convert the token to bytes
+    def _process_regular_tokens(self, terminals, fsm_state: JointFSMState, token_idx: int):
         # There are two types of tokens: some that convert into a valid utf-8 string. We can just use Python to convert them to bytes. For others, we need to use the byte_tokenizer
         token_bytes = self.byte_tokenizer.decode([token_idx])
 
+        # For COMPLETE case:
+        self._process_complete_case(fsm_state, token_idx, token_bytes)
+
+        # For INCOMPLETE case:
         # Replace \t with 4 spaces
         remainder = token_bytes.replace(b'\t', b'    ')
 
         is_valid, remainder = self._fsms.consume_prefix(fsm_state, remainder)
         if is_valid:
             if len(remainder) == 0:
-                # We reached a live state for the current terminal, thus we add the token in all overapproximate sets of next terminals
+                # We reached a live state for the current terminal, thus we add the token in all sets of next terminals
                 for next_terminal in terminals:
-                    self._lookup_table.fsm_state_and_next_terminal_to_tokens_add(fsm_state, next_terminal, token_idx)
+                    self._lookup_table.fsm_state_and_next_terminal_to_tokens_add(
+                        fsm_state, next_terminal, token_idx)
             else:
-                remainder = self.remove_left_whitespace(fsm_state, remainder)
+                remainder = self._remove_left_whitespace(fsm_state, remainder)
 
                 # We reached the final state while consuming the token, thus we conusme the remainder with all next terminals
                 for next_terminal in terminals:
@@ -203,7 +217,8 @@ class MaskStore:
                         if is_valid: # In the non-strict mode we overapproximate
                             # We reached a live state for the next terminal, thus we add the 
                             # token in the  overapproximate sets of next terminals
-                            self._lookup_table.fsm_state_and_next_terminal_to_tokens_add(fsm_state, next_terminal, token_idx)
+                            self._lookup_table.fsm_state_and_next_terminal_to_tokens_add(
+                                fsm_state, next_terminal, token_idx)
                     elif self._mode == 'grammar_strict':
                         if is_valid and len(remainder_new) == 0: 
                             # We reached a live state for the next terminal and the remainder 
@@ -212,33 +227,36 @@ class MaskStore:
                     else:
                         raise ValueError(f"Invalid mode: {self._mode}")
                     
-        # For COMPLETE case:
-        remainder = token_bytes
-        remainder = self.remove_left_whitespace(fsm_state, remainder)
+
+    def _process_complete_case(self, fsm_state, token_idx, token_bytes):
+        remainder = token_bytes.replace(b'\t', b'    ')
+        remainder = self._remove_left_whitespace(fsm_state, remainder)
 
         is_valid, remainder = self._fsms.consume_prefix(fsm_state, remainder)
         if is_valid and len(remainder) == 0:
             self._lookup_table.add_exact_lookup(fsm_state, token_idx)
 
-
-    def remove_left_whitespace(self, fsm_state, remainder: Union[str, bytes]) -> Union[str, bytes]:
+    def _remove_left_whitespace(
+            self, 
+            fsm_state, 
+            remainder: Union[str, bytes]
+        ) -> Union[str, bytes]:
         """
         Ignore left space at the start of the terminal. This only helps the efficiency
         e.g. without this say if the model wants to generate ' def' then syncode will force it to generate ' ' and 'def' seperately
         """
-        if self._fsms.initial(fsm_state.terminal) == fsm_state and self._ignore_whitespace:
+        if (self._fsms.initial(fsm_state.terminal) == fsm_state or self._fsms.is_final(fsm_state)) and self._ignore_whitespace:
             if isinstance(remainder, bytes) and remainder.startswith(b' '):
                 remainder = remainder[1:]
             elif isinstance(remainder, str) and remainder.startswith(' '):
                 remainder = remainder[1:]
         return remainder
-      
 
     def _lookup_next_tokens_for_fsm_state(self, fsm_state: JointFSMState, next_terminal) -> torch.Tensor:
         tokens = self._lookup_table.fsm_state_and_next_terminal_to_tokens(fsm_state, next_terminal)
         if tokens == []:
             # TODO: This is a hack. Do something better
-            return self._get_default_mask()
+            return self._lookup_table._get_default_mask()
         return tokens
 
     @staticmethod
@@ -277,34 +295,37 @@ class MaskStore:
         """
         Lookup the next tokens for the current fsm states and remainder state and accept sequences. 
         """
-        overapprox_token_ids = self._get_default_mask()
+        accept_token_mask = self._lookup_table._get_default_mask()
 
         # Case when the final string may be incomplete
         for fsm_state in fsm_states:
                 for accept_sequence in accept_sequences:
+                    if accept_sequence[0] == '$END':
+                        accept_token_mask[self.eos_token_id] = 1
+
                     if fsm_state.terminal != accept_sequence[0]:
                         continue
 
                     if remainder_state == RemainderState.COMPLETE:
                             assert len(accept_sequence) == 1 # Since we only store length 1 accept sequences in this case
-                            overapprox_token_ids |= self._lookup_table.complete_case_lookup(fsm_state)
+                            accept_token_mask |= self._lookup_table.complete_case_lookup(fsm_state)
 
                     if remainder_state == RemainderState.INCOMPLETE:
-                            overapprox_token_ids |= self._lookup_table.incomplete_case_lookup(fsm_state)
+                            accept_token_mask |= self._lookup_table.incomplete_case_lookup(fsm_state)
                     
                     if remainder_state == RemainderState.MAYBE_COMPLETE:
                             if len(accept_sequence) == 1:
-                                overapprox_token_ids |= self._lookup_table.complete_case_lookup(fsm_state)
+                                accept_token_mask |= self._lookup_table.complete_case_lookup(fsm_state)
                             elif len(accept_sequence) == 2:
-                                overapprox_token_ids |= self._lookup_next_tokens_for_fsm_state(fsm_state, accept_sequence[1])
+                                accept_token_mask |= self._lookup_next_tokens_for_fsm_state(fsm_state, accept_sequence[1])
                             elif len(accept_sequence) == 3:
                                 # If the DFA state is a final state we can jump to the start of next terminal
                                 if self._fsms.is_final(fsm_state): 
                                     ignore_init_state = self._fsms.initial(accept_sequence[1])
-                                    overapprox_token_ids |= self._lookup_next_tokens_for_fsm_state(ignore_init_state, accept_sequence[2])
+                                    accept_token_mask |= self._lookup_next_tokens_for_fsm_state(ignore_init_state, accept_sequence[2])
                             else:
                                 raise ValueError(f"Invalid accept sequence: {accept_sequence}")
-        return overapprox_token_ids
+        return accept_token_mask
 
     def get_fsm_states(self, r: ParseResult) -> Iterable[JointFSMState]:
         """
@@ -320,8 +341,7 @@ class MaskStore:
     def get_accept_mask(
             self, 
             r: ParseResult, 
-            get_list=False, 
-            logger: common.Logger=common.EmptyLogger()
+            get_list=False
             ) -> torch.Tensor:
         """
         Returns the mask for the acceptable tokens for the current partial code
@@ -329,15 +349,19 @@ class MaskStore:
         Args:
             r (ParseResult): The parse result
             get_list (bool, optional): If True, returns the list of tokens instead of the mask. Defaults to False.
-            logger (common.Logger, optional): The logger. Defaults to common.EmptyLogger().
         """
         cur_incomplete_string = r.remainder
+        assert type(cur_incomplete_string) == bytes
+
         if cur_incomplete_string is None:
             return torch.ones(len(self._vocab), dtype=torch.bool)
 
         cur_fsm_states = self._fsms.compute_fsm_states(cur_incomplete_string)
         accept_token_mask = self._lookup_next_tokens(
-            cur_fsm_states, r.remainder_state, r.accept_sequences)
+            cur_fsm_states, 
+            r.remainder_state, 
+            r.accept_sequences
+            )
 
         if self.indentation and r.next_ac_indents is not None:
             indent_ac_token = self._lookup_table.get_indentation_tokens(r.next_ac_indents)
@@ -362,7 +386,7 @@ class MaskStore:
 
     def _list_to_mask(self, tokens_idx_list) -> torch.Tensor:
         indices = torch.tensor(tokens_idx_list)
-        tokens_mask = self._get_default_mask()
+        tokens_mask = self._lookup_table._get_default_mask()
         tokens_mask[indices] = 1
         return tokens_mask
 

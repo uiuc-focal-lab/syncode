@@ -1,4 +1,6 @@
+import logging
 import os
+import sys
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
@@ -35,6 +37,46 @@ def get_output_path(model_name, grammar, dataset, num_samples, mode):
         out_path = out_dir + 'samples_' + str(num_samples) + '_mode_' + str(mode) + "_eval.jsonl"
         os.makedirs(out_dir, exist_ok=True)
         return out_dir,out_path
+
+# This is the setup for Python logging
+def setup_logging(level=None):
+    """
+    Configure the root logger for both application and test usage.
+    
+    This function is safe to call multiple times - it will only configure
+    logging once to avoid duplicate handlers.
+    
+    Args:
+        level: Override the logging level. If None, uses the LOG_LEVEL 
+               environment variable or defaults to INFO.
+    
+    Returns:
+        The root logger
+    """ 
+    # Determine the logging level
+    if level is None:
+        # Get level from environment or default to INFO
+        level_name = os.environ.get('LOG_LEVEL', 'INFO')
+        level = getattr(logging, level_name.upper(), logging.INFO)
+    
+    # Get the root logger
+    root_logger = logging.getLogger()
+    
+    # Clear any existing handlers to avoid duplicates
+    for handler in root_logger.handlers[:]:
+        root_logger.removeHandler(handler)
+    
+    # Set the logging level
+    root_logger.setLevel(level)
+    
+    # Create a stdout handler
+    handler = logging.StreamHandler(sys.stdout)
+    formatter = logging.Formatter('[%(asctime)s-%(name)s] - %(message)s')
+    handler.setFormatter(formatter)
+    root_logger.addHandler(handler)
+        
+    return root_logger
+
 
 class Logger:
     """

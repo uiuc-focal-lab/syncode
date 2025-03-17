@@ -4,22 +4,38 @@ import torch
 import regex
 from syncode.mask_store.mask_store import JointFSMState
 from syncode.parse_result import IndentationConstraint
-from typing import Any, Tuple, Iterable, Dict
+from typing import Any, Tuple, Iterable, Dict, Union
+import logging
+logger = logging.getLogger(__name__)
+
 
 class LookupTable:
     """
     Stores the overapproximate tokens
     """
-    def __init__(self, vocab: Iterable[str], special_token_ids: Iterable[int], indentation=False, mode='grammar_mask'):
+    def __init__(
+            self, 
+            vocab: Iterable[str], 
+            eos_token_id: int,
+            special_token_ids: Iterable[int], 
+            indent=False, 
+            mode='grammar_mask'
+        ):
         self._fsm_state_and_next_terminal_to_tokens: defaultdict = defaultdict(list)
         self._overapprox_lookup: Dict[JointFSMState, Any] = {}
         self._exact_lookup: dict = {}
         self._mode = mode
         self._vocab: Iterable[str] = vocab
-        self.indentation = indentation
+        self.indent = indent
 
-        self._default_mask = self._get_default_mask(special_token_ids)
-        if indentation:
+        # In the default mask, add all tokens that are special tokens except the EOS token
+        self._default_mask = torch.zeros(len(vocab), dtype=torch.bool)
+        for token_id in special_token_ids:
+            if token_id != eos_token_id:
+                self._default_mask[token_id] = 1
+
+        if indent:
+            logger.info("Indentation mode enabled")
             self._whitespace_tokens_map: defaultdict = defaultdict(list)
             self._indentation_to_tokens_map: defaultdict = defaultdict(list)
             self._create_indentation_to_tokens_map()
@@ -83,18 +99,14 @@ class LookupTable:
             self._exact_lookup[key] = self._list_to_mask(val)
         
         # TODO: move this logic to the lookup table
-        if self.indentation:
+        if self.indent:
             for key, val in self._whitespace_tokens_map.items():
                 self._whitespace_tokens_map[key] = self._list_to_mask(val)
             for key, val in self._indentation_to_tokens_map.items():
                 self._indentation_to_tokens_map[key] = self._list_to_mask(val)
 
-    def _get_default_mask(self, special_token_ids=None) -> torch.Tensor:
-        if special_token_ids is not None:
-            mask = torch.zeros(len(self._vocab), dtype=torch.bool)
-        else:
-            mask = copy.deepcopy(self._default_mask)
-        return mask
+    def _get_default_mask(self) -> torch.Tensor:
+        return copy.deepcopy(self._default_mask)
 
     def _create_indentation_to_tokens_map(self):
         """
@@ -107,15 +119,36 @@ class LookupTable:
             else:
                 self._indentation_to_tokens_map[indent].append(token_idx)
 
-    def _get_indent_type(self, s: str) -> Tuple[bool, int]:
-        m = regex.match(r'[\t ]+', s, partial=True)
+    def _get_indent_type(self, s: Union[str, bytes]) -> Tuple[bool, int]:
+        """
+        Determine the indentation type and level from a string or bytes input.
+        
+        Args:
+            s (Union[str, bytes]): The input string or bytes to analyze
+            
+        Returns:
+            Tuple[bool, int]: A tuple containing:
+                - bool: Whether the input is entirely whitespace
+                - int: The indentation level (spaces + 4*tabs)
+        """
+        # Convert bytes to string if needed
+        if isinstance(s, bytes):
+            try:
+                s_str = s.decode('utf-8')
+            except UnicodeDecodeError:
+                # Handle decode errors by returning default values
+                return False, 0
+        else:
+            s_str = s
+            
+        m = regex.match(r'[\t ]+', s_str, partial=True)
         full_match = False
         if m != None:
             start, end = m.start(), m.end()
-            if end == len(s):
+            if end == len(s_str):
                 full_match = True
-            return full_match, s[start: end].count(' ') + 4*s[start: end].count('\t')
-        return False, 0   
+            return full_match, s_str[start: end].count(' ') + 4*s_str[start: end].count('\t')
+        return False, 0 
 
     def get_indentation_tokens(self, indent_constraint: IndentationConstraint, get_list=False):
         """

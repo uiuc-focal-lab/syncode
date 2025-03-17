@@ -56,8 +56,6 @@ class Syncode:
         new_mask_store (bool, optional): Use new DFA mask store. Defaults to False.
         
         dev_mode (bool, optional): Development mode. Defaults to False.
-
-        log_level (int, optional): Log level. Defaults to 2. 0 for no logs, 1 for minimal logs, 2 for all logs including time.
         
         opp (bool, optional): Whether to use opportunistic generation. Defaults to True.
     """
@@ -70,7 +68,6 @@ class Syncode:
         grammar: Optional[str] = None,
         parse_output_only: bool = True,
         dev_mode: bool = False,
-        log_level: int = 1,
         new_mask_store: bool = False,
         parser: Literal["lr", "lalr"] = "lalr",
         seed: Optional[int] = None,
@@ -91,7 +88,6 @@ class Syncode:
         self.num_samples = kwargs.get('num_return_sequences', 1)
         self.new_mask_store = new_mask_store
         self.parser = parser
-        self.log_level = log_level
 
         # Set seed
         if seed is not None:

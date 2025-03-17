@@ -1,7 +1,9 @@
+import time
 import interegular
 from typing import Any, Optional, Tuple, Iterable, Dict
 from syncode.mask_store.byte_fsm import ByteFSM
-
+import logging
+logger = logging.getLogger(__name__)
 
 class JointFSMState:
     """
@@ -27,6 +29,7 @@ class FSMSet:
     Uses external ByteFSM for regex matching.
     """
     def __init__(self, terminals: Iterable['MockTerminalDef'], simplifications: Dict[str, str] = {}):
+        start_time = time.time()
         self._terminals_to_byte_fsm: Dict[str, ByteFSM] = {}  # Store ByteFSM instances
         self.anything_else = interegular.fsm.anything_else
         self._simplifications: Dict[str, str] = simplifications
@@ -41,6 +44,7 @@ class FSMSet:
             # This handles the regex pattern matching
             byte_fsm = ByteFSM(terminal_regex)
             self._terminals_to_byte_fsm[terminal.name] = byte_fsm
+        logger.info(f"FSMs initialized in {time.time() - start_time:.2f} seconds")
 
     def states(self):
         """Returns all possible DFA states for all terminals."""
