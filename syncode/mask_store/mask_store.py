@@ -111,7 +111,7 @@ class MaskStore:
                 logger.warning(f"Error loading mask store: {e}")
                 
         logger.info(f"Using cache: {use_cache} and fsm path {fsm_path} exist: {os.path.exists(fsm_path)}")
-        logger.info(f"Creating DFA mask store for {tokenizer_name} and {grammar}, may take more than 10 minutes. Caching at {os.path.abspath(fsm_path)}.")
+        logger.info(f"Creating mask store for {tokenizer_name} and {grammar}, may take more than 10 minutes. Caching at {os.path.abspath(fsm_path)}.")
         base_parser = create_base_parser(grammar)
         simplifications = grammar.simplifications()
         os.makedirs(fsm_dir, exist_ok=True)
@@ -126,7 +126,7 @@ class MaskStore:
             parse_table=base_parser.parser.parser._parse_table,
             indent=indent
             )
-        logger.info(f"Time taken to create mask store: {time.time() - start_time} seconds")
+        logger.info(f"Time taken to create mask store: {time.time() - start_time:.2f} seconds")
 
         pickle.dump(mask_store, open(fsm_path, 'wb'))
         return mask_store

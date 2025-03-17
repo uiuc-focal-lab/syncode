@@ -37,6 +37,7 @@ class FSMSet:
         
         # Initialize cache for initial states
         self._initial_state_cache = {}
+        cnt_states = 0
 
         for terminal in terminals:
             if terminal.name in simplifications:
@@ -48,7 +49,8 @@ class FSMSet:
             # This handles the regex pattern matching
             byte_fsm = ByteFSM(terminal_regex)
             self._terminals_to_byte_fsm[terminal.name] = byte_fsm
-        logger.info(f"FSMs initialized in {time.time() - start_time:.2f} seconds")
+            cnt_states += len(byte_fsm.transitions)
+        logger.info(f"{len(terminals)} FSMs with {cnt_states} states initialized in {time.time() - start_time:.2f} seconds")
 
     def states(self):
         """Returns all possible DFA states for all terminals."""
