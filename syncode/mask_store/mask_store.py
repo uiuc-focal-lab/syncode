@@ -66,6 +66,9 @@ class MaskStore:
         followings_terminas_map = None
         if parse_table is not None:
             followings_terminas_map = self._compute_following_terminals_map(terminal_names, parse_table)
+
+        # Create consume prefix cache
+        self._consume_prefix_cache = {}
         self._store_token_masks(terminal_names, len(self._vocab), followings_terminas_map)
 
         self.indentation = indent       
@@ -177,6 +180,13 @@ class MaskStore:
         pbar = tqdm(total=len(all_fsm_states))
 
         for fsm_state in all_fsm_states:
+            # Get the next terminals for the current fsm state
+            if followings_terminas_map is not None and fsm_state.terminal in followings_terminas_map:
+                following_terminals = followings_terminas_map[fsm_state.terminal]
+            else:
+                following_terminals = terminals
+
+            # For each token, we check if it is a valid token for the current fsm state
             for token_idx in range(vocab_size): 
                 # If the token is EOS token, we add it to the final state with the terminal '$END'
                 if token_idx == self.eos_token_id: 
@@ -185,12 +195,9 @@ class MaskStore:
                         self._lookup_table.fsm_state_and_next_terminal_to_tokens_add(
                             fsm_state, '$END', token_idx)
                 else:
-                    if followings_terminas_map is not None and fsm_state.terminal in followings_terminas_map:
-                        following_terminals = followings_terminas_map[fsm_state.terminal]
-                    else:
-                        following_terminals = terminals
-
-                    self._process_regular_tokens(following_terminals, fsm_state, token_idx)
+                    self._process_regular_tokens(
+                        following_terminals, fsm_state, token_idx
+                        )
             pbar.update(1)
         pbar.close()
 
@@ -218,7 +225,14 @@ class MaskStore:
                 # We reached the final state while consuming the token, thus we conusme the remainder with all next terminals
                 for next_terminal in terminals:
                     initial_state = self._fsms.initial(next_terminal)
-                    is_valid, remainder_new = self._fsms.consume_prefix(initial_state, remainder)
+
+                    if (initial_state, remainder) not in self._consume_prefix_cache:
+                        # We use the cache to speed up the process only for the initial state
+                        is_valid, remainder_new = self._fsms.consume_prefix(initial_state, remainder)
+                        self._consume_prefix_cache[(initial_state, remainder)] = (is_valid, remainder_new)
+                    else:
+                        is_valid, remainder_new = self._consume_prefix_cache[(initial_state, remainder)]
+                    
                     if self._mode == 'grammar_mask':
                         if is_valid: # In the non-strict mode we overapproximate
                             # We reached a live state for the next terminal, thus we add the 
