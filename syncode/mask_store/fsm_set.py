@@ -34,6 +34,9 @@ class FSMSet:
         self._terminals_to_byte_fsm: Dict[str, ByteFSM] = {}  # Store ByteFSM instances
         self.anything_else = interegular.fsm.anything_else
         self._simplifications: Dict[str, str] = simplifications
+        
+        # Initialize cache for initial states
+        self._initial_state_cache = {}
 
         for terminal in terminals:
             if terminal.name in simplifications:
@@ -57,8 +60,17 @@ class FSMSet:
         return states
 
     def initial(self, terminal: str):
-        """Get the initial state for a specific terminal."""
-        return JointFSMState(terminal, self._terminals_to_byte_fsm[terminal].initial)
+        """Get the initial state for a specific terminal (optimized with caching)."""
+        # Check if we've already computed this initial state
+        if terminal not in self._initial_state_cache:
+            # Only create the JointFSMState object once per terminal
+            self._initial_state_cache[terminal] = JointFSMState(
+                terminal, 
+                self._terminals_to_byte_fsm[terminal].initial
+            )
+        
+        # Return the cached version
+        return self._initial_state_cache[terminal]
 
     def compute_fsm_states(self, input_bytes: bytes) -> Iterable[JointFSMState]:
         """
