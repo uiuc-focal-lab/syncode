@@ -163,7 +163,7 @@ class TestDFAMaskLlama(unittest.TestCase, CustomAssertMixin):
 
     @unittest.skip("Skipping the correctness comparison test.")
     def test_indentation(self):
-        from mxeval.data import get_data
+        from syncode.evaluation.mxeval.data import get_data
         mbpp = get_data("mbxp", "python")
         p = create_parser('python')
         self.assertEqual(p._get_indentation(mbpp['MBPP/1']["prompt"]), 4)

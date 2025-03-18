@@ -57,7 +57,14 @@ class IncrementalParser:
         key = self._get_hash(lexer_tokens[:pos+1])
 
         # parser_state, cur_ac_terminals, next_ac_terminals, indent_levels, dedent_queue
-        self.cur_pos_to_parser_state[key] = (copy.deepcopy(self.parsed_lexer_tokens), parser_state, cur_ac_terminals, next_ac_terminals, indent_levels, copy.deepcopy(self.dedent_queue))
+        self.cur_pos_to_parser_state[key] = (
+            copy.deepcopy(self.parsed_lexer_tokens), 
+            parser_state.copy(), 
+            cur_ac_terminals, 
+            next_ac_terminals, 
+            indent_levels, 
+            copy.deepcopy(self.dedent_queue)
+        )
         
         self.cur_ac_terminals = copy.deepcopy(cur_ac_terminals)
         self.next_ac_terminals = copy.deepcopy(next_ac_terminals)
@@ -151,7 +158,7 @@ class IncrementalParser:
                 self._store_parser_state(
                     self.cur_pos-1,
                     lexer_tokens, 
-                    interactive.parser_state.copy(), 
+                    interactive.parser_state, 
                     self._accepts(interactive))
 
         except lark.exceptions.UnexpectedToken as e:

@@ -2,7 +2,7 @@ import os
 import time
 from typing import Optional
 from tqdm import tqdm
-from mxeval.data import write_jsonl
+from syncode.evaluation.mxeval.data import write_jsonl
 
 
 class SQLEval:

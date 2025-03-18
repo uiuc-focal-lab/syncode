@@ -28,7 +28,8 @@ from .lexer import Lexer, BasicLexer, TerminalDef, LexerThread, Token
 from .parse_tree_builder import ParseTreeBuilder
 from .parser_frontends import _validate_frontend_args, _get_lexer_callbacks, _deserialize_parsing_frontend, _construct_parsing_frontend
 from .grammar import Rule
-
+import logging
+syn_logger = logging.getLogger(__name__)
 
 try:
     import regex
@@ -349,7 +350,7 @@ class Lark(Serialize):
                 except FileNotFoundError:
                     # The cache file doesn't exist; parse and compose the grammar as normal
                     if self.options.parser == 'lr':
-                        print(f"Cache file {cache_fn} not found. Building LR parser from scratch may take 2-3 minutes for large grammars. This will be cached for future runs.")
+                        syn_logger.info(f"Cache file {cache_fn} not found. Building LR parser from scratch may take 2-3 minutes for large grammars. This will be cached for future runs.")
                 except Exception: # We should probably narrow done which errors we catch here.
                     logger.exception("Failed to load Lark from cache: %r. We will try to carry on.", cache_fn)
 

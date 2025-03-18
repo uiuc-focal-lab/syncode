@@ -3,7 +3,7 @@ from typing import Optional
 from tqdm import tqdm
 from syncode import common
 from syncode.evaluation.mxeval_evaluation import compute_pass_at_k
-from mxeval.data import write_jsonl
+from syncode.evaluation.mxeval_evaluation import write_jsonl
 
 
 class MathEval:
