@@ -103,17 +103,18 @@ class InteractiveParser:
     def accepts(self):
         """Returns the set of possible tokens that will advance the parser into a new valid state."""
         accepts = set()
-        conf_no_callbacks = copy(self.parser_state.parse_conf)
         # We don't want to call callbacks here since those might have arbitrary side effects
         # and are unnecessarily slow.
-        conf_no_callbacks.callbacks = {}
         choices = self.choices()
-
         if self.parser.parser_type == 'lr':
             for t in choices:
                 if t.isupper():
                     accepts.add(t)
             return accepts
+
+        # If the parser is LALR, we need to check each token to see if it's accepted
+        conf_no_callbacks = copy(self.parser_state.parse_conf)
+        conf_no_callbacks.callbacks = {}
 
         for t in choices:
             if t.isupper(): # is terminal?
