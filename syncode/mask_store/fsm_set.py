@@ -12,13 +12,21 @@ class JointFSMState:
     def __init__(self, terminal: str, state_id: int):
         self.terminal = terminal
         self.state_id = state_id
-        self._hash = hash((self.terminal, self.state_id)) # Pre-compute hash on creation
-
+        self._hash = JointFSMState.det_hash(self.terminal, self.state_id) 
+        
     def __eq__(self, other: 'JointFSMState'):
         return self.terminal == other.terminal and self.state_id == other.state_id
 
     def __hash__(self):
         return self._hash
+
+    @staticmethod
+    def det_hash(terminal: str, state_id: int):
+        h = 0
+        for char in terminal:
+            h = (h * 31 + ord(char)) & 0xFFFFFFFF
+        h = (h * 31 + state_id) & 0xFFFFFFFF
+        return h
 
     def __repr__(self):
         return f"({self.terminal}, {self.state_id})"

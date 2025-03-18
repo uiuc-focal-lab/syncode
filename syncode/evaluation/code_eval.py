@@ -36,14 +36,18 @@ class CodeEval:
         else:
             stop_words = None
 
-        pbar = tqdm(total=len(problems) * num_samples_per_task)
         if debug_task_id is None:
             time1 = time.time()
+            pbar = tqdm(total=len(problems) * num_samples_per_task)
 
             # Run evaluation for all tasks
             for task_id in list(problems.keys())[:num_tasks]:
-                outputs.append(CodeEval.run_eval_for_task(syncode, num_samples_per_task, format_tabs, problems, samples, pbar, task_id, stop_words=stop_words))
+                outputs.append(
+                    CodeEval.run_eval_for_task(syncode, num_samples_per_task, format_tabs, problems, samples, task_id, stop_words=stop_words)
+                    )
+                pbar.update(num_samples_per_task)
             
+            pbar.close()
             if out_path is not None: write_jsonl(out_path, samples)
             
             avg_time = (time.time() - time1) / len(problems)
@@ -54,10 +58,12 @@ class CodeEval:
             CodeEval.write_results(syncode, out_path, avg_time, functional_result, num_tasks)
         else: # Debugging a specific task
             debug_task_id = list(problems.keys())[debug_task_id]
-            return CodeEval.run_eval_for_task(syncode, num_samples_per_task, format_tabs, problems, samples, pbar, debug_task_id, logger=logger, stop_words=stop_words)
+            return CodeEval.run_eval_for_task(
+                syncode, num_samples_per_task, format_tabs, problems, samples, debug_task_id, logger=logger, stop_words=stop_words
+                )
         return outputs
 
-    def run_eval_for_task(syncode, num_samples_per_task, format_tabs, problems, samples, pbar, task_id, logger=common.EmptyLogger(), stop_words=None):
+    def run_eval_for_task(syncode, num_samples_per_task, format_tabs, problems, samples, task_id, logger=common.EmptyLogger(), stop_words=None):
         """
         run evaluation for a specific task
         """
@@ -96,7 +102,6 @@ class CodeEval:
                 )
             samples += [result]
             all_completions.append(completion)
-        pbar.update(num_samples_per_task)
 
         # Clear the cache
         torch.cuda.empty_cache()

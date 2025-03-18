@@ -38,7 +38,8 @@ class TestTokenizer:
     def __init__(self) -> None:
         vocab = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '-', '*', '/', '(', ')', ' ', '\n', '\t', '=']
         self.vocab = vocab
-        self.eos_token_id = ''
+        self.eos_token_id = 1
+        self.pad_token_id = 2
 
     def __call__(self, input_batch: list[str], return_tensors="pt") -> BatchEncoding:
         # This works since we have single character tokens
