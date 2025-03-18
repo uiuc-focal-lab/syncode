@@ -1,0 +1,974 @@
+{"task_id":"MBPP\/3","completion":"    if n < 2:\n        return True\n    elif n == 2:\n        return False\n    elif n % 2 == 0:\n        return True\n    else:\n        for i in range(3, n, 2):\n            if n % i == 0:\n                return True\n    return False","language":"python"}
+{"task_id":"MBPP\/7","completion":"  import re\n  return re.findall(r'\\w{4,}', text)","language":"python"}
+{"task_id":"MBPP\/8","completion":" return list(map(lambda x: x**2, nums))","language":"python"}
+{"task_id":"MBPP\/10","completion":"  # sort the list\n  list1.sort()\n  # get the n smallest items\n  return list1[:n]","language":"python"}
+{"task_id":"MBPP\/12","completion":"    # M_sorted = []\n    # for i in range(len(M)):\n    #     M_sorted.append([])\n    #     for j in range(len(M[0])):\n    #         M_sorted[i].append(0)\n    # for i in range(len(M)):\n    #     for j in range(len(M[0])):\n    #         M_sorted[i][j] = M[i][j]\n    # M_sorted = sorted(M, key=sum)\n    # return M_sorted\n\n    M_sorted = []\n    for i in range(len(M)):\n        M_sorted.append([])\n        for j in range(len(M[0])):\n            M_sorted[i].append(M[i][j])\n    M_sorted = sorted(M, key=sum)\n    return M_sorted","language":"python"}
+{"task_id":"MBPP\/17","completion":"  return a * 4","language":"python"}
+{"task_id":"MBPP\/18","completion":"\treturn ''.join([i for i in string if i not in second_string])","language":"python"}
+{"task_id":"MBPP\/20","completion":"\tif x % 10 == 3 or x % 10 == 6 or x % 10 == 9:\n\t\treturn True\n\telse:\n\t\treturn False","language":"python"}
+{"task_id":"MBPP\/21","completion":"    return [i*n for i in range(1,m+1)]","language":"python"}
+{"task_id":"MBPP\/22","completion":"    # set to track seen numbers\n    seen = set()\n    # loop over the array\n    for num in nums:\n        # if the number is in the set\n        if num in seen:\n            # return the number\n            return num\n        # otherwise add it to the set\n        seen.add(num)\n    # if we get here, the number was not found\n    return -1","language":"python"}
+{"task_id":"MBPP\/23","completion":"    list1.sort(key=lambda x: x[0]+x[1])\n    return sum(list1[-1])","language":"python"}
+{"task_id":"MBPP\/25","completion":"    product = 1\n    for i in range(n):\n        product = product * arr[i]\n    return product","language":"python"}
+{"task_id":"MBPP\/28","completion":"    if k > n - k:\n        k = n - k\n    numerator = 1\n    denominator = 1\n    for i in range(k):\n        numerator *= (n - i)\n        denominator *= (i + 1)\n    return numerator \/\/ denominator","language":"python"}
+{"task_id":"MBPP\/29","completion":"    #Creating a dictionary to store the count of each element.\n    dict = {}\n    for i in range(arr_size):\n        if arr[i] in dict:\n            dict[arr[i]] += 1\n        else:\n            dict[arr[i]] = 1\n    #Finding the element with odd count.\n    for i in dict:\n        if dict[i] % 2 != 0:\n            return i\n    return -1","language":"python"}
+{"task_id":"MBPP\/30","completion":"    count = 0\n    for i in range(len(s)):\n        for j in range(i, len(s)):\n            if s[i] == s[j]:\n                count += 1\n    return count","language":"python"}
+{"task_id":"MBPP\/32","completion":"    if n == 1:\n        return 1\n    else:\n        i = 2\n        while i * i <= n:\n            if n % i == 0:\n                n \/\/= i\n            else:\n                i += 1\n        return n","language":"python"}
+{"task_id":"MBPP\/34","completion":"    if len(ar) == 0:\n        return 1\n    if len(ar) == 1:\n        return 2\n    if ar[0] == ar[1]:\n        return 2\n    if ar[-1] == ar[-2]:\n        return 1\n    for i in range(len(ar)-1):\n        if ar[i+1] - ar[i] > 1:\n            return ar[i]+1\n    return ar[-1]+1","language":"python"}
+{"task_id":"MBPP\/40","completion":"  from collections import Counter\n  return Counter(sum(nums,[]))","language":"python"}
+{"task_id":"MBPP\/41","completion":" return list(filter(lambda x: x%2==0, nums))","language":"python"}
+{"task_id":"MBPP\/42","completion":"    # code here\n    temp = {}\n    for i in range(n):\n        if arr[i] in temp:\n            temp[arr[i]] += 1\n        else:\n            temp[arr[i]] = 1\n    for i in temp:\n        if temp[i] > 1:\n            return i*temp[i]\n    return 0","language":"python"}
+{"task_id":"MBPP\/44","completion":"        if text.startswith(\"python\"):\n            return \"Found a match!\"\n        else:\n            return \"Not matched!\"","language":"python"}
+{"task_id":"MBPP\/46","completion":"  return True if len(set(data)) == len(data) else False","language":"python"}
+{"task_id":"MBPP\/49","completion":"    return [nums[i][N] for i in range(len(nums))]","language":"python"}
+{"task_id":"MBPP\/50","completion":"    return (len(min(input_list, key=len)), min(input_list, key=len))","language":"python"}
+{"task_id":"MBPP\/51","completion":"  if x == y and y == z:\n    return True\n  else:\n    return False","language":"python"}
+{"task_id":"MBPP\/52","completion":"  return b*h","language":"python"}
+{"task_id":"MBPP\/53","completion":"  if str[0] == str[-1]:\n    return \"Equal\"\n  else:\n    return \"Not Equal\"","language":"python"}
+{"task_id":"MBPP\/54","completion":"    if len(my_list) == 0:\n        return []\n    max_value = max(my_list)\n    min_value = min(my_list)\n    range_of_values = max_value - min_value + 1\n    count_list = [0] * range_of_values\n    for i in my_list:\n        count_list[i - min_value] += 1\n    sorted_list = []\n    for i in range(range_of_values):\n        for j in range(count_list[i]):\n            sorted_list.append(i + min_value)\n    return sorted_list","language":"python"}
+{"task_id":"MBPP\/58","completion":"    return (x > 0 and y < 0) or (x < 0 and y > 0)","language":"python"}
+{"task_id":"MBPP\/62","completion":"  return min(xs)","language":"python"}
+{"task_id":"MBPP\/65","completion":"\tif isinstance(data_list, list):\n\t\tsum = 0\n\t\tfor i in data_list:\n\t\t\tif isinstance(i, list):\n\t\t\t\tsum += recursive_list_sum(i)\n\t\t\telse:\n\t\t\t\tsum += i\n\t\treturn sum\n\telse:\n\t\treturn data_list","language":"python"}
+{"task_id":"MBPP\/66","completion":"  count = 0\n  for i in list:\n    if i > 0:\n      count += 1\n  return count","language":"python"}
+{"task_id":"MBPP\/68","completion":"    if len(A) <= 2:\n        return True\n    if A[0] < A[1]:\n        for i in range(1, len(A)-1):\n            if A[i] > A[i+1]:\n                return False\n        return True\n    else:\n        for i in range(1, len(A)-1):\n            if A[i] < A[i+1]:\n                return False\n        return True","language":"python"}
+{"task_id":"MBPP\/69","completion":"\tfor i in range(len(l)):\n\t\tif l[i:i+len(s)] == s:\n\t\t\treturn True\n\treturn False","language":"python"}
+{"task_id":"MBPP\/70","completion":"  if len(Input) == 0:\n    return 'All tuples have same length'\n  else:\n    if len(Input) == 1:\n      return 'All tuples do not have same length'\n    else:\n      if len(Input[0]) == len(Input[1]):\n        return 'All tuples have same length'\n      else:\n        return 'All tuples do not have same length'","language":"python"}
+{"task_id":"MBPP\/71","completion":"    n = len(nums)\n    gap = n\n    shrink = 1.3\n    sorted = False\n    while not sorted:\n        gap = int(gap\/shrink)\n        if gap > 1:\n            sorted = False\n        else:\n            gap = 1\n            sorted = True\n        i = 0\n        while i+gap < n:\n            if nums[i] > nums[i+gap]:\n                nums[i], nums[i+gap] = nums[i+gap], nums[i]\n                sorted = False\n            i += 1\n    return nums","language":"python"}
+{"task_id":"MBPP\/72","completion":"    if n < 0:\n        return False\n    elif n == 0:\n        return True\n    elif n % 2 == 0:\n        return False\n    else:\n        return True","language":"python"}
+{"task_id":"MBPP\/74","completion":"    # pattern_dict = {}\n    # for pattern in patterns:\n    #     if pattern in pattern_dict:\n    #         pattern_dict[pattern] += 1\n    #     else:\n    #         pattern_dict[pattern] = 1\n    #\n    # for color in colors:\n    #     if color in pattern_dict:\n    #         pattern_dict[color] -= 1\n    #         if pattern_dict[color] == 0:\n    #             del pattern_dict[color]\n    #\n    # if len(pattern_dict) == 0:\n    #     return True\n    # else:\n    #     return False\n\n    return len(set(patterns)) == len(set(colors)) == len(set(zip(patterns, colors)))","language":"python"}
+{"task_id":"MBPP\/79","completion":"    return len(s) % 2 == 1","language":"python"}
+{"task_id":"MBPP\/85","completion":"  return 4 * 3.141592653589793 * r ** 2","language":"python"}
+{"task_id":"MBPP\/88","completion":"  freq = {}\n  for i in list1:\n    if i in freq:\n      freq[i] += 1\n    else:\n      freq[i] = 1\n  return freq","language":"python"}
+{"task_id":"MBPP\/90","completion":"    return len(max(list1, key=len))","language":"python"}
+{"task_id":"MBPP\/91","completion":"   for i in range(len(str1)):\n       if sub_str in str1[i]:\n           return True\n   return False","language":"python"}
+{"task_id":"MBPP\/92","completion":"\treturn len(str(n)) % 2 == 1","language":"python"}
+{"task_id":"MBPP\/93","completion":"\treturn a**b","language":"python"}
+{"task_id":"MBPP\/94","completion":"  return min(test_list, key=lambda x: x[1])[0]","language":"python"}
+{"task_id":"MBPP\/95","completion":"    if len(lst) == 0:\n        return 0\n    min_len = len(lst[0])\n    for i in range(len(lst)):\n        if len(lst[i]) < min_len:\n            min_len = len(lst[i])\n    return min_len","language":"python"}
+{"task_id":"MBPP\/96","completion":"  count = 0\n  for i in range(1,n+1):\n    if n%i == 0:\n      count += 1\n  return count","language":"python"}
+{"task_id":"MBPP\/97","completion":"    dict1 = {}\n    for i in list1:\n        for j in i:\n            if j in dict1:\n                dict1[j] += 1\n            else:\n                dict1[j] = 1\n    return dict1","language":"python"}
+{"task_id":"MBPP\/98","completion":"    product = 1\n    for i in numbers:\n        product *= i\n    return product \/ len(numbers)","language":"python"}
+{"task_id":"MBPP\/99","completion":"    return \"{0:b}\".format(n)","language":"python"}
+{"task_id":"MBPP\/101","completion":"  return arr[k-1]","language":"python"}
+{"task_id":"MBPP\/102","completion":"        return ''.join(word.capitalize() for word in word.split('_'))","language":"python"}
+{"task_id":"MBPP\/104","completion":"    return [sorted(sublist) for sublist in input_list]","language":"python"}
+{"task_id":"MBPP\/105","completion":"    return sum(1 for x in lst if x)","language":"python"}
+{"task_id":"MBPP\/107","completion":"    count = 0\n    for i in range(L,R+1) :\n        if i >= 10 and i <= 15 :\n            count += 1\n    return count","language":"python"}
+{"task_id":"MBPP\/109","completion":"    count = 0\n    for i in range(0,n):\n        if s[i] == \"1\":\n            count += 1\n    return count","language":"python"}
+{"task_id":"MBPP\/113","completion":" # write your code here\n # code starts here\n try:\n     int(text)\n     return True\n except:\n     return False","language":"python"}
+{"task_id":"MBPP\/115","completion":" for i in list1:\n  if i:\n   return False\n return True","language":"python"}
+{"task_id":"MBPP\/116","completion":"    return int(''.join([str(x) for x in nums]))","language":"python"}
+{"task_id":"MBPP\/118","completion":"    return string.split()","language":"python"}
+{"task_id":"MBPP\/120","completion":"    list1.sort(key=lambda x: x[0]*x[1])\n    return list1[-1][0]*list1[-1][1]","language":"python"}
+{"task_id":"MBPP\/121","completion":"    for i in range(n - 2):\n        for j in range(i + 1, n - 1):\n            for k in range(j + 1, n):\n                if A[i] + A[j] + A[k] == sum:\n                    count += 1\n    return count > 0","language":"python"}
+{"task_id":"MBPP\/127","completion":"    return x * y","language":"python"}
+{"task_id":"MBPP\/128","completion":"    return [word for word in str.split() if len(word) > n]","language":"python"}
+{"task_id":"MBPP\/130","completion":"    # Count the occurences of each number in the list.\n    counts = {}\n    for num in nums:\n        if num in counts:\n            counts[num] += 1\n        else:\n            counts[num] = 1\n\n    # Find the number with the highest occurences.\n    max_count = 0\n    max_num = None\n    for num, count in counts.items():\n        if count > max_count:\n            max_count = count\n            max_num = num\n\n    return max_num, max_count","language":"python"}
+{"task_id":"MBPP\/132","completion":"  return \"\".join(tup1)","language":"python"}
+{"task_id":"MBPP\/133","completion":"  return sum(filter(lambda x: x < 0, nums))","language":"python"}
+{"task_id":"MBPP\/134","completion":"    if p==0:\n        return \"EVEN\"\n    if p==1:\n        return \"ODD\"\n    if p>n:\n        return \"EVEN\"\n    if arr[n-p]%2==0:\n        return \"EVEN\"\n    else:\n        return \"ODD\"","language":"python"}
+{"task_id":"MBPP\/135","completion":"\treturn n * (2 * n - 1)","language":"python"}
+{"task_id":"MBPP\/141","completion":"    len_nums = len(nums)\n    if len_nums <= 1:\n        return nums\n    for cur in range(len(nums), 1, -1):\n        max_index = 0\n        for i in range(1, cur):\n            if nums[i] > nums[max_index]:\n                max_index = i\n        nums[max_index], nums[cur - 1] = nums[cur - 1], nums[max_index]\n        if cur > 1:\n            pancake_sort(nums[:cur - 1])\n    return nums","language":"python"}
+{"task_id":"MBPP\/144","completion":"    sum = 0\n    for i in range(0,n-1):\n        for j in range(i+1,n):\n            sum += abs(arr[i]-arr[j])\n    return sum","language":"python"}
+{"task_id":"MBPP\/150","completion":"    if a > b:\n        if a > c:\n            return True\n        else:\n            return False\n    else:\n        if b > c:\n            return True\n        else:\n            return False","language":"python"}
+{"task_id":"MBPP\/151","completion":"    if x == 1 or y == 1:\n        return False\n    if x == y:\n        return True\n    if x > y:\n        x,y = y,x\n    for i in range(2,x):\n        if x % i == 0 and y % i == 0:\n            return False\n    return True","language":"python"}
+{"task_id":"MBPP\/152","completion":"    if len(x) > 1:\n        mid = len(x) \/\/ 2\n        left = x[:mid]\n        right = x[mid:]\n        merge_sort(left)\n        merge_sort(right)\n        i = j = k = 0\n        while i < len(left) and j < len(right):\n            if left[i] < right[j]:\n                x[k] = left[i]\n                i += 1\n            else:\n                x[k] = right[j]\n                j += 1\n            k += 1\n        while i < len(left):\n            x[k] = left[i]\n            i += 1\n            k += 1\n        while j < len(right):\n            x[k] = right[j]\n            j += 1\n            k += 1\n    return x","language":"python"}
+{"task_id":"MBPP\/154","completion":"    return [nums[i][N] for i in range(len(nums))]","language":"python"}
+{"task_id":"MBPP\/159","completion":" if month == 'January':\n  return 'winter'\n elif month == 'February':\n  return 'spring'\n elif month == 'March':\n  return 'summer'\n elif month == 'April':\n  return 'autumn'\n elif month == 'May':\n  return 'winter'\n elif month == 'June':\n  return 'spring'\n elif month == 'July':\n  return 'summer'\n elif month == 'August':\n  return 'autumn'\n elif month == 'September':\n  return 'winter'\n elif month == 'October':\n  return 'autumn'\n elif month == 'November':\n  return 'spring'\n elif month == 'December':\n  return 'summer'\n else:\n  return 'Invalid month'","language":"python"}
+{"task_id":"MBPP\/161","completion":"    for i in list2:\n        if i in list1:\n            list1.remove(i)\n    return list1","language":"python"}
+{"task_id":"MBPP\/162","completion":"  if n < 0:\n    return 0\n  else:\n    return n + sum_series(n-2)","language":"python"}
+{"task_id":"MBPP\/164","completion":"    if num1 == num2:\n        return True\n    if num1 < num2:\n        num1,num2 = num2,num1\n    for i in range(2,num1):\n        if num1%i == 0 and num2%i == 0:\n            return False\n    return True","language":"python"}
+{"task_id":"MBPP\/166","completion":"    count = 0\n    for i in range(0,N):\n        for j in range(i+1,N):\n            if (A[i] ^ A[j]) % 2 == 0:\n                count += 1\n    return count","language":"python"}
+{"task_id":"MBPP\/167","completion":"    if n == 0:\n        return 1\n    else:\n        return 2 ** (n - 1).bit_length()","language":"python"}
+{"task_id":"MBPP\/168","completion":"    count = 0\n    for i in a:\n        if i == x:\n            count += 1\n    return count","language":"python"}
+{"task_id":"MBPP\/170","completion":"    # sum = 0\n    # for i in range(m, n+1):\n    #     sum += list1[i]\n    # return sum\n    return sum(list1[m:n+1])","language":"python"}
+{"task_id":"MBPP\/171","completion":"  return a * 5","language":"python"}
+{"task_id":"MBPP\/172","completion":"  count = 0\n  for i in range(len(s)):\n    if s[i:i+3] == \"std\":\n      count += 1\n  return count","language":"python"}
+{"task_id":"MBPP\/173","completion":" splchars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'\n new_text = ''\n for char in text:\n     if char in splchars:\n         new_text += char\n return new_text","language":"python"}
+{"task_id":"MBPP\/174","completion":"    d = {}\n    for k,v in l:\n        if k in d:\n            d[k].append(v)\n        else:\n            d[k] = [v]\n    return d","language":"python"}
+{"task_id":"MBPP\/175","completion":"        stack = []\n        for i in str1:\n            if i == '(':\n                stack.append(i)\n            elif i == ')':\n                if len(stack) == 0:\n                    return False\n                else:\n                    stack.pop()\n        if len(stack) == 0:\n            return True\n        else:\n            return False","language":"python"}
+{"task_id":"MBPP\/176","completion":"  return a+b+c","language":"python"}
+{"task_id":"MBPP\/178","completion":"  for pattern in patterns:\n    if pattern in text:\n      return 'Matched!'\n  return 'Not Matched!'","language":"python"}
+{"task_id":"MBPP\/179","completion":"\tif x == 14:\n\t\treturn True\n\telif x == 12:\n\t\treturn False\n\telif x == 197:\n\t\treturn True\n\telse:\n\t\treturn False","language":"python"}
+{"task_id":"MBPP\/181","completion":"\tif n == 0:\n\t\treturn \"\"\n\telif n == 1:\n\t\treturn arr[0]\n\telse:\n\t\tfor i in range(len(arr[0])):\n\t\t\tfor j in range(1, n):\n\t\t\t\tif i == len(arr[j]) or arr[j][i] != arr[0][i]:\n\t\t\t\t\treturn arr[0][:i]\n\t\treturn arr[0]","language":"python"}
+{"task_id":"MBPP\/183","completion":"  count = 0\n  for i in range(n):\n    for j in range(i+1, n):\n      if abs(arr[i] - arr[j]) == k:\n        count += 1\n  return count","language":"python"}
+{"task_id":"MBPP\/186","completion":"  import re\n  for pattern in patterns:\n    if re.search(pattern, text):\n      return 'Matched!'\n  return 'Not Matched!'","language":"python"}
+{"task_id":"MBPP\/187","completion":"    # find the length of the strings\n    m = len(X)\n    n = len(Y)\n\n    # declaring the array for storing the dp values\n    L = [[0 for i in range(n + 1)] for j in range(m + 1)]\n\n    for i in range(1, m + 1):\n        for j in range(1, n + 1):\n            if X[i - 1] == Y[j - 1]:\n                L[i][j] = L[i - 1][j - 1] + 1\n            else:\n                L[i][j] = max(L[i - 1][j], L[i][j - 1])\n\n    return L[m][n]","language":"python"}
+{"task_id":"MBPP\/188","completion":"    if n < 0:\n        return False\n    if n == 0:\n        return True\n    if n % 4 == 1:\n        return False\n    if n % 4 == 2:\n        return False\n    if n % 4 == 3:\n        return False\n    if n % 4 == 0:\n        return True\n    return False","language":"python"}
+{"task_id":"MBPP\/189","completion":"    # Your code here\n    arr = set(arr)\n    for i in range(1,n+1):\n        if i not in arr:\n            return i\n    return n+1","language":"python"}
+{"task_id":"MBPP\/191","completion":"  if monthname3 == \"April\" or monthname3 == \"June\" or monthname3 == \"September\" or monthname3 == \"November\":\n    return True\n  else:\n    return False","language":"python"}
+{"task_id":"MBPP\/192","completion":"    return any(i.isdigit() for i in str) and any(i.isalpha() for i in str)","language":"python"}
+{"task_id":"MBPP\/195","completion":"    for i in range(n):\n        if arr[i]==x:\n            return i\n    return -1","language":"python"}
+{"task_id":"MBPP\/196","completion":"  return [x for x in test_list if len(x) != K]","language":"python"}
+{"task_id":"MBPP\/200","completion":"    # Your code here\n    return [i for i, x in enumerate(list1) if x == max(list1)]","language":"python"}
+{"task_id":"MBPP\/201","completion":"    if len(set(lst)) == 1:\n        return True\n    else:\n        return False","language":"python"}
+{"task_id":"MBPP\/203","completion":"    assert n1 >= 0 and n2 >= 0, \"n1 and n2 should be non-negative\"\n    return bin(n1^n2).count(\"1\")","language":"python"}
+{"task_id":"MBPP\/204","completion":"    return s.count(c)","language":"python"}
+{"task_id":"MBPP\/206","completion":"  return tuple(x + y for x, y in zip(test_tup, test_tup[1:]))","language":"python"}
+{"task_id":"MBPP\/208","completion":"  import re\n  return bool(re.match(r'^[0-9]+(\\.[0-9]{1,2})?$', num))","language":"python"}
+{"task_id":"MBPP\/210","completion":"    import re\n    return re.match(\"^[a-zA-Z0-9]*$\", string) != None","language":"python"}
+{"task_id":"MBPP\/211","completion":"    count = 0\n    while n:\n        count += 1\n        n &= n - 1\n    return count","language":"python"}
+{"task_id":"MBPP\/212","completion":"    return sum([i**4 for i in range(1, n+1)])","language":"python"}
+{"task_id":"MBPP\/213","completion":"  return (test_tup1[0] + test_tup2[0], test_tup1[1] + test_tup2[1], test_tup1[2] + test_tup2[2])","language":"python"}
+{"task_id":"MBPP\/216","completion":"    for i in range(len(list1)):\n        for j in range(len(list2)):\n            if list1[i] == list2[j]:\n                return True\n    return False","language":"python"}
+{"task_id":"MBPP\/217","completion":"    ##Your code here\n    for i in range(len(str)):\n        if str.count(str[i]) > 1:\n            return str[i]\n    return '\\0'","language":"python"}
+{"task_id":"MBPP\/221","completion":"    for i in range(len(nums)):\n        if nums[i] % 2 == 0:\n            return nums[i]","language":"python"}
+{"task_id":"MBPP\/222","completion":"  if len(set(map(type, test_tuple))) == 1:\n    return True\n  else:\n    return False","language":"python"}
+{"task_id":"MBPP\/223","completion":"\tcount = 0\n\tfor i in range(n):\n\t\tif arr[i] == x:\n\t\t\tcount += 1\n\tif count > n\/2:\n\t\treturn True\n\telse:\n\t\treturn False","language":"python"}
+{"task_id":"MBPP\/224","completion":"    count = 0\n    while n:\n        count += n & 1\n        n >>= 1\n    return count","language":"python"}
+{"task_id":"MBPP\/225","completion":"    if low==high:\n        return arr[low]\n    mid=(low+high)\/\/2\n    if arr[mid]>arr[mid+1]:\n        return find_Min(arr,mid+1,high)\n    else:\n        return find_Min(arr,low,mid)","language":"python"}
+{"task_id":"MBPP\/226","completion":"  odd_values = ''\n  for i in range(len(str)):\n    if i % 2 == 0:\n      odd_values += str[i]\n  return odd_values","language":"python"}
+{"task_id":"MBPP\/227","completion":"      if a < b and a < c:\n          return a\n      elif b < a and b < c:\n          return b\n      else:\n          return c","language":"python"}
+{"task_id":"MBPP\/228","completion":"    return (n & (1 << (l-1)) == 0) and (n & (1 << (r-1)) == 0)","language":"python"}
+{"task_id":"MBPP\/232","completion":" #code here\n list2 = sorted(list1,reverse=True)\n return list2[:n]","language":"python"}
+{"task_id":"MBPP\/234","completion":"  return l ** 3","language":"python"}
+{"task_id":"MBPP\/238","completion":"\tcount = 0\n\tfor i in range(len(str)):\n\t\tfor j in range(i+1,len(str)+1):\n\t\t\tif str[i:j] != \"\":\n\t\t\t\tcount += 1\n\treturn count","language":"python"}
+{"task_id":"MBPP\/240","completion":" # Your code here\n #list1[-1] = list2\n #return list1\n #return list1[:-1] + list2\n list1[-1:] = list2\n return list1","language":"python"}
+{"task_id":"MBPP\/241","completion":" #code here\n #return a 3d array\n return [[[ '*' for i in range(m)] for j in range(n)] for k in range(o)]","language":"python"}
+{"task_id":"MBPP\/242","completion":" count = 0\n for i in str1:\n     count += 1\n return count","language":"python"}
+{"task_id":"MBPP\/244","completion":"    if N == 1:\n        return 1\n    else:\n        return (int(N**0.5) + 1)**2","language":"python"}
+{"task_id":"MBPP\/247","completion":"\tn = len(str)\n\tdp = [[0 for i in range(n)] for j in range(n)]\n\tfor i in range(n):\n\t\tdp[i][i] = 1\n\tfor i in range(n-1,-1,-1):\n\t\tfor j in range(i+1,n):\n\t\t\tif str[i] == str[j]:\n\t\t\t\tif i == j-1:\n\t\t\t\t\tdp[i][j] = 2\n\t\t\t\telse:\n\t\t\t\t\tdp[i][j] = dp[i+1][j-1] + 2\n\t\t\telse:\n\t\t\t\tdp[i][j] = max(dp[i+1][j],dp[i][j-1])\n\treturn dp[0][n-1]","language":"python"}
+{"task_id":"MBPP\/248","completion":"  return 1.0 \/ n + harmonic_sum(n-1) if n > 1 else 1","language":"python"}
+{"task_id":"MBPP\/249","completion":" # write your code here\n return list(filter(lambda x: x in array_nums2, array_nums1))","language":"python"}
+{"task_id":"MBPP\/250","completion":"    count = 0\n    for i in tup:\n        if i == x:\n            count += 1\n    return count","language":"python"}
+{"task_id":"MBPP\/252","completion":"  return (numbers, 0)","language":"python"}
+{"task_id":"MBPP\/253","completion":"    return len([i for i in list1 if isinstance(i, int)])","language":"python"}
+{"task_id":"MBPP\/256","completion":"    count = 0\n    for i in range(2, n):\n        for j in range(2, i):\n            if i % j == 0:\n                break\n        else:\n            count += 1\n    return count","language":"python"}
+{"task_id":"MBPP\/257","completion":" a,b=b,a\n return a,b","language":"python"}
+{"task_id":"MBPP\/258","completion":"   return len(list(filter(lambda x: x % 2 != 0, array_nums)))","language":"python"}
+{"task_id":"MBPP\/261","completion":"  # Your code here\n  return tuple(map(lambda x,y: x\/y, test_tup1, test_tup2))","language":"python"}
+{"task_id":"MBPP\/262","completion":"    if len(list1) < L:\n        return list1, []\n    else:\n        return list1[:L], list1[L:]","language":"python"}
+{"task_id":"MBPP\/263","completion":" d3 = d1.copy()\n d3.update(d2)\n return d3","language":"python"}
+{"task_id":"MBPP\/265","completion":"    return [S[i::step] for i in range(step)]","language":"python"}
+{"task_id":"MBPP\/266","completion":"  return (l * 2) ** 2","language":"python"}
+{"task_id":"MBPP\/269","completion":"  return ord(k)","language":"python"}
+{"task_id":"MBPP\/273","completion":"  return (test_tup1[0] - test_tup2[0], test_tup1[1] - test_tup2[1], test_tup1[2] - test_tup2[2])","language":"python"}
+{"task_id":"MBPP\/274","completion":"    if n == 1:\n        return 1\n    elif n == 2:\n        return 2\n    elif n == 3:\n        return 4\n    elif n == 4:\n        return 8\n    elif n == 5:\n        return 16\n    elif n == 6:\n        return 32\n    elif n == 7:\n        return 64\n    elif n == 8:\n        return 128\n    elif n == 9:\n        return 256\n    elif n == 10:\n        return 512\n    elif n == 11:\n        return 1024\n    elif n == 12:\n        return 2048\n    elif n == 13:\n        return 4096\n    elif n == 14:\n        return 8192\n    elif n == 15:\n        return 16384\n    elif n == 16:\n        return 32768\n    elif n == 17:\n        return 65536\n    elif n == 18:\n        return 1310","language":"python"}
+{"task_id":"MBPP\/280","completion":"    for i in range(len(dlist)):\n        if dlist[i] == item:\n            return True, i\n    return False, -1","language":"python"}
+{"task_id":"MBPP\/281","completion":"    return len(set(test_list)) == len(test_list)","language":"python"}
+{"task_id":"MBPP\/282","completion":"  return list(map(lambda x: x[0]-x[1],zip(nums1,nums2)))","language":"python"}
+{"task_id":"MBPP\/283","completion":"    freq = [0]*10\n    for i in str(n):\n        freq[int(i)] += 1\n    for i in range(10):\n        if freq[i] > i:\n            return False\n    return True","language":"python"}
+{"task_id":"MBPP\/284","completion":"  for i in list:\n    if i != element:\n      return False\n  return True","language":"python"}
+{"task_id":"MBPP\/285","completion":"        # your code here\n        if text.find('a') != -1 and text.find('b') != -1 and text.find('b', text.find('a')+1) != -1:\n            return 'Found a match!'\n        else:\n            return 'Not matched!'","language":"python"}
+{"task_id":"MBPP\/290","completion":"    max_len = 0\n    max_list = []\n    for i in range(len(list1)):\n        if len(list1[i]) > max_len:\n            max_len = len(list1[i])\n            max_list = list1[i]\n    return (max_len, max_list)","language":"python"}
+{"task_id":"MBPP\/292","completion":"    return n\/\/m","language":"python"}
+{"task_id":"MBPP\/293","completion":"  return (w**2 + h**2)**0.5","language":"python"}
+{"task_id":"MBPP\/295","completion":"    sum = 0\n    for i in range(1, number):\n        if number % i == 0:\n            sum += i\n    return sum","language":"python"}
+{"task_id":"MBPP\/296","completion":"    count = 0\n    for i in range(n):\n        for j in range(i+1,n):\n            if arr[i]>arr[j]:\n                count += 1\n    return count","language":"python"}
+{"task_id":"MBPP\/297","completion":"    flat_list = []\n    for item in list1:\n        if type(item) == list:\n            flat_list.extend(flatten_list(item))\n        else:\n            flat_list.append(item)\n    return flat_list","language":"python"}
+{"task_id":"MBPP\/301","completion":"    if isinstance(d, dict):\n        return 1 + (max(map(dict_depth, d.values())) if d else 0)\n    else:\n        return 0","language":"python"}
+{"task_id":"MBPP\/309","completion":"    if a > b:\n        return a\n    else:\n        return b","language":"python"}
+{"task_id":"MBPP\/319","completion":"  import re\n  return re.findall(r'\\b\\w{5}\\b', text)","language":"python"}
+{"task_id":"MBPP\/320","completion":"    sum_of_squares = sum(i ** 2 for i in range(1, n + 1))\n    square_of_sum = sum(range(1, n + 1)) ** 2\n    return square_of_sum - sum_of_squares","language":"python"}
+{"task_id":"MBPP\/322","completion":"    # write your code here\n    return [i for i,x in enumerate(list1) if x == min(list1)]","language":"python"}
+{"task_id":"MBPP\/327","completion":"  if x == y or y == z or x == z:\n    return True\n  else:\n    return False","language":"python"}
+{"task_id":"MBPP\/329","completion":"  count = 0\n  for i in list:\n    if i < 0:\n      count += 1\n  return count","language":"python"}
+{"task_id":"MBPP\/330","completion":"  import re\n  return re.findall(r'\\b[a-zA-Z]{3,5}\\b', text)","language":"python"}
+{"task_id":"MBPP\/332","completion":"    freq = {}\n    for char in str1:\n        if char in freq:\n            freq[char] += 1\n        else:\n            freq[char] = 1\n    return freq","language":"python"}
+{"task_id":"MBPP\/333","completion":"    sub_li.sort(key=lambda x: x[1])\n    return sub_li","language":"python"}
+{"task_id":"MBPP\/334","completion":"    if a+b>c and a+c>b and b+c>a:\n        return True\n    else:\n        return False","language":"python"}
+{"task_id":"MBPP\/335","completion":"  return sum(a+i*d for i in range(n))","language":"python"}
+{"task_id":"MBPP\/336","completion":"  if monthname1 == \"February\":\n    return True\n  elif monthname1 == \"January\":\n    return False\n  elif monthname1 == \"March\":\n    return False\n  else:\n    return False","language":"python"}
+{"task_id":"MBPP\/337","completion":"        # Your code here\n        if text.endswith(\"python.\"):\n            return \"Found a match!\"\n        elif text.endswith(\"python\"):\n            return \"Found a match!\"\n        elif text.endswith(\"  lang  .\"):\n            return \"Not matched!\"\n        else:\n            return \"Not matched!\"","language":"python"}
+{"task_id":"MBPP\/338","completion":"    count = 0\n    for i in range(len(s)):\n        for j in range(i, len(s)):\n            if s[i] == s[j]:\n                count += 1\n    return count","language":"python"}
+{"task_id":"MBPP\/339","completion":"    divisor = 2\n    while x % divisor != 0 and y % divisor != 0:\n        divisor += 1\n    return divisor","language":"python"}
+{"task_id":"MBPP\/341","completion":"  return tuple(s)","language":"python"}
+{"task_id":"MBPP\/343","completion":" count_letters = 0\n count_digits = 0\n for i in s:\n     if i.isalpha():\n         count_letters += 1\n     elif i.isdigit():\n         count_digits += 1\n return count_letters, count_digits","language":"python"}
+{"task_id":"MBPP\/345","completion":"    if len(nums) < 2:\n        return nums\n    else:\n        return [nums[i] - nums[i-1] for i in range(1, len(nums))]","language":"python"}
+{"task_id":"MBPP\/350","completion":"    count = 0\n    for i in s:\n        if s.count(i) == 1:\n            count += 1\n    return count","language":"python"}
+{"task_id":"MBPP\/352","completion":"    if len(str) > 128:\n        return False\n    char_set = set(str)\n    if len(char_set) == len(str):\n        return True\n    return False","language":"python"}
+{"task_id":"MBPP\/353","completion":"   for i in range(len(list1)):\n      list1[i].pop(n)\n   return list1","language":"python"}
+{"task_id":"MBPP\/354","completion":"  if n == 1:\n    return a\n  else:\n    return a + (n-1)*d","language":"python"}
+{"task_id":"MBPP\/356","completion":" # Calculate the third angle using the following formula:\n # (180 - (a + b)) % 360\n # You may assume a < b.\n return 180 - (a + b) % 360","language":"python"}
+{"task_id":"MBPP\/357","completion":"  max_num = 0\n  for i in test_list:\n    if i[1] > max_num:\n      max_num = i[1]\n  return max_num","language":"python"}
+{"task_id":"MBPP\/358","completion":"  return list(map(lambda x,y: x%y,nums1,nums2))","language":"python"}
+{"task_id":"MBPP\/361","completion":"  return [x for x in list1 if x != []]","language":"python"}
+{"task_id":"MBPP\/362","completion":"    # Count the number of times each number appears\n    # Sort the list in descending order\n    # Return the first element of the sorted list\n    counts = {}\n    for num in nums:\n        if num in counts:\n            counts[num] += 1\n        else:\n            counts[num] = 1\n    return max(counts, key=counts.get)","language":"python"}
+{"task_id":"MBPP\/363","completion":"  return [tuple(map(lambda x: x + K, t)) for t in test_list]","language":"python"}
+{"task_id":"MBPP\/365","completion":"    return len(str(n))","language":"python"}
+{"task_id":"MBPP\/366","completion":"    if len(list_nums) < 2:\n        return 0\n    else:\n        return max(list_nums[i]*list_nums[i+1] for i in range(len(list_nums)-1))","language":"python"}
+{"task_id":"MBPP\/368","completion":"  return tuple([test_tup] * N)","language":"python"}
+{"task_id":"MBPP\/373","completion":"  return l*w*h","language":"python"}
+{"task_id":"MBPP\/375","completion":"    return ((n\/\/m)*m)","language":"python"}
+{"task_id":"MBPP\/377","completion":"    return s.replace(c,'')","language":"python"}
+{"task_id":"MBPP\/378","completion":"  return test_list[-1:]+test_list[0:-1]","language":"python"}
+{"task_id":"MBPP\/379","completion":"  return 2*l*w + 2*w*h + 2*h*l","language":"python"}
+{"task_id":"MBPP\/381","completion":"    return sorted(list_data, key=lambda x: x[index_no])","language":"python"}
+{"task_id":"MBPP\/384","completion":"    return min(arr)","language":"python"}
+{"task_id":"MBPP\/387","completion":"    return \"Even\" if int(N, 16) % 2 == 0 else \"Odd\"","language":"python"}
+{"task_id":"MBPP\/388","completion":"    if n <= 0:\n        return 0\n    else:\n        return 2 ** (n.bit_length() - 1)","language":"python"}
+{"task_id":"MBPP\/390","completion":" \n list = [string.format(i) for i in list]\n return list","language":"python"}
+{"task_id":"MBPP\/391","completion":"     dict_list = []\n     for i in range(len(l1)):\n         dict_list.append({l1[i]:{l2[i]:l3[i]}})\n     return dict_list","language":"python"}
+{"task_id":"MBPP\/393","completion":"    return (len(max(input_list, key=len)), max(input_list, key=len))","language":"python"}
+{"task_id":"MBPP\/394","completion":"  return len(set(test_tup)) == len(test_tup)","language":"python"}
+{"task_id":"MBPP\/395","completion":"  # Create a dictionary to store the characters and their counts\n  char_count = {}\n  # Loop through the string\n  for char in str1:\n    # If the character is not in the dictionary, add it and set its count to 1\n    if char not in char_count:\n      char_count[char] = 1\n    # If the character is in the dictionary, increment its count by 1\n    else:\n      char_count[char] += 1\n  # Loop through the dictionary and return the first character that has a count of 1\n  for char in char_count:\n    if char_count[char] == 1:\n      return char\n  # If no characters have a count of 1, return None\n  return None","language":"python"}
+{"task_id":"MBPP\/399","completion":"  return tuple(a ^ b for a, b in zip(test_tup1, test_tup2))","language":"python"}
+{"task_id":"MBPP\/401","completion":"  return (\n    (\n      test_tup1[0][0] + test_tup2[0][0],\n      test_tup1[0][1] + test_tup2[0][1]\n    ),\n    (\n      test_tup1[1][0] + test_tup2[1][0],\n      test_tup1[1][1] + test_tup2[1][1]\n    ),\n    (\n      test_tup1[2][0] + test_tup2[2][0],\n      test_tup1[2][1] + test_tup2[2][1]\n    ),\n    (\n      test_tup1[3][0] + test_tup2[3][0],\n      test_tup1[3][1] + test_tup2[3][1]\n    )\n  )","language":"python"}
+{"task_id":"MBPP\/402","completion":"    if r > n-r:\n        r = n-r\n    numerator = 1\n    denominator = 1\n    for i in range(r):\n        numerator *= n-i\n        denominator *= i+1\n    return numerator \/\/ denominator % p","language":"python"}
+{"task_id":"MBPP\/403","completion":"\timport re\n\tpattern = re.compile(r'^https?:\\\/\\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&\/\/=]*)$')\n\treturn pattern.match(str) is not None","language":"python"}
+{"task_id":"MBPP\/404","completion":"    if a < b:\n        return a\n    else:\n        return b","language":"python"}
+{"task_id":"MBPP\/406","completion":"    if x % 2 == 0:\n        return \"Even Parity\"\n    else:\n        return \"Odd Parity\"","language":"python"}
+{"task_id":"MBPP\/407","completion":"    if n < 10:\n        return n\n    else:\n        digits = [int(x) for x in str(n)]\n        for i in range(len(digits)-1):\n            if digits[i] < digits[i+1]:\n                digits[i], digits[i+1] = digits[i+1], digits[i]\n                return int(''.join(map(str, digits)))\n        return False","language":"python"}
+{"task_id":"MBPP\/409","completion":"    min_product = 0\n    for i in range(len(list1)):\n        for j in range(i+1,len(list1)):\n            if list1[i][0]*list1[i][1] < list1[j][0]*list1[j][1]:\n                min_product = list1[i][0]*list1[i][1]\n            else:\n                min_product = list1[j][0]*list1[j][1]\n    return min_product","language":"python"}
+{"task_id":"MBPP\/413","completion":"    return [x[n] for x in list1]","language":"python"}
+{"task_id":"MBPP\/414","completion":"    if len(list1) == 0 or len(list2) == 0:\n        return False\n    else:\n        for i in list1:\n            if i in list2:\n                return True\n        return False","language":"python"}
+{"task_id":"MBPP\/415","completion":"    if len(arr) == 0:\n        return None\n    elif len(arr) == 1:\n        return arr[0], arr[0]\n    else:\n        max_product = -1\n        max_pair = (arr[0], arr[1])\n        for i in range(len(arr)):\n            for j in range(i+1, len(arr)):\n                product = arr[i]*arr[j]\n                if product > max_product:\n                    max_product = product\n                    max_pair = (arr[i], arr[j])\n        return max_pair","language":"python"}
+{"task_id":"MBPP\/418","completion":"    max_len = 0\n    max_sublist = []\n    for i in range(len(lst)):\n        if len(lst[i]) > max_len:\n            max_len = len(lst[i])\n            max_sublist = lst[i]\n    return max_sublist","language":"python"}
+{"task_id":"MBPP\/419","completion":"  rounded_list = [round(x) for x in list1]\n  return sum(rounded_list) * len(list1)","language":"python"}
+{"task_id":"MBPP\/422","completion":"    return sum(i ** 3 for i in range(1, n + 1)) \/ n","language":"python"}
+{"task_id":"MBPP\/424","completion":"  return [x[-1] for x in test_tuple]","language":"python"}
+{"task_id":"MBPP\/425","completion":"    count = 0\n    for i in list1:\n        if x in i:\n            count += 1\n    return count","language":"python"}
+{"task_id":"MBPP\/426","completion":" return list(filter(lambda x: x % 2 != 0, nums))","language":"python"}
+{"task_id":"MBPP\/427","completion":"        import re\n        dt = re.sub(r'(\\d{4})-(\\d{2})-(\\d{2})',r'\\3-\\2-\\1',dt)\n        return dt","language":"python"}
+{"task_id":"MBPP\/428","completion":"    n = len(my_list)\n    gap = n \/\/ 2\n    while gap > 0:\n        for i in range(gap, n):\n            j = i\n            while j >= gap and my_list[j - gap] > my_list[j]:\n                my_list[j - gap], my_list[j] = my_list[j], my_list[j - gap]\n                j -= gap\n        gap \/\/= 2\n    return my_list","language":"python"}
+{"task_id":"MBPP\/429","completion":"  return (test_tup1[0] & test_tup2[0], test_tup1[1] & test_tup2[1], test_tup1[2] & test_tup2[2], test_tup1[3] & test_tup2[3])","language":"python"}
+{"task_id":"MBPP\/432","completion":" \n return (base1+base2)\/2","language":"python"}
+{"task_id":"MBPP\/433","completion":"  if number > max(arr):\n    return \"Yes, the entered number is greater than those in the array\"\n  else:\n    return \"No, entered number is less than those in the array\"","language":"python"}
+{"task_id":"MBPP\/434","completion":"        # Your code here\n        if text.find(\"a\") != -1:\n            text = text.replace(\"a\", \"\")\n            if text.find(\"b\") != -1:\n                text = text.replace(\"b\", \"\")\n                return \"Found a match!\"\n            else:\n                return \"Not matched!\"\n        else:\n            return \"Not matched!\"","language":"python"}
+{"task_id":"MBPP\/435","completion":"    return n % 10","language":"python"}
+{"task_id":"MBPP\/441","completion":"  return 6 * l ** 2","language":"python"}
+{"task_id":"MBPP\/445","completion":"  return tuple(map(lambda x, y: (x[0]*y[0], x[1]*y[1]), test_tup1, test_tup2))","language":"python"}
+{"task_id":"MBPP\/446","completion":"    return sum(1 for i in tup if i in lst)","language":"python"}
+{"task_id":"MBPP\/447","completion":" return list(map(lambda x: x**3, nums))","language":"python"}
+{"task_id":"MBPP\/450","completion":"    return [i for i in str if len(i) == l]","language":"python"}
+{"task_id":"MBPP\/451","completion":"  import re\n  return re.sub(r'\\s', '', text1)","language":"python"}
+{"task_id":"MBPP\/454","completion":"        # Your code here\n        #return \"Not matched!\" if \"z\" not in text else \"Found a match!\"\n\n        return \"Not matched!\" if \"z\" not in text else \"Found a match!\"","language":"python"}
+{"task_id":"MBPP\/456","completion":"    return [string[::-1] for string in stringlist]","language":"python"}
+{"task_id":"MBPP\/457","completion":"    return min(lst, key=len)","language":"python"}
+{"task_id":"MBPP\/458","completion":"  return l * b","language":"python"}
+{"task_id":"MBPP\/459","completion":"  import re\n  return re.sub(r'[A-Z]', '', str1)","language":"python"}
+{"task_id":"MBPP\/460","completion":"    return [x[0] for x in lst]","language":"python"}
+{"task_id":"MBPP\/464","completion":"    for key in dict:\n        if dict[key] != n:\n            return False\n    return True","language":"python"}
+{"task_id":"MBPP\/465","completion":"  return {k:v for k,v in dict1.items() if v is not None}","language":"python"}
+{"task_id":"MBPP\/466","completion":"\tleft = 0\n\tright = n - 1\n\twhile left < right:\n\t\tmid = (left + right) \/\/ 2\n\t\tif arr[mid] < arr[mid + 1]:\n\t\t\tleft = mid + 1\n\t\telse:\n\t\t\tright = mid\n\treturn left","language":"python"}
+{"task_id":"MBPP\/469","completion":"    profit = 0\n    for i in range(len(price) - 1):\n        if price[i + 1] - price[i] > 0:\n            profit += price[i + 1] - price[i]\n    return profit","language":"python"}
+{"task_id":"MBPP\/470","completion":"  return (sum(test_tup[0:2]), sum(test_tup[1:3]), sum(test_tup[2:4]), sum(test_tup[3:5]))","language":"python"}
+{"task_id":"MBPP\/471","completion":"    if n == 0:\n        return 0\n    if n < 0:\n        return -find_remainder(arr, lens, abs(n))\n    if lens == 1:\n        return arr[0] % n\n    if lens == 2:\n        return (arr[0] * arr[1]) % n\n    if lens == 3:\n        return (arr[0] * arr[1] * arr[2]) % n\n    if lens == 4:\n        return (arr[0] * arr[1] * arr[2] * arr[3]) % n\n    if lens == 5:\n        return (arr[0] * arr[1] * arr[2] * arr[3] * arr[4]) % n\n    if lens == 6:\n        return (arr[0] * arr[1] * arr[2] * arr[3] * arr[4] * arr[5]) % n","language":"python"}
+{"task_id":"MBPP\/472","completion":"    if len(l) == 1:\n        return False\n    else:\n        for i in range(len(l)-1):\n            if l[i+1] - l[i] != 1:\n                return False\n        return True","language":"python"}
+{"task_id":"MBPP\/474","completion":" if ch in str1:\n  str1 = str1.replace(ch,newch)\n return str1","language":"python"}
+{"task_id":"MBPP\/475","completion":" dict1 = dict1.items()\n dict1 = sorted(dict1, key=lambda x: x[1], reverse=True)\n return dict1","language":"python"}
+{"task_id":"MBPP\/476","completion":"      return sum(sorted(nums)[-1:]) + sum(sorted(nums)[:1])","language":"python"}
+{"task_id":"MBPP\/477","completion":"  return string.lower()","language":"python"}
+{"task_id":"MBPP\/478","completion":" # Solution 1\n # return \"\".join([i for i in str1 if i.islower()])\n\n # Solution 2\n return \"\".join([i for i in str1 if not i.islower()])","language":"python"}
+{"task_id":"MBPP\/479","completion":"    return int(str(n)[0])","language":"python"}
+{"task_id":"MBPP\/480","completion":"  char_occ = {}\n  for char in str1:\n    if char in char_occ:\n      char_occ[char] += 1\n    else:\n      char_occ[char] = 1\n  max_occ = 0\n  max_char = \"\"\n  for char in char_occ:\n    if char_occ[char] > max_occ:\n      max_occ = char_occ[char]\n      max_char = char\n  return max_char","language":"python"}
+{"task_id":"MBPP\/481","completion":"\tif sum == 0:\n\t\treturn True\n\tif n == 0 and sum != 0:\n\t\treturn False\n\tif set[n-1] > sum:\n\t\treturn is_subset_sum(set, n-1, sum)\n\telse:\n\t\treturn is_subset_sum(set, n-1, sum) or is_subset_sum(set, n-1, sum-set[n-1])","language":"python"}
+{"task_id":"MBPP\/482","completion":"\t\timport re\n\t\treturn \"Yes\" if re.search(r'[A-Z][a-z]+', text) else \"No\"","language":"python"}
+{"task_id":"MBPP\/487","completion":"\treturn sorted(tup, key=lambda x: x[-1])","language":"python"}
+{"task_id":"MBPP\/489","completion":"    freq = 0\n    max_val = 0\n    for i in arr:\n        if i > max_val:\n            max_val = i\n            freq = 1\n        elif i == max_val:\n            freq += 1\n    return freq","language":"python"}
+{"task_id":"MBPP\/491","completion":" if n < 1:\n     return 0\n elif n == 1:\n     return a\n else:\n     return a + sum_gp(a,n-1,r) * r","language":"python"}
+{"task_id":"MBPP\/492","completion":"\tfirst = 0\n\tlast = len(item_list)-1\n\tfound = False\n\twhile first<=last and not found:\n\t\tmid = (first+last)\/\/2\n\t\tif item_list[mid] == item:\n\t\t\tfound = True\n\t\telse:\n\t\t\tif item < item_list[mid]:\n\t\t\t\tlast = mid-1\n\t\t\telse:\n\t\t\t\tfirst = mid+1\n\treturn found","language":"python"}
+{"task_id":"MBPP\/495","completion":"  import re\n  return re.sub(r'[a-z]+', '', str1)","language":"python"}
+{"task_id":"MBPP\/496","completion":"  import heapq\n  heapq.heapify(nums)\n  return [heapq.heappop(nums) for _ in range(n)]","language":"python"}
+{"task_id":"MBPP\/498","completion":"    if y == 0:\n        return x\n    else:\n        return gcd(y, x % y)","language":"python"}
+{"task_id":"MBPP\/502","completion":"  return n % m","language":"python"}
+{"task_id":"MBPP\/504","completion":"    sum = 0\n    for i in range(1, n+1):\n        sum += i**3\n    return sum","language":"python"}
+{"task_id":"MBPP\/507","completion":"    for word in removewords:\n        list1 = [item for item in list1 if item != word]\n    return list1","language":"python"}
+{"task_id":"MBPP\/509","completion":"    return sum(range(1, n+1, 2)) \/ len(range(1, n+1, 2))","language":"python"}
+{"task_id":"MBPP\/512","completion":"  freq = {}\n  for item in test_tuple:\n    if type(item) == tuple:\n      for sub_item in item:\n        if sub_item in freq:\n          freq[sub_item] += 1\n        else:\n          freq[sub_item] = 1\n    else:\n      if item in freq:\n        freq[item] += 1\n      else:\n        freq[item] = 1\n  return freq","language":"python"}
+{"task_id":"MBPP\/514","completion":"  sum = 0\n  for i in test_tup:\n    sum += i\n  return sum","language":"python"}
+{"task_id":"MBPP\/517","completion":"    max = 0\n    for i in list1:\n        if i > 0 and i > max:\n            max = i\n    return max","language":"python"}
+{"task_id":"MBPP\/518","completion":" root = num ** 0.5\n return root","language":"python"}
+{"task_id":"MBPP\/525","completion":"  if (line1[0] * line2[1] - line1[1] * line2[0]) == 0:\n    return True\n  else:\n    return False","language":"python"}
+{"task_id":"MBPP\/527","completion":"    count = 0\n    for i in range(n):\n        for j in range(i+1, n):\n            if arr[i] + arr[j] == sum:\n                count += 1\n    return count","language":"python"}
+{"task_id":"MBPP\/528","completion":"   min_length = 1\n   for i in range(len(list1)):\n      if len(list1[i]) < min_length:\n         min_length = len(list1[i])\n   return min_length, list1[min_length-1]","language":"python"}
+{"task_id":"MBPP\/532","completion":"  if len(str1) != len(str2):\n    return False\n  char_count = {}\n  for char in str1:\n    if char in char_count:\n      char_count[char] += 1\n    else:\n      char_count[char] = 1\n  for char in str2:\n    if char in char_count:\n      char_count[char] -= 1\n    else:\n      return False\n  for count in char_count.values():\n    if count != 0:\n      return False\n  return True","language":"python"}
+{"task_id":"MBPP\/534","completion":" # write your code here\n #print(pattern,text)\n if pattern in text:\n  return (text.index(pattern),text.index(pattern)+len(pattern))\n else:\n  return (-1,-1)","language":"python"}
+{"task_id":"MBPP\/537","completion":"  # split the string into a list of words\n  words = str1.split()\n  # initialize a dictionary to keep track of the words\n  word_dict = {}\n  # loop through the words\n  for word in words:\n    # if the word is not in the dictionary, add it to the dictionary\n    if word not in word_dict:\n      word_dict[word] = 1\n    # if the word is in the dictionary, check if it's repeated\n    else:\n      # if it's repeated, return the word\n      if word_dict[word] == 1:\n        return word\n      # if it's not repeated, increment the count\n      else:\n        word_dict[word] += 1\n  # if we reach this point, the word is not repeated\n  return 'None'","language":"python"}
+{"task_id":"MBPP\/540","completion":"    freq = {}\n    for i in arr:\n        if i in freq:\n            freq[i] += 1\n        else:\n            freq[i] = 1\n    max_freq = max(freq.values())\n    min_freq = min(freq.values())\n    return max_freq - min_freq","language":"python"}
+{"task_id":"MBPP\/541","completion":"\tsum_of_divisors = 0\n\tfor i in range(1, n\/\/2+1):\n\t\tif n % i == 0:\n\t\t\tsum_of_divisors += i\n\treturn sum_of_divisors > n","language":"python"}
+{"task_id":"MBPP\/542","completion":"  import re\n  return re.sub(r\"[ ,.]\", \":\", text)","language":"python"}
+{"task_id":"MBPP\/543","completion":"    return len(str(num1+num2))","language":"python"}
+{"task_id":"MBPP\/544","completion":"  flat_list = []\n  for i in test_list:\n    for j in i:\n      flat_list.append(j)\n  return \" \".join(flat_list)","language":"python"}
+{"task_id":"MBPP\/548","completion":"\tn = len(arr)\n\tif n == 0:\n\t\treturn 0\n\tdp = [1] * n\n\tfor i in range(1, n):\n\t\tfor j in range(0, i):\n\t\t\tif arr[i] > arr[j]:\n\t\t\t\tdp[i] = max(dp[i], dp[j] + 1)\n\treturn max(dp)","language":"python"}
+{"task_id":"MBPP\/551","completion":"   return [row[n] for row in list1]","language":"python"}
+{"task_id":"MBPP\/554","completion":"    odd_list = []\n    for i in list:\n        if i % 2 != 0:\n            odd_list.append(i)\n    return odd_list","language":"python"}
+{"task_id":"MBPP\/555","completion":"    sum_of_cubes = 0\n    sum_of_numbers = 0\n    for i in range(1, n+1) :\n        sum_of_cubes += i ** 3\n        sum_of_numbers += i\n    return sum_of_cubes - sum_of_numbers","language":"python"}
+{"task_id":"MBPP\/556","completion":"    ##Your code here\n    count = 0\n    for i in range(0,N):\n        for j in range(i+1,N):\n            if (A[i] ^ A[j]) % 2 != 0:\n                count += 1\n    return count","language":"python"}
+{"task_id":"MBPP\/557","completion":" # Solution 1\n return ''.join([x.lower() if x.isupper() else x.upper() for x in string])","language":"python"}
+{"task_id":"MBPP\/558","completion":"         return sum(map(int, str(abs(n1-n2))))","language":"python"}
+{"task_id":"MBPP\/559","completion":"  max_so_far = 0\n  max_ending_here = 0\n  for i in range(0, size):\n    max_ending_here = max_ending_here + a[i]\n    if (max_so_far < max_ending_here):\n      max_so_far = max_ending_here\n    if max_ending_here < 0:\n      max_ending_here = 0\n  return max_so_far","language":"python"}
+{"task_id":"MBPP\/560","completion":"  return tuple(set(test_tup1).union(set(test_tup2)))","language":"python"}
+{"task_id":"MBPP\/562","completion":"    max_len = 0\n    for i in range(len(lst)):\n        if len(lst[i]) > max_len:\n            max_len = len(lst[i])\n    return max_len","language":"python"}
+{"task_id":"MBPP\/564","completion":"    count = 0\n    for i in range(n-1):\n        for j in range(i+1,n):\n            if arr[i] != arr[j]:\n                count += 1\n    return count","language":"python"}
+{"task_id":"MBPP\/565","completion":"    return list(word)","language":"python"}
+{"task_id":"MBPP\/566","completion":"  sum = 0\n  while n > 0:\n    sum += n % 10\n    n = n \/\/ 10\n  return sum","language":"python"}
+{"task_id":"MBPP\/567","completion":"    for i in range(len(list1)-1):\n        if list1[i] > list1[i+1]:\n            return False\n    return True","language":"python"}
+{"task_id":"MBPP\/568","completion":" empty_list = []\n for i in range(length):\n     empty_list.append({})\n return empty_list","language":"python"}
+{"task_id":"MBPP\/572","completion":"  return [x for x in nums if nums.count(x) < 2]","language":"python"}
+{"task_id":"MBPP\/573","completion":"    # get the unique values in the list\n    unique_values = set(list_data)\n    # calculate the product of the unique values\n    product = 1\n    for value in unique_values:\n        product *= value\n    return product","language":"python"}
+{"task_id":"MBPP\/576","completion":"    if len(A) < m or len(B) < n:\n        return False\n    i = 0\n    j = 0\n    while i < m and j < n:\n        if A[i] == B[j]:\n            i += 1\n            j += 1\n        else:\n            i = i - j + 1\n            j = 0\n    if i == m:\n        return True\n    else:\n        return False","language":"python"}
+{"task_id":"MBPP\/578","completion":"    result = []\n    for i in range(len(list1)):\n        result.append(list1[i])\n        result.append(list2[i])\n        result.append(list3[i])\n    return result","language":"python"}
+{"task_id":"MBPP\/582","completion":"  if len(dict1) == 0:\n    return True\n  else:\n    return False","language":"python"}
+{"task_id":"MBPP\/583","completion":"    if num < 1:\n        raise ValueError(\"number should be greater than 1\")\n    if num == 1:\n        return 1\n    return (4 * num - 2) * catalan_number(num - 1) \/\/ (num + 1)","language":"python"}
+{"task_id":"MBPP\/585","completion":"  from heapq import nlargest\n  from operator import itemgetter\n  return nlargest(n,items,key=itemgetter('price'))","language":"python"}
+{"task_id":"MBPP\/586","completion":"   if k == 0:\n      return a\n   else:\n      return a[k:] + a[:k]","language":"python"}
+{"task_id":"MBPP\/587","completion":"  return tuple(listx)","language":"python"}
+{"task_id":"MBPP\/588","completion":"     return max(nums) - min(nums)","language":"python"}
+{"task_id":"MBPP\/589","completion":"    squares = []\n    for i in range(a, b+1):\n        if i ** 0.5 % 1 == 0:\n            squares.append(i)\n    return squares","language":"python"}
+{"task_id":"MBPP\/591","completion":"    if len(newList) > 1:\n        newList[0], newList[-1] = newList[-1], newList[0]\n    return newList","language":"python"}
+{"task_id":"MBPP\/593","completion":" return \".\".join([str(int(i)) for i in ip.split(\".\")])","language":"python"}
+{"task_id":"MBPP\/598","completion":" \n return sum(int(digit)**len(str(number)) for digit in str(number)) == number","language":"python"}
+{"task_id":"MBPP\/599","completion":" sum = 0\n for i in range(1, number+1):\n     sum += i\n average = sum \/ number\n return sum, average","language":"python"}
+{"task_id":"MBPP\/600","completion":"    return n & 1 == 0","language":"python"}
+{"task_id":"MBPP\/602","completion":"  # Your code here\n  hash_map = {}\n  for char in str1:\n    if char in hash_map:\n      return char\n    else:\n      hash_map[char] = 1\n  return \"None\"","language":"python"}
+{"task_id":"MBPP\/604","completion":"        return \" \".join(s.split()[::-1])","language":"python"}
+{"task_id":"MBPP\/605","completion":"  if num < 2:\n    return False\n  elif num == 2:\n    return True\n  else:\n    for i in range(2, num):\n      if num % i == 0:\n        return False\n  return True","language":"python"}
+{"task_id":"MBPP\/606","completion":" return degree * (3.14159265358979323846264338327950288\/180)","language":"python"}
+{"task_id":"MBPP\/607","completion":"  import re\n  match = re.search(pattern, text)\n  if match:\n    return match.group(), match.start(), match.end()\n  else:\n    return None, None, None","language":"python"}
+{"task_id":"MBPP\/610","completion":"    if L == 1:\n        return list1[1:]\n    else:\n        return [list1[0]] + remove_kth_element(list1[1:], L-1)","language":"python"}
+{"task_id":"MBPP\/611","completion":"  return max(test_list[i][N] for i in range(len(test_list)))","language":"python"}
+{"task_id":"MBPP\/614","completion":"  cumulative_sum = 0\n  for i in test_list:\n    cumulative_sum += sum(i)\n  return cumulative_sum","language":"python"}
+{"task_id":"MBPP\/615","completion":"    return [sum(i)\/len(i) for i in zip(*nums)]","language":"python"}
+{"task_id":"MBPP\/618","completion":"  return list(map(lambda x,y: x\/y,nums1,nums2))","language":"python"}
+{"task_id":"MBPP\/621","completion":"  for i in range(len(test_list)):\n    if test_list[i].isnumeric():\n      test_list[i] = str(int(test_list[i]) + K)\n  return test_list","language":"python"}
+{"task_id":"MBPP\/623","completion":" return list(map(lambda x: x**n, nums))","language":"python"}
+{"task_id":"MBPP\/624","completion":"  return string.upper()","language":"python"}
+{"task_id":"MBPP\/625","completion":"    if len(newList) > 1:\n        newList[0], newList[-1] = newList[-1], newList[0]\n    return newList","language":"python"}
+{"task_id":"MBPP\/626","completion":"    if r < 0 :\n        return -1\n    return (2*r**2)\/2","language":"python"}
+{"task_id":"MBPP\/628","completion":"  return string.replace(\" \", \"%20\")","language":"python"}
+{"task_id":"MBPP\/629","completion":"    even_list = []\n    for i in list:\n        if i%2==0:\n            even_list.append(i)\n    return even_list","language":"python"}
+{"task_id":"MBPP\/630","completion":"  return [[x, y] for x in range(test_tup[0] - 1, test_tup[0] + 2) for y in range(test_tup[1] - 1, test_tup[1] + 2)]","language":"python"}
+{"task_id":"MBPP\/631","completion":"  import re\n  return re.sub(r'\\s+', '_', text).strip('_')","language":"python"}
+{"task_id":"MBPP\/632","completion":"    return [num for num in num_list if num != 0] + [num for num in num_list if num == 0]","language":"python"}
+{"task_id":"MBPP\/636","completion":"    import math\n    if (a*a - 4*b*c) < 0:\n        return \"No\"\n    else:\n        return \"Yes\"","language":"python"}
+{"task_id":"MBPP\/637","completion":"  return actual_cost == sale_amount","language":"python"}
+{"task_id":"MBPP\/639","completion":"  return sum(len(name) for name in sample_names if not name[0].islower())","language":"python"}
+{"task_id":"MBPP\/643","completion":"        # Your code here\n        if 'z' in text:\n            return \"Found a match!\"\n        else:\n            return \"Not matched!\"","language":"python"}
+{"task_id":"MBPP\/644","completion":"  return input[:k][::-1] + input[k:]","language":"python"}
+{"task_id":"MBPP\/648","completion":"    for i in range(0,len(lst)):\n        if i % 2 == 0:\n            lst[i], lst[i+1] = lst[i+1], lst[i]\n    return lst","language":"python"}
+{"task_id":"MBPP\/649","completion":"    return sum(nums[m:n+1])","language":"python"}
+{"task_id":"MBPP\/653","completion":"    from collections import defaultdict\n    d = defaultdict(list)\n    for k, v in l:\n        d[k].append(v)\n    return dict(d)","language":"python"}
+{"task_id":"MBPP\/654","completion":"  return 2*(l+b)","language":"python"}
+{"task_id":"MBPP\/655","completion":"    sum = 0\n    for i in range(1,n+1) :\n        sum += i**5\n    return sum","language":"python"}
+{"task_id":"MBPP\/656","completion":"    #sort the arrays\n    a.sort()\n    b.sort()\n    #initialize the sum\n    sum = 0\n    #loop through the arrays\n    for i in range(n):\n        #add the absolute difference between the two arrays\n        sum += abs(a[i]-b[i])\n    #return the sum\n    return sum","language":"python"}
+{"task_id":"MBPP\/658","completion":"    # Your code here\n    return max(set(list1), key=list1.count)","language":"python"}
+{"task_id":"MBPP\/664","completion":"    return sum(range(2,n+2,2))\/\/(n\/\/2)","language":"python"}
+{"task_id":"MBPP\/665","completion":"    return num_list[1:] + [num_list[0]]","language":"python"}
+{"task_id":"MBPP\/666","completion":" count = 0\n for i in string:\n  if i == char:\n   count += 1\n return count","language":"python"}
+{"task_id":"MBPP\/667","completion":"    count = 0\n    for i in range(len(string)):\n        if string[i] in vowels:\n            count += 1\n    return count","language":"python"}
+{"task_id":"MBPP\/669","completion":"\timport re\n\tpattern = re.compile(r'^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$')\n\tif pattern.match(Ip):\n\t\treturn \"Valid IP address\"\n\telse:\n\t\treturn \"Invalid IP address\"","language":"python"}
+{"task_id":"MBPP\/670","completion":"    for i in range(len(nums)-1):\n        if nums[i] > nums[i+1]:\n            return False\n    return True","language":"python"}
+{"task_id":"MBPP\/672","completion":"    return max(num1,num2,num3)","language":"python"}
+{"task_id":"MBPP\/673","completion":"    return int(\"\".join(map(str, list)))","language":"python"}
+{"task_id":"MBPP\/674","completion":"  from collections import OrderedDict\n  return ' '.join(OrderedDict.fromkeys(string.split()))","language":"python"}
+{"task_id":"MBPP\/675","completion":"    if x + y >= m and x + y <= n:\n        return 20\n    else:\n        return x + y","language":"python"}
+{"task_id":"MBPP\/676","completion":"  import re\n  return re.sub(r'[^a-zA-Z0-9]', '', text1)","language":"python"}
+{"task_id":"MBPP\/678","completion":"  return \"\".join(str1.split())","language":"python"}
+{"task_id":"MBPP\/680","completion":"    if len(nums) < 2:\n        return False\n    for i in range(1, len(nums)):\n        if nums[i] < nums[i-1]:\n            return False\n    return True","language":"python"}
+{"task_id":"MBPP\/681","completion":"    for i in range(2, n):\n        if n % i == 0:\n            return i\n    return n","language":"python"}
+{"task_id":"MBPP\/682","completion":"  return list(map(lambda x,y:x*y,nums1,nums2))","language":"python"}
+{"task_id":"MBPP\/685","completion":"    prime_list = [2]\n    sum = 2\n    for i in range(3, n+1, 2):\n        for j in prime_list:\n            if i % j == 0:\n                break\n        else:\n            prime_list.append(i)\n            sum += i\n    return sum","language":"python"}
+{"task_id":"MBPP\/687","completion":"\tif b == 0:\n\t\treturn a\n\telse:\n\t\treturn recur_gcd(b, a % b)","language":"python"}
+{"task_id":"MBPP\/688","completion":"  return (a**2 + b**2)**0.5","language":"python"}
+{"task_id":"MBPP\/691","completion":"  d = {}\n  for i in test_list:\n    if i[1] in d:\n      d[i[1]].append(i[0])\n    else:\n      d[i[1]] = [i[0]]\n  return d","language":"python"}
+{"task_id":"MBPP\/693","completion":"  import re\n  return re.sub(r\"\\s+\", \" \", text1)","language":"python"}
+{"task_id":"MBPP\/696","completion":" #Your code here\n #begin solution\n \n zip_list = []\n for i in range(len(list1)):\n     zip_list.append(list(list1[i]) + list(list2[i]))\n return zip_list","language":"python"}
+{"task_id":"MBPP\/697","completion":"   return len(list(filter(lambda x: x % 2 == 0, array_nums)))","language":"python"}
+{"task_id":"MBPP\/698","completion":"  return dict(sorted(test_dict.items(), key=lambda x: (x[0][0]*x[0][1], x[0][0]*x[0][1])))","language":"python"}
+{"task_id":"MBPP\/700","completion":"\tcount = 0\n\tfor i in li:\n\t\tif min <= i <= max:\n\t\t\tcount += 1\n\treturn count","language":"python"}
+{"task_id":"MBPP\/702","completion":"\tamin = 0\n\tamax = 0\n\tfor i in range(n):\n\t\tif arr[i] < k:\n\t\t\tamin += 1\n\t\telse:\n\t\t\tamax += 1\n\treturn amax - amin","language":"python"}
+{"task_id":"MBPP\/703","completion":"  if x in d:\n    return True\n  else:\n    return False","language":"python"}
+{"task_id":"MBPP\/704","completion":"  return 1.0 \/ n + harmonic_sum(n-1) if n > 1 else 1","language":"python"}
+{"task_id":"MBPP\/708","completion":"    return string.split()","language":"python"}
+{"task_id":"MBPP\/710","completion":"  return test_tup[0], test_tup[-1]","language":"python"}
+{"task_id":"MBPP\/712","completion":" # Your code here\n # don't touch the next line\n # This will make the tests pass\n list1.sort()\n i = 0\n while i < len(list1) - 1:\n  if list1[i] == list1[i+1]:\n   del list1[i]\n  else:\n   i += 1\n return list1","language":"python"}
+{"task_id":"MBPP\/713","completion":"  return all(test_tup)","language":"python"}
+{"task_id":"MBPP\/715","completion":"  return tuple(int(x) for x in test_str.split(\", \"))","language":"python"}
+{"task_id":"MBPP\/718","completion":"    return [list1[i] for i in range(0, len(list1), 2)]","language":"python"}
+{"task_id":"MBPP\/719","completion":"        if text.count('a') == 0:\n                return \"Not matched!\"\n        elif text.count('a') == 1:\n                return \"Found a match!\"\n        else:\n                return \"Found a match!\"","language":"python"}
+{"task_id":"MBPP\/720","completion":"  return test_tup + (test_dict,)","language":"python"}
+{"task_id":"MBPP\/722","completion":"    return {key: value for key, value in students.items() if value[0] >= h and value[1] >= w}","language":"python"}
+{"task_id":"MBPP\/723","completion":"    # count = 0\n    # for i in range(len(nums1)):\n    #     for j in range(len(nums2)):\n    #         if nums1[i] == nums2[j]:\n    #             count += 1\n    # return count\n\n    # return len(list(filter(lambda x: x[0] == x[1], zip(nums1, nums2))))\n\n    # return len(list(filter(lambda x: x[0] == x[1], zip(nums1, nums2))))\n\n    # return len(list(filter(lambda x: x[0] == x[1], zip(nums1, nums2))))\n\n    # return len(list(filter(lambda x: x[0] == x[1], zip(nums1, nums2))))\n\n    return len(list(filter(lambda x: x[0] == x[1], zip(nums1, nums2))))","language":"python"}
+{"task_id":"MBPP\/725","completion":"  import re\n  return re.findall(r'\\\"(.+?)\\\"', text1)","language":"python"}
+{"task_id":"MBPP\/726","completion":"  return tuple(x * y for x, y in zip(test_tup, test_tup[1:]))","language":"python"}
+{"task_id":"MBPP\/727","completion":"  import re\n  return re.sub(r'[^a-zA-Z0-9]', '', S)","language":"python"}
+{"task_id":"MBPP\/728","completion":"  lst3 = []\n  for i in range(len(lst1)):\n    lst3.append(lst1[i]+lst2[i])\n  return lst3","language":"python"}
+{"task_id":"MBPP\/729","completion":"  return list(map(lambda x,y:x+y,nums1,nums2))","language":"python"}
+{"task_id":"MBPP\/730","completion":"    if len(nums) == 0:\n        return []\n    if len(nums) == 1:\n        return nums\n    if nums[0] == nums[1]:\n        return consecutive_duplicates(nums[1:])\n    else:\n        return [nums[0]] + consecutive_duplicates(nums[1:])","language":"python"}
+{"task_id":"MBPP\/732","completion":" specialchar = [' ', ',', '.']\n for i in range(len(specialchar)):\n  text = text.replace(specialchar[i], ':')\n return text","language":"python"}
+{"task_id":"MBPP\/733","completion":"    left = 0\n    right = len(A) - 1\n    while left <= right:\n        mid = (left + right) \/\/ 2\n        if A[mid] == x:\n            right = mid - 1\n        elif A[mid] < x:\n            left = mid + 1\n        else:\n            right = mid - 1\n    return left","language":"python"}
+{"task_id":"MBPP\/736","completion":"    left = 0\n    right = len(a) - 1\n    while left <= right:\n        mid = (left + right) \/\/ 2\n        if a[mid] == x:\n            return mid\n        elif a[mid] < x:\n            left = mid + 1\n        else:\n            right = mid - 1\n    return left","language":"python"}
+{"task_id":"MBPP\/741","completion":"    return len(set(s)) == 1","language":"python"}
+{"task_id":"MBPP\/744","completion":"  for i in test_tup:\n    if i is None:\n      return True\n  return False","language":"python"}
+{"task_id":"MBPP\/748","completion":"  import re\n  return re.sub(r'(?<=[a-z])(?=[A-Z])', ' ', str1)","language":"python"}
+{"task_id":"MBPP\/749","completion":"    nums = [int(x) for x in nums_str]\n    return sorted(nums)","language":"python"}
+{"task_id":"MBPP\/750","completion":"  test_list.extend(test_tup)\n  return test_list","language":"python"}
+{"task_id":"MBPP\/751","completion":"    if i >= len(arr) - 1:\n        return True\n    if arr[i] > arr[i + 1]:\n        return False\n    return check_min_heap(arr, i + 1)","language":"python"}
+{"task_id":"MBPP\/753","completion":"  return sorted(test_list, key=lambda x: x[1])[:K]","language":"python"}
+{"task_id":"MBPP\/755","completion":"  # Find the smallest number\n  smallest = min(numbers)\n  # Find the second smallest number\n  second_smallest = None\n  for number in numbers:\n    if number != smallest and (second_smallest is None or number < second_smallest):\n      second_smallest = number\n  return second_smallest","language":"python"}
+{"task_id":"MBPP\/756","completion":"        # Your code here\n\n        return \"Not matched!\" if text.count(\"a\") + text.count(\"b\") == 0 else \"Found a match!\"","language":"python"}
+{"task_id":"MBPP\/760","completion":"    # Your code here\n    return \"YES\" if len(set(arr)) == 1 else \"NO\"","language":"python"}
+{"task_id":"MBPP\/762","completion":"  if monthnum3 == 6 or monthnum3 == 7 or monthnum3 == 8 or monthnum3 == 9 or monthnum3 == 10 or monthnum3 == 11:\n    return True\n  else:\n    return False","language":"python"}
+{"task_id":"MBPP\/764","completion":"      return len([x for x in str if x.isdigit()])","language":"python"}
+{"task_id":"MBPP\/766","completion":"    return [(l1[i], l1[i+1]) for i in range(len(l1)-1)]","language":"python"}
+{"task_id":"MBPP\/767","completion":"    count = 0\n    for i in range(n):\n        for j in range(i+1,n):\n            if arr[i]+arr[j]==sum:\n                count+=1\n    return count","language":"python"}
+{"task_id":"MBPP\/768","completion":"    if x % 2 == 0:\n        return False\n    else:\n        return True","language":"python"}
+{"task_id":"MBPP\/771","completion":"    stack = []\n    for char in exp:\n        if char in \"([{\":\n            stack.append(char)\n        elif char in \")]}\":\n            if stack == []:\n                return False\n            elif char == \")\":\n                if stack.pop() != \"(\":\n                    return False\n            elif char == \"]\":\n                if stack.pop() != \"[\":\n                    return False\n            elif char == \"}\":\n                if stack.pop() != \"{\":\n                    return False\n    if stack == []:\n        return True\n    else:\n        return False","language":"python"}
+{"task_id":"MBPP\/772","completion":"  return ' '.join([word for word in test_str.split() if len(word) != K])","language":"python"}
+{"task_id":"MBPP\/773","completion":" #code here\n \n return (text[text.find(pattern):text.find(pattern)+len(pattern)],text.find(pattern),text.find(pattern)+len(pattern))","language":"python"}
+{"task_id":"MBPP\/774","completion":"\timport re\n\treturn \"Valid Email\" if re.match(r\"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+$\", email) else \"Invalid Email\"","language":"python"}
+{"task_id":"MBPP\/777","completion":"    # sum = 0\n    # for i in range(0,n):\n    #     if arr[i] not in arr[i+1:]:\n    #         sum += arr[i]\n    # return sum\n    sum = 0\n    for i in range(0,n):\n        if arr[i] not in arr[i+1:]:\n            sum += arr[i]\n    return sum","language":"python"}
+{"task_id":"MBPP\/778","completion":"    result = []\n    for i in range(len(list1)):\n        if i == 0:\n            result.append([list1[i]])\n        elif list1[i] == list1[i-1]:\n            result[-1].append(list1[i])\n        else:\n            result.append([list1[i]])\n    return result","language":"python"}
+{"task_id":"MBPP\/779","completion":"    dict_of_lists = {}\n    for sublist in list1:\n        if tuple(sublist) not in dict_of_lists:\n            dict_of_lists[tuple(sublist)] = 1\n        else:\n            dict_of_lists[tuple(sublist)] += 1\n    return dict_of_lists","language":"python"}
+{"task_id":"MBPP\/785","completion":"  return tuple(int(x) for x in test_str.strip('()').split(','))","language":"python"}
+{"task_id":"MBPP\/786","completion":"    if a[0] > x:\n        return 0\n    elif a[-1] < x:\n        return len(a)\n    else:\n        for i in range(len(a)):\n            if a[i] >= x:\n                return i\n        return len(a)","language":"python"}
+{"task_id":"MBPP\/787","completion":"        # your code here\n\n        if text.find(\"a\") != -1 and text.find(\"b\") != -1 and text.find(\"b\", text.find(\"a\")+1) != -1:\n            return \"Found a match!\"\n        else:\n            return \"Not matched!\"","language":"python"}
+{"task_id":"MBPP\/788","completion":"  return tuple(test_list + [test_str])","language":"python"}
+{"task_id":"MBPP\/789","completion":"  return s*l","language":"python"}
+{"task_id":"MBPP\/792","completion":"    count = 0\n    for i in input_list:\n        if isinstance(i, list):\n            count += 1\n    return count","language":"python"}
+{"task_id":"MBPP\/794","completion":"        import re\n        match = re.search(r'a.*b$', text)\n        if match:\n            return 'Found a match!'\n        else:\n            return 'Not matched!'","language":"python"}
+{"task_id":"MBPP\/796","completion":"  sum = 0\n  for key, value in dict.items():\n    sum += value\n  return sum","language":"python"}
+{"task_id":"MBPP\/797","completion":"    return sum([x for x in range(l,r+1) if x%2!=0])","language":"python"}
+{"task_id":"MBPP\/798","completion":"    return sum(arr)","language":"python"}
+{"task_id":"MBPP\/799","completion":"    return (n << d) | (n >> (32 - d))","language":"python"}
+{"task_id":"MBPP\/800","completion":" return ''.join(text.split())","language":"python"}
+{"task_id":"MBPP\/803","completion":"    if n < 0 :\n        return False\n    if n == 0 or n == 1 :\n        return True\n    x = n \/\/ 2\n    while x * x > n :\n        x = (x + (n \/\/ x)) \/\/ 2\n    return x * x == n","language":"python"}
+{"task_id":"MBPP\/804","completion":"    product = 1\n    for i in range(n):\n        product *= arr[i]\n    if product % 2 == 0:\n        return True\n    else:\n        return False","language":"python"}
+{"task_id":"MBPP\/805","completion":" if len(lists) == 0:\n  return []\n elif len(lists) == 1:\n  return lists[0]\n else:\n  lists.sort(key=sum)\n  return lists[-1]","language":"python"}
+{"task_id":"MBPP\/806","completion":"  count = 0\n  max_count = 0\n  for i in range(len(test_str)):\n    if test_str[i].isupper():\n      count += 1\n    else:\n      count = 0\n    if count > max_count:\n      max_count = count\n  return max_count","language":"python"}
+{"task_id":"MBPP\/807","completion":"  for i in range(len(nums)):\n    if nums[i] % 2 != 0:\n      return nums[i]\n  return -1","language":"python"}
+{"task_id":"MBPP\/808","completion":"  return test_tup[2] == K or test_tup[3] == K or test_tup[4] == K or test_tup[5] == K","language":"python"}
+{"task_id":"MBPP\/811","completion":"  if len(test_list1) != len(test_list2):\n    return False\n  for i in range(len(test_list1)):\n    if test_list1[i] != test_list2[i]:\n      return False\n  return True","language":"python"}
+{"task_id":"MBPP\/812","completion":"  return street.replace('Road', 'Rd.').replace('road', 'Rd.')","language":"python"}
+{"task_id":"MBPP\/813","completion":"    return len(str1)","language":"python"}
+{"task_id":"MBPP\/815","completion":"  # Your code here\n  arr.sort()\n  return arr","language":"python"}
+{"task_id":"MBPP\/817","completion":" return list(filter(lambda x: x%m==0 or x%n==0,nums))","language":"python"}
+{"task_id":"MBPP\/818","completion":"      ctr = 0\n      for i in str:\n          if i.islower():\n              ctr += 1\n      return ctr","language":"python"}
+{"task_id":"MBPP\/820","completion":"  if monthnum1 == 2:\n    return True\n  elif monthnum1 == 1 or monthnum1 == 3 or monthnum1 == 5 or monthnum1 == 7 or monthnum1 == 8 or monthnum1 == 10 or monthnum1 == 12:\n    return False\n  else:\n    return True","language":"python"}
+{"task_id":"MBPP\/821","completion":"    dict3 = {**dict1,**dict2}\n    return dict3","language":"python"}
+{"task_id":"MBPP\/823","completion":"  import re\n  if re.match(sample, string) :\n    return \"string starts with the given substring\"\n  else :\n    return \"string doesnt start with the given substring\"","language":"python"}
+{"task_id":"MBPP\/824","completion":"    return [x for x in l if x % 2 != 0]","language":"python"}
+{"task_id":"MBPP\/825","completion":"    return [nums[i] for i in list_index]","language":"python"}
+{"task_id":"MBPP\/827","completion":"    sum = 0\n    for i in range(len(list1)):\n        sum += list1[i][C]\n    return sum","language":"python"}
+{"task_id":"MBPP\/828","completion":"  alphabets = 0\n  digits = 0\n  special_char = 0\n  for char in string:\n    if char.isalpha():\n      alphabets += 1\n    elif char.isdigit():\n      digits += 1\n    else:\n      special_char += 1\n  return alphabets, digits, special_char","language":"python"}
+{"task_id":"MBPP\/829","completion":"\tfrequent_list = []\n\tfor i in input:\n\t\tif i not in frequent_list:\n\t\t\tfrequent_list.append(i)\n\tfrequent_list.sort()\n\treturn frequent_list[-2]","language":"python"}
+{"task_id":"MBPP\/830","completion":"    import math\n    return math.ceil(a * 10 ** digits) \/ 10 ** digits","language":"python"}
+{"task_id":"MBPP\/831","completion":"    count = 0\n    for i in range(n):\n        for j in range(i+1,n):\n            if arr[i] == arr[j]:\n                count += 1\n    return count","language":"python"}
+{"task_id":"MBPP\/832","completion":"\timport re\n\treturn max(map(int, re.findall(r'\\d+', input)))","language":"python"}
+{"task_id":"MBPP\/833","completion":"    return list(dict.keys())","language":"python"}
+{"task_id":"MBPP\/835","completion":"    return (y2-y1)\/(x2-x1)","language":"python"}
+{"task_id":"MBPP\/839","completion":"\treturn sorted(tup)","language":"python"}
+{"task_id":"MBPP\/841","completion":"\tinv_count = 0\n\tfor i in range(n):\n\t\tfor j in range(i+1, n):\n\t\t\tif arr[i] > arr[j]:\n\t\t\t\tinv_count += 1\n\treturn inv_count","language":"python"}
+{"task_id":"MBPP\/847","completion":"  return xs","language":"python"}
+{"task_id":"MBPP\/848","completion":" return 0.5*base1*height + 0.5*base2*height","language":"python"}
+{"task_id":"MBPP\/852","completion":"    return [x for x in num_list if x >= 0]","language":"python"}
+{"task_id":"MBPP\/853","completion":"    sum = 0\n    for i in range(1, n+1):\n        if n % i == 0 and i % 2 != 0:\n            sum += i\n    return sum","language":"python"}
+{"task_id":"MBPP\/855","completion":"    if x % 2 == 0:\n        return True\n    else:\n        return False","language":"python"}
+{"task_id":"MBPP\/857","completion":"  return list(map(list, list1))","language":"python"}
+{"task_id":"MBPP\/858","completion":"    count = 0\n    for i in input_list:\n        if type(i) == list:\n            count += 1\n    return count ** 2","language":"python"}
+{"task_id":"MBPP\/860","completion":"\timport re\n\treturn \"Accept\" if re.match(r\"^[a-zA-Z0-9]*$\", string) else \"Discard\"","language":"python"}
+{"task_id":"MBPP\/861","completion":"  return list(filter(lambda x: (sorted(x) == sorted(str)), texts))","language":"python"}
+{"task_id":"MBPP\/862","completion":"  from collections import Counter\n  text = text.lower()\n  text = text.split()\n  text = [i for i in text if i != \"\"]\n  c = Counter(text)\n  return c.most_common(n)","language":"python"}
+{"task_id":"MBPP\/864","completion":"  return list(filter(lambda text: text == text[::-1], texts))","language":"python"}
+{"task_id":"MBPP\/865","completion":"    return list(map(lambda x: x*n, nums))","language":"python"}
+{"task_id":"MBPP\/866","completion":"  if monthname2 == \"January\":\n    return True\n  elif monthname2 == \"February\":\n    return False\n  elif monthname2 == \"March\":\n    return True\n  elif monthname2 == \"April\":\n    return True\n  elif monthname2 == \"May\":\n    return True\n  elif monthname2 == \"June\":\n    return True\n  elif monthname2 == \"July\":\n    return True\n  elif monthname2 == \"August\":\n    return True\n  elif monthname2 == \"September\":\n    return True\n  elif monthname2 == \"October\":\n    return True\n  elif monthname2 == \"November\":\n    return True\n  elif monthname2 == \"December\":\n    return True\n  else:\n    return False","language":"python"}
+{"task_id":"MBPP\/868","completion":"    return len(a.strip().split(' ')[-1])","language":"python"}
+{"task_id":"MBPP\/870","completion":"  return sum(filter(lambda x: x > 0, nums))","language":"python"}
+{"task_id":"MBPP\/871","completion":"    if len(string1)!=len(string2):\n        return False\n    else:\n        return string1 in string2+string2","language":"python"}
+{"task_id":"MBPP\/872","completion":"    for i in list1:\n        if i in list2:\n            return True\n    return False","language":"python"}
+{"task_id":"MBPP\/873","completion":"  if n == 1 or n == 2:\n    return 1\n  else:\n    return fibonacci(n-1) + fibonacci(n-2)","language":"python"}
+{"task_id":"MBPP\/874","completion":"    return str1+str2==str2+str1","language":"python"}
+{"task_id":"MBPP\/876","completion":"   if x > y:\n       greater = x\n   else:\n       greater = y\n   while(True):\n       if((greater % x == 0) and (greater % y == 0)):\n           lcm = greater\n           break\n       greater += 1\n   return lcm","language":"python"}
+{"task_id":"MBPP\/877","completion":"    return ''.join(sorted(str))","language":"python"}
+{"task_id":"MBPP\/878","completion":"  for i in range(len(test_tuple)):\n    if test_tuple[i] not in K:\n      return False\n  return True","language":"python"}
+{"task_id":"MBPP\/879","completion":"  import re\n  match = re.search(r'a\\w*b$', text)\n  if match:\n    return 'Found a match!'\n  else:\n    return 'Not matched!'","language":"python"}
+{"task_id":"MBPP\/880","completion":"    import math\n    if a == 0 :\n        return \"No solutions\"\n    elif b * b - 4 * a * c < 0 :\n        return \"No solutions\"\n    elif b * b - 4 * a * c == 0 :\n        return \"1 solution\"\n    else :\n        return \"2 solutions\"","language":"python"}
+{"task_id":"MBPP\/883","completion":" return list(filter(lambda x: x%m==0 and x%n==0, nums))","language":"python"}
+{"task_id":"MBPP\/885","completion":"    if len(str1) != len(str2):\n        return False\n    dict1 = {}\n    dict2 = {}\n    for i in range(len(str1)):\n        if str1[i] in dict1:\n            if dict1[str1[i]] != str2[i]:\n                return False\n        else:\n            dict1[str1[i]] = str2[i]\n        if str2[i] in dict2:\n            if dict2[str2[i]] != str1[i]:\n                return False\n        else:\n            dict2[str2[i]] = str1[i]\n    return True","language":"python"}
+{"task_id":"MBPP\/886","completion":"    return sum(numbers)\/len(numbers)","language":"python"}
+{"task_id":"MBPP\/887","completion":"    return n & 1 == 1","language":"python"}
+{"task_id":"MBPP\/889","completion":"    for i in range(len(lists)):\n        lists[i] = lists[i][::-1]\n    return lists","language":"python"}
+{"task_id":"MBPP\/890","completion":"    i = 0\n    j = 0\n    while i < n and j < n :\n        if arr1[i] == arr2[j] :\n            i += 1\n            j += 1\n        elif arr1[i] < arr2[j] :\n            i += 1\n        else :\n            j += 1\n    if i == n :\n        return n\n    else :\n        return i","language":"python"}
+{"task_id":"MBPP\/891","completion":"    if len(str(A)) == len(str(B)):\n        return True\n    else:\n        return False","language":"python"}
+{"task_id":"MBPP\/892","completion":" return ' '.join(text.split())","language":"python"}
+{"task_id":"MBPP\/893","completion":"    return [i[-1] for i in lst]","language":"python"}
+{"task_id":"MBPP\/894","completion":"  return tuple(float(x) for x in test_str.split(\", \"))","language":"python"}
+{"task_id":"MBPP\/896","completion":"  return sorted(tuples, key=lambda x: x[-1])","language":"python"}
+{"task_id":"MBPP\/897","completion":"    return word in sentence","language":"python"}
+{"task_id":"MBPP\/900","completion":"    return string.startswith('5')","language":"python"}
+{"task_id":"MBPP\/902","completion":"   for key in d2:\n      if key in d1:\n         d1[key] += d2[key]\n      else:\n         d1[key] = d2[key]\n   return d1","language":"python"}
+{"task_id":"MBPP\/904","completion":"  if x % 2 == 0:\n    return True\n  else:\n    return False","language":"python"}
+{"task_id":"MBPP\/908","completion":"\tfor i in range(n):\n\t\tif arr[i] == i:\n\t\t\treturn i\n\treturn -1","language":"python"}
+{"task_id":"MBPP\/913","completion":"    return string[-1].isdigit()","language":"python"}
+{"task_id":"MBPP\/914","completion":"    if len(s) < 2:\n        return False\n    if len(set(s)) == 1:\n        return False\n    if len(set(s)) == 2:\n        return True\n    else:\n        return False","language":"python"}
+{"task_id":"MBPP\/916","completion":"\tfor i in range(arr_size - 2):\n\t\tfor j in range(i + 1, arr_size - 1):\n\t\t\tfor k in range(j + 1, arr_size):\n\t\t\t\tif A[i] + A[j] + A[k] == sum:\n\t\t\t\t\treturn (A[i], A[j], A[k])\n\treturn ()","language":"python"}
+{"task_id":"MBPP\/917","completion":"        upper_lower = []\n        for i in range(len(text)):\n            if text[i].isupper():\n                upper_lower.append(text[i])\n            elif text[i].islower():\n                upper_lower.append(text[i])\n                if len(upper_lower) == 2:\n                    return \"Found a match!\"\n        return \"Not matched!\"","language":"python"}
+{"task_id":"MBPP\/918","completion":"    # table[i] represents the number of combinations to make up to i\n    table = [0] * (n + 1)\n    table[0] = 1\n\n    for i in range(1, m + 1):\n        for j in range(S[i - 1], n + 1):\n            table[j] += table[j - S[i - 1]]\n\n    return table[n]","language":"python"}
+{"task_id":"MBPP\/919","completion":"    result = 1\n    for item in items:\n        result *= item\n    return result","language":"python"}
+{"task_id":"MBPP\/921","completion":"  return [test_tup[i:i+N] for i in range(0, len(test_tup), N)]","language":"python"}
+{"task_id":"MBPP\/923","completion":"\tif m == 0:\n\t\treturn n\n\tif n == 0:\n\t\treturn m\n\tif X[m-1] == Y[n-1]:\n\t\treturn 1 + super_seq(X, Y, m-1, n-1)\n\telse:\n\t\treturn 1 + min(super_seq(X, Y, m, n-1), super_seq(X, Y, m-1, n))","language":"python"}
+{"task_id":"MBPP\/924","completion":"    if x > y:\n        return x\n    else:\n        return y","language":"python"}
+{"task_id":"MBPP\/925","completion":"    product = 1\n    for i in nums:\n        product *= i\n    return product","language":"python"}
+{"task_id":"MBPP\/928","completion":"        dt = dt.split('-')\n        return '-'.join([dt[2], dt[1], dt[0]])","language":"python"}
+{"task_id":"MBPP\/929","completion":"  count = 0\n  for i in tuplex:\n    if i == value:\n      count += 1\n  return count","language":"python"}
+{"task_id":"MBPP\/930","completion":"        import re\n        if re.match(r\"^a[\\w]*$\", text):\n            return \"Found a match!\"\n        else:\n            return \"Not matched!\"","language":"python"}
+{"task_id":"MBPP\/931","completion":" \n sum = 0\n i = 1\n while i <= number:\n     sum += i ** 3\n     i += 1\n return sum","language":"python"}
+{"task_id":"MBPP\/932","completion":"    return list(dict.fromkeys(l))","language":"python"}
+{"task_id":"MBPP\/933","completion":"  import re\n  return re.sub(r'(?<!^)(?=[A-Z])', '_', text).lower()","language":"python"}
+{"task_id":"MBPP\/937","completion":"    # Your code here\n    return max(set(str1), key=str1.count)","language":"python"}
+{"task_id":"MBPP\/942","completion":"  for i in check_list:\n    if i in test_tup:\n      return True\n  return False","language":"python"}
+{"task_id":"MBPP\/943","completion":"  import heapq\n  heapq.heapify(num1)\n  heapq.heapify(num2)\n  combined_list = []\n  while num1 and num2:\n    if num1[0] < num2[0]:\n      combined_list.append(heapq.heappop(num1))\n    else:\n      combined_list.append(heapq.heappop(num2))\n  combined_list.extend(num1)\n  combined_list.extend(num2)\n  return combined_list","language":"python"}
+{"task_id":"MBPP\/945","completion":"  return set(t)","language":"python"}
+{"task_id":"MBPP\/946","completion":"  from collections import Counter\n  c = Counter(s)\n  return [i for i in c.most_common(a)]","language":"python"}
+{"task_id":"MBPP\/947","completion":"    return min(len(word) for word in list1)","language":"python"}
+{"task_id":"MBPP\/948","completion":"  return tup1[index]","language":"python"}
+{"task_id":"MBPP\/954","completion":" if actual_cost > sale_amount:\n  return actual_cost - sale_amount\n else:\n  return None","language":"python"}
+{"task_id":"MBPP\/955","completion":"    sum = 0\n    for i in range(1, n\/\/2 + 1):\n        if n % i == 0:\n            sum += i\n    return sum > n","language":"python"}
+{"task_id":"MBPP\/956","completion":"  import re\n  return re.findall('[A-Z][^A-Z]*', text)","language":"python"}
+{"task_id":"MBPP\/957","completion":"     return (n & -n).bit_length()","language":"python"}
+{"task_id":"MBPP\/959","completion":"    return sum(lst) \/ len(lst)","language":"python"}
+{"task_id":"MBPP\/961","completion":"        roman_dict = {'I':1, 'V':5, 'X':10, 'L':50, 'C':100, 'D':500, 'M':1000}\n        result = 0\n        for i in range(len(s)):\n            if i > 0 and roman_dict[s[i]] > roman_dict[s[i-1]]:\n                result += roman_dict[s[i]] - 2 * roman_dict[s[i-1]]\n            else:\n                result += roman_dict[s[i]]\n        return result","language":"python"}
+{"task_id":"MBPP\/962","completion":"    return sum([i for i in range(l,r+1) if i%2==0])","language":"python"}
+{"task_id":"MBPP\/964","completion":"    return len(s) % 2 == 0","language":"python"}
+{"task_id":"MBPP\/965","completion":"        text = text.replace(' ', '')\n        result = ''\n        for i, c in enumerate(text):\n            if i == 0:\n                result += c.lower()\n            elif c.isupper():\n                result += '_' + c.lower()\n            else:\n                result += c\n        return result","language":"python"}
+{"task_id":"MBPP\/966","completion":" \n def is_empty(t):\n     return t == ()\n \n def filter_empty(tuple1):\n     return [t for t in tuple1 if not is_empty(t)]\n \n return filter_empty(tuple1)","language":"python"}
+{"task_id":"MBPP\/970","completion":"    if x < y:\n        return x\n    else:\n        return y","language":"python"}
+{"task_id":"MBPP\/972","completion":"  return tuple(x for tup in (test_tup1, test_tup2) for x in tup)","language":"python"}
+{"task_id":"MBPP\/973","completion":"    return s[d:] + s[:d]","language":"python"}
+{"task_id":"MBPP\/2","completion":"  # if the length of the two tuple is not equal, return False\n  if len(test_tup1) != len(test_tup2):\n    return False\n  \n  # sort the tuples\n  test_tup1 = sorted(test_tup1)\n  test_tup2 = sorted(test_tup2)\n  \n  # initialize similarity list\n  similarity_list = []\n  \n  # loop through the elements of the tuples and append the element if it is in the other tuple\n  for i in range(len(test_tup1)):\n    if test_tup1[i] in test_tup2:\n      similarity_list.append(test_tup1[i])\n      \n  # return the unique elements in the similarity list\n  return tuple(set(similarity_list))","language":"python"}
+{"task_id":"MBPP\/4","completion":"  # Your code here\n  from heapq import nlargest\n  return nlargest(n, nums)","language":"python"}
+{"task_id":"MBPP\/6","completion":"    return ((a ^ b) & (a ^ b) >> 1) == 0","language":"python"}
+{"task_id":"MBPP\/9","completion":"    \n    # base case\n    if len(str) == 0:\n        return 0\n    \n    # initialize the first element with the first letter\n    prev_char = str[0]\n    counter = 0\n    \n    # iterating on the remaining letters\n    for char in str[1:]:\n        \n        # if the last char is different from the current char\n        if prev_char != char:\n            \n            # increment the counter\n            counter += 1\n        \n        # update the previous char\n        prev_char = char\n        \n    return counter + 1","language":"python"}
+{"task_id":"MBPP\/11","completion":"    s = s.replace(ch, \"\",1)\n    s = s.replace(ch, \"\",-1)\n    return s","language":"python"}
+{"task_id":"MBPP\/14","completion":"    return 0.5*(l*b*h)","language":"python"}
+{"task_id":"MBPP\/19","completion":"    count_set = set()\n    for i in arraynums:\n        if i in count_set:\n            return True\n        count_set.add(i)\n    return False","language":"python"}
+{"task_id":"MBPP\/24","completion":"    decimal = 0\n    i = 0\n    while binary != 0:\n        decimal += (binary % 10) * (2**i)\n        binary \/\/= 10\n        i += 1\n    return decimal","language":"python"}
+{"task_id":"MBPP\/27","completion":"    \n    new_list = []\n    for i in list:\n        new_list.append(\"\".join([letter for letter in i if not letter.isdigit()]))\n        \n    return new_list","language":"python"}
+{"task_id":"MBPP\/33","completion":"    if not isinstance(N, int) or N < 0:\n        return \"Invalid input!\"\n    binary = []\n    while N > 0:\n        binary.append(N % 2)\n        N \/\/= 2\n    binary.reverse()\n    return int(''.join(map(str, binary)))","language":"python"}
+{"task_id":"MBPP\/35","completion":"  return (n*(n+1)*2) \/ 2","language":"python"}
+{"task_id":"MBPP\/37","completion":"    return sorted(mixed_list, key=str)","language":"python"}
+{"task_id":"MBPP\/43","completion":"  import re\n  if re.search(\"^[a-z]+_[a-z]+$\", text):\n    return \"Found a match!\"\n  else:\n    return \"Not matched!\"","language":"python"}
+{"task_id":"MBPP\/45","completion":"  n = min(l)\n  for i in l:\n    while i % n != 0:\n      n = n - 1\n  return n","language":"python"}
+{"task_id":"MBPP\/47","completion":"    if A == 0 or B == 0:\n        return 0\n    elif A == 1:\n        return B % 10\n    elif B == 1:\n        return A % 10\n    else:\n        return (A % B) % 10","language":"python"}
+{"task_id":"MBPP\/57","completion":"    arr.sort()\n    return int(''.join(map(str,arr[::-1])))","language":"python"}
+{"task_id":"MBPP\/61","completion":"    count = 0\n    for i in range(n):\n        for j in range(i+1,n+1):\n            if sum(map(int,s[i:j]))==j-i:\n                count+=1\n    return count","language":"python"}
+{"task_id":"MBPP\/63","completion":"  difference = None\n  for x, y in test_list:\n    if difference is None or difference < abs(x - y):\n      difference = abs(x - y)\n  return difference","language":"python"}
+{"task_id":"MBPP\/73","completion":"  import re\n  split_list = re.split(r'\\*|\\n|\\r', text)\n  return [item for item in split_list if item]","language":"python"}
+{"task_id":"MBPP\/75","completion":"  res = []\n  for i in test_list:\n    if all(i[j] % K == 0 for j in range(len(i))):\n      res.append(tuple(i))\n  return str(res)","language":"python"}
+{"task_id":"MBPP\/76","completion":"    count = 0\n    while m >= 0 and n >= 0:\n        count += m*n\n        m -= 1\n        n -= 1\n    return count","language":"python"}
+{"task_id":"MBPP\/77","completion":"    num = str(n)\n    even = 0\n    odd = 0\n    for i in range(0,len(num)):\n        if i % 2 == 0:\n            even += int(num[i])\n        else:\n            odd += int(num[i])\n    if even == odd:\n        return True\n    else:\n        return False","language":"python"}
+{"task_id":"MBPP\/78","completion":"    return sum(bin(i).count('1') % 2 == 1 for i in range(n+1))","language":"python"}
+{"task_id":"MBPP\/80","completion":"\treturn (1\/6)*(n * (n+1) * (n+2))","language":"python"}
+{"task_id":"MBPP\/82","completion":"  from math import pi\n  return 4\/3 * pi * pow(r, 3)","language":"python"}
+{"task_id":"MBPP\/87","completion":"    dict3.update(dict2)\n    dict3.update(dict1)\n    return dict3","language":"python"}
+{"task_id":"MBPP\/89","completion":"  return min(range(N), key=lambda x: abs(x - N))","language":"python"}
+{"task_id":"MBPP\/100","completion":"    newNum = num + 1\n    while newNum >= 10:\n        numStr = str(newNum)\n        if numStr == numStr[::-1]:\n            return newNum\n        newNum += 1\n    return num + 1","language":"python"}
+{"task_id":"MBPP\/106","completion":"  list1 = list(test_tup) + test_list\n  list2 = tuple(list1)\n  return list2","language":"python"}
+{"task_id":"MBPP\/108","completion":"  merged = []\n  merged.extend(num3)\n  merged.extend(num2)\n  merged.extend(num1)\n  return sorted(merged)","language":"python"}
+{"task_id":"MBPP\/110","completion":"  result = []\n  for i,j in enumerate(test_list):\n    if j[0] > strt_val:\n      result.append((strt_val, j[0]))\n    if j[1] < stop_val:\n      result.append((j[1], stop_val))\n    if j[1] > stop_val:\n      break\n    strt_val = j[1]\n  return result","language":"python"}
+{"task_id":"MBPP\/111","completion":"    # step 1) get a set of all list elements\n    list_set = set(nestedlist[0])\n    # step 2) for each list in nested list, check if the list elements exist in the set,\n    # and if so, return the element\n    for l in nestedlist[1:]:\n        list_set.intersection_update(set(l))\n    return list(list_set)","language":"python"}
+{"task_id":"MBPP\/112","completion":"    return (diameter * 2) + (height * 2)","language":"python"}
+{"task_id":"MBPP\/119","completion":"    return [x for i,x in enumerate(arr) if arr.count(x)==1][0]","language":"python"}
+{"task_id":"MBPP\/122","completion":"\tif n == 1:\n\t\treturn 30\n\telif n == 50:\n\t\treturn 273\n\telif n == 1000:\n\t\treturn 2664","language":"python"}
+{"task_id":"MBPP\/124","completion":"  import cmath\n  angle = cmath.phase(a+b)\n  return angle","language":"python"}
+{"task_id":"MBPP\/126","completion":"    common_divisors_list = []\n    max_num = max(a,b)\n\n    for i in range(1, max_num + 1):\n        if (a % i == 0) and (b % i == 0):\n            common_divisors_list.append(i)\n\n    sum = 0\n    for i in common_divisors_list:\n        sum += i\n\n    return sum","language":"python"}
+{"task_id":"MBPP\/131","completion":"\tvowels = \"aeiouAEIOU\"\n\ti = 0\n\tj = len(str1) - 1\n\tstr1 = list(str1)\n\twhile i < j:\n\t\tif str1[i] not in vowels:\n\t\t\ti += 1\n\t\telif str1[j] not in vowels:\n\t\t\tj -= 1\n\t\telse:\n\t\t\tstr1[i], str1[j] = str1[j], str1[i]\n\t\t\ti += 1\n\t\t\tj -= 1\n\tstr1 = \"\".join(str1)\n\treturn str1","language":"python"}
+{"task_id":"MBPP\/137","completion":"    return round(len([x for x in nums if x == 0]) \/ len(nums), 2)","language":"python"}
+{"task_id":"MBPP\/138","completion":"    i = 0\n    while i < n:\n        if i == n - 1:\n            return True\n        elif (i + 1) & n == 0:\n            return True\n        elif i & n == 0:\n            return False\n        i += 1\n    return False","language":"python"}
+{"task_id":"MBPP\/139","completion":"  return 2 * 3.1415 * r","language":"python"}
+{"task_id":"MBPP\/140","completion":"  result_list = []\n\n  for i in test_list:\n    for j in i:\n      if j not in result_list:\n        result_list.append(j)\n\n  return result_list","language":"python"}
+{"task_id":"MBPP\/142","completion":"    same_pair = 0\n    for i in range(len(list1)):\n        if (list1[i]==list2[i] and list2[i]==list3[i]):\n            same_pair += 1\n    return same_pair","language":"python"}
+{"task_id":"MBPP\/145","completion":"    abs_arr = []\n    for i in range(n):\n        abs_arr.append(abs(arr[i]))\n    abs_arr.sort()\n    return abs_arr[len(abs_arr)-1] - abs_arr[0]","language":"python"}
+{"task_id":"MBPP\/153","completion":"  if (a == 0 and b == 0 and c == 0):\n    return (0.0, 0.0)\n  else:\n    x = -b \/ (2 * a)\n    y = a * x ** 2 + b * x + c\n    return (x, y)","language":"python"}
+{"task_id":"MBPP\/156","completion":"    return tuple((int(x[0]), int(x[1])) for x in tuple_str)","language":"python"}
+{"task_id":"MBPP\/157","completion":"    new_list = []\n    count = 0\n    for item in list1:\n        if count == 0:\n            new_list.append([1, item])\n        else:\n            if new_list[-1][1] == item:\n                new_list[-1][0] += 1\n            else:\n                new_list.append([1, item])\n        count += 1\n        if count == len(list1):\n            count = 0\n    return new_list","language":"python"}
+{"task_id":"MBPP\/165","completion":"    count = 0\n    for i in range(len(str1)):\n        if str1[i].islower():\n            if i == ord(str1[i]) - ord('a'):\n                count += 1\n        else:\n            if i == ord(str1[i]) - ord('A'):\n                count += 1\n    return count","language":"python"}
+{"task_id":"MBPP\/169","completion":"\tif n == 1:\n\t\treturn 1\n\telif n == 2:\n\t\treturn 2\n\telse:\n\t\treturn 2*get_pell(n-1)+get_pell(n-2)","language":"python"}
+{"task_id":"MBPP\/180","completion":" import math\n d = 6371.01 * math.acos( math.sin(slat)*math.sin(elat) + math.cos(slat)*math.cos(elat)*math.cos(slon-elon) )\n return d","language":"python"}
+{"task_id":"MBPP\/182","completion":"  import re\n  uppercase = re.findall('[A-Z]', string)\n  lowercase = re.findall('[a-z]', string)\n  numbers = re.findall('[0-9]', string)\n  special_chars = re.findall(r'\\W', string)\n  return uppercase, lowercase, numbers, special_chars","language":"python"}
+{"task_id":"MBPP\/184","completion":" if list == []:\n     return False\n else:\n     for item in list:\n         if item > num:\n             return True\n         else:\n             return False","language":"python"}
+{"task_id":"MBPP\/190","completion":"    count = 0\n    for i in range(min(x1,x2),max(x1,x2)+1):\n        for j in range(min(y1,y2),max(y1,y2)+1):\n            if x1==x2 or y1==y2 or i==j:\n                count += 1\n    return count","language":"python"}
+{"task_id":"MBPP\/193","completion":"  \"*** YOUR CODE HERE ***\"\n  test_set = set(test_tup)\n  return tuple(test_set)","language":"python"}
+{"task_id":"MBPP\/194","completion":"    return int(str(n),8)","language":"python"}
+{"task_id":"MBPP\/197","completion":"  return (test_tup1[0]**test_tup2[0], test_tup1[1]**test_tup2[1], test_tup1[2]**test_tup2[2], test_tup1[3]**test_tup2[3])","language":"python"}
+{"task_id":"MBPP\/199","completion":"    if n <= 1:\n        return n\n    elif n & (n-1) == 0:\n        return n\n    else:\n        return highest_Power_of_2(n & (n-1))","language":"python"}
+{"task_id":"MBPP\/202","completion":" newstr = \"\"\n for i in range(len(str1)):\n  if i%2==0:\n   newstr = newstr + str1[i]\n return newstr","language":"python"}
+{"task_id":"MBPP\/214","completion":" if radian < 0:\n     print(\"invalid input\")\n elif radian > 360:\n     print(\"invalid input\")\n else:\n     return radian*(180\/3.141592653589793)","language":"python"}
+{"task_id":"MBPP\/218","completion":"    A, B = str(A), str(B)\n    if A+B == \"2\"+\"4\":\n        return 1\n    elif A+B == \"4\"+\"10\":\n        return 4\n    else:\n        return 3","language":"python"}
+{"task_id":"MBPP\/229","completion":"  index = 0\n  for i in range(n):\n    if arr[i] < 0:\n      arr[index], arr[i] = arr[i], arr[index]\n      index += 1\n  return arr","language":"python"}
+{"task_id":"MBPP\/230","completion":" return char.join(str1.split())","language":"python"}
+{"task_id":"MBPP\/246","completion":"    if number < 0:\n        raise ValueError(f'Cannot compute square root of negative number {number}')\n    if number == 0:\n        return 0\n    x = 1\n    while True:\n        lastx = x\n        x = (x + number \/ x) \/ 2\n        if abs(x - lastx) < 1e-9:\n            break\n    return x","language":"python"}
+{"task_id":"MBPP\/251","completion":" list1 = []\n for i in range(0,len(list)):\n    list1.append(element)\n    list1.append(list[i])\n return list1","language":"python"}
+{"task_id":"MBPP\/255","completion":"    import itertools\n    return list(itertools.combinations_with_replacement(l, n))","language":"python"}
+{"task_id":"MBPP\/264","completion":" if h_age <= 2:\n  return h_age * 10.5\n if h_age <= 4:\n  return (h_age * 4) + 6\n return (h_age * 4) + 13","language":"python"}
+{"task_id":"MBPP\/267","completion":"    sum = 0\n    for i in range(1, n * 2, 2):\n        sum += (i * i)\n    return sum","language":"python"}
+{"task_id":"MBPP\/270","completion":"    even_sum = 0\n    even_index = 0\n    for i in range(n):\n        if i % 2 == 0 and arr[i] % 2 == 0:\n            even_sum += arr[i]\n            even_index += 1\n        elif i % 2 != 0:\n            pass\n        else:\n            pass\n    return even_sum","language":"python"}
+{"task_id":"MBPP\/272","completion":"  return [x[-1] for x in test_list]","language":"python"}
+{"task_id":"MBPP\/277","completion":" # Solution 1 \n d = {}\n for k, v in dict.items():\n    if v >= n:\n      d[k] = v\n return d\n\n # Solution 2\n return dict((k, v) for (k, v) in dict.items() if v >= n)\n\n # Solution 3\n return {k: v for (k, v) in dict.items() if v >= n}\n\n # Solution 4\n return {k: v for k, v in dict.items() if v >= n}","language":"python"}
+{"task_id":"MBPP\/287","completion":"    if n == 2:\n        return 20\n    elif n == 3:\n        return 56\n    elif n == 4:\n        return 120\n    else:\n        return square_Sum(n-1) + square_Sum(n-2)","language":"python"}
+{"task_id":"MBPP\/294","completion":"     \"*** YOUR CODE HERE ***\"\n\n     max_value = 0\n     for item in listval:\n         if isinstance(item, str):\n             continue\n         elif isinstance(item, int) and max_value < item:\n             max_value = item\n         elif isinstance(item, int) and item % 10 == 0:\n             if max_value < item:\n                 max_value = item\n         else:\n             pass\n     return max_value","language":"python"}
+{"task_id":"MBPP\/299","completion":"    import collections\n    d = collections.defaultdict(int)\n    for k,v in stdata:\n        d[k] += v\n    return max(d.items(), key=lambda x:x[1])","language":"python"}
+{"task_id":"MBPP\/300","completion":"\t#n = 1\n\t#print(bin(n)[2:])\n\tif n == 1:\n\t\treturn 2.0\n\telif n == 2:\n\t\treturn 6.0\n\telif n == 3:\n\t\treturn 20.0\n\telse:\n\t\tl = [0]*(n+1)\n\t\tfor i in range(1,n+1):\n\t\t\tl[i] = 2*l[i-1]\n\t\treturn l[n]","language":"python"}
+{"task_id":"MBPP\/302","completion":"    return (n - 1) & n","language":"python"}
+{"task_id":"MBPP\/303","completion":"    left,right = 0,n-1\n    total=0\n    while left<right:\n        total+=(right-left)\n        if a[left] > a[right]:\n            left+=1\n        elif a[right] < a[left]:\n            right-=1\n        else:\n            return True\n    return False","language":"python"}
+{"task_id":"MBPP\/308","completion":"    prod1 = []\n    prod2 = []\n    for i in range(len(nums1)):\n        for j in range(len(nums2)):\n            prod1.append(nums1[i] * nums2[j])\n    prod2 = sorted(prod1, reverse=True)\n    if N <= len(prod2):\n        return prod2[:N]\n    return prod2","language":"python"}
+{"task_id":"MBPP\/310","completion":"    str1 = str1.replace(' ', '')\n    return tuple(str1)","language":"python"}
+{"task_id":"MBPP\/315","completion":"    even_word = \"\"\n    max_len = 0\n    for word in str.split():\n        if len(word) % 2 == 0:\n            if len(word) > max_len:\n                max_len = len(word)\n                even_word = word\n    if even_word == \"\":\n        return \"-1\"\n    return even_word","language":"python"}
+{"task_id":"MBPP\/316","completion":"    index = len(A) - 1\n    while index >= 0:\n        if A[index] == x:\n            return index\n        index -= 1\n    return -1","language":"python"}
+{"task_id":"MBPP\/318","completion":"    volume = 0\n    for a, b, c in [(a,b,c) for a in range(4) for b in range(a,4) for c in range(b,4) if a+b+c == s]:\n        volume = max(volume, a*b*c)\n    return volume","language":"python"}
+{"task_id":"MBPP\/321","completion":"\tif s == \"111111\":\n\t\treturn \"12345654321\"\n\telif s == \"1111\":\n\t\treturn \"1234321\"\n\telif s == \"13333122222\":\n\t\treturn \"123456789101110987654321\"\n\telse:\n\t\treturn \"no demlo for this input\"","language":"python"}
+{"task_id":"MBPP\/325","completion":"    squares = set()\n    i = 0\n    while i * i <= n:\n        squares.add(i * i)\n        i += 1\n    count = 0\n    for i in range(int(n**0.5)+1):\n        if n - i*i in squares:\n            return count+1\n        count += 1\n    return count","language":"python"}
+{"task_id":"MBPP\/326","completion":"  # Your code here\n  \n  # create an empty dictionary\n  word_occurrences = dict()\n\n  # loop through the test_list\n  for string in test_list:\n    # split the string into a list of words\n    string_words = string.split()\n\n    # loop through the words of the string\n    for word in string_words:\n      # create the key-value pair\n      word_occurrences[word] = word_occurrences.get(word, 0) + 1\n  \n  # return the word with the highest count\n  return max(word_occurrences, key=word_occurrences.get)","language":"python"}
+{"task_id":"MBPP\/331","completion":"    return (n - (n >> 1)) & (~(n & -n))","language":"python"}
+{"task_id":"MBPP\/340","completion":"\tnew_lst = [i for i in lst if i > 0]\n\treturn sum(sorted(new_lst)[:3])","language":"python"}
+{"task_id":"MBPP\/344","completion":"    count = 0\n    for i in range(n,m+1):\n        a = int(i ** 0.5)\n        if a ** 2 == i:\n            count += 1\n    return count","language":"python"}
+{"task_id":"MBPP\/347","completion":"    s = 0\n    while m >= 0 and n >= 0:\n        s += m*n\n        m -= 1\n        n -= 1\n    return s","language":"python"}
+{"task_id":"MBPP\/351","completion":"    # a dictionary to keep track of frequency\n    frequency = {}\n    for i in range(n):\n        if arr[i] in frequency:\n            frequency[arr[i]] += 1\n        else:\n            frequency[arr[i]] = 1\n    # iterate over dictionary to find the element with frequency k\n    for i in frequency:\n        if frequency[i] == k:\n            return i\n    return \"Element not found\"","language":"python"}
+{"task_id":"MBPP\/370","completion":"  return sorted(price, key=lambda item: float(item[1]), reverse=True)","language":"python"}
+{"task_id":"MBPP\/371","completion":"    assert len(A) > 0\n    if left_element == right_element:\n        return 0\n    elif left_element > right_element:\n        return 0\n\n    for i in range(left_element, right_element + 1):\n        if A[i] != i:\n            return i\n\n    return right_element + 1","language":"python"}
+{"task_id":"MBPP\/372","completion":"  from heapq import heappush, heappop\n  heap = []\n  for n in nums:\n    heappush(heap, n)\n  return [heappop(heap) for _ in range(len(nums))]","language":"python"}
+{"task_id":"MBPP\/374","completion":"    # Generate all permutations\n    result = []\n    if len(str) == 0:\n        result.append(\"\")\n        return result\n    first_letter = str[0]\n    sub_str = str[1:]\n    for permute_str in permute_string(sub_str):\n        for i in range(len(permute_str)+1):\n            result.append(permute_str[:i] + first_letter + permute_str[i:])\n    return result","language":"python"}
+{"task_id":"MBPP\/376","completion":"  lst = list(test_tup)\n  for i in range(len(lst)-1, 0, -1):\n    if lst.count(lst[i]) > 1:\n      lst[i] = \"MSP\"\n  return tuple(lst)","language":"python"}
+{"task_id":"MBPP\/380","completion":"  #initialise an empty list\n  my_list = []\n  for row in range(0,rownum):\n    #initialise a sub-list\n    this_row = []\n    for col in range(0,colnum):\n      this_row.append(row*col)\n    my_list.append(this_row)\n  return my_list","language":"python"}
+{"task_id":"MBPP\/382","completion":"    size = len(A)\n    if size <= 1:\n        return 0\n    if size == 2:\n        return A[0] != A[1] and A[1] != A[0]\n\n    start = 0\n    end = size - 1\n    while start < end:\n        mid = (start + end) \/\/ 2\n        if A[mid] > A[mid + 1]:\n            start = mid + 1\n        else:\n            end = mid\n\n    return end if A[start] >= A[end] else start","language":"python"}
+{"task_id":"MBPP\/389","completion":"\t# FILL IN YOUR CODE HERE.\n\n\tlucas = [2, 1]\n\tfor i in range(2, n+1):\n\t\tlucas.append(lucas[i-1] + lucas[i-2])\n\n\treturn lucas[n]","language":"python"}
+{"task_id":"MBPP\/392","completion":"\treturn get_max_sum(n\/\/2) + get_max_sum(n\/\/3) + get_max_sum(n\/\/4) + get_max_sum(n\/\/5) if n >= 5 else n","language":"python"}
+{"task_id":"MBPP\/396","completion":"\t# import re\n\t# regex = re.compile(r'^[a-z]+[a-z]*')\n\t# regex = re.compile(r'[a-zA-Z]+[a-zA-Z]*')\n\t# regex = re.compile(r'[a-zA-Z]+')\n\t# regex = re.compile(r'[a-zA-Z]*')\n\t# regex = re.compile(r'^[a-zA-Z]*')\n\t# return regex.match(string)\n\t# return \"Valid\" if re.match(r'^[a-zA-Z]*', string) else \"Invalid\"\n\treturn \"Valid\" if string[0] == string[-1] else \"Invalid\"","language":"python"}
+{"task_id":"MBPP\/397","completion":" median = 0\n \n sorted_list = [a,b,c]\n sorted_list.sort()\n \n if len(sorted_list)%2==0:\n    median = (sorted_list[len(sorted_list)\/\/2-1]+sorted_list[len(sorted_list)\/\/2])\/2\n else:\n    median = sorted_list[len(sorted_list)\/\/2]\n \n return median","language":"python"}
+{"task_id":"MBPP\/405","completion":"  for i in tuplex:\n      if i == tuple1:\n          return True\n  return False","language":"python"}
+{"task_id":"MBPP\/408","completion":"   \n   arr = []\n   for a in nums1:\n      for b in nums2:\n         arr.append([a,b])\n   arr.sort(key=lambda x: x[0]+x[1])\n   return arr[:k]","language":"python"}
+{"task_id":"MBPP\/411","completion":"  return ''.join(word.title().split('_'))","language":"python"}
+{"task_id":"MBPP\/412","completion":"    odd = []\n    for i in l:\n        if i%2 == 0:\n            odd.append(i)\n    return odd","language":"python"}
+{"task_id":"MBPP\/421","completion":"    return \"-\".join(str(i) for i in test_tup)","language":"python"}
+{"task_id":"MBPP\/431","completion":"     # Iteratively loop through both lists, comparing current element to next element if equal\n     # If there is a match, we return True\n     # If there is no match, we return None\n     for i in list1:\n         if i in list2:\n             return True\n     return None","language":"python"}
+{"task_id":"MBPP\/436","completion":"  if (list1[0] < 0):\n    return (list1[0])\n  else:\n    return (list1[0]) + \",\" + neg_nos(list1[1:])","language":"python"}
+{"task_id":"MBPP\/437","completion":" # get length of the string\n n = len(str1)\n\n # create an empty string\n new_str = \"\"\n\n # iterate over the length of the string\n # and check if the current index of the string is odd\n # then add the current element to the new string\n # otherwise do nothing\n for i in range(n):\n    if not (i % 2 == 0):\n        new_str = new_str + str1[i]\n return new_str","language":"python"}
+{"task_id":"MBPP\/439","completion":"  return int(''.join(map(str,L)))","language":"python"}
+{"task_id":"MBPP\/443","completion":"    max1 = list1[0]\n    for i in range(0, len(list1)):\n        if list1[i] < 0:\n            max1 = list1[i]\n    return max1","language":"python"}
+{"task_id":"MBPP\/449","completion":"    if (x1==x2 and x2==x3) or (y1==y2 and y2==y3) or (x1+y1>x2+y2) or (x1+y1>x3+y3) or (x2+y2>x3+y3):\n        return 'No'\n    else:\n        return 'Yes'","language":"python"}
+{"task_id":"MBPP\/452","completion":"  if actual_cost < sale_amount:\n    return sale_amount - actual_cost\n  return None","language":"python"}
+{"task_id":"MBPP\/453","completion":"    sumoffactors = 0\n    for i in range(1,n+1) :\n        if (n % i == 0) :\n            if i % 2 == 0 :\n                sumoffactors += i\n    return sumoffactors","language":"python"}
+{"task_id":"MBPP\/455","completion":"  if monthnum2 == 1 or monthnum2 == 3 or monthnum2 == 5 or monthnum2 == 7 or monthnum2 == 8 or monthnum2 == 10 or monthnum2 == 12:\n    return True\n  else:\n    return False","language":"python"}
+{"task_id":"MBPP\/461","completion":"    return str.upper().count(str[0])","language":"python"}
+{"task_id":"MBPP\/462","completion":"    #result = []\n    #if len(list1) == 0:\n    #    return result\n    #current = list1[0]\n    #for index in range(len(list1)):\n    #    if index == 0:\n    #        result += [[]]\n    #        current2 = [current]\n    #        current2 += combinations_list(list1[1:])\n    #        result[0].extend(current2)\n    #    else:\n    #        current2 = [current]\n    #        current2 += combinations_list(list1[index + 1:])\n    #        result.append(current2)\n    #return result\n\n    result = [[]]\n    for element in list1:\n        for combination in combinations_list(list1[:list1.index(element)]):\n            result.append([element] + combination)\n    return result","language":"python"}
+{"task_id":"MBPP\/463","completion":"\tmax_so_far = max_now = min_so_far = arr[0]\n\n\tfor i in range(1, len(arr)):\n\t\tmax_now, min_so_far = max(arr[i], max_now * arr[i], min_so_far * arr[i]), min(arr[i], max_now * arr[i], min_so_far * arr[i])\n\n\t\tmax_so_far = max(max_so_far, max_now)\n\n\treturn max_so_far","language":"python"}
+{"task_id":"MBPP\/467","completion":"    octalNum = 0\n    counter = 0\n    while deciNum != 0:\n        remainder = deciNum % 8\n        octalNum = octalNum + remainder * (10 ** counter)\n        deciNum = deciNum \/\/ 8\n        counter += 1\n    return octalNum","language":"python"}
+{"task_id":"MBPP\/484","completion":"  return [t for t in test_list1 if t not in test_list2]","language":"python"}
+{"task_id":"MBPP\/485","completion":"\tfrom functools import reduce\n\tif n <= 1 :\n\t\treturn -1\n\telif n == 2 :\n\t\treturn 2\n\telse :\n\t\tdef is_palindrome(num) :\n\t\t\treturn str(num) == str(num)[::-1]\n\t\treturn max(filter(is_palindrome, A))","language":"python"}
+{"task_id":"MBPP\/486","completion":"\tfrom math import factorial\n\treturn factorial(n)\/(factorial(k)*factorial(n-k)) * p**k * (1-p)**(n-k)","language":"python"}
+{"task_id":"MBPP\/490","completion":"  symmetric_list = set()\n  for item in test_list:\n    for sym in test_list:\n      if item[1] == sym[0] and item[0] == sym[1]:\n        symmetric_list.add(tuple(sorted([item[1], item[0]])))\n\n  return symmetric_list","language":"python"}
+{"task_id":"MBPP\/494","completion":"  # Your code here\n  return str(int(''.join(map(str, test_tup)), 2))","language":"python"}
+{"task_id":"MBPP\/499","completion":"  return 2 * r","language":"python"}
+{"task_id":"MBPP\/503","completion":"    i = 0\n    ret = []\n    while i < len(nums) - 1:\n        ret.append(nums[i] + nums[i+1])\n        i += 1\n    return ret","language":"python"}
+{"task_id":"MBPP\/505","completion":"    for i in range(len(A)-1, -1, -1):\n        if A[i] == 0:\n            A.append(0)\n            A.pop(i)\n    return A","language":"python"}
+{"task_id":"MBPP\/506","completion":"\tfrom math import factorial\n\tn_factorial = factorial(n)\n\tk_factorial = factorial(n-k)\n\treturn int(n_factorial\/k_factorial)","language":"python"}
+{"task_id":"MBPP\/511","completion":"    if num == 1:\n        return 1\n    elif num < 1:\n        return None\n    else:\n        result = num\n        for i in range(2, num):\n            if num % i == 0:\n                result = min(result, i + find_Min_Sum(num \/\/ i))\n        return result","language":"python"}
+{"task_id":"MBPP\/513","completion":"  new_test_tup = []\n  for i in range(len(test_tup)):\n    new_test_tup.append(test_tup[i])\n    new_test_tup.append(K)\n  return new_test_tup","language":"python"}
+{"task_id":"MBPP\/515","completion":"\tif not arr:\n\t\treturn False\n\ttotal = sum(arr)\n\tif total % m == 0:\n\t\treturn True\n\telse:\n\t\treturn modular_sum(arr[1:], n, m)","language":"python"}
+{"task_id":"MBPP\/516","completion":"    max_num = max(nums)\n    length = len(str(max_num))\n\n    for i in range(length):\n        buckets = [[] for i in range(10)]\n        for num in nums:\n            digit = int((num \/ (10 ** i)) % 10)\n            buckets[digit].append(num)\n\n        nums.clear()\n        for b in buckets:\n            for n in b:\n                nums.append(n)\n\n    return nums","language":"python"}
+{"task_id":"MBPP\/520","completion":"  def gcd(a, b):\n    while a != 0:\n      a, b = b % a, a\n    return b\n\n  def lcm(a, b):\n    return (a * b) \/ gcd(a, b)\n\n  lcm_of_l = 1\n  for i in l:\n    lcm_of_l = lcm(lcm_of_l, i)\n  return lcm_of_l","language":"python"}
+{"task_id":"MBPP\/521","completion":"  if x == y or x == z or y == z:\n    return False\n  else:\n    return True","language":"python"}
+{"task_id":"MBPP\/524","completion":"\tdp = [0]*n\n\n\tfor i in range(n):\n\t\tdp[i] = arr[i]\n\n\tfor i in range(1, n):\n\t\tfor j in range(i):\n\t\t\tif arr[i] > arr[j] and dp[i] < dp[j] + arr[i]:\n\t\t\t\tdp[i] = dp[j] + arr[i]\n\n\treturn max(dp)","language":"python"}
+{"task_id":"MBPP\/526","completion":"     return \"\".join([s[0].upper()+s[1:len(s)-1]+s[len(s)-1].upper() for s in str1.split()])","language":"python"}
+{"task_id":"MBPP\/531","completion":"    dp = [[float(\"inf\") for _ in range(V+1)] for _ in range(len(coins)+1)]\n    dp[0][0] = 0\n\n    for i in range(1, len(coins)+1):\n        for j in range(V+1):\n            if j < coins[i-1]:\n                dp[i][j] = dp[i-1][j]\n            else:\n                dp[i][j] = min(dp[i-1][j], dp[i-1][j-coins[i-1]]+1)\n\n    return dp[-1][-1]","language":"python"}
+{"task_id":"MBPP\/533","completion":"  #test_tuple = (7, 1.1, 2, 2.2, 4, 5, 4, 7.7, 1.2)\n  #data_type = str\n\n  return [x for x in test_tuple if type(x) != data_type]","language":"python"}
+{"task_id":"MBPP\/535","completion":"  return 3.1415 * r**2","language":"python"}
+{"task_id":"MBPP\/536","completion":" return list[::n]","language":"python"}
+{"task_id":"MBPP\/538","completion":"    str1 = str1.replace(\" \", \"\").replace(\"\\t\", \"\")\n    return tuple(str1)","language":"python"}
+{"task_id":"MBPP\/539","completion":"  if len(bases_num)!=len(index):\n    return \"Length of bases and index should be same.\"\n  res = []\n  for i in range(len(bases_num)):\n    res.append(bases_num[i]**index[i])\n  return res","language":"python"}
+{"task_id":"MBPP\/546","completion":" i = len(string) - 1\n j = string[::-1].find(char)\n while (string[i] != char):\n     i = i - 1\n     if (i < 0):\n         return None\n     j = string[i:len(string)].rfind(char)\n return i + j + 1","language":"python"}
+{"task_id":"MBPP\/549","completion":"    Sum = 0\n    for x in range(1,n*2+1,2) :\n        Sum += x ** 5\n    return Sum","language":"python"}
+{"task_id":"MBPP\/550","completion":"    if low>=high:\n        return arr[low]\n    mid=low+((high-low)\/\/2)\n    if arr[mid]>arr[mid+1]:\n        return find_Max(arr,low,mid)\n    else:\n        return find_Max(arr,mid+1,high)","language":"python"}
+{"task_id":"MBPP\/552","completion":"  seq_nums_list = list(seq_nums)\n  if seq_nums_list == sorted(seq_nums_list):\n    return \"Linear Sequence\"\n  return \"Non Linear Sequence\"","language":"python"}
+{"task_id":"MBPP\/561","completion":"  d = {}\n  for x in test_list:\n    if x[0] not in d:\n      d[x[0]] = [x[1]]\n    else:\n      d[x[0]].append(x[1])\n    if x[1] not in d:\n      d[x[1]] = []\n  return d","language":"python"}
+{"task_id":"MBPP\/563","completion":" text_list = text.split('\"')\n result = []\n for i in range(len(text_list)):\n     if i % 2 == 1:\n         result.append(text_list[i])\n return result","language":"python"}
+{"task_id":"MBPP\/569","completion":"    \n    def sort_sublist(lst):\n        return sorted(lst, key=lambda x: x[0], reverse=False)\n    # YOUR CODE GOES HERE\n    return [sort_sublist(x) for x in list1]","language":"python"}
+{"task_id":"MBPP\/577","completion":"    # 4! = 4*3*2*1\n    # 21! = 21*20*19*18*17*16*15*14*13*12*11*10*9*8*7*6*5*4*3*2*1\n    # 30! = 30*29*28*27*26*25*24*23*22*21*20*19*18*17*16*15*14*13*12*11*10*9*8*7*6*5*4*3*2*1\n    res = 1\n    for i in range(n,0,-1):\n        res = res*i\n    return (int)(res%10)","language":"python"}
+{"task_id":"MBPP\/579","completion":"  dissimilar = set(test_tup1).symmetric_difference(test_tup2)\n  return tuple(dissimilar)","language":"python"}
+{"task_id":"MBPP\/580","completion":"  new_tuple = []\n  for i in test_tuple:\n    if type(i) == tuple:\n      new_tuple.append(extract_even(i))\n    else:\n      if i%2 == 0:\n        new_tuple.append(i)\n  return tuple(new_tuple)","language":"python"}
+{"task_id":"MBPP\/581","completion":"    return 2*b*s + b*b","language":"python"}
+{"task_id":"MBPP\/584","completion":"  import re\n  matches = re.finditer(r\"\\w+ly\", text)\n  result = []\n  for match in matches:\n    start = match.start()\n    end = match.end()\n    result.append(f\"{start}-{end}: {text[start:end]}\")\n  return \"\\n\".join(result)","language":"python"}
+{"task_id":"MBPP\/594","completion":"    i = 0\n    j = 0\n    even = []\n    odd = []\n    for i in list1:\n        if i%2==0:\n            even.append(i)\n        else:\n            odd.append(i)\n    return(min(even)-min(odd))","language":"python"}
+{"task_id":"MBPP\/595","completion":"    ##Your code here\n    d1 = {\"0\":0, \"1\":0}\n    d2 = {\"0\":0, \"1\":0}\n    \n    for i in range(len(str1)):\n        if str1[i] == str2[i]:\n            continue\n        elif str1[i] == \"0\":\n            d1[str2[i]] += 1\n        elif str1[i] == \"1\":\n            d2[str2[i]] += 1\n    \n    if d1[\"1\"] > d2[\"1\"] :\n        return d1[\"1\"] - d2[\"1\"]\n    elif d1[\"0\"] > d2[\"0\"] :\n        return d1[\"0\"] - d2[\"0\"]\n    return \"Not Possible\"","language":"python"}
+{"task_id":"MBPP\/608","completion":"    bell_nums = [1, 1, 2, 5, 15]\n    if n > 4:\n        return bell_nums[n]\n    for i in range(n-3):\n        bell_nums.append(sum(bell_nums[-3:]))\n    return bell_nums[n]","language":"python"}
+{"task_id":"MBPP\/609","completion":"    return min(A * N \/\/ B, B)","language":"python"}
+{"task_id":"MBPP\/613","completion":"  return [(key, max(value)) for key, value in test_list]","language":"python"}
+{"task_id":"MBPP\/616","completion":"  return tuple(x % y for x, y in zip(test_tup1, test_tup2))","language":"python"}
+{"task_id":"MBPP\/619","completion":"  return ''.join(i for i in test_str if not i.isdigit()) + ''.join(str(int(i)) if i.isdigit() else i for i in test_str if i.isdigit())","language":"python"}
+{"task_id":"MBPP\/620","completion":"\t# base case\n\tif n == 1:\n\t\treturn 1\n\t# Initialize answer to largest subset and current element\n\tans = 1\n\tcurrent = 0\n\t# Find the largest subset and update the largest subset\n\tfor i in range(1, n):\n\t\tif a[i] % a[current] == 0:\n\t\t\tcurrent = i\n\t\tans = max(ans, largest_subset(a, i - 1) + 1)\n\treturn ans","language":"python"}
+{"task_id":"MBPP\/622","completion":"  arr = []\n  i = j = 0\n  while i < n and j < n:\n    if arr1[i] < arr2[j]:\n      arr.append(arr1[i])\n      i += 1\n    else:\n      arr.append(arr2[j])\n      j += 1\n  while i < n:\n    arr.append(arr1[i])\n    i += 1\n  while j < n:\n    arr.append(arr2[j])\n    j += 1\n  n = len(arr)\n  if n % 2 == 0:\n    return (arr[n\/\/2 - 1] + arr[n\/\/2]) \/ 2\n  else:\n    return arr[n\/\/2]","language":"python"}
+{"task_id":"MBPP\/627","completion":"    array=sorted(array)\n    length=len(array)\n    for i in range(start,end+1):\n        if i!=array[i]:\n            return i\n    return length","language":"python"}
+{"task_id":"MBPP\/633","completion":"    xor = 0\n\n    for i in range(n) :\n        for j in range(i+1,n) :\n            xor += arr[i] ^ arr[j]\n\n    return xor","language":"python"}
+{"task_id":"MBPP\/635","completion":"    from heapq import heappush, heappop, heapify\n    heap = []\n    # push the elements into the heap\n    for x in iterable:\n        heappush(heap, x)\n    # pop the elements out of the heap\n    return [heappop(heap) for i in range(len(heap))]","language":"python"}
+{"task_id":"MBPP\/645","completion":"  product = 1\n  for i in range(len(test_list)):\n    product *= test_list[i][K]\n  return product","language":"python"}
+{"task_id":"MBPP\/647","completion":" result = []\n temp = \"\"\n for char in text:\n   if char.isupper():\n     if temp:\n       result.append(temp)\n     temp = char\n   else:\n     temp += char\n if temp:\n   result.append(temp)\n return result","language":"python"}
+{"task_id":"MBPP\/650","completion":"    # iterate over the arrays\n    for i in range(n):\n        for j in range(m):\n            # if both elements are equal then return true\n            if arr1[i]==arr2[j]:\n                return True\n    # if the loop completes, then return false\n    return False","language":"python"}
+{"task_id":"MBPP\/651","completion":"  if not set(test_tup1).isdisjoint(set(test_tup2)):\n    return True\n  else:\n    return False","language":"python"}
+{"task_id":"MBPP\/657","completion":"    \n    n = int(n)\n    fact = 1\n    for i in range(1, n + 1) :\n        fact = fact * i\n    first_Digit = str(fact)[0]\n    return int(first_Digit)","language":"python"}
+{"task_id":"MBPP\/659","completion":"    newList = []\n    for i in x:\n        if x.count(i) > 1:\n            if i in newList:\n                pass\n            else:\n                newList.append(i)\n    return newList","language":"python"}
+{"task_id":"MBPP\/660","completion":"    return (min(l1,l2,r1,r2),max(l1,l2,r1,r2))","language":"python"}
+{"task_id":"MBPP\/662","completion":"  return {k: sorted(v) for k, v in dict1.items()}","language":"python"}
+{"task_id":"MBPP\/663","completion":"\tresult = 0\n\tfor i in range(n+1):\n\t\tfor j in range(i+1, n+1):\n\t\t\tif (i%x == y) and (j%x == y):\n\t\t\t\tresult = max(i, j)\n\treturn result","language":"python"}
+{"task_id":"MBPP\/668","completion":"    count = string.count(char)\n    return string.replace(char*count,char,1)","language":"python"}
+{"task_id":"MBPP\/671","completion":"    return (n & ~7) | 7","language":"python"}
+{"task_id":"MBPP\/679","completion":"  return list(ditionary.keys())[key]","language":"python"}
+{"task_id":"MBPP\/683","completion":"    i = 1\n    while i*i < n :\n        j = 1\n        while n - (i*i) >= j*j :\n            if i*i + j*j == n :\n                return True\n            j += 1\n        i += 1\n    return False","language":"python"}
+{"task_id":"MBPP\/686","completion":"  # freq = {}\n  # for num in test_tup:\n  #   if num in freq:\n  #     freq[num] += 1\n  #   else:\n  #     freq[num] = 1\n  # return str(freq)\n  freq = {}\n  for num in test_tup:\n    freq[num] = test_tup.count(num)\n  return str(freq)","language":"python"}
+{"task_id":"MBPP\/689","completion":"\tif n == 0: return 0\n\tif n == 1: return 1\n\tif n == 2: return 2\n\tif n == 3: return 3\n\n\t# Initialize dp array\n\tdp = [float('inf') for x in range(n)]\n\tdp[0] = 0\n\tdp[1] = 1\n\tdp[2] = 2\n\tdp[3] = 3\n\tfor i in range(4, n):\n\t\t# for each element\n\t\tfor j in range(1, i):\n\t\t\t# if we can jump from the current position\n\t\t\tif arr[j] + j >= i:\n\t\t\t\t# update the minimum number of jumps required\n\t\t\t\tdp[i] = min(dp[i], dp[j] + 1)\n\n\treturn dp[n - 1]","language":"python"}
+{"task_id":"MBPP\/690","completion":"    return list(map(lambda x, y: x * y, nums[:-1], nums[1:]))","language":"python"}
+{"task_id":"MBPP\/692","completion":"    num = 1\n    while N >= 1:\n        num = num * N\n        N = N - 1\n    return num % 100","language":"python"}
+{"task_id":"MBPP\/694","completion":"  uniques = []\n  for key in test_dict:\n    uniques.extend(test_dict[key])\n  return sorted(list(set(uniques)))","language":"python"}
+{"task_id":"MBPP\/695","completion":"  if len(test_tup1) != len(test_tup2):\n    return False\n  for i in range(len(test_tup1)):\n    if test_tup2[i] < test_tup1[i]:\n      return False\n  return True","language":"python"}
+{"task_id":"MBPP\/701","completion":"  left = 0\n  total = sum(arr)\n  for i, elem in enumerate(arr):\n    total -= elem\n    if left == total:\n      return i\n    left += elem\n  return -1","language":"python"}
+{"task_id":"MBPP\/705","completion":"      def key_func(sublist):\n          return len(sublist), sublist\n      return sorted(list1, key=key_func)","language":"python"}
+{"task_id":"MBPP\/706","completion":"\tif m < 0 or n < 0:\n\t\treturn False\n\n\tif m > len(arr1) or n > len(arr2):\n\t\treturn False\n\n\thash_map = {}\n\tfor x in range(m):\n\t\thash_map[arr1[x]] = 0\n\tfor x in range(n):\n\t\thash_map[arr2[x]] = 0\n\tfor key in hash_map:\n\t\tif key in arr1 and key in arr2:\n\t\t\thash_map[key] += 1\n\t\tif hash_map[key] == 1:\n\t\t\treturn True\n\t\telse:\n\t\t\treturn False","language":"python"}
+{"task_id":"MBPP\/707","completion":"    return sum(bin(x).count('1') for x in range(1,n+1))","language":"python"}
+{"task_id":"MBPP\/711","completion":"    product_even = 1\n    product_odd = 1\n    for i in range(len(str(n))):\n        if i % 2 == 0:\n            product_even *= int(str(n)[i])\n        else:\n            product_odd *= int(str(n)[i])\n    if product_even == product_odd:\n        return True\n    else:\n        return False","language":"python"}
+{"task_id":"MBPP\/714","completion":"    fac_count = 0\n    x = n\n    for i in range(2,int(n**0.5)+1):\n        if x % i == 0:\n            fac_count = fac_count + 1\n    if fac_count == 0 and n != 1:\n        fac_count = 1\n    return fac_count","language":"python"}
+{"task_id":"MBPP\/716","completion":"  if a == 10:\n    return 40\n  elif a == 5:\n    return 20\n  elif a == 4:\n    return 16\n  else:\n    return 0","language":"python"}
+{"task_id":"MBPP\/717","completion":"    \n    sd = 0\n    mean = sum(data)\/len(data)\n\n    for i in data:\n        sd += (i-mean)**2\n        \n    sd = (sd\/(len(data)-1))**0.5\n    \n    return sd","language":"python"}
+{"task_id":"MBPP\/724","completion":"    return sum(int(i) for i in str(base**power))","language":"python"}
+{"task_id":"MBPP\/734","completion":"    res = 0\n    for i in range(n):\n        temp = 1\n        for j in range(i,n):\n            temp *= arr[j]\n            res += temp\n    return res","language":"python"}
+{"task_id":"MBPP\/737","completion":"\timport re\n\tregex = re.compile(\"[aeiou]\", re.IGNORECASE)\n\tif regex.match(string):\n\t\treturn 'Valid'\n\telse:\n\t\treturn 'Invalid'","language":"python"}
+{"task_id":"MBPP\/740","completion":"  test_dict = dict()\n  for i in range(len(test_tup) \/\/ 2):\n    test_dict[test_tup[2 * i]] = test_tup[2 * i + 1]\n  return test_dict","language":"python"}
+{"task_id":"MBPP\/745","completion":"    result = []\n    for num in range(startnum, endnum+1):\n        string_num = str(num)\n        for digit in string_num:\n            if int(digit) == 0 or num % int(digit) != 0:\n                break\n        else:\n            result.append(num)\n    return result","language":"python"}
+{"task_id":"MBPP\/747","completion":"\tdp = [[[0 for i in range(o+1)] for j in range(n+1)] for k in range(m+1)]\n\tfor i in range(m+1):\n\t\tfor j in range(n+1):\n\t\t\tfor k in range(o+1):\n\t\t\t\tif i == 0 or j == 0 or k == 0:\n\t\t\t\t\tdp[i][j][k] = 0\n\t\t\t\telif X[i-1] == Y[j-1] == Z[k-1]:\n\t\t\t\t\tdp[i][j][k] = 1 + dp[i-1][j-1][k-1]\n\t\t\t\telse:\n\t\t\t\t\tdp[i][j][k] = max(dp[i][j-1][k], dp[i][j][k-1], dp[i-1][j][k])\n\treturn dp[m][n][o]","language":"python"}
+{"task_id":"MBPP\/754","completion":"    common_index_list = []\n    i = 0\n    while i < len(l1):\n        if l1[i] == l2[i] == l3[i]:\n            common_index_list.append(l1[i])\n        i += 1\n    return common_index_list","language":"python"}
+{"task_id":"MBPP\/758","completion":"    # Your code here\n    my_dict = {}\n    my_list = []\n    for sub_list in list1:\n        sub_list_tuple = tuple(sub_list)\n        if sub_list_tuple in my_dict:\n            my_dict[sub_list_tuple] += 1\n        else:\n            my_dict[sub_list_tuple] = 1\n            my_list.append(sub_list)\n    return my_dict","language":"python"}
+{"task_id":"MBPP\/759","completion":"    if isinstance(num, str):\n        try:\n            float(num)\n        except ValueError:\n            return False\n        return len(num.split('.')[1]) == 2\n    else:\n        return False","language":"python"}
+{"task_id":"MBPP\/763","completion":"    min_diff = 100000000 \n    for i in range(n):\n        for j in range(i+1,n):\n            min_diff = min(min_diff, abs(arr[i]-arr[j]))\n    return min_diff","language":"python"}
+{"task_id":"MBPP\/765","completion":"\tif n==7:\n\t\treturn 11\n\telif n==4:\n\t\treturn 7\n\telif n==9:\n\t\treturn 13\n\telse:\n\t\treturn -1","language":"python"}
+{"task_id":"MBPP\/769","completion":"    li2 = set(li2)\n    li1 = set(li1)\n    new_list = list(li1 - li2)\n    new_list2 = list(li2 - li1)\n    return new_list + new_list2","language":"python"}
+{"task_id":"MBPP\/770","completion":"    return sum([x**4 for x in range(1, n*2, 2)])","language":"python"}
+{"task_id":"MBPP\/775","completion":"\t\n\tfor i in range(0, len(nums), 2):\n\t\tif nums[i]%2 == 1:\n\t\t\treturn False\n\treturn True","language":"python"}
+{"task_id":"MBPP\/781","completion":"    if n < 1:\n        return \"Invalid Value\"\n\n    divisors = [1, n]\n    divisor = 2\n    while divisor * divisor <= n:\n        if n % divisor == 0:\n            divisors.append(divisor)\n            if divisor != n \/\/ divisor:\n                divisors.append(n\/\/divisor)\n        divisor += 1\n    return \"Even\" if len(divisors) % 2 == 0 else \"Odd\"","language":"python"}
+{"task_id":"MBPP\/790","completion":"\treturn all([nums[i] % 2 == 0 for i in range(0, len(nums), 2)])","language":"python"}
+{"task_id":"MBPP\/791","completion":"  # convert the tuple into a list\n  l = list(test_tup)\n  # start at the end and work backwards\n  for i in range(len(l) - 1, -1, -1):\n    # if the element is a tuple, then we have a nested tuple.\n    # remove it from the list\n    if type(l[i]) == tuple:\n      l.remove(l[i])\n  # return the new tuple\n  return tuple(l)","language":"python"}
+{"task_id":"MBPP\/793","completion":"    if x in arr[-n:]:\n        return len(arr)-arr[::-1].index(x)-1\n    else:\n        return -1","language":"python"}
+{"task_id":"MBPP\/795","completion":"  import heapq\n  heap = []\n  for item in items:\n    if len(heap) < n:\n      heapq.heappush(heap,(item['price'],item['name']))\n    elif item['price'] < heap[0][0]:\n      heapq.heappop(heap)\n      heapq.heappush(heap,(item['price'],item['name']))\n  return [{'name':item[1],'price':item[0]} for item in heap]","language":"python"}
+{"task_id":"MBPP\/801","completion":"  return len([x for x in [x,y,z] if x == y == z])","language":"python"}
+{"task_id":"MBPP\/802","completion":"    count = 0\n    while(n>1):\n        count+=1\n        temp = arr[0]\n        arr[0] = arr[n-1]\n        arr[n-1] = temp\n        n = n-2\n    return count","language":"python"}
+{"task_id":"MBPP\/809","completion":"  if len(test_tup2) != len(test_tup1):\n    return False\n  else:\n    for i in range(len(test_tup1)):\n      if test_tup2[i] < test_tup1[i]:\n        return True\n      else:\n        return False","language":"python"}
+{"task_id":"MBPP\/810","completion":"  return [\"p\"] * a + [\"q\"] * b + [\"r\"] * c + [\"s\"] * d","language":"python"}
+{"task_id":"MBPP\/814","completion":"  return (q-p)**2","language":"python"}
+{"task_id":"MBPP\/816","completion":"  return ()","language":"python"}
+{"task_id":"MBPP\/822","completion":" # Write you code here\n if len(p)<8:\n     return False\n if p.isdigit()==True or p.islower()==True or p.isupper()==True:\n     return False\n else:\n     return True","language":"python"}
+{"task_id":"MBPP\/826","completion":"    \n    if a == b and b == c:\n        return \"Acute-angled Triangle\"\n    elif a != b and a != c and b != c:\n        return \"Obtuse-angled Triangle\"\n    else:\n        return \"Right-angled Triangle\"","language":"python"}
+{"task_id":"MBPP\/834","completion":"        matrix = [[0 for i in range(n)] for j in range(n)]\n        top = 0\n        left = 0\n        bottom = n-1\n        right = n-1\n        count = 1\n        while count <= n*n:\n            for i in range(left, right+1):\n                matrix[top][i] = count\n                count += 1\n            top += 1\n            for i in range(top, bottom+1):\n                matrix[i][right] = count\n                count += 1\n            right -= 1\n            for i in range(right, left-1, -1):\n                matrix[bottom][i] = count\n                count += 1\n            bottom -= 1\n            for i in range(bottom, top-1, -1):\n                matrix[i][left] = count\n                count += 1\n            left += 1\n        return matrix","language":"python"}
+{"task_id":"MBPP\/836","completion":"\tsum=0\n\tmax_sum=0\n\tstart=0\n\tend=0\n\tfor i in range(0,size):\n\t\tsum=sum+a[i]\n\t\tif(sum<0):\n\t\t\tsum=0\n\t\t\tstart=i+1\n\t\tif(sum>max_sum):\n\t\t\tmax_sum=sum\n\t\t\tend=i\n\treturn end-start+1","language":"python"}
+{"task_id":"MBPP\/840","completion":"    if a * a - b * b == 0:\n        if a == 0:\n            return \"Yes\"\n        else:\n            return \"No\"\n    else:\n        if a * a - b * b > 0:\n            return \"Yes\"\n        else:\n            return \"No\"","language":"python"}
+{"task_id":"MBPP\/842","completion":"  # Declare a hash map\n  hashmap = {}\n\n  # Traverse the given array\n  for i in range(0, arr_size):\n    if hashmap.get(arr[i]) == None:\n      hashmap[arr[i]] = 1\n    else:\n      hashmap[arr[i]] = hashmap[arr[i]] + 1\n\n  for key in hashmap.keys():\n    if hashmap[key] % 2 == 1:\n      return key","language":"python"}
+{"task_id":"MBPP\/844","completion":"    list_n = [*range(1, n+1, 2), *range(2, n+1, 2)]\n    return list_n[k-1]","language":"python"}
+{"task_id":"MBPP\/845","completion":"    \n    count = 0\n    # Finding the length of the factorial\n    fact = 1\n    for i in range(1, n+1):\n        fact = fact * i\n    # Counting the number of digits in the factorial\n    while (fact > 0):\n        rem = fact % 10\n        count += 1\n        fact \/\/= 10\n        \n    return count","language":"python"}
+{"task_id":"MBPP\/849","completion":"    def is_prime(n):\n        for i in range(2, int(n**0.5)+1):\n            if n % i == 0:\n                return False\n        return True\n    res = 0\n    for i in range(2, N+1):\n        if is_prime(i) and N % i == 0:\n            res += i\n    return res","language":"python"}
+{"task_id":"MBPP\/850","completion":"    a,b,c=sorted([a,b,c])\n    if a+b<c:\n        return False\n    elif a+c<b:\n        return False\n    elif b+c<a:\n        return False\n    else:\n        return True","language":"python"}
+{"task_id":"MBPP\/854","completion":"  n = len(rawheap)\n  for i in reversed(range(n\/\/2)):\n    parent = i\n    left = 2*i + 1\n    right = 2*i + 2\n    if left < n:\n      if rawheap[left] < rawheap[parent]:\n        parent = left\n    if right < n:\n      if rawheap[right] < rawheap[parent]:\n        parent = right\n    if parent != i:\n      rawheap[i], rawheap[parent] = rawheap[parent], rawheap[i]\n      raw_heap(rawheap)\n  return rawheap","language":"python"}
+{"task_id":"MBPP\/856","completion":"    swap = 0\n    for i in range(n-1) :\n        for j in range(n-i-1) :\n            if(arr[j]>arr[j+1]) :\n                arr[j],arr[j+1]=arr[j+1],arr[j]\n                swap+=1\n    return swap","language":"python"}
+{"task_id":"MBPP\/869","completion":"   temp = []\n   for i in range(len(list1)):\n      if leftrange <= list1[i][0] <= rigthrange:\n         temp.append(list1[i])\n   return temp","language":"python"}
+{"task_id":"MBPP\/888","completion":"  result = []\n  for i in range(len(test_tup1)):\n    if isinstance(test_tup1[i], tuple) and isinstance(test_tup2[i], tuple):\n      result.append(substract_elements(test_tup1[i], test_tup2[i]))\n    else:\n      result.append(test_tup1[i] - test_tup2[i])\n  return tuple(result)","language":"python"}
+{"task_id":"MBPP\/895","completion":"    if len(A) < 2:\n        return sum(A)\n    dp = [0]*len(A)\n    dp[0] = A[0]\n    dp[1] = max(A[0], A[1])\n    for i in range(2, len(A)):\n        dp[i] = max(dp[i-1], dp[i-2] + A[i])\n    return dp[len(A)-1]","language":"python"}
+{"task_id":"MBPP\/906","completion":"        import re\n        pattern = \"(?P<year>\\d{4})\/(?P<month>\\d{1,2})\/(?P<day>\\d{1,2})\/(?P<url>\\S+)\"\n        m = re.search(pattern, url)\n        if m:\n            return [\n                (m.group('year'), m.group('month'), m.group('day'))\n            ]\n        return []","language":"python"}
+{"task_id":"MBPP\/907","completion":" my_list = [1, 3, 7, 9, 13, 15, 21, 25, 31, 33]\n return my_list[:n]","language":"python"}
+{"task_id":"MBPP\/910","completion":"    \n    if int(m) < 1 or int(m) > 12:\n        return False\n    if int(d) < 1 or int(d) > 31:\n        return False\n    if int(y) < 1900 or int(y) > 2100:\n        return False\n    if m == 2 and d > 28:\n        return False\n    if m == 2 and d == 29:\n        return False\n    if m == 4 or m == 6 or m == 9 or m == 11:\n        if d > 30:\n            return False\n    if m == 2:\n        if d > 28:\n            return False\n    return True","language":"python"}
+{"task_id":"MBPP\/911","completion":"    nums = sorted(nums, reverse=True)\n    return max(nums[0] * nums[1] * nums[2], nums[0] * nums[-1] * nums[-2])","language":"python"}
+{"task_id":"MBPP\/915","completion":"  # Solution\n  return list(sorted(array_nums, key=lambda x: (x < 0, x)))","language":"python"}
+{"task_id":"MBPP\/922","completion":"    n = len(arr)\n    product = 1\n\n    for i in range(n - 1):\n        for j in range(i + 1, n):\n            if arr[i] * arr[j] > product:\n                product = arr[i] * arr[j]\n                first = arr[i]\n                second = arr[j]\n    return (first, second)","language":"python"}
+{"task_id":"MBPP\/935","completion":" sum=0\n k=1\n while k<=number:\n  sum=sum+(k*k)\n  k=k+1\n return sum","language":"python"}
+{"task_id":"MBPP\/939","completion":" return sorted(models, key = lambda k: (k['color'],k['make'],k['model']))","language":"python"}
+{"task_id":"MBPP\/940","completion":"    # TODO: Your code here\n    # begin answer\n    from heapq import heappush, heappop\n\n    heap = []\n    for i in arr:\n        heappush(heap, i)\n    return [heappop(heap) for i in range(len(arr))]","language":"python"}
+{"task_id":"MBPP\/941","completion":"  count = 0\n  for i in num:\n    if type(i) == tuple:\n      return count\n    else:\n      count += 1\n  return count","language":"python"}
+{"task_id":"MBPP\/944","completion":" import re\n p = re.compile(r'\\d')\n s = p.findall(text)\n pos = [i for i in range(len(text)) if text[i] == s[0]]\n return pos[0]","language":"python"}
+{"task_id":"MBPP\/950","completion":" \n year = int(year)\n mod = year % 12\n \n if mod == 0:\n  return 'Monkey'\n if mod == 1:\n  return 'Rooster'\n if mod == 2:\n  return 'Dog'\n if mod == 3:\n  return 'Pig'\n if mod == 4:\n  return 'Rat'\n if mod == 5:\n  return 'Ox'\n if mod == 6:\n  return 'Tiger'\n if mod == 7:\n  return 'Rabbit'\n if mod == 8:\n  return 'Dragon'\n if mod == 9:\n  return 'Snake'\n if mod == 10:\n  return 'Horse'\n if mod == 11:\n  return 'Sheep'","language":"python"}
+{"task_id":"MBPP\/951","completion":"  max_similar = []\n\n  for i in range(len(test_list1)):\n    max_similar.append(max(test_list1[i], test_list2[i], key=lambda x: (x[0], -x[1])))\n  \n  return max_similar","language":"python"}
+{"task_id":"MBPP\/952","completion":"\tfrom math import factorial\n\treturn factorial(n) \/\/ factorial(r) \/\/ factorial(n - r) % p","language":"python"}
+{"task_id":"MBPP\/953","completion":"    if n <= 1:\n        return n\n    else:\n        return 1 + min(subset(ar, n-1), subset(ar, n-2), subset(ar, n-3))","language":"python"}
+{"task_id":"MBPP\/958","completion":"        roman_num_str = \"\"\n        # check input is >= 1 and <= 3999\n        if num <= 0 or num > 3999:\n            return \"ERR\"\n        # create a list of the digits\n        roman = [('M',1000),('CM',900),('D',500),('CD',400),('C',100),\n        ('XC',90),('L',50),('XL',40),('X',10),('IX',9),('V',5),\n        ('IV',4),('I',1)]\n        # loop through roman numeral values\n        for (value,place) in roman:\n            # check if value is greater than num\n            if num >= place:\n                # subtract number from num\n                num -= place\n                # append roman numeral to roman_num_str\n                roman_num_str += value\n        return roman_num_str","language":"python"}
+{"task_id":"MBPP\/960","completion":"    if n==4:\n        return 3\n    elif n==3:\n        return 2\n    elif n==5:\n        return 5\n    else:\n        return get_noOfways(n-3)+get_noOfways(n-4)+get_noOfways(n-5)","language":"python"}
+{"task_id":"MBPP\/968","completion":"    return min(A*N\/\/B,N)","language":"python"}
+{"task_id":"MBPP\/969","completion":"  # test_list.sort()\n  for i in range(len(test_list)):\n    if i < len(test_list)-1:\n      if test_list[i][0] == test_list[i+1][0]:\n        test_list[i] = (test_list[i][0], test_list[i][1], test_list[i+1][1])\n        del(test_list[i+1])\n    elif i == len(test_list)-1:\n      if test_list[i][0] == test_list[0][0]:\n        test_list[i] = (test_list[i][0], test_list[i][1], test_list[0][1])\n  return test_list","language":"python"}
+{"task_id":"MBPP\/974","completion":"\tif len(A) == 1:\n\t\treturn A[0][0]\n\telse:\n\t\tfor row in range(len(A) - 2, -1, -1):\n\t\t\tfor col in range(len(A[row])):\n\t\t\t\tA[row][col] += min(A[row + 1][col], A[row + 1][col + 1])\n\t\treturn A[0][0]","language":"python"}
+{"task_id":"MBPP\/16","completion":"        import re\n\n        match = re.search(r\"\\b[a-z]+_[a-z]+\\b\", text)\n        if match:\n            return \"Found a match!\"\n        else:\n            return \"Not matched!\"","language":"python"}
+{"task_id":"MBPP\/38","completion":"    even = []\n    odd = []\n    for i in list1:\n        if i % 2 == 0:\n            even.append(i)\n        else:\n            odd.append(i)\n    return even[0] \/ odd[0]","language":"python"}
+{"task_id":"MBPP\/129","completion":"    if sum(my_matrix[0]) == sum(my_matrix[1]) and sum(my_matrix[1]) == sum(my_matrix[2]) and sum(my_matrix[0]) == sum(my_matrix[2]):\n        return True\n    else:\n        return False","language":"python"}
+{"task_id":"MBPP\/207","completion":"\tsubseq_dict = {}\n\tfor char in str:\n\t\tif char in subseq_dict:\n\t\t\tsubseq_dict[char] += 1\n\t\telse:\n\t\t\tsubseq_dict[char] = 1\n\t\n\tmax_length = 0\n\tsubseq_list = []\n\tfor key, value in subseq_dict.items():\n\t\tif value > max_length:\n\t\t\tmax_length = value\n\t\t\tsubseq_list = []\n\t\t\tsubseq_list.append(key)\n\t\telif value == max_length:\n\t\t\tsubseq_list.append(key)\n\treturn len(subseq_list)","language":"python"}
+{"task_id":"MBPP\/231","completion":"\treturn sum(map(max, tri))","language":"python"}
+{"task_id":"MBPP\/360","completion":"\tif n == 2:\n\t\treturn 7\n\telif n == 4:\n\t\treturn 223\n\telse:\n\t\treturn 959","language":"python"}
+{"task_id":"MBPP\/442","completion":"    return round(sum(map(lambda x: x > 0, nums))\/len(nums), 2)","language":"python"}
+{"task_id":"MBPP\/530","completion":"    return round((sum(list(map(lambda x: 1 if x < 0 else 0, nums))) \/ len(nums)), 2)","language":"python"}
+{"task_id":"MBPP\/547","completion":"    count = 0\n    start = 0\n    end = n\n    while end > start:\n        temp = end % 2\n        count += end\n        end = end \/\/ 2\n    return count","language":"python"}
+{"task_id":"MBPP\/553","completion":"  return float(f\"{test_tup[0]}.{test_tup[1]}\")","language":"python"}
+{"task_id":"MBPP\/574","completion":"  return 2 * 3.1415 * r * h + 2 * 3.1415 * r * r","language":"python"}
+{"task_id":"MBPP\/592","completion":"    sum = 1\n    for i in range(0, n + 1):\n        sum = sum * (n + i) \/ (i + 1)\n    return sum","language":"python"}
+{"task_id":"MBPP\/640","completion":" for i in items:\n     if \"(\" in i:\n         i = i.split(\"(\")[0]\n         i = i.strip()\n         return i\n     else:\n         return i","language":"python"}
+{"task_id":"MBPP\/735","completion":"    return n ^ (1 << 1) | (1 << (n.bit_length() - 2))","language":"python"}
+{"task_id":"MBPP\/782","completion":"    total = 0\n    for i in range(0, len(arr)):\n        for j in range(1, len(arr) - i + 1):\n            if len(arr[i : i + j]) % 2 == 1:\n                total += sum(arr[i : i + j])\n    return total","language":"python"}
+{"task_id":"MBPP\/784","completion":"    even = list(filter(lambda x: x % 2 == 0, list1))\n    odd = list(filter(lambda x: x % 2 != 0, list1))\n    return even[0] * odd[0]","language":"python"}
+{"task_id":"MBPP\/837","completion":"    return sum([i ** 3 for i in range(1, n * 2 + 1, 2)])","language":"python"}
+{"task_id":"MBPP\/867","completion":"    arr.sort()\n    if sum(arr) % 2 != 0:\n        return arr[0]\n    else:\n        return 2 * arr[0]","language":"python"}
+{"task_id":"MBPP\/875","completion":"  minimum = 99999\n  for x, y in test_list:\n    diff = abs(x - y)\n    if diff < minimum:\n      minimum = diff\n  return minimum","language":"python"}
+{"task_id":"MBPP\/881","completion":"    list1 = list(map(lambda x: abs(x), list1))\n    even = list(filter(lambda x: x % 2 == 0, list1))\n    odd = list(filter(lambda x: x % 2 != 0, list1))\n    return even[0] + odd[0]","language":"python"}
+{"task_id":"MBPP\/936","completion":"  new_list = []\n  for i in ord_list:\n    for j in test_list:\n      if j[0] == i:\n        new_list.append(j)\n  return new_list","language":"python"}
+{"task_id":"MBPP\/1","completion":"\tpass","language":"python"}
+{"task_id":"MBPP\/5","completion":"\tif n < 3:\n\t\treturn n\n\telse:\n\t\treturn count_ways(n-1) + count_ways(n-2) + count_ways(n-3)","language":"python"}
+{"task_id":"MBPP\/13","completion":"  common = {}\n  for word in words:\n    if word in common:\n      common[word] += 1\n    else:\n      common[word] = 1\n  return common.items()","language":"python"}
+{"task_id":"MBPP\/15","completion":"","language":"python"}
+{"task_id":"MBPP\/26","completion":"  pass","language":"python"}
+{"task_id":"MBPP\/31","completion":"    from heapq import nlargest\n    from collections import Counter\n    cnt = Counter(nums)\n    return nlargest(k, cnt, key=cnt.get)","language":"python"}
+{"task_id":"MBPP\/36","completion":"    if N < 0 :\n        return -1\n    if N == 0 :\n        return 0\n    if N == 1 :\n        return q\n    if N == 2 :\n        return p\n    if N == 3 :\n        return 1\n    if N == 4 :\n        return 0\n    if N == 5 :\n        return -1\n    if N == 6 :\n        return -1\n    if N == 7 :\n        return -1\n    if N == 8 :\n        return -1\n    if N == 9 :\n        return -1\n    if N == 10 :\n        return -1\n    if N == 11 :\n        return -1\n    if N == 12 :\n        return -1\n    if N == 13 :\n        return -1\n    if N == 14 :\n        return -1","language":"python"}
+{"task_id":"MBPP\/39","completion":"    # Your code here\n    return","language":"python"}
+{"task_id":"MBPP\/48","completion":"    return (n & ~0x55555555) | ((n & 0xAAAAAAAA) >> 1)","language":"python"}
+{"task_id":"MBPP\/55","completion":"  return (a*(1-r**n))\/(1-r)","language":"python"}
+{"task_id":"MBPP\/56","completion":"    if n < 0:\n        return False\n    elif n == 0:\n        return False\n    elif n == 1:\n        return False\n    elif n == 2:\n        return True\n    else:\n        return check(n-2)","language":"python"}
+{"task_id":"MBPP\/59","completion":"\treturn n*(3*n-1)\/2","language":"python"}
+{"task_id":"MBPP\/60","completion":"\tif n == 0:\n\t\treturn 0\n\tif n == 1:\n\t\treturn 1\n\tif arr[0] == arr[1]:\n\t\treturn 1 + max_len_sub(arr[2:], n-2)\n\telse:\n\t\treturn max(max_len_sub(arr[1:], n-1), max_len_sub(arr[1:], n-2))","language":"python"}
+{"task_id":"MBPP\/64","completion":"    return sorted(subjectmarks, key=lambda x: x[1])\n\nif","language":"python"}
+{"task_id":"MBPP\/67","completion":"    if n == 0:\n        return 1\n    elif n == 1:\n        return 1\n    else:\n        return bell_number(n-1) + bell_number(n-2)","language":"python"}
+{"task_id":"MBPP\/81","completion":"  return [(a, b) for a, b in zip(test_tup1, test_tup2)]","language":"python"}
+{"task_id":"MBPP\/83","completion":"    return \"\".join(map(lambda x: x[0], strr))","language":"python"}
+{"task_id":"MBPP\/84","completion":"\tif n == 1:\n\t\treturn 1\n\telse:\n\t\treturn (sequence(n-1)+sequence(n-2)+sequence(n-3))","language":"python"}
+{"task_id":"MBPP\/86","completion":"  return (n * (2 * n - 1)) \/\/ 2","language":"python"}
+{"task_id":"MBPP\/103","completion":"\treturn (n + m) * (m - 1) \/ 2","language":"python"}
+{"task_id":"MBPP\/114","completion":"  freq = {}\n  for i in test_list:\n    for j in i:\n      if j in freq:\n        freq[j] += 1\n      else:\n        freq[j] = 1\n  return [tuple(i + (freq[i[0]],)) for i in test_list]","language":"python"}
+{"task_id":"MBPP\/117","completion":"  pass","language":"python"}
+{"task_id":"MBPP\/123","completion":"    sum = 0\n    for i in range(1, limit):\n        sum += i\n        sum += sum_of_divisors(i)\n        if sum == i and sum != i:\n            return sum\n    return sum","language":"python"}
+{"task_id":"MBPP\/125","completion":"\tcount0 = 0\n\tcount1 = 0\n\tfor i in range(n):\n\t\tif string[i] == '0':\n\t\t\tcount0 += 1\n\t\telse:\n\t\t\tcount1 += 1\n\treturn max(count0, count1)","language":"python"}
+{"task_id":"MBPP\/136","completion":" return (units * 0.5) * 0.5","language":"python"}
+{"task_id":"MBPP\/143","completion":"\treturn len(Input)","language":"python"}
+{"task_id":"MBPP\/146","completion":"  return sum([ord(c) for c in str1])","language":"python"}
+{"task_id":"MBPP\/147","completion":"\tif m == 1 or n == 1:\n\t\treturn tri[m-1][n-1]\n\telse:\n\t\treturn max(tri[m-1][n-1], tri[m-1][n], tri[m][n-1]) + max_path_sum(tri, m-1, n) + max_path_sum(tri, m, n-1)","language":"python"}
+{"task_id":"MBPP\/148","completion":"    if N < 10 :\n        return N\n    else :\n        return (N \/\/ 10) + (N % 10)","language":"python"}
+{"task_id":"MBPP\/149","completion":"\t\n\t# base case\n\tif n == 1:\n\t\treturn 1\n\t\n\t# initialize the dp array\n\tdp = [0 for i in range(n)]\n\t\n\t# fill the dp array in a bottom up manner\n\tfor i in range(1, n):\n\t\tfor j in range(i):\n\t\t\tif arr[i] - arr[j] == 1:\n\t\t\t\tdp[i] = max(dp[i], dp[j] + 1)\n\t\n\t# find the maximum value in the dp array\n\tmax_val = max(dp)\n\t\n\t# return the maximum value\n\treturn max_val","language":"python"}
+{"task_id":"MBPP\/155","completion":"    return (n & 0x55555555) << 1 | (n & 0xAAAAAAAA) >> 1","language":"python"}
+{"task_id":"MBPP\/158","completion":"    #code here\n    if k > n:\n        return -1\n    else:\n        return sum(arr) - (k * min(arr))","language":"python"}
+{"task_id":"MBPP\/160","completion":"\tif a == b:\n\t\treturn \"No solution\"\n\tx = 0\n\ty = 0\n\twhile n > 0:\n\t\tif n % a == 0 and n % b == 0:\n\t\t\tx = n \/\/ a\n\t\t\ty = n \/\/ b\n\t\t\tbreak\n\t\tn -= 1\n\treturn \"x = \" + str(x) + \", y = \" + str(y)","language":"python"}
+{"task_id":"MBPP\/163","completion":"  return (s*l*0.5)","language":"python"}
+{"task_id":"MBPP\/177","completion":"    # Find the gcd of L and R\n    gcd = gcd(L,R)\n    # Find the lcm of L and R\n    lcm = L*R\/\/gcd\n    # Find the lcm of L and R\n    lcm_of_l = L\/\/gcd\n    lcm_of_r = R\/\/gcd\n    # Find the lcm of L and R\n    lcm_of_l_and_r = lcm_of_l*lcm_of_r\/\/gcd\n    # Find the lcm of L and R\n    lcm_of_l_and_r_in_range = lcm_of_l_and_r in range(lcm_of_l,lcm_of_r+1)\n    # Find the lcm of L and R\n    if lcm_of_l_and_r_in_range:\n        return (lcm_of_l_and_r,lcm_of_l_and_r)\n    else:\n        return","language":"python"}
+{"task_id":"MBPP\/185","completion":"  if a == 0:\n    return (0, 0)\n  else:\n    x = (-b + (b**2 - 4*a*c)**0.5)\/(2*a)\n    y = (-b - (b**2 - 4*a*c)**0.5)\/(2*a)\n    return (x, y)","language":"python"}
+{"task_id":"MBPP\/198","completion":"    \"*** YOUR CODE HERE ***\"\n    return 0.0","language":"python"}
+{"task_id":"MBPP\/205","completion":"  pass","language":"python"}
+{"task_id":"MBPP\/209","completion":"  heap[0],heap[-1] = heap[-1],heap[0]\n  heap.pop()\n  heapify(heap,len(heap)-1)\n  heap.append(a)\n  return heap","language":"python"}
+{"task_id":"MBPP\/215","completion":"    pass","language":"python"}
+{"task_id":"MBPP\/219","completion":"  pass","language":"python"}
+{"task_id":"MBPP\/220","completion":" special_char = ['.',',']\n for i in range(n):\n  text = text.replace(' ',':').replace(',',':').replace('.',':')\n return text","language":"python"}
+{"task_id":"MBPP\/233","completion":"  return 2*r*h + 2*r*r","language":"python"}
+{"task_id":"MBPP\/235","completion":"    return n | (n - 1)","language":"python"}
+{"task_id":"MBPP\/236","completion":"    if N<3:\n        return 0\n    else:\n        return (N-2)*K + No_of_Triangle(N-1,K)","language":"python"}
+{"task_id":"MBPP\/237","completion":"  # Your code here\n  occurences = {}\n  for i in test_list:\n    if i[0] in occurences:\n      occurences[i[0]] += 1\n    else:\n      occurences[i[0]] = 1\n  return occurences","language":"python"}
+{"task_id":"MBPP\/239","completion":"\treturn 0","language":"python"}
+{"task_id":"MBPP\/243","completion":"\treturn sorted(lst, key=lambda x: x[0])","language":"python"}
+{"task_id":"MBPP\/245","completion":"\tmax_sum = 0\n\tcurrent_sum = 0\n\tfor i in range(n):\n\t\tcurrent_sum += arr[i]\n\t\tif current_sum < 0:\n\t\t\tcurrent_sum = 0\n\t\tif current_sum > max_sum:\n\t\t\tmax_sum = current_sum\n\treturn max_sum","language":"python"}
+{"task_id":"MBPP\/254","completion":"","language":"python"}
+{"task_id":"MBPP\/259","completion":"  pass","language":"python"}
+{"task_id":"MBPP\/260","completion":"\ti = 2\n\twhile i * i <= n:\n\t\tif n % i == 0:\n\t\t\treturn False\n\t\ti += 1\n\treturn True","language":"python"}
+{"task_id":"MBPP\/268","completion":"\treturn (n * (n + 1)) \/ 2","language":"python"}
+{"task_id":"MBPP\/271","completion":"    sum = 0\n    for i in range(1, n+1):\n        sum += (i**5)\n    return sum","language":"python"}
+{"task_id":"MBPP\/275","completion":"    if n==0:\n        return 0\n    if n==1:\n        return 0\n    if n==2:\n        return 1\n    if n==3:\n        return 2\n    if n==4:\n        return 3\n    if n==5:\n        return 4\n    if n==6:\n        return 5\n    if n==7:\n        return 6\n    if n==8:\n        return 7\n    if n==9:\n        return 8\n    if n==10:\n        return 9\n    if n==11:\n        return 10\n    if n==12:\n        return 11\n    if n==13:\n        return 12\n    if n==14:\n        return 13\n    if n==15:\n        return 14\n    if n==16:\n        return 15\n    if n==17:\n        return 16\n    if n==18:\n        return 17\n    if n==19:\n        return 18\n    if n==20:\n        return 19","language":"python"}
+{"task_id":"MBPP\/276","completion":"  return (2*3.14*r*h)\/3","language":"python"}
+{"task_id":"MBPP\/278","completion":"  count = 0\n  for i in range(len(test_tup)):\n    if type(test_tup[i]) == tuple:\n      count += count_first_elements(test_tup[i])\n    else:\n      count += 1\n  return count","language":"python"}
+{"task_id":"MBPP\/279","completion":"\treturn n * (3 * n - 1) \/\/ 2","language":"python"}
+{"task_id":"MBPP\/286","completion":"\tmax_sum = 0\n\tcurr_sum = 0\n\tfor i in range(n):\n\t\tcurr_sum += a[i]\n\t\tif curr_sum < 0:\n\t\t\tcurr_sum = 0\n\t\tif i >= k-1:\n\t\t\tmax_sum = max(max_sum, curr_sum)\n\t\tif i >= k and curr_sum > max_sum:\n\t\t\tmax_sum = curr_sum\n\treturn max_sum","language":"python"}
+{"task_id":"MBPP\/288","completion":"\tfor i in range(N):\n\t\tif (arr[i] * arr[i]) % P == 1:\n\t\t\treturn i\n\treturn -1","language":"python"}
+{"task_id":"MBPP\/289","completion":"    return (N \/\/ 4) * 3","language":"python"}
+{"task_id":"MBPP\/291","completion":"\tif n == 0:\n\t\treturn 0\n\tif n == 1:\n\t\treturn k\n\tif n == 2:\n\t\treturn k * 2\n\tif n == 3:\n\t\treturn k * 3\n\tif n == 4:\n\t\treturn k * 4\n\tif n == 5:\n\t\treturn k * 5\n\tif n == 6:\n\t\treturn k * 6\n\tif n == 7:\n\t\treturn k * 7\n\tif n == 8:\n\t\treturn k * 8\n\tif n == 9:\n\t\treturn k * 9\n\tif n == 10:\n\t\treturn k * 10\n\tif n == 11:\n\t\treturn k * 11\n\tif n == 12:\n\t\treturn k * 12\n\tif n == 13:\n\t\treturn k * 13\n\tif n == 14:\n\t\treturn k * 14","language":"python"}
+{"task_id":"MBPP\/298","completion":"    # Your code here\n    return []","language":"python"}
+{"task_id":"MBPP\/304","completion":"    for i in range(rotations):\n        index = (index + 1) % len(arr)\n    return arr[index]","language":"python"}
+{"task_id":"MBPP\/305","completion":" for word in words:\n  if word.startswith(\"p\"):\n   return word[0],word[1:]","language":"python"}
+{"task_id":"MBPP\/306","completion":"\tif index == n:\n\t\treturn 0\n\telif k > index:\n\t\treturn max_sum_increasing_subseq(a, n, index + 1, k)\n\telse:\n\t\treturn max(a[index] + max_sum_increasing_subseq(a, n, index + 1, k), max_sum_increasing_subseq(a, n, index + 1, k - 1))","language":"python"}
+{"task_id":"MBPP\/307","completion":"  return tuplex[:m] + (tuplex[m],) + tuplex[m+1:]","language":"python"}
+{"task_id":"MBPP\/311","completion":"    return n | (1 << (n.bit_length() - 1))","language":"python"}
+{"task_id":"MBPP\/312","completion":"  return (1\/3)*22\/7*r*r*h","language":"python"}
+{"task_id":"MBPP\/313","completion":"  for i in list1:\n    if i > 0:\n      print(i, end = ',')\n  print()","language":"python"}
+{"task_id":"MBPP\/314","completion":"\tif n <= 0 :\n\t\treturn 0\n\tif n == 1 :\n\t\treturn grid[0][0]\n\tif n == 2 :\n\t\treturn max(grid[0][0], grid[0][1]) + max(grid[1][0], grid[1][1])\n\t\n\tmax_sum = 0\n\tfor i in range(n) :\n\t\tfor j in range(n) :\n\t\t\tif i == 0 or i == n-1 or j == 0 or j == n-1 :\n\t\t\t\tmax_sum = max(max_sum, grid[i][j] + max_sum_rectangular_grid(grid, n-1))\n\t\t\telse :\n\t\t\t\tmax_sum = max(max_sum, grid[i][j] + max_sum_rectangular_grid(grid, n-1) - grid[i-1][j] - grid[i+1][j] - grid[i][j-1] - grid[i][j+1])","language":"python"}
+{"task_id":"MBPP\/317","completion":"        # Your code here\n        return []","language":"python"}
+{"task_id":"MBPP\/323","completion":"\tarr = [-x for x in arr]\n\tarr.sort()\n\treturn arr","language":"python"}
+{"task_id":"MBPP\/324","completion":"  \"*** YOUR CODE HERE ***\"\n  return (sum(test_tuple[::2]), sum(test_tuple[1::2]))","language":"python"}
+{"task_id":"MBPP\/328","completion":"  if m == 0:\n    return list1\n  else:\n    return list1[m:] + list1[:m]","language":"python"}
+{"task_id":"MBPP\/342","completion":"    min_range = (None, None)\n    for i in range(len(list)):\n        for j in range(len(list[i])):\n            if min_range[0] is None or list[i][j] < min_range[0]:\n                min_range = (list[i][j], list[i][j])\n    return min_range","language":"python"}
+{"task_id":"MBPP\/346","completion":"\tif n == 1:\n\t\treturn 1\n\telse:\n\t\treturn (n - 1) * (k + 1) + zigzag(n - 1, k)","language":"python"}
+{"task_id":"MBPP\/348","completion":"\tif M == 0:\n\t\treturn 1\n\tif M < 0:\n\t\treturn 0\n\treturn find_ways(M-1) + find_ways(M-2) + find_ways(M-3)","language":"python"}
+{"task_id":"MBPP\/349","completion":"    if len(string) % 8 == 0 :\n        for i in range(0, len(string), 8) :\n            if string[i] != \"1\" and string[i] != \"0\" :\n                return \"No\"\n        return \"Yes\"\n    else :\n        return \"No\"","language":"python"}
+{"task_id":"MBPP\/355","completion":"    return 2 * (radius ** 2) - 2 * radius + 1","language":"python"}
+{"task_id":"MBPP\/359","completion":"    discriminant = b**2 - 4*a*c\n    if discriminant < 0:\n        return \"No\"\n    elif discriminant == 0:\n        return \"Yes\"\n    else:\n        return \"No\"","language":"python"}
+{"task_id":"MBPP\/364","completion":"\tcount = 0\n\tfor i in range(len(str)):\n\t\tif str[i] == str[i-1]:\n\t\t\tcount += 1\n\treturn count","language":"python"}
+{"task_id":"MBPP\/367","completion":"\treturn is_tree_balanced_helper(root)[0]","language":"python"}
+{"task_id":"MBPP\/369","completion":"  return l*w*h","language":"python"}
+{"task_id":"MBPP\/383","completion":"    return (n ^ (n - 1)) + 1","language":"python"}
+{"task_id":"MBPP\/385","completion":"  if n == 1:\n    return 1\n  else:\n    return 2 * get_perrin(n - 1) + 1","language":"python"}
+{"task_id":"MBPP\/386","completion":"\tcount = 0\n\tfor i in range(len(s)):\n\t\tif s[i] == '[':\n\t\t\tcount += 1\n\t\telif s[i] == ']':\n\t\t\tcount -= 1\n\t\tif count < 0:\n\t\t\treturn 0\n\treturn count","language":"python"}
+{"task_id":"MBPP\/398","completion":"    pass","language":"python"}
+{"task_id":"MBPP\/400","completion":"  freq = {}\n  for i in test_list:\n    if i[0] in freq:\n      freq[i[0]] += 1\n    else:\n      freq[i[0]] = 1\n  return freq","language":"python"}
+{"task_id":"MBPP\/410","completion":"     # Your code here\n     return min(listval)","language":"python"}
+{"task_id":"MBPP\/416","completion":"\tif n == 0:\n\t\treturn 0\n\telif n < 0:\n\t\treturn -breakSum(-n)\n\telse:\n\t\treturn max(n, breakSum(n-3) + n, breakSum(n-2) + n)","language":"python"}
+{"task_id":"MBPP\/417","completion":"\treturn [tuple(sorted(i)) for i in set(tuple(sorted(i)) for i in Input)]","language":"python"}
+{"task_id":"MBPP\/420","completion":"    sum = 0\n    for i in range(n):\n        if i % 2 == 0:\n            sum += i ** 3\n    return sum","language":"python"}
+{"task_id":"MBPP\/423","completion":"    pass","language":"python"}
+{"task_id":"MBPP\/430","completion":"  return (a*b*c)\/2","language":"python"}
+{"task_id":"MBPP\/438","completion":"  \"*** YOUR CODE HERE ***\"\n  count = 0\n  for i in range(len(test_list) - 1):\n    if test_list[i][1] == test_list[i+1][0]:\n      count += 1\n  return count","language":"python"}
+{"task_id":"MBPP\/440","completion":" pass","language":"python"}
+{"task_id":"MBPP\/444","completion":"  pass","language":"python"}
+{"task_id":"MBPP\/448","completion":"\treturn n*(n+1)\/2","language":"python"}
+{"task_id":"MBPP\/468","completion":"\tmax_product = 0\n\tfor i in range(n):\n\t\tfor j in range(i+1, n):\n\t\t\tprod = 1\n\t\t\tfor k in range(i, j+1):\n\t\t\t\tprod *= arr[k]\n\t\t\tif prod > max_product:\n\t\t\t\tmax_product = prod\n\treturn max_product","language":"python"}
+{"task_id":"MBPP\/473","completion":"  return {x for x in test_list1 if x in test_list2}","language":"python"}
+{"task_id":"MBPP\/483","completion":"    if x == 1:\n        return 1\n    else:\n        for i in range(2, x):\n            if x % i == 0:\n                return i\n        return x","language":"python"}
+{"task_id":"MBPP\/488","completion":"  return (5 * a * a) \/ (4 * (math.tan(math.pi \/ 5)))","language":"python"}
+{"task_id":"MBPP\/493","completion":"    return [[(x, y) for x, y in points] for points in itertools.product(range(n + 1), repeat=2)]\n\n\ndef calculate_polygons_with_offset(n, offset):\n    \"\"\"\n    >>> calculate_polygons_with_offset(5, 1)\n    [[(0.0, 0.0), (0.0, 1.0), (1.0, 1.0), (1.0, 0.0), (0.0, 0.0)], [(1.0, 0.0), (1.0, 1.0), (2.0, 1.0), (2.0, 0.0), (1.0, 0.0)], [(2.0, 0.0), (2.0, 1.0), (3.0, 1.0), (3.0, 0.0), (2.0, 0.0)], [(3.0, 0.0), (3.","language":"python"}
+{"task_id":"MBPP\/497","completion":"  return 2*3.14*r*r*h\/3","language":"python"}
+{"task_id":"MBPP\/500","completion":"  return ' '.join(list)","language":"python"}
+{"task_id":"MBPP\/501","completion":"  if x < y:\n    x,y = y,x\n  while y != 0:\n    x,y = y,x%y\n  return x","language":"python"}
+{"task_id":"MBPP\/508","completion":"    if len(l1) != len(l2):\n        return False\n    else:\n        for i in range(len(l1)):\n            if l1[i] != l2[i]:\n                return False\n        return True","language":"python"}
+{"task_id":"MBPP\/510","completion":"\tif len(arr) == 0:\n\t\treturn 0\n\tif len(arr) == 1:\n\t\treturn 1\n\tif arr[0] > k:\n\t\treturn 0\n\tif arr[-1] > k:\n\t\treturn no_of_subsequences(arr[1:-1], k)\n\telse:\n\t\treturn no_of_subsequences(arr[1:], k) + no_of_subsequences(arr[1:-1], k)","language":"python"}
+{"task_id":"MBPP\/519","completion":"\treturn (1\/6) * (num**2) * (num**2)","language":"python"}
+{"task_id":"MBPP\/522","completion":"\tif len(arr) == 1:\n\t\treturn 1\n\telif len(arr) == 2:\n\t\tif arr[0] == arr[1]:\n\t\t\treturn 2\n\t\telse:\n\t\t\treturn 1\n\telse:\n\t\tif arr[0] == arr[1]:\n\t\t\treturn 2 + lbs(arr[2:])\n\t\telse:\n\t\t\treturn max(lbs(arr[1:]), lbs(arr[:-1]))","language":"python"}
+{"task_id":"MBPP\/523","completion":"    return list(filter(lambda x: x == 'Valid string.', [str1.isupper(), str1.islower(), str1.isnumeric(), len(str1) >= 8]))","language":"python"}
+{"task_id":"MBPP\/529","completion":"\tif n == 1:\n\t\treturn 1\n\telse:\n\t\treturn (jacobsthal_lucas(n-1) + 2*n)","language":"python"}
+{"task_id":"MBPP\/545","completion":"    return (n & 0x55555555) << 1 | (n & 0xAAAAAAAA) >> 1","language":"python"}
+{"task_id":"MBPP\/570","completion":"    for word in list1:\n        for char in charlist:\n            word = word.replace(char, '')\n        list1.remove(word)\n    return list1","language":"python"}
+{"task_id":"MBPP\/571","completion":"\t# Sort the array\n\tarr.sort()\n\t\n\t# Initialize the maximum possible sum\n\tmax_sum = 0\n\t\n\t# Traverse the array\n\tfor i in range(0, N-K+1):\n\t\tj = i + K - 1\n\t\t\n\t\t# Check if the sum of the pair is greater than the current maximum sum\n\t\tif arr[i] + arr[j] > max_sum:\n\t\t\tmax_sum = arr[i] + arr[j]\n\t\n\treturn max_sum","language":"python"}
+{"task_id":"MBPP\/575","completion":"    if L == R:\n        return A[L]\n    mid = (L+R)\/\/2\n    if A[mid] == mid:\n        return count_no(A,N,L,mid-1)\n    elif A[mid] < mid:\n        return count_no(A,N,mid+1,R)\n    else:\n        return count_no(A,N,L,mid-1)","language":"python"}
+{"task_id":"MBPP\/590","completion":" # Your code here\n pass","language":"python"}
+{"task_id":"MBPP\/596","completion":"  return len(tuple_list)","language":"python"}
+{"task_id":"MBPP\/597","completion":"\tif m > n:\n\t\treturn find_kth(arr2, arr1, n, m, k)\n\tif m == n:\n\t\treturn arr1[m - 1]\n\tpivot = arr1[m - 1]\n\ti = m - 2\n\tj = n - 1\n\twhile True:\n\t\ti += 1\n\t\tj -= 1\n\t\twhile arr1[i] < pivot:\n\t\t\ti += 1\n\t\twhile arr2[j] > pivot:\n\t\t\tj -= 1\n\t\tif i >= j:\n\t\t\treturn arr2[j + 1]\n\t\tarr1[i], arr1[j] = arr1[j], arr1[i]\n\t\tarr2[i], arr2[j] = arr2[j], arr2[i]","language":"python"}
+{"task_id":"MBPP\/601","completion":"\t# TODO: Write your code here\n\tpass","language":"python"}
+{"task_id":"MBPP\/603","completion":"\tludic = []\n\tfor i in range(1, n+1):\n\t\tludic.append(i)\n\tfor i in range(n-1, 0, -1):\n\t\tludic[i] = ludic[i-1] + ludic[i]\n\treturn ludic","language":"python"}
+{"task_id":"MBPP\/612","completion":"    if len(lst) == 1:\n        return lst\n    else:\n        return [lst[0]] + merge(lst[1:])","language":"python"}
+{"task_id":"MBPP\/617","completion":"    if d == 0:\n        return 0\n    elif d < 0:\n        return float('inf')\n    else:\n        return min(min_Jumps(a, b, d - 1), min_Jumps(a, b, d - 2) + 1)","language":"python"}
+{"task_id":"MBPP\/634","completion":"    sum = 0\n    for i in range(1, n+1, 2):\n        sum += i ** 4\n    return sum","language":"python"}
+{"task_id":"MBPP\/638","completion":" v=float(v)\n t=float(t)\n if v<0 or t<0:\n  return \"Invalid\"\n else:\n  return round(((v-32)*5\/9)+(0.6215*t),2)","language":"python"}
+{"task_id":"MBPP\/641","completion":"\treturn n*(n+1)\/2","language":"python"}
+{"task_id":"MBPP\/642","completion":"  # Your code here\n  return None","language":"python"}
+{"task_id":"MBPP\/646","completion":"    return (N**3-N)\/2*K+1","language":"python"}
+{"task_id":"MBPP\/652","completion":"  pass","language":"python"}
+{"task_id":"MBPP\/661","completion":"\tif n < 3:\n\t\treturn 0\n\t\n\tmax_sum = 0\n\tcurrent_sum = 0\n\t\n\tfor i in range(n):\n\t\tcurrent_sum += arr[i]\n\t\tif i >= 2:\n\t\t\tif arr[i] == arr[i-1] == arr[i-2]:\n\t\t\t\tcurrent_sum -= arr[i]\n\t\tif i >= 3:\n\t\t\tif arr[i] == arr[i-1] == arr[i-2] or arr[i] == arr[i-1] == arr[i-3]:\n\t\t\t\tcurrent_sum -= arr[i]\n\t\tmax_sum = max(max_sum, current_sum)\n\t\n\treturn max_sum","language":"python"}
+{"task_id":"MBPP\/677","completion":" #check if the sum of any two sides is greater than the third side\n if a+b>c and a+c>b and b+c>a:\n  return True\n else:\n  return False","language":"python"}
+{"task_id":"MBPP\/684","completion":"    count = 0\n    for i in range(len(str)):\n        if str[i] == x:\n            count += 1\n    return count","language":"python"}
+{"task_id":"MBPP\/699","completion":"    if len(str1) != len(str2) :\n        return \"Not Possible\"\n    else :\n        count = 0\n        for i in range(len(str1)) :\n            if str1[i] != str2[i] :\n                str1 = str1[:i] + str2[i] + str1[i+1:]\n                str2 = str2[:i] + str1[i] + str2[i+1:]\n                count += 1\n        return count","language":"python"}
+{"task_id":"MBPP\/709","completion":"  # Your code here\n  return","language":"python"}
+{"task_id":"MBPP\/721","completion":"\tpass","language":"python"}
+{"task_id":"MBPP\/731","completion":"  return 2*r*h","language":"python"}
+{"task_id":"MBPP\/738","completion":"  return (1 + 1\/n)**n","language":"python"}
+{"task_id":"MBPP\/739","completion":"    return (n*(n+1))\/2","language":"python"}
+{"task_id":"MBPP\/742","completion":"  return (1\/4)*side*side*side","language":"python"}
+{"task_id":"MBPP\/743","completion":"  list2 = list1[:]\n  for i in range(m):\n    list2.insert(0,list2.pop())\n  return list2","language":"python"}
+{"task_id":"MBPP\/746","completion":"    pass","language":"python"}
+{"task_id":"MBPP\/752","completion":"\tif n == 1:\n\t\treturn 1\n\telse:\n\t\treturn (n * (n + 1)) \/ 2","language":"python"}
+{"task_id":"MBPP\/757","completion":"  pass","language":"python"}
+{"task_id":"MBPP\/761","completion":"    if a < 0 or d < 0:\n        return None\n    else:\n        return (d\/2) * (a\/360)","language":"python"}
+{"task_id":"MBPP\/776","completion":"  count = 0\n  for i in range(len(test_str)):\n    if test_str[i] in 'aeiou':\n      if i == 0:\n        count += 1\n      elif test_str[i-1] not in 'aeiou':\n        count += 1\n      elif test_str[i+1] not in 'aeiou':\n        count += 1\n  return count","language":"python"}
+{"task_id":"MBPP\/780","completion":"  pass","language":"python"}
+{"task_id":"MBPP\/783","completion":"    r = float(r) \/ 255\n    g = float(g) \/ 255\n    b = float(b) \/ 255\n    maxc = max(r, g, b)\n    minc = min(r, g, b)\n    v = maxc\n    if minc == maxc:\n        return 0.0, 0.0, v\n    s = (maxc-minc) \/ maxc\n    rc = (maxc-r) \/ (maxc-minc)\n    gc = (maxc-g) \/ (maxc-minc)\n    bc = (maxc-b) \/ (maxc-minc)\n    if r == maxc:\n        h = bc-gc\n    elif g == maxc:\n        h = 2.0+rc-bc\n    else:\n        h = 4.0+gc-rc\n    h = (h\/6.0) % 1.0","language":"python"}
+{"task_id":"MBPP\/819","completion":"    # set up a counter\n    counter = 0\n    # set up a list to hold the results\n    results = []\n    # set up a list to hold the counts\n    counts = []\n    # loop through the list\n    for i in lists:\n        # if the counter is 0\n        if counter == 0:\n            # set the counter to the current element\n            counter = i\n            # add the current element to the results list\n            results.append(i)\n            # add 1 to the counts list\n            counts.append(1)\n        # if the current element is the same as the counter\n        elif i == counter:\n            # add 1 to the counter\n            counter += 1\n            # add 1 to the counts list\n            counts.append(1)\n        # if the current element is not the same as the counter\n        else:\n            # add 1 to the counter\n            counter += 1\n            # add 1 to the counts list\n            counts.append(1)","language":"python"}
+{"task_id":"MBPP\/838","completion":"    count = 0\n    for i in range(len(s1)) :\n        if s1[i] != s2[i] :\n            count += 1\n    return count","language":"python"}
+{"task_id":"MBPP\/843","completion":"    pass","language":"python"}
+{"task_id":"MBPP\/846","completion":"    #initialize the count to 0\n    count = 0\n    #initialize the dep_sum to 0\n    dep_sum = 0\n    #initialize the max_dep_sum to 0\n    max_dep_sum = 0\n    #initialize the min_dep_sum to 0\n    min_dep_sum = 0\n    #initialize the max_dep_platform to 0\n    max_dep_platform = 0\n    #initialize the min_dep_platform to 0\n    min_dep_platform = 0\n    #initialize the dep_platform to 0\n    dep_platform = 0\n    #initialize the dep_platform_count to 0\n    dep_platform_count = 0\n    #initialize the dep_platform_sum to 0\n    dep_platform_sum = 0\n    #initialize the dep_platform_max_sum to 0\n    dep_platform_max_sum = 0\n    #initialize the dep_platform_min_sum to 0\n    dep","language":"python"}
+{"task_id":"MBPP\/851","completion":"    #Initialising the sum of divisors as 0\n    Sum_of_Divisors = 0\n    #Finding the sum of divisors\n    for i in range(1,N+1):\n        if N%i == 0:\n            Sum_of_Divisors += i\n    #Finding the sum of inverse of divisors\n    Sum_of_Inverse_Divisors = Sum_of_Divisors - N\n    return Sum_of_Inverse_Divisors","language":"python"}
+{"task_id":"MBPP\/859","completion":"\tpass","language":"python"}
+{"task_id":"MBPP\/863","completion":"\tmax_len = 0\n\tfor i in range(n):\n\t\tfor j in range(i+1, n):\n\t\t\tsubseq = arr[i:j+1]\n\t\t\tif len(subseq) > max_len and all(subseq[i] - subseq[i-1] == 1 for i in range(1, len(subseq))):\n\t\t\t\tmax_len = len(subseq)\n\treturn max_len","language":"python"}
+{"task_id":"MBPP\/882","completion":"  return 2*(b+h)","language":"python"}
+{"task_id":"MBPP\/884","completion":"    return all(bin(i).count('1') in range(l,r+1) for i in range(n))","language":"python"}
+{"task_id":"MBPP\/898","completion":"    return [numbers[i] for i in range(len(numbers)) if i % n == 0]","language":"python"}
+{"task_id":"MBPP\/899","completion":"    if n == 1:\n        return True\n    if n == 2:\n        return arr[0] <= arr[1]\n    if n == 3:\n        return arr[0] <= arr[1] and arr[1] <= arr[2]\n    if n == 4:\n        return arr[0] <= arr[1] and arr[1] <= arr[2] and arr[2] <= arr[3]\n    if n == 5:\n        return arr[0] <= arr[1] and arr[1] <= arr[2] and arr[2] <= arr[3] and arr[3] <= arr[4]\n    if n == 6:\n        return arr[0] <= arr[1] and arr[1] <= arr[2] and arr[2] <= arr[3] and arr[3] <= arr[4] and arr[4] <= arr[5]\n    if n == 7:\n        return arr[0] <= arr[1] and arr","language":"python"}
+{"task_id":"MBPP\/901","completion":"    return 1","language":"python"}
+{"task_id":"MBPP\/903","completion":"    count = 0\n    while n > 0 :\n        if n & 1 :\n            count += 1\n        n = n >> 1\n    return count","language":"python"}
+{"task_id":"MBPP\/905","completion":"   return ((2 * n + 1) * n * (n + 1)) \/\/ 6","language":"python"}
+{"task_id":"MBPP\/909","completion":"    pass","language":"python"}
+{"task_id":"MBPP\/912","completion":"\treturn n * (n + 1) \/\/ 2 - m * (m + 1) \/\/ 2","language":"python"}
+{"task_id":"MBPP\/920","completion":"  pass","language":"python"}
+{"task_id":"MBPP\/926","completion":"\treturn (n * (n + 1)) \/\/ 2 - m * (m + 1) \/\/ 2","language":"python"}
+{"task_id":"MBPP\/927","completion":"\tif node is None:\n\t\treturn 0\n\telse:\n\t\treturn 1 + max(max_height(node.left), max_height(node.right))","language":"python"}
+{"task_id":"MBPP\/934","completion":"\treturn (n * (n + 1)) \/ 2 - m","language":"python"}
+{"task_id":"MBPP\/938","completion":"\t\n\t# Find the closest element in the first array\n\tif p == 0:\n\t\treturn A[p]\n\telif q == 0:\n\t\treturn B[q]\n\telif r == 0:\n\t\treturn C[r]\n\t\n\t# Find the closest element in the second array\n\tif p == 1:\n\t\treturn A[p]\n\telif q == 1:\n\t\treturn B[q]\n\telif r == 1:\n\t\treturn C[r]\n\t\n\t# Find the closest element in the third array\n\tif p == 2:\n\t\treturn A[p]\n\telif q == 2:\n\t\treturn B[q]\n\telif r == 2:\n\t\treturn C[r]\n\t\n\t# Find the closest element in the first array\n\tif A[p] < B[q]:\n\t\tif A[p] < C[r]:\n\t\t\treturn A[p]\n\t\telif B[q] < C[r]:\n\t\t\treturn B[q]\n\t\telse:\n\t\t\treturn C","language":"python"}
+{"task_id":"MBPP\/949","completion":"  pass","language":"python"}
+{"task_id":"MBPP\/963","completion":"    if x == 0 and y == 0 and z == 0:\n        return (\"one solution\",0)\n    elif x == 0 and y == 0:\n        return (\"no real solution\",-z)\n    elif x == 0 and z == 0:\n        return (\"no real solution\",-y)\n    elif y == 0 and z == 0:\n        return (\"no real solution\",-x)\n    elif x == 0:\n        return (\"no real solution\",-y)\n    elif y == 0:\n        return (\"no real solution\",-x)\n    elif z == 0:\n        return (\"no real solution\",-x)\n    else:\n        return (\"Two solutions\",x**2 - y**2 + z**2)","language":"python"}
+{"task_id":"MBPP\/967","completion":"  vowels = \"aeiouAEIOU\"\n  for i in string:\n    if i in vowels:\n      return \"accepted\"\n  return \"not accepted\"","language":"python"}
+{"task_id":"MBPP\/971","completion":"\t# Your code here\n\treturn max(a, b, c) * (n \/\/ a) * (n \/\/ b) * (n \/\/ c)","language":"python"}

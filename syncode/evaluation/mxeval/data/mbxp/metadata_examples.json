@@ -1,0 +1,15 @@
+{
+  "python": "examples/mbpp_samples.jsonl",
+  "java": "examples/mbjp_samples.jsonl",
+  "javascript": "examples/mbjsp_samples.jsonl",
+  "typescript": "examples/mbtsp_samples.jsonl",
+  "kotlin": "examples/mbkp_samples.jsonl",
+  "ruby": "examples/mbrbp_samples.jsonl",
+  "php": "examples/mbphp_samples.jsonl",
+  "cpp": "examples/mbcpp_samples.jsonl",
+  "csharp": "examples/mbcsp_samples.jsonl",
+  "go": "examples/mbgp_samples.jsonl",
+  "perl": "examples/mbplp_samples.jsonl",
+  "scala": "examples/mbscp_samples.jsonl",
+  "swift": "examples/mbswp_samples.jsonl"
+}

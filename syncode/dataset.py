@@ -1,5 +1,5 @@
 from datasets import load_dataset
-from mxeval.data import get_data, get_examples
+from syncode.evaluation.mxeval.data import get_data, get_examples
 
 class Dataset:
     """

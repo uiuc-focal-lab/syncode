@@ -1,0 +1,14 @@
+{
+  "python": "HumanEval.jsonl",
+  "csharp": "HumanEval_csharp_v1.jsonl",
+  "go": "HumanEval_go_v1.jsonl",
+  "java": "HumanEval_java_v1.1.jsonl",
+  "javascript": "HumanEval_javascript_v1.1.jsonl",
+  "kotlin": "HumanEval_kotlin_v1.1.jsonl",
+  "perl": "HumanEval_perl_v1.1.jsonl",
+  "php": "HumanEval_php_v1.1.jsonl",
+  "ruby": "HumanEval_ruby_v1.1.jsonl",
+  "scala": "HumanEval_scala_v1.1.jsonl",
+  "swift": "HumanEval_swift_v1.1.jsonl",
+  "typescript": "HumanEval_typescript_v1.jsonl"
+}

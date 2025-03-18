@@ -5,7 +5,7 @@ from tqdm import tqdm
 from typing import Optional
 from syncode import common
 from syncode.evaluation.mxeval_evaluation import check_corectness
-from mxeval.data import write_jsonl
+from syncode.evaluation.mxeval.data import write_jsonl
 
 
 class CodeEval:

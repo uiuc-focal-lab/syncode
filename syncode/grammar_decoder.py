@@ -151,12 +151,14 @@ class SyncodeLogitsProcessor(LogitsProcessor):
         partial_codes = self._get_partial_codes(input_ids)
 
         for idx, (partial_code, remainder_bytes) in enumerate(partial_codes):
-            ## Parsing
+            # 1. Parsing
             res, skip = self._parse_partial_code(idx, partial_code, remainder_bytes, accepted_generation=True)
             if skip: continue
 
+            # 2. Computing the accept mask
             accept_mask = self.dfa_mask_store.get_accept_mask(res)
 
+            # 3. Masking the scores
             if torch.sum(accept_mask) != 0: # If there are acceptable tokens for the current partial code 
                 if len(scores[idx]) > len(accept_mask):
                     # Pad accept_mask with 0 values. Since scores[i] may be longer than tokenizer vocab size, we need to pad accept_mask with 0 values

@@ -7,9 +7,9 @@ from typing import List, Dict, Optional
 import numpy as np
 import multiprocessing, subprocess
 import syncode.common as common
-from mxeval.data import read_problems, stream_jsonl, write_jsonl, get_metadata
-from mxeval.execution import swallow_io, time_limit, TimeoutException, create_tempdir, reliability_guard, setup_base_path
-from mxeval.evaluation import estimate_pass_at_k
+from syncode.evaluation.mxeval.data import read_problems, stream_jsonl, write_jsonl, get_metadata
+from syncode.evaluation.mxeval.execution import swallow_io, time_limit, TimeoutException, create_tempdir, reliability_guard, setup_base_path
+from syncode.evaluation.mxeval.evaluation import estimate_pass_at_k
 
 
 def evaluate_functional_correctness(
