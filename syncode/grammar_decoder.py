@@ -206,9 +206,15 @@ class SyncodeLogitsProcessor(LogitsProcessor):
         output = []
         for idx in range(len(input_ids)):
             if self.parse_output_only:
-                partial_code, remainder_bytes = self._bytes_to_string(self.byte_tokenizer.decode(input_ids[idx, self.start_from:].tolist(), skip_special_tokens=True))
+                partial_code, remainder_bytes = self._bytes_to_string(
+                    self.byte_tokenizer.decode(
+                        input_ids[idx, self.start_from:].to('cpu', non_blocking=True).tolist(), skip_special_tokens=True)
+                    )
             else:
-                partial_code, remainder_bytes = self._bytes_to_string(self.byte_tokenizer.decode(input_ids[idx].tolist(), skip_special_tokens=True))
+                partial_code, remainder_bytes = self._bytes_to_string(
+                    self.byte_tokenizer.decode(
+                        input_ids[idx].to('cpu', non_blocking=True).tolist(), skip_special_tokens=True)
+                    )
             output.append((partial_code, remainder_bytes))
         return output
         

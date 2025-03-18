@@ -65,7 +65,7 @@ class MaskStore:
 
         followings_terminas_map = None
         if parse_table is not None:
-            followings_terminas_map = self._compute_following_terminals_map(terminal_names, parse_table)
+            followings_terminas_map = self._compute_following_terminals_map(terminal_names, parse_table, ignore_terminals)
 
         # Create consume prefix cache
         self._consume_prefix_cache = {}
@@ -105,8 +105,9 @@ class MaskStore:
         
         if use_cache and os.path.exists(fsm_path):
             try:
-                mask_store = pickle.load(open(fsm_path, 'rb'))
-                return mask_store
+                with open(fsm_path, 'rb') as f:
+                    mask_store = pickle.load(f)
+                    return mask_store
             except Exception as e:
                 logger.warning(f"Error loading mask store: {e}")
                 
@@ -134,7 +135,8 @@ class MaskStore:
     def _compute_following_terminals_map(
             self, 
             terminals: Iterable[str], 
-            parse_table
+            parse_table,
+            ignore_terminals: Iterable[str]
         ) -> defaultdict:
         """
         From terminals, filter out terminals that cannot follow the current terminal
@@ -150,9 +152,8 @@ class MaskStore:
         # We iterate through each cur_terminal:    
         for cur_terminal in terminals:
             # Add all ignore terminals to the following terminals
-            for next_terminal in terminals:
-                if 'IGNORE' in next_terminal:
-                    following_terminals_map[cur_terminal].add(next_terminal)
+            for next_terminal in ignore_terminals:
+                following_terminals_map[cur_terminal].add(next_terminal)
 
             # We iterate through each parser_state:
             for _, row in parse_table.states.items():

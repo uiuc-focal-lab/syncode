@@ -122,6 +122,12 @@ class HuggingFaceModel:
                     print("WARNING: Opportunistic mode requires SAMPLE or GREEDY_SEARCH generation mode.")
                 if not batch_size == 1:
                     print("WARNING: Opportunistic mode requires batch_size of 1.")
+            
+            # Ensure pad_token_id is set
+            if 'pad_token_id' not in dir(self.tokenizer):
+                if self.tokenizer.pad_token_id is None:
+                    self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
+
             # Use generate from transformers library for other modes
             generated_ids = self.model.generate(
                 **inputs, 
@@ -190,6 +196,7 @@ class HuggingFaceModel:
         logits_processor = self.model._get_logits_processor(gen_config, token_ids.size(1), token_ids, prefix_allowed_tokens_fn=None, logits_processor=[])
 
         max_tokens = self.gen_args['max_new_tokens']+token_ids.size(1)
+        self.model.config.pad_token_id = pad_token_id = self.tokenizer.pad_token_id if self.tokenizer.pad_token_id is not None else self.tokenizer.eos_token_id
 
         while True:
             try:
