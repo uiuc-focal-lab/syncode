@@ -389,29 +389,7 @@ print(f"Syncode augmented LLM output:\n{output}")
 ```
 &nbsp;
 
-## How Does **SynCode** Compare to Other Constrained Decoders?
 
-
-| Tool                                                      | Regex     | CFG*       | Pre-Computed* | GPL* |
-|----------------------------------------------------       |-----------|-----------|:-------------:|------|
-| [`LMQL`](https://github.com/eth-sri/lmql)                 | ✅        | ❌        |       ❌       | ❌   |
-| [`GUIDANCE`](https://github.com/guidance-ai/guidance)     | ✅        | ✅        |       ❌       | ❌   |
-| [`OUTLINES`](https://github.com/outlines-dev/outlines)    | ✅        | ✅        |       ✅       | ❌   |
-| [`PICARD`](https://github.com/ServiceNow/picard)          | ✅        | ✅        |       ❌       | ❌   |
-| [`SYNCHROMESH`](https://arxiv.org/abs/2201.11227)         | ✅        | ✅        |       ❌       | ❌   |
-| [`LLAMA.CPP`](https://github.com/ggerganov/llama.cpp)     | ✅        | ✅        |       ❌       | ❌   |
-| [`GCD`](https://arxiv.org/abs/2305.13971)                 | ✅        | ✅        |       ❌       | ❌   |
-| **SynCode**                                               | **✅**    | **✅**    |   **✅**       | **✅** |
----
-
-**CFG***: Guide generation with a Context Free Grammar (CFG)
-
-**Pre-Computed***: Precompute masks over the vocabulary to significantly improve generation speed
-
-**GPL***: Support general-purpose programming languages, which involve non-context-free fragments, such as  indentation in Python and end-of-scope markers in Golang.
-
-[test-img]: https://github.com/shubhamugare/llm-cfg/actions/workflows/run_tests.yml/badge.svg
-[tests]: https://github.com/shubhamugare/llm-cfg/actions/workflows/run_tests.yml
 
 ## 📜 Citation
 <p>
@@ -436,6 +414,30 @@ print(f"Syncode augmented LLM output:\n{output}")
 <img width="750" alt="Screenshot 2024-03-21 at 2 22 15 AM" src="https://github.com/uiuc-focal-lab/syncode/assets/14147610/d9d73072-3c9b-47d4-a941-69d5cf8fb1bf">
 
 In the SynCode workflow, the LLM takes partial code _C<sub>k</sub>_ and generates a distribution for the next token _t<sub>k+1</sub>_. The incremental parser processes _C<sub>k</sub>_ to generate accept sequences _A_, the sequences of terminals that can follow partial code called accept sequences. Simultaneously, the incremental parser computes a remainder _r_ from the partial code, representing the suffix that may change its terminal type in subsequent generations. The backbone of SynCode is the offline construction of a DFA mask store, a lookup table derived from regular expressions representing the terminals of the language grammar. The DFA mask store facilitates efficient traversal of DFA states, enabling the retrieval of masks mapped to each state and accept sequence. SynCode walks over the DFA using the remainder and uses the mask store to compute the mask specific to each accept sequence. By unifying masks for each accept sequence SynCode gets the set of syntactically valid tokens. The LLM iteratively generates a token _t<sub>k+1</sub>_ using the distribution and the mask, appending it to _C<sub>k</sub>_ to create the updated code _C<sub>k+1</sub>_. The process continues until the LLM returns the final code _C<sub>n</sub>_ based on the defined stop condition.
+
+## How Does **SynCode** Compare to Other Constrained Decoders?
+
+
+| Tool                                                      | Regex     | CFG*       | Pre-Computed* | GPL* |
+|----------------------------------------------------       |-----------|-----------|:-------------:|------|
+| [`LMQL`](https://github.com/eth-sri/lmql)                 | ✅        | ❌        |       ❌       | ❌   |
+| [`GUIDANCE`](https://github.com/guidance-ai/guidance)     | ✅        | ✅        |       ❌       | ❌   |
+| [`OUTLINES`](https://github.com/outlines-dev/outlines)    | ✅        | ✅        |       ✅       | ❌   |
+| [`PICARD`](https://github.com/ServiceNow/picard)          | ✅        | ✅        |       ❌       | ❌   |
+| [`SYNCHROMESH`](https://arxiv.org/abs/2201.11227)         | ✅        | ✅        |       ❌       | ❌   |
+| [`LLAMA.CPP`](https://github.com/ggerganov/llama.cpp)     | ✅        | ✅        |       ❌       | ❌   |
+| [`GCD`](https://arxiv.org/abs/2305.13971)                 | ✅        | ✅        |       ❌       | ❌   |
+| **SynCode**                                               | **✅**    | **✅**    |   **✅**       | **✅** |
+---
+
+**CFG***: Guide generation with a Context Free Grammar (CFG)
+
+**Pre-Computed***: Precompute masks over the vocabulary to significantly improve generation speed
+
+**GPL***: Support general-purpose programming languages, which involve non-context-free fragments, such as  indentation in Python and end-of-scope markers in Golang.
+
+[test-img]: https://github.com/shubhamugare/llm-cfg/actions/workflows/run_tests.yml/badge.svg
+[tests]: https://github.com/shubhamugare/llm-cfg/actions/workflows/run_tests.yml
 
 ## Contact
 For questions, please contact [Shubham Ugare](mailto:shubhamdugare@gmail.com).
