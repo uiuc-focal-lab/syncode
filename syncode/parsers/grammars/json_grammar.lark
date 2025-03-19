@@ -1,5 +1,8 @@
 // Adapted from https://github.com/lapp0/outlines
-?start: value
+?start: start_value
+
+?start_value: object
+| array
 
 ?value: object
 | array
