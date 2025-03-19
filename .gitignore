@@ -8,3 +8,5 @@ tmp*
 cache/
 .ipynb_checkpoints/
 *.prof
+dist/
+syncode.egg-info/
