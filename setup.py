@@ -18,7 +18,7 @@ requirements = [
 
 setuptools.setup(
     name="syncode",
-    version="0.4.3",
+    version="0.4.4",
     author="Shubham Ugare",
     author_email="shubhamugare@gmail.com",
     description="This package provides the tool for grammar augmented LLM generation.",
@@ -34,4 +34,7 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
+    package_data={
+        "syncode.evaluation.mxeval": ["*.json", "*.py"],
+    },
 )
