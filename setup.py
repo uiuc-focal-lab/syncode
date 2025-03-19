@@ -1,4 +1,5 @@
 import setuptools
+python_requires=">=3.6,<3.13",
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
@@ -17,7 +18,7 @@ requirements = [
 
 setuptools.setup(
     name="syncode",
-    version="0.4.0",
+    version="0.4.1",
     author="Shubham Ugare",
     author_email="shubhamugare@gmail.com",
     description="This package provides the tool for grammar augmented LLM generation.",
