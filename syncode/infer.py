@@ -8,7 +8,7 @@ from typing import Optional, Literal, Union
 
 import syncode.common as common
 from syncode.language_model import HuggingFaceModel
-from syncode.grammar_decoder import SyncodeLogitsProcessor
+from syncode.grammar_mask.logits_processor import SyncodeLogitsProcessor
 from syncode.parsers.grammars import Grammar
 from syncode.dataset import Dataset
 from syncode.evaluation.code_eval import CodeEval

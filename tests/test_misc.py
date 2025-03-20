@@ -5,7 +5,7 @@ import sys
 import torch
 
 from syncode.mask_store.mask_store import MaskStore
-from syncode.grammar_decoder import SyncodeLogitsProcessor
+from syncode.grammar_mask.logits_processor import SyncodeLogitsProcessor
 
 # Adjusting the path so the modules can be imported correctly
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../')
