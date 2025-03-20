@@ -2,7 +2,7 @@ from ast import Tuple
 import time
 import torch
 import syncode.common as common
-from syncode.grammar_decoder import SyncodeLogitsProcessor
+from syncode.grammar_mask.logits_processor import SyncodeLogitsProcessor
 from transformers import LogitsProcessorList, StoppingCriteriaList, StoppingCriteria
 from syncode.parsers.grammars import Grammar
 from syncode.utils.generation import filter_code, fix_indents
@@ -53,8 +53,8 @@ class HuggingFaceModel:
         self.device = device
         self.best_of = best_of
         self._before_prediction_hook = before_prediction_hook
-        self.grammar_decoder = grammar_decoder
-        self.grammar_processor: Iterable = LogitsProcessorList([self.grammar_decoder]) if self.grammar_decoder is not None else None
+        self.logits_processor = grammar_decoder
+        self.grammar_processor: Iterable = LogitsProcessorList([self.logits_processor]) if self.logits_processor is not None else None
 
         self.mode = mode
         self.grammar = grammar
@@ -88,8 +88,8 @@ class HuggingFaceModel:
         inputs = self.get_tokenized_input(prompt, batch_size)
 
         # Reset the grammar decoder
-        if self.grammar_decoder is not None:
-            self.grammar_decoder.reset()
+        if self.logits_processor is not None:
+            self.logits_processor.reset()
 
         input_ids_cutoff = inputs.input_ids.size(dim=1)
         
@@ -112,7 +112,7 @@ class HuggingFaceModel:
                 inputs, 
                 gen_config, 
                 gen_mode, 
-                grammar_decoder=self.grammar_decoder,
+                grammar_decoder=self.logits_processor,
                 stop_criteria=stop_criteria,
                 debug=debug
                 )

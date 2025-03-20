@@ -86,12 +86,13 @@ class CodeEval:
             # We tokenize the whole thing together since tokenizer just the generated_ids messes up with the 
             # indentation and removes the initial whitespaces in some cases
             raw_completion = syncode.model.tokenizer.decode(generated_ids, skip_special_tokens=True)
+            grammar_constrainer = syncode.model.logits_processor.grammar_engine
 
             # Post-processing to filter out using stop word
             if syncode.model.grammar != None and syncode.model.grammar.name == "python":
-                completion = CodeEval.postproces_completion_python(syncode.model, i, batch_size, input_ids_cutoff, generated_ids, syncode.model.grammar_decoder, raw_completion, stop_words)
+                completion = CodeEval.postproces_completion_python(syncode.model, i, batch_size, input_ids_cutoff, generated_ids, grammar_constrainer, raw_completion, stop_words)
             elif syncode.model.grammar != None and syncode.model.grammar.name == "go": 
-                completion = CodeEval.postproces_completion_go(syncode.model, i, batch_size, raw_completion, generated_ids, syncode.model.grammar_decoder, input_ids_cutoff)
+                completion = CodeEval.postproces_completion_go(syncode.model, i, batch_size, raw_completion, generated_ids, grammar_constrainer, input_ids_cutoff)
             else: # TODO: handle the case for other grammars
                 completion = raw_completion
                 
@@ -121,31 +122,31 @@ class CodeEval:
             f.write(f"Averge time taken for each task: {avg_time:.2f}s\n")
             f.write("\n")
     
-    def postproces_completion_python(hf_model, i, batch_size, input_ids_cutoff, generated_ids, grammar_decoder, raw_completion, stop_words):        
+    def postproces_completion_python(hf_model, i, batch_size, input_ids_cutoff, generated_ids, grammar_constrainer, raw_completion, stop_words):        
         generated_output = hf_model.tokenizer.decode(generated_ids[input_ids_cutoff:])
 
-        if all(stop_word not in generated_output for stop_word in stop_words) and hf_model.tokenizer.eos_token_id != generated_ids[-1] and grammar_decoder is not None:
-            # Use when the stop word does not exist in the completion and grammar_decoder is used
+        if all(stop_word not in generated_output for stop_word in stop_words) and hf_model.tokenizer.eos_token_id != generated_ids[-1] and grammar_constrainer is not None:
+            # Use when the stop word does not exist in the completion and grammar_constrainer is used
             function_incomplete = [False for _ in range(batch_size)]
-            completion = CodeEval.compute_backup_completion(hf_model, grammar_decoder, function_incomplete, i, raw_completion)
+            completion = CodeEval.compute_backup_completion(hf_model, grammar_constrainer, function_incomplete, i, raw_completion)
         else:
             completion = raw_completion
         return completion
 
-    def postproces_completion_go(hf_model, i, batch_size, raw_completion, generated_ids, grammar_decoder, input_ids_cutoff):        
+    def postproces_completion_go(hf_model, i, batch_size, raw_completion, generated_ids, grammar_constrainer, input_ids_cutoff):        
         if hf_model.mode != "original": 
-            # When the grammar_decoder is used
+            # When the grammar_constrainer is used
             function_incomplete = [False for _ in range(batch_size)]
-            completion = CodeEval.compute_backup_completion(hf_model, grammar_decoder, function_incomplete, i, raw_completion)
+            completion = CodeEval.compute_backup_completion(hf_model, grammar_constrainer, function_incomplete, i, raw_completion)
 
             if function_incomplete[i]:
                 completion += "}"
 
         return completion
 
-    def compute_backup_completion(hf_model, grammar_decoder, function_incomplete, i, raw_completion):
-        if grammar_decoder.function_ends[i] is not None:
-            fn_ends = sorted(list(set(grammar_decoder.function_ends[i])))
+    def compute_backup_completion(hf_model, grammar_constrainer, function_incomplete, i, raw_completion):
+        if grammar_constrainer.function_ends[i] is not None:
+            fn_ends = sorted(list(set(grammar_constrainer.function_ends[i])))
             if len(fn_ends) > 1:
                 # if the function end is not None, then the last valid state is the function end
                 last_valid_state = fn_ends[1]
@@ -153,7 +154,7 @@ class CodeEval:
         
         # otherwise, the last valid state is the last valid state
         function_incomplete[i] = True
-        last_valid_state = grammar_decoder.last_valid_state[i]
+        last_valid_state = grammar_constrainer.last_valid_state[i]
 
         # Use when the stop word does not exist in the completion
         backup_completion = raw_completion[:last_valid_state]
