@@ -22,15 +22,15 @@ def create_parser(
         cache_filename = parser_cache_dir + f'{grammar}_{parser}_{grammar.hash()}_parser.pkl'
         os.makedirs(os.path.dirname(parser_cache_dir), exist_ok=True)
 
-        # First check if we should use the IGParser with symbol position map
-        if use_symbol_pos_map:
-            return IGParser(base_parser, **kwargs)
-
         if grammar.name == 'python':
             indenter = PythonIndenter()
 
         base_parser = create_base_parser(grammar, parser, indenter, cache_filename)
 
+        # First check if we should use the IGParser with symbol position map
+        if use_symbol_pos_map:
+            return IGParser(base_parser, **kwargs)
+        
         if grammar.name == 'python':
             return PythonIncrementalParser(base_parser, indenter, **kwargs)
         elif grammar.name == 'go':

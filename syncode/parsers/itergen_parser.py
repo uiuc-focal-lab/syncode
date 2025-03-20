@@ -203,8 +203,8 @@ class IGParser(IncrementalParser):
     IterGen Parser extends IncrementalParser to add symbol position map functionality.
     This parser tracks positions of symbols in the code for code generation purposes.
     """
-    def __init__(self, base_parser, logger: Optional[common.Logger]=None, ignore_whitespace=False) -> None:
-        super().__init__(base_parser, logger, ignore_whitespace)
+    def __init__(self, base_parser, ignore_whitespace=False) -> None:
+        super().__init__(base_parser, ignore_whitespace=ignore_whitespace)
         # Current state mapping now includes symbol_pos_map
         self.cur_pos_to_parser_state: Dict[int, Tuple[Any, Any, Set, Set, Optional[list], list, Optional[SymbolPosMap]]] = {}
 
@@ -379,7 +379,7 @@ class IGParser(IncrementalParser):
 
         except lark.exceptions.UnexpectedToken as e:
             parse_incomplete = True
-            self._handle_parsing_error(lexer_tokens, token)
+            self._handle_parsing_error(lexer_tokens, token, e)
 
         # Compute current terminal string and return result
         remainder_state, current_term_str, final_terminal = self._get_remainder(
