@@ -60,7 +60,7 @@ pip install syncode
 Alternatively, you can install the latest development version directly from GitHub:
 
 ```bash
-pip install git+https://github.com/uiuc-focal-lab/syncode.git
+pip install git+https://github.com/structuredllm/syncode.git
 ```
 
 #### Version Compatibility
@@ -218,7 +218,7 @@ export HF_ACCESS_TOKEN="your_huggingface_api_key"
 
 Clone this repository:
 ```
-git clone https://github.com/uiuc-focal-lab/syncode.git
+git clone https://github.com/structuredllm/syncode.git
 ```
 
 To run the tool with CLI, use the following command:
