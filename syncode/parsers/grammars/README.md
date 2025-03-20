@@ -6,7 +6,7 @@ These grammars construct parsers that filter out incompatible tokens during the 
 Creating grammar for SynCode requires a solid understanding of Lark EBNF grammar. Here's how you can get started:
 
 - Read Lark's grammar documentation [here](https://lark-parser.readthedocs.io/en/latest/grammar.html).
-- Review existing grammars for SynCode [here](https://github.com/uiuc-focal-lab/syncode/tree/main/syncode/parsers/grammars).
+- Review existing grammars for SynCode [here](https://github.com/structuredllm/syncode/tree/main/syncode/parsers/grammars).
 
 ### LALR(1) or LR(1) Grammars
 
