@@ -19,7 +19,7 @@ class TestDFAMaskLlama(unittest.TestCase, CustomAssertMixin):
     mask_store = MaskStore.init_mask_store(
         grammar=Grammar('python'), 
         tokenizer=tokenizer, 
-        use_cache=True, 
+        use_cache=False, 
         indent=True, 
         mode="grammar_strict"
         )

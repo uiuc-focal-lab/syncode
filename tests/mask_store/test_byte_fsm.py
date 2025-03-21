@@ -120,6 +120,9 @@ class TestByteFSM(unittest.TestCase):
                 ("user@example.net", (False, None)),
                 ("user@", (True, b"")),  # Live state
                 ("invalid", (True, b""))  # Live state for [a-z]+
+            ]),
+            ('"[^"”“]+"', [
+                ('\"key”', (False, None)),
             ])
         ]
         
