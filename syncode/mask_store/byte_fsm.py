@@ -50,7 +50,7 @@ class ByteFSM:
         self.transitions = {}
         
         # Create a mapping from byte values to category numbers
-        self.byte_to_category = {}
+        self.byte_to_category = {}        
         
         # Extract the mapping from the regex FSM's alphabet and build our byte-level alphabet
         for char, category in regex_fsm.alphabet.items():
@@ -84,8 +84,8 @@ class ByteFSM:
         # Copy the transitions from the regex FSM to our byte FSM
         for state, category_transitions in regex_fsm.map.items():
             for category, target in category_transitions.items():
-                self.transitions[state][category] = target
-        
+                self.transitions[state][category] = target          
+
         # Handle multi-byte Unicode characters separately
         # This is needed because a multi-byte character might need special handling
         for char, category in regex_fsm.alphabet.items():
@@ -95,30 +95,42 @@ class ByteFSM:
             char_bytes = char.encode('utf-8')
             if len(char_bytes) <= 1:
                 continue
-                
+            
+            # Add an explicit dead state for invalid transitions
+            dead_state = f"DEAD"
+            if dead_state not in self.transitions:
+                self.transitions[dead_state] = {}
+
             # For multi-byte characters, we need to add special transitions
             # Make a copy of states to avoid modifying the dictionary during iteration
             states_to_process = list(self.transitions.keys())
             for state in states_to_process:
                 if category in self.transitions[state]:
                     target = self.transitions[state][category]
+                else:
+                    target = dead_state
                     
-                    # Create intermediate states for the multi-byte character
-                    current = state
-                    for i, byte in enumerate(char_bytes):
-                        if byte not in self.alphabet:
-                            # Add the byte to the alphabet with a new category
-                            byte_category = f"{byte}_{i}"
-                            self.byte_to_category[byte] = byte_category
+                # Create intermediate states for the multi-byte character
+                current = state
+                for i, byte in enumerate(char_bytes):
+                    if byte not in self.alphabet:
+                        # Add the byte to the alphabet with a new category
+                        byte_category = f"{byte}_{i}"
+                        self.byte_to_category[byte] = byte_category
 
-                        if i < len(char_bytes) - 1:
+                    if i < len(char_bytes) - 1:
+                        if byte_category not in self.transitions[current]:
+                            # Create a new state for this byte
                             next_state = f"{current}_{byte}_{i}_{char}"
                             if next_state not in self.transitions:
                                 self.transitions[next_state] = {}
                             self.transitions[current][byte_category] = next_state
                             current = next_state
                         else:
-                            self.transitions[current][byte_category] = target
+                            # Transition already exists
+                            current = self.transitions[current][byte_category]
+                    else:
+                        self.transitions[current][byte_category] = target
     
     @lru_cache(maxsize=100000)
     def _get_category(self, byte_val: int) -> Any:

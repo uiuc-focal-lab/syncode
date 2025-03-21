@@ -1,6 +1,6 @@
 import time
 import interegular
-from typing import Any, Optional, Tuple, Iterable, Dict
+from typing import Any, Optional, Tuple, Iterable, Dict, Union
 from syncode.mask_store.byte_fsm import ByteFSM
 import logging
 logger = logging.getLogger(__name__)
@@ -21,11 +21,20 @@ class JointFSMState:
         return self._hash
 
     @staticmethod
-    def det_hash(terminal: str, state_id: int):
+    def det_hash(terminal: str, state_id: Union[str, int]):
         h = 0
         for char in terminal:
             h = (h * 31 + ord(char)) & 0xFFFFFFFF
-        h = (h * 31 + state_id) & 0xFFFFFFFF
+        
+        # Handle state_id based on its type
+        if isinstance(state_id, str):
+            # If state_id is a string, hash each character
+            for char in state_id:
+                h = (h * 31 + ord(char)) & 0xFFFFFFFF
+        else:
+            # If state_id is an integer, hash it directly
+            h = (h * 31 + state_id) & 0xFFFFFFFF
+        
         return h
 
     def __repr__(self):
