@@ -205,13 +205,13 @@ class GrammarConstrainer:
 
             self._update_valid_state(partial_code, idx, res)
         except Exception as e:
-            if self.dev_mode == True:
+            if self.dev_mode == True and accepted_generation:
                 raise e
             elif self.parse_failed == False and accepted_generation:
                 self.parse_failed = True
-                print("-"*50)
-                print(f"Parsing failed! Falling back to unconstrained decoding.\nException: {e}\nPartial code: {partial_code}\nParsed lexical tokens: {self.inc_parser.parsed_lexer_tokens}")
-                print("-"*50)
+                logger.info("-"*50)
+                logger.info(f"Parsing failed! Falling back to unconstrained decoding.\nException: {e}\nPartial code: {partial_code}\nParsed lexical tokens: {self.inc_parser.parsed_lexer_tokens}")
+                logger.info("-"*50)
             skip = True
         return res, skip
 
