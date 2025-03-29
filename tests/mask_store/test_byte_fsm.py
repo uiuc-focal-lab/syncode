@@ -123,7 +123,8 @@ class TestByteFSM(unittest.TestCase):
             ]),
             ('"[^"”“]+"', [
                 ('\"key”', (False, None)),
-            ])
+            ]),
+            ('😘', [(b"\xf0\x9f\x98", (True, b""))])
         ]
         
         for pattern, test_cases in prefix_test_cases:
