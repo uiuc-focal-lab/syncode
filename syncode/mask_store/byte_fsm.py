@@ -113,10 +113,12 @@ class ByteFSM:
                 # Create intermediate states for the multi-byte character
                 current = state
                 for i, byte in enumerate(char_bytes):
-                    if byte not in self.alphabet:
+                    if byte not in self.byte_to_category:
                         # Add the byte to the alphabet with a new category
-                        byte_category = f"{byte}_{i}"
+                        byte_category = f"b{byte}"
                         self.byte_to_category[byte] = byte_category
+                    else:
+                        byte_category = self.byte_to_category[byte]
 
                     if i < len(char_bytes) - 1:
                         if byte_category not in self.transitions[current]:
